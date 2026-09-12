@@ -153,6 +153,8 @@ ul.tips li{margin-bottom:3px}
   font-family:var(--font);font-weight:bold;font-size:12px;color:#5b4310;box-shadow:0 2px 0 #b8871f}
 #minimap{width:100%;display:block;border-radius:16px;border:3px solid #e5d5b4;background:#8ecf63}
 
+.tag.sting{background:#ffe0e0;color:#a33}
+
 </style>
 </head>
 <body>
@@ -197,6 +199,7 @@ ul.tips li{margin-bottom:3px}
           <li><b>Swing your net</b> with the big yellow button.</li>
           <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
           <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths!</li>
+          <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
           <li>Go <b>home</b> (the little cottage) to read about every bug you have caught and to build terrariums.</li>
           <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
         </ul>
@@ -384,6 +387,8 @@ ul.tips li{margin-bottom:3px}
       totalCatches: 0,
       seenIntro: false,
       seenHouseTip: false,
+      seenBeeTip: false,
+      stings: 0,
       muted: false
     };
   }
@@ -620,7 +625,17 @@ ul.tips li{margin-bottom:3px}
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
     coin: function () { tone(1046, 0.06, 'square', 0.05); tone(1318, 0.09, 'square', 0.05, null, 0.05); },
-    night: function () { tone(392, 0.6, 'sine', 0.05, 330); }
+    night: function () { tone(392, 0.6, 'sine', 0.05, 330); },
+    angryBuzz: function () {
+      tone(180, 0.55, 'sawtooth', 0.055, 128);
+      tone(252, 0.5, 'square', 0.03, 166, 0.05);
+      tone(196, 0.45, 'sawtooth', 0.04, 140, 0.14);
+    },
+    ouch: function () {
+      tone(560, 0.13, 'square', 0.11, 170);
+      noise(0.16, 0.07, 900);
+      tone(300, 0.28, 'sine', 0.06, 190, 0.1);
+    }
   };
 })(window.GG = window.GG || {});
 
@@ -799,10 +814,11 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'honeybee', name: 'Honeybee',
       habitats: ['garden', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 25,
-      behavior: 'hover', speed: 44, shy: 56, size: 0.85,
+      behavior: 'hover', speed: 44, shy: 56, size: 0.85, sting: true,
       measure: 'half an inch',
       art: { shape: 'bee', body: '#e8a020', wing: '#fff0c4', accent: '#2d2216', pattern: 'stripes' },
       facts: [
+        'A honeybee can only sting once. Her stinger is barbed like a fish hook, so it stays behind and she does not survive it. That is why she would much rather you left her alone.',
         'When a honeybee finds flowers, she flies home and dances. The shape of her dance tells the other bees which way to go.',
         'One worker bee makes about a twelfth of a teaspoon of honey in her whole life, so a jar of honey is the work of a lot of bees.',
         'Bees can see a colour we cannot: ultraviolet. Many flowers have secret ultraviolet landing stripes just for bees.'
@@ -811,10 +827,11 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'bumblebee', name: 'Bumblebee',
       habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 15,
-      behavior: 'hover', speed: 38, shy: 44, size: 1.0,
+      behavior: 'hover', speed: 38, shy: 44, size: 1.0, sting: true,
       measure: '1 inch long',
       art: { shape: 'bee', body: '#f2c53d', wing: '#fff6dc', accent: '#241f1a', pattern: 'bands' },
       facts: [
+        'A bumblebee\u2019s stinger is smooth, so she can sting more than once and it does not hurt her. She hardly ever wants to. Only the girls can sting at all, and only if you frighten them.',
         'Bumblebees grab a flower and shiver until the pollen shakes loose. It is called buzz pollination, and honeybees cannot do it.',
         'A bumblebee can warm herself up by shivering her flight muscles, so she can fly on cold mornings when other bees stay home.'
       ]
@@ -2173,6 +2190,7 @@ ul.tips li{margin-bottom:3px}
     DOOR: { x: 1520, y: 1486 },
     props: [],
     solids: [],
+    hive: null,
     grid: {},
     chunks: {},
     CHUNK: 400,
@@ -2296,7 +2314,7 @@ ul.tips li{margin-bottom:3px}
       }
       add('flower', HOUSE.x - 96, HOUSE.y - 10, 14, false, 0, { col: '#ff8fb0' });
       add('flower', HOUSE.x + 96, HOUSE.y - 10, 14, false, 0, { col: '#ffd45c' });
-      add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
+      this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
       add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
       // Signposts so the map is easy to learn.
@@ -2453,16 +2471,26 @@ ul.tips li{margin-bottom:3px}
     SWING_TIME: 0.42,
     caughtFlash: 0,
     stepTimer: 0,
+    stun: 0,           // seeing stars after a bee sting
+    stingCool: 0,      // no second sting straight away
 
     reset: function (x, y) {
       this.x = x; this.y = y; this.vx = this.vy = 0; this.swing = 0;
       this.dir = 'down'; this.angle = Math.PI / 2;
+      this.stun = 0; this.stingCool = 0;
+    },
+
+    sting: function () {
+      this.stun = 2.4;
+      this.stingCool = 5;
+      this.swing = 0;
+      this.vx *= -0.4; this.vy *= -0.4;
     },
 
     update: function (dt, bounds) {
       var In = GG.Input;
       var mag = In.mag;
-      var maxSpeed = 168;
+      var maxSpeed = this.stun > 0 ? 92 : 168;
       var want = mag > 0.02;
       var tx = want ? In.x * maxSpeed * mag : 0;
       var ty = want ? In.y * maxSpeed * mag : 0;
@@ -2487,6 +2515,8 @@ ul.tips li{margin-bottom:3px}
       }
 
       this.walk += this.speed * dt * 0.055;
+      if (this.stun > 0) this.stun -= dt;
+      if (this.stingCool > 0) this.stingCool -= dt;
       if (this.swing > 0) this.swing -= dt;
       if (this.caughtFlash > 0) this.caughtFlash -= dt;
 
@@ -2497,7 +2527,7 @@ ul.tips li{margin-bottom:3px}
     },
 
     startSwing: function () {
-      if (this.swing > 0) return false;
+      if (this.swing > 0 || this.stun > 0) return false;
       this.swing = this.SWING_TIME;
       GG.Sfx.swing();
       return true;
@@ -2517,6 +2547,7 @@ ul.tips li{margin-bottom:3px}
     draw: function (c, sx, sy, t) {
       var bob = Math.sin(this.walk * 2) * (this.speed > 20 ? 1.6 : 0);
       var lean = Math.sin(this.walk * 2) * (this.speed > 20 ? 0.07 : 0);
+      if (this.stun > 0) lean += Math.sin(t * 26) * 0.09;
       var d = this.dir;
 
       c.fillStyle = 'rgba(30,60,25,0.22)';
@@ -2594,6 +2625,26 @@ ul.tips li{margin-bottom:3px}
       c.restore();
 
       if (!behind) this._net(c, sx, sy, t);
+      if (this.stun > 0) this._stars(c, sx, sy - bob, t);
+    },
+
+    /* Little stars going round her head after a sting. */
+    _stars: function (c, sx, sy, t) {
+      for (var i = 0; i < 3; i++) {
+        var a = t * 5 + i * (Math.PI * 2 / 3);
+        var x = sx + Math.cos(a) * 13;
+        var y = sy - 40 + Math.sin(a) * 4.5;
+        var sc = 0.8 + Math.sin(a) * 0.25;
+        c.fillStyle = '#ffd94a';
+        c.beginPath();
+        for (var k = 0; k < 10; k++) {
+          var ang = -Math.PI / 2 + k * Math.PI / 5;
+          var r = (k % 2 ? 1.7 : 3.8) * sc;
+          var px = x + Math.cos(ang) * r, py = y + Math.sin(ang) * r;
+          if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+        }
+        c.closePath(); c.fill();
+      }
     },
 
     _net: function (c, sx, sy, t) {
@@ -2638,6 +2689,21 @@ ul.tips li{margin-bottom:3px}
   'use strict';
 
   var TARGET = 16;
+
+  /* The little red cross that means "this bee is cross with you". */
+  function angerMark(c, x, y, r) {
+    c.strokeStyle = '#ff3b3b';
+    c.lineWidth = Math.max(1.5, r * 0.34);
+    c.lineCap = 'round';
+    for (var i = 0; i < 2; i++) {
+      var a = i * Math.PI / 2 - 0.4;
+      c.beginPath();
+      c.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      c.lineTo(x, y);
+      c.lineTo(x + Math.cos(a + Math.PI / 2) * r, y + Math.sin(a + Math.PI / 2) * r);
+      c.stroke();
+    }
+  }
 
   var Critters = GG.Critters = {
     list: [],
@@ -2701,7 +2767,7 @@ ul.tips li{margin-bottom:3px}
         def: def, x: x, y: y, z: z, baseZ: z,
         vx: 0, vy: 0, angle: Math.random() * Math.PI * 2,
         t: Math.random() * 100, state: 'wander', timer: GG.rand(0.6, 2.4),
-        alert: 0, flee: 0, hop: 0, life: 0, scale: 1
+        alert: 0, flee: 0, hop: 0, life: 0, scale: 1, angry: 0
       });
     },
 
@@ -2746,6 +2812,18 @@ ul.tips li{margin-bottom:3px}
         var sp = d.speed * (b.flee > 0 ? 1.95 : 1);
         b.timer -= dt;
 
+        if (b.angry > 0) {
+          // A cross bee forgets about flowers and comes straight for you.
+          b.angry -= dt;
+          b.flee = 0; b.alert = 0;
+          var chaseAng = Math.atan2(player.y - 14 - b.y, player.x - b.x);
+          b.angle = GG.angLerp(b.angle, chaseAng, Math.min(1, dt * 5));
+          var chase = d.speed * 2.05;
+          b.vx = Math.cos(b.angle) * chase;
+          b.vy = Math.sin(b.angle) * chase;
+          b.z = b.baseZ + Math.sin(b.t * 17) * 2.4;
+          if (b.angry <= 0) { b.angry = 0; b.flee = 2.4; b.angle += Math.PI; }
+        } else
         switch (d.behavior) {
           case 'flutter':
             if (b.timer <= 0 && b.flee <= 0) { b.angle += GG.rand(-1.5, 1.5); b.timer = GG.rand(0.5, 1.6); }
@@ -2854,6 +2932,68 @@ ul.tips li{margin-bottom:3px}
       return best.def;
     },
 
+    /* Swing at a bee and miss and she takes it personally. */
+    angerNear: function (x, y, radius) {
+      var n = 0;
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (!b.def.sting || b.angry > 0) continue;
+        if (GG.dist(b.x, b.y - b.z * 0.5, x, y) < radius) {
+          b.angry = GG.rand(5.5, 7.5);
+          b.flee = 0; b.alert = 0;
+          n++;
+        }
+      }
+      if (n) GG.Sfx.angryBuzz();
+      return n;
+    },
+
+    /* Knock the beehive and a few guards come out. */
+    stirHive: function (x, y) {
+      var defs = [GG.BUG_BY_ID.honeybee, GG.BUG_BY_ID.bumblebee, GG.BUG_BY_ID.honeybee];
+      for (var i = 0; i < 3; i++) {
+        if (!defs[i]) continue;
+        this.add(defs[i], x + GG.rand(-16, 16), y + GG.rand(-8, 14));
+        this.list[this.list.length - 1].angry = GG.rand(6.5, 8.5);
+      }
+      this.puff(x, y);
+      GG.Sfx.angryBuzz();
+      return 3;
+    },
+
+    /* Did an angry bee reach Guin? */
+    checkSting: function (player) {
+      if (player.stingCool > 0 || player.stun > 0) return null;
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (b.angry <= 0 || !b.def.sting) continue;
+        if (GG.dist(b.x, b.y - b.z * 0.4, player.x, player.y - 14) < 18) {
+          var def = b.def;
+          this.list.splice(i, 1);
+          this.puff(b.x, b.y - b.z);
+          this.scatter(player.x, player.y, 170);
+          return def;
+        }
+      }
+      return null;
+    },
+
+    /* Everything nearby bolts. */
+    scatter: function (x, y, radius) {
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (GG.dist(b.x, b.y, x, y) < radius) {
+          b.angry = 0;
+          b.flee = GG.rand(1.8, 3);
+          b.angle = Math.atan2(b.y - y, b.x - x) + GG.rand(-0.4, 0.4);
+        }
+      }
+    },
+
+    calmAll: function () {
+      for (var i = 0; i < this.list.length; i++) this.list[i].angry = 0;
+    },
+
     burst: function (x, y, def) {
       for (var i = 0; i < 14; i++) {
         var a = Math.random() * Math.PI * 2, s = GG.rand(30, 120);
@@ -2884,7 +3024,11 @@ ul.tips li{margin-bottom:3px}
         if (b.def.behavior === 'cling' || b.def.behavior === 'slow') {
           if (Math.abs(b.vx) + Math.abs(b.vy) < 1) ang = b.angle;
         }
-        A.draw(c, b.def, sx, sy - b.z, 1.15, ang, b.t);
+        if (b.angry > 0) sx += Math.sin(b.t * 44) * 0.9;
+        A.draw(c, b.def, sx, sy - b.z, 1.15, ang, b.t * (b.angry > 0 ? 1.9 : 1));
+        if (b.angry > 0) {
+          angerMark(c, sx + 10, sy - b.z - 15 * (b.def.size || 1), 6.4 + Math.sin(b.t * 20) * 0.9);
+        }
         if (b.alert > 0 && b.flee <= 0) {
           c.fillStyle = '#ffdf4a';
           c.font = 'bold 15px "Trebuchet MS", sans-serif';
@@ -3256,6 +3400,10 @@ ul.tips li{margin-bottom:3px}
       ].forEach(function (p) {
         meta.appendChild(GG.el('span', 'tag', p[0] + ': ' + p[1]));
       });
+      if (def.sting) {
+        var warn = GG.el('span', 'tag sting', 'Can sting if you upset her');
+        meta.appendChild(warn);
+      }
       det.appendChild(meta);
 
       def.facts.forEach(function (f) {
@@ -3682,6 +3830,7 @@ ul.tips li{margin-bottom:3px}
   var lastTime = 0, elapsed = 0;
   var swingChecked = false;
   var saveTimer = 0;
+  var hurtFlash = 0;
   var rainDrops = [];
   var started = false;
 
@@ -3771,10 +3920,14 @@ ul.tips li{margin-bottom:3px}
         var got = GG.Critters.tryCatch(P);
         if (got) { swingChecked = true; onCatch(got); }
       }
-      if (pr >= 0.8) swingChecked = true;
+      if (pr >= 0.8) { swingChecked = true; onSwingMiss(P); }
     }
 
     GG.Critters.update(dt, P);
+
+    var stung = GG.Critters.checkSting(P);
+    if (stung) onSting(stung);
+    if (hurtFlash > 0) hurtFlash -= dt;
     updateRain(dt);
 
     cam.x = GG.clamp(P.x - GG.view.w / 2, 0, W.W - GG.view.w);
@@ -3783,7 +3936,8 @@ ul.tips li{margin-bottom:3px}
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
     GG.UI.prompt(atDoor ? 'Tap to go inside' : null);
-    setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
+    if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
+    else setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
   }
 
   function drawWorld(t) {
@@ -3816,6 +3970,10 @@ ul.tips li{margin-bottom:3px}
       ctx.fillRect(0, 0, GG.view.w, GG.view.h);
     }
     drawRain();
+    if (hurtFlash > 0) {
+      ctx.fillStyle = 'rgba(255,70,70,' + (0.34 * (hurtFlash / 0.55)).toFixed(3) + ')';
+      ctx.fillRect(0, 0, GG.view.w, GG.view.h);
+    }
   }
 
   /* ---------- house scene ---------- */
@@ -3856,6 +4014,7 @@ ul.tips li{margin-bottom:3px}
 
   function enterHouse() {
     GG.Sfx.door();
+    GG.Critters.calmAll();
     setScene('house');
     GG.Player.reset(GG.House.W / 2, GG.House.H - 60);
     GG.UI.prompt(null);
@@ -3878,6 +4037,39 @@ ul.tips li{margin-bottom:3px}
     GG.Save.save();
     GG.UI.toast('You had a lovely nap. It is day ' + T.day + '!', 2400);
     GG.Sfx.night();
+  }
+
+  /* ---------- bees ---------- */
+  function onSwingMiss(P) {
+    var net = P.netPoint();
+    var cross = GG.Critters.angerNear(net.x, net.y, 66);
+    var hive = GG.World.hive;
+    if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
+      cross += GG.Critters.stirHive(hive.x, hive.y - 16);
+    }
+    if (cross) beeWarning();
+  }
+
+  function beeWarning() {
+    if (!GG.Save.data.seenBeeTip) {
+      GG.Save.data.seenBeeTip = true;
+      GG.Save.save();
+      GG.UI.toast('Uh oh - you made a bee cross. Run away!', 2600);
+    } else {
+      GG.UI.toast('An angry bee is chasing you!', 1500);
+    }
+  }
+
+  function onSting(def) {
+    GG.Player.sting();
+    hurtFlash = 0.55;
+    GG.Sfx.ouch();
+    GG.Save.data.stings = (GG.Save.data.stings || 0) + 1;
+    GG.Save.save();
+    var line = def.id === 'honeybee'
+      ? 'Ouch! A honeybee stung you. She only gets one sting in her whole life, so she really did not want to.'
+      : 'Ouch! A bumblebee stung you. Give her some space and she will calm down.';
+    GG.UI.toast(line, 3400);
   }
 
   /* ---------- catching ---------- */
