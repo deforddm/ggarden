@@ -166,6 +166,17 @@ ul.tips li{margin-bottom:3px}
 @keyframes bitepulse{from{transform:scale(1)}to{transform:scale(1.09)}}
 #book-tabs{margin-top:0}
 
+#tank-kind{text-align:center;font-size:12.5px;font-weight:bold;color:var(--ink2);margin:0 0 6px}
+#newtank-list{display:grid;gap:10px}
+.newtank{background:var(--cream2);border:2px solid #eaddc0;border-radius:16px;padding:8px;text-align:center;
+  box-shadow:0 3px 0 #e0cfa8}
+.newtank:active{transform:translateY(2px);box-shadow:0 1px 0 #e0cfa8}
+.newtank canvas{width:100%;height:86px;display:block;border-radius:11px}
+.newtank .nt-name{font-weight:bold;font-size:15px;margin-top:5px}
+.newtank .nt-blurb{font-size:12px;color:var(--ink2);line-height:1.3}
+
+.shop-group{grid-column:1/-1;font-weight:bold;font-size:13px;color:var(--ink2);margin:6px 0 0}
+
 </style>
 </head>
 <body>
@@ -213,7 +224,7 @@ ul.tips li{margin-bottom:3px}
           <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths!</li>
           <li><b>Go fishing</b> at the Lily Pond. Stand on the bank facing the water and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
           <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
-          <li>Go <b>home</b> (the little cottage) to read about every bug you have caught and to build terrariums.</li>
+          <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are three kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, and a <b>hybrid tank</b> with a grassy bank above the water that holds both.</li>
           <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
         </ul>
         <p class="note">On a computer you can use the arrow keys (or WASD) to walk, hold <b>shift</b> to tiptoe, and press <b>space</b> to swing.</p>
@@ -261,9 +272,10 @@ ul.tips li{margin-bottom:3px}
   <!-- terrarium -->
   <div class="panel hidden" id="screen-terrarium">
     <div class="sheet">
-      <header><h2>Terrariums</h2><button class="x" data-close="screen-terrarium">&times;</button></header>
+      <header><h2>My Tanks</h2><button class="x" data-close="screen-terrarium">&times;</button></header>
       <div class="body">
         <div id="tank-name"></div>
+        <div id="tank-kind"></div>
         <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas></div>
         <div class="row" style="margin-top:8px">
           <button class="btn small" id="tank-prev">&#8592;</button>
@@ -281,10 +293,37 @@ ul.tips li{margin-bottom:3px}
         <div id="tray"></div>
       </div>
       <footer>
-        <button class="btn small" id="tank-new">New terrarium</button>
+        <button class="btn small" id="tank-new">New tank</button>
         <button class="btn small" id="tank-clear">Empty it</button>
         <button class="btn primary grow" data-close="screen-terrarium">Done</button>
       </footer>
+    </div>
+  </div>
+
+  <!-- choose a new tank -->
+  <div class="panel hidden" id="screen-newtank">
+    <div class="sheet">
+      <header><h2>A new tank</h2><span class="chip gold" id="newtank-cost"></span><button class="x" data-close="screen-newtank">&times;</button></header>
+      <div class="body">
+        <div id="newtank-list">
+          <div class="newtank" data-type="terrarium">
+            <canvas width="240" height="132"></canvas>
+            <div class="nt-name">Terrarium</div>
+            <div class="nt-blurb">Dry land. For bugs.</div>
+          </div>
+          <div class="newtank" data-type="aquarium">
+            <canvas width="240" height="132"></canvas>
+            <div class="nt-name">Fish Tank</div>
+            <div class="nt-blurb">All water. For fish.</div>
+          </div>
+          <div class="newtank" data-type="hybrid">
+            <canvas width="240" height="132"></canvas>
+            <div class="nt-name">Hybrid Tank</div>
+            <div class="nt-blurb">A grassy bank above, water below. Bugs and fish together.</div>
+          </div>
+        </div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-newtank">Not now</button></footer>
     </div>
   </div>
 
@@ -397,7 +436,7 @@ ul.tips li{margin-bottom:3px}
       caught: {},          // bugId -> { count, first(ms) }
       caughtFish: {},      // fishId -> { count, first(ms) }
       terrariums: [
-        { name: 'My First Terrarium', bg: 'meadow', decor: [], bugs: [], fish: [] }
+        { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [] }
       ],
       unlockedDecor: ['leaf', 'pebble', 'twig', 'mushroom'],
       unlockedTanks: 1,
@@ -427,6 +466,16 @@ ul.tips li{margin-bottom:3px}
             if (!t.fish) t.fish = [];
             if (!t.bugs) t.bugs = [];
             if (!t.decor) t.decor = [];
+            if (!t.type) {
+              // tanks made before there were three kinds
+              t.type = (t.bg === 'aquarium') ? 'aquarium' : 'terrarium';
+            }
+            if (!GG.TANK_BY_ID || !GG.TANK_BY_ID[t.bg] ||
+                GG.TANK_BY_ID[t.bg].kind !== (t.type === 'aquarium' ? 'water' : (t.type === 'hybrid' ? 'hybrid' : 'land'))) {
+              t.bg = GG.defaultSceneFor ? GG.defaultSceneFor(t.type) : 'meadow';
+            }
+            if (t.type === 'aquarium') t.bugs = [];
+            if (t.type === 'terrarium') t.fish = [];
           });
           this.data = d;
         }
@@ -2643,17 +2692,43 @@ ul.tips li{margin-bottom:3px}
   GG.DECOR_BY_ID = {};
   GG.DECOR.forEach(function (d) { GG.DECOR_BY_ID[d.id] = d; });
 
+  /* Three kinds of tank, each with its own scenes. */
+  GG.TANK_TYPES = [
+    { id: 'terrarium', name: 'Terrarium', short: 'Terrarium', blurb: 'Dry land for bugs.',
+      maxBugs: 8, maxFish: 0, maxDecor: 12 },
+    { id: 'aquarium', name: 'Fish Tank', short: 'Fish Tank', blurb: 'All water, for fish.',
+      maxBugs: 0, maxFish: 6, maxDecor: 8 },
+    { id: 'hybrid', name: 'Hybrid Tank', short: 'Hybrid', blurb: 'A grassy bank above, water below. Bugs and fish together.',
+      maxBugs: 5, maxFish: 4, maxDecor: 10 }
+  ];
+  GG.TANK_TYPE_BY_ID = {};
+  GG.TANK_TYPES.forEach(function (t) { GG.TANK_TYPE_BY_ID[t.id] = t; });
+
   GG.TANK_BGS = [
-    { id: 'aquarium', name: 'Aquarium', sky: '#8fd3ea', ground: '#e3d6a8', ground2: '#d2c28f', price: 0, water: true },
-    { id: 'meadow', name: 'Meadow', sky: '#cfeeff', ground: '#8ecf63', ground2: '#7cbd53', price: 0 },
-    { id: 'forest', name: 'Forest', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3f7f42', price: 0 },
-    { id: 'pond', name: 'Pond', sky: '#d6f0ff', ground: '#9dcf7e', ground2: '#7fb8c9', price: 80 },
-    { id: 'night', name: 'Night', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2f4a2e', price: 150 },
-    { id: 'sunset', name: 'Sunset', sky: '#ffc9a0', ground: '#9fbf63', ground2: '#87a852', price: 200 },
-    { id: 'desert', name: 'Sandy', sky: '#ffe9c4', ground: '#e3cf9a', ground2: '#d3bd85', price: 250 }
+    // land scenes - terrariums
+    { id: 'meadow', kind: 'land', name: 'Meadow', sky: '#cfeeff', ground: '#8ecf63', ground2: '#7cbd53', price: 0 },
+    { id: 'forest', kind: 'land', name: 'Woodland', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3f7f42', price: 0 },
+    { id: 'night', kind: 'land', name: 'Moonlit', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2f4a2e', price: 150 },
+    { id: 'sunset', kind: 'land', name: 'Sunset', sky: '#ffc9a0', ground: '#9fbf63', ground2: '#87a852', price: 200 },
+    { id: 'desert', kind: 'land', name: 'Sandy', sky: '#ffe9c4', ground: '#e3cf9a', ground2: '#d3bd85', price: 250 },
+    // water scenes - fish tanks
+    { id: 'clear', kind: 'water', name: 'Clear Water', sky: '#8fd3ea', deep: '#3f93b8', ground: '#e3d6a8', ground2: '#d2c28f', price: 0 },
+    { id: 'planted', kind: 'water', name: 'Planted', sky: '#9fdcc8', deep: '#2f8a76', ground: '#d8cfa0', ground2: '#c2b98c', price: 90 },
+    { id: 'rocky', kind: 'water', name: 'Rocky', sky: '#a8c8d8', deep: '#4a6b80', ground: '#b8b2a4', ground2: '#a09a8c', price: 140 },
+    { id: 'deep', kind: 'water', name: 'Deep Blue', sky: '#4f7fc0', deep: '#1f3a6b', ground: '#8a8f9a', ground2: '#74798a', price: 200 },
+    // hybrid scenes
+    { id: 'riverbank', kind: 'hybrid', name: 'Riverbank', sky: '#cfeeff', ground: '#8ecf63', ground2: '#6b8f4a', deep: '#3f93b8', water: '#8fd3ea', price: 0 },
+    { id: 'woodpool', kind: 'hybrid', name: 'Woodland Pool', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3a6b3c', deep: '#2f7a8a', water: '#7fc4d2', price: 120 },
+    { id: 'nightpool', kind: 'hybrid', name: 'Moonlit Pool', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2a3f28', deep: '#1f3a5b', water: '#4a6f9a', price: 200 }
   ];
   GG.TANK_BY_ID = {};
   GG.TANK_BGS.forEach(function (b) { GG.TANK_BY_ID[b.id] = b; });
+
+  GG.scenesFor = function (typeId) {
+    var kind = typeId === 'aquarium' ? 'water' : (typeId === 'hybrid' ? 'hybrid' : 'land');
+    return GG.TANK_BGS.filter(function (b) { return b.kind === kind; });
+  };
+  GG.defaultSceneFor = function (typeId) { return GG.scenesFor(typeId)[0].id; };
 })(window.GG = window.GG || {});
 
 /* ==== src/game/time.js ==== */
@@ -4116,13 +4191,27 @@ ul.tips li{margin-bottom:3px}
       c.fillStyle = '#9a6f43';
       GG.roundRect(c, 320, 152, 180, 54, 6); c.fill();
       c.fillStyle = '#8a5f36'; c.fillRect(334, 204, 12, 18); c.fillRect(474, 204, 12, 18);
-      var tanks = GG.Save.data.terrariums.length;
-      for (var k = 0; k < Math.min(3, tanks); k++) {
-        var tx = 336 + k * 58;
-        c.fillStyle = 'rgba(180,230,255,0.55)';
-        GG.roundRect(c, tx, 112, 46, 42, 5); c.fill();
-        c.strokeStyle = '#cfe9f5'; c.lineWidth = 2; c.stroke();
-        c.fillStyle = '#7fc46a'; c.fillRect(tx + 3, 139, 40, 13);
+      var tanks = GG.Save.data.terrariums;
+      for (var k = 0; k < Math.min(3, tanks.length); k++) {
+        var tx = 336 + k * 58, type = tanks[k].type || 'terrarium';
+        c.save();
+        GG.roundRect(c, tx, 112, 46, 42, 5); c.clip();
+        if (type === 'aquarium') {
+          c.fillStyle = '#8fd3ea'; c.fillRect(tx, 112, 46, 42);
+          c.fillStyle = '#3f93b8'; c.fillRect(tx, 138, 46, 16);
+          c.fillStyle = '#e3d6a8'; c.fillRect(tx + 2, 146, 42, 8);
+        } else if (type === 'hybrid') {
+          c.fillStyle = '#cfeeff'; c.fillRect(tx, 112, 46, 42);
+          c.fillStyle = '#8ecf63'; c.fillRect(tx, 130, 46, 8);
+          c.fillStyle = '#7fc4d2'; c.fillRect(tx, 138, 46, 16);
+          c.fillStyle = '#dfd2a4'; c.fillRect(tx + 2, 149, 42, 5);
+        } else {
+          c.fillStyle = 'rgba(180,230,255,0.55)'; c.fillRect(tx, 112, 46, 42);
+          c.fillStyle = '#7fc46a'; c.fillRect(tx, 139, 46, 15);
+        }
+        c.restore();
+        c.strokeStyle = '#cfe9f5'; c.lineWidth = 2;
+        GG.roundRect(c, tx, 112, 46, 42, 5); c.stroke();
       }
 
       /* ---- decoration box ---- */
@@ -4424,12 +4513,12 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/ui/terrarium.js ==== */
-/* Terrariums: little glass worlds Guin builds from the bugs she has caught. */
+/* Tanks: terrariums (land, bugs), fish tanks (water, fish) and hybrid tanks (both).
+   Whatever lives in one moves about the way its species moves. */
 (function (GG) {
   'use strict';
   var $ = GG.$;
-  var CW = 640, CH = 420, GROUND = 300;
-  var MAX_BUGS = 8, MAX_DECOR = 12, MAX_FISH = 6;
+  var CW = 640, CH = 420;
   var AIR = { flutter: 1, hover: 1, dart: 1, drift: 1, glow: 1 };
 
   var T = GG.Terrarium = {
@@ -4438,42 +4527,81 @@ ul.tips li{margin-bottom:3px}
     sel: null,
     drag: null,
     _raf: 0,
+    _motion: null,
 
     tank: function () {
       var d = GG.Save.data;
       if (this.index >= d.terrariums.length) this.index = 0;
       return d.terrariums[this.index];
     },
+    typeOf: function (tank) { return GG.TANK_TYPE_BY_ID[tank.type] || GG.TANK_TYPE_BY_ID.terrarium; },
+
+    /* Where things are allowed to be, for each kind of tank. */
+    bands: function (tank) {
+      var id = (tank.type || 'terrarium');
+      if (id === 'aquarium') {
+        return { id: id, hasLand: false, hasWater: true,
+          sand: CH - 62, water: [50, CH - 68], decor: [CH - 80, CH - 48] };
+      }
+      if (id === 'hybrid') {
+        return { id: id, hasLand: true, hasWater: true,
+          bank: 232, waterTop: 270, sand: CH - 40,
+          air: [42, 224], ground: [222, 264], water: [286, CH - 48], decor: [226, 264] };
+      }
+      return { id: id, hasLand: true, hasWater: false,
+        ground: [292, CH - 46], air: [46, 300], decor: [282, CH - 42] };
+    },
 
     open: function () {
       GG.UI.open('screen-terrarium');
       this.sel = null;
+      var tk = this.tank();
+      var ty = this.typeOf(tk);
+      if (this.tab === 'bugs' && !ty.maxBugs) this.tab = 'fish';
+      if (this.tab === 'fish' && !ty.maxFish) this.tab = 'bugs';
       this.refresh();
       this.loop();
     },
     close: function () { cancelAnimationFrame(this._raf); },
 
     refresh: function () {
-      var t = this.tank(), d = GG.Save.data;
-      $('tank-name').textContent = t.name;
-      $('tank-count').textContent = 'Terrarium ' + (this.index + 1) + ' of ' + d.terrariums.length;
+      var tk = this.tank(), d = GG.Save.data, ty = this.typeOf(tk);
+      var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
+      $('tank-name').textContent = tk.name;
+      $('tank-kind').textContent = ty.name + ' · ' + bg.name;
+      $('tank-count').textContent = 'Tank ' + (this.index + 1) + ' of ' + d.terrariums.length;
       $('tank-remove').style.display = this.sel ? '' : 'none';
+      // only show the tabs this tank can use
+      document.querySelectorAll('#screen-terrarium .tabs .tab').forEach(function (el) {
+        var k = el.getAttribute('data-tab');
+        var allowed = (k === 'decor') || (k === 'bugs' && ty.maxBugs) || (k === 'fish' && ty.maxFish);
+        el.style.display = allowed ? '' : 'none';
+      });
       this.buildTray();
     },
 
     buildTray: function () {
       var tray = $('tray'); tray.innerHTML = '';
-      var self = this, t = this.tank(), d = GG.Save.data;
-      document.querySelectorAll('#screen-terrarium .tab').forEach(function (el) {
+      var self = this, tk = this.tank(), d = GG.Save.data, ty = this.typeOf(tk);
+      if (this.tab === 'bugs' && !ty.maxBugs) this.tab = 'fish';
+      if (this.tab === 'fish' && !ty.maxFish) this.tab = 'bugs';
+      document.querySelectorAll('#screen-terrarium .tabs .tab').forEach(function (el) {
         el.classList.toggle('on', el.getAttribute('data-tab') === self.tab);
       });
 
+      function tile(def, isFish, onClick) {
+        var item = GG.el('div', 'trayitem');
+        var cv = GG.el('canvas'); cv.width = 132; cv.height = 84; cv.style.height = '42px';
+        var c = cv.getContext('2d'); c.scale(2, 2);
+        if (isFish) GG.FishArt.draw(c, def, 33, 22, 0.62, false, 1.2);
+        else GG.BugArt.draw(c, def, 33, 21, 1.4, -Math.PI / 2, 1.2);
+        item.appendChild(cv);
+        item.appendChild(GG.el('div', 'nm', def.name));
+        item.addEventListener('click', onClick);
+        tray.appendChild(item);
+      }
+
       if (this.tab === 'fish') {
-        var isWater = (GG.TANK_BY_ID[t.bg] || {}).water;
-        if (!isWater) {
-          tray.innerHTML = '<div class="note" style="grid-column:1/-1">Fish need water! Tap <b>Scene</b> until it says Aquarium, then put your fish in.</div>';
-          return;
-        }
         var fids = Object.keys(d.caughtFish);
         if (!fids.length) {
           tray.innerHTML = '<div class="note" style="grid-column:1/-1">Go and catch a fish at the Lily Pond first!</div>';
@@ -4481,15 +4609,7 @@ ul.tips li{margin-bottom:3px}
         }
         fids.forEach(function (id) {
           var def = GG.FISH_BY_ID[id]; if (!def) return;
-          var item = GG.el('div', 'trayitem');
-          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
-          cv.style.height = '42px';
-          var c = cv.getContext('2d'); c.scale(2, 2);
-          GG.FishArt.draw(c, def, 33, 22, 0.62, false, 1.2);
-          item.appendChild(cv);
-          item.appendChild(GG.el('div', 'nm', def.name));
-          item.addEventListener('click', function () { self.addItem('fish', id); });
-          tray.appendChild(item);
+          tile(def, true, function () { self.addItem('fish', id); });
         });
       } else if (this.tab === 'bugs') {
         var ids = Object.keys(d.caught);
@@ -4499,22 +4619,13 @@ ul.tips li{margin-bottom:3px}
         }
         ids.forEach(function (id) {
           var def = GG.BUG_BY_ID[id]; if (!def) return;
-          var item = GG.el('div', 'trayitem');
-          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
-          cv.style.height = '42px';
-          var c = cv.getContext('2d'); c.scale(2, 2);
-          GG.BugArt.draw(c, def, 33, 21, 1.4, -Math.PI / 2, 1.2);
-          item.appendChild(cv);
-          item.appendChild(GG.el('div', 'nm', def.name));
-          item.addEventListener('click', function () { self.addItem('bug', id); });
-          tray.appendChild(item);
+          tile(def, false, function () { self.addItem('bug', id); });
         });
       } else {
         GG.DECOR.forEach(function (dec) {
           var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
           var item = GG.el('div', 'trayitem' + (owned ? '' : ' locked'));
-          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
-          cv.style.height = '42px';
+          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84; cv.style.height = '42px';
           var c = cv.getContext('2d'); c.scale(2, 2);
           var fn = GG.DecorArt[dec.id];
           if (fn) fn(c, 33, 38, 0.8, 1);
@@ -4530,17 +4641,28 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
+    listFor: function (tank, kind) {
+      if (kind === 'bug') return tank.bugs;
+      if (kind === 'fish') return (tank.fish = tank.fish || []);
+      return tank.decor;
+    },
+
     addItem: function (kind, id) {
-      var t = this.tank();
-      var arr = kind === 'bug' ? t.bugs : (kind === 'fish' ? t.fish : t.decor);
-      var max = kind === 'bug' ? MAX_BUGS : (kind === 'fish' ? MAX_FISH : MAX_DECOR);
-      if (arr.length >= max) { GG.UI.toast('This terrarium is full!'); return; }
-      var item = {
-        id: id,
-        x: CW / 2 + GG.rand(-120, 120),
-        y: kind === 'bug' ? GG.rand(150, 330) : (kind === 'fish' ? GG.rand(90, 320) : GG.rand(GROUND - 20, CH - 40)),
-        s: 1, seed: Math.random()
-      };
+      var tk = this.tank(), ty = this.typeOf(tk), b = this.bands(tk);
+      var arr = this.listFor(tk, kind);
+      var max = kind === 'bug' ? ty.maxBugs : (kind === 'fish' ? ty.maxFish : ty.maxDecor);
+      if (!max) { GG.UI.toast('That does not belong in a ' + ty.name.toLowerCase() + '.'); return; }
+      if (arr.length >= max) { GG.UI.toast('This tank is full! (' + max + ' is the limit)'); return; }
+
+      var y;
+      if (kind === 'fish') y = GG.rand(b.water[0] + 10, b.water[1] - 10);
+      else if (kind === 'decor') y = GG.rand(b.decor[0], b.decor[1]);
+      else {
+        var def = GG.BUG_BY_ID[id];
+        var flyer = def && AIR[def.behavior];
+        y = flyer ? GG.rand(b.air[0] + 20, b.air[1] - 30) : GG.rand(b.ground[0], b.ground[1]);
+      }
+      var item = { id: id, x: CW / 2 + GG.rand(-110, 110), y: y, s: 1, seed: Math.random() };
       arr.push(item);
       this.sel = item;
       GG.Sfx.place();
@@ -4548,47 +4670,55 @@ ul.tips li{margin-bottom:3px}
       this.refresh();
     },
 
-    /* Each bug in a tank wanders about near the spot it was put down. */
+    items: function () {
+      var tk = this.tank(), out = [];
+      tk.decor.forEach(function (d) { out.push({ kind: 'decor', it: d }); });
+      (tk.fish || []).forEach(function (f) { out.push({ kind: 'fish', it: f }); });
+      tk.bugs.forEach(function (x) { out.push({ kind: 'bug', it: x }); });
+      return out;
+    },
+
+    /* ---------- life inside the glass ---------- */
     motionFor: function (it) {
       if (!this._motion) this._motion = new WeakMap();
       var m = this._motion.get(it);
       if (!m) {
         m = { ox: 0, oy: 0, ang: Math.random() * Math.PI * 2, timer: GG.rand(0.2, 1.5),
-          hop: 0, dash: 0, lift: 0, lx: it.x, ly: it.y, face: -Math.PI / 2 };
+          hop: 0, dash: 0, lift: 0, lx: it.x, ly: it.y, face: -Math.PI / 2, faceLeft: false };
         this._motion.set(it, m);
       }
       return m;
     },
 
-    stepFish: function (dt) {
-      var tank = this.tank();
-      var list = tank.fish || [];
+    step: function (dt) {
+      var tk = this.tank(), b = this.bands(tk);
+      this.stepFish(dt, tk, b);
+      this.stepBugs(dt, tk, b);
+    },
+
+    stepFish: function (dt, tk, b) {
+      var list = tk.fish || [];
+      if (!b.hasWater) return;
       for (var i = 0; i < list.length; i++) {
         var it = list[i];
         var def = GG.FISH_BY_ID[it.id];
         if (!def) continue;
         var m = this.motionFor(it);
-        if (this.drag && this.drag.e.it === it) {
-          m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y;
-          continue;
-        }
+        if (this.drag && this.drag.e.it === it) { m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y; continue; }
         m.timer -= dt;
-        if (m.timer <= 0) {
-          m.ang += GG.rand(-1.1, 1.1);
-          m.timer = GG.rand(1, 2.6);
-        }
+        if (m.timer <= 0) { m.ang += GG.rand(-1.1, 1.1); m.timer = GG.rand(1, 2.6); }
         var speed = 20 + (6 - def.shadow) * 5;
-        var vx = Math.cos(m.ang) * speed;
-        var vy = Math.sin(m.ang) * speed * 0.28;
+        var vx = Math.cos(m.ang) * speed, vy = Math.sin(m.ang) * speed * 0.28;
         m.ox += vx * dt; m.oy += vy * dt;
         var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
-        if (away > 120) {
-          m.ox = m.ox / away * 120; m.oy = m.oy / away * 120;
+        var radius = b.id === 'hybrid' ? 90 : 120;
+        if (away > radius) {
+          m.ox = m.ox / away * radius; m.oy = m.oy / away * radius;
           m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.5, 0.5);
         }
         var wx = it.x + m.ox, wy = it.y + m.oy;
         var lx = GG.clamp(wx, 46, CW - 46);
-        var ly = GG.clamp(wy, 56, CH - 54);
+        var ly = GG.clamp(wy, b.water[0], b.water[1]);
         if (lx !== wx) { m.ox = lx - it.x; m.ang = Math.PI - m.ang; }
         if (ly !== wy) { m.oy = ly - it.y; m.ang = -m.ang; }
         m.lx = lx; m.ly = ly; m.lift = 0;
@@ -4596,23 +4726,18 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
-    stepBugs: function (dt) {
-      this.stepFish(dt);
-      var tank = this.tank();
-      for (var i = 0; i < tank.bugs.length; i++) {
-        var it = tank.bugs[i];
+    stepBugs: function (dt, tk, b) {
+      if (!b.hasLand) return;
+      for (var i = 0; i < tk.bugs.length; i++) {
+        var it = tk.bugs[i];
         var def = GG.BUG_BY_ID[it.id];
         if (!def) continue;
         var m = this.motionFor(it);
+        if (this.drag && this.drag.e.it === it) { m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y; continue; }
 
-        // While she is dragging one, it sits still under her finger.
-        if (this.drag && this.drag.e.it === it) {
-          m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y;
-          continue;
-        }
-
-        var b = def.behavior;
-        var air = !!AIR[b];
+        var bh = def.behavior;
+        var air = !!AIR[bh];
+        var skim = bh === 'skim';
         var radius = air ? 108 : 76;
         var speed = (air ? def.speed * 0.44 : Math.max(def.speed, 16) * 0.5);
 
@@ -4620,39 +4745,37 @@ ul.tips li{margin-bottom:3px}
         if (m.timer <= 0) {
           m.ang += GG.rand(-1.7, 1.7);
           m.timer = GG.rand(0.5, 1.8);
-          if (b === 'hop') { m.hop = 0.5; m.timer = GG.rand(1.2, 2.6); }
-          if (b === 'dart') m.dash = 0.45;
+          if (bh === 'hop') { m.hop = 0.5; m.timer = GG.rand(1.2, 2.6); }
+          if (bh === 'dart') m.dash = 0.45;
         }
-
         var move = 1;
-        if (b === 'hover') move = (Math.sin(m.timer * 4) > 0.55) ? 0.15 : 1;
-        if (b === 'dart') { m.dash = Math.max(0, m.dash - dt); move = m.dash > 0 ? 2.3 : 0.12; }
-        if (b === 'glow' || b === 'drift') move = 0.75;
-        if (b === 'hop') { if (m.hop > 0) { m.hop -= dt; move = 2.3; } else move = 0; }
+        if (bh === 'hover') move = (Math.sin(m.timer * 4) > 0.55) ? 0.15 : 1;
+        if (bh === 'dart') { m.dash = Math.max(0, m.dash - dt); move = m.dash > 0 ? 2.3 : 0.12; }
+        if (bh === 'glow' || bh === 'drift') move = 0.75;
+        if (bh === 'hop') { if (m.hop > 0) { m.hop -= dt; move = 2.3; } else move = 0; }
 
         var vx = Math.cos(m.ang) * speed * move;
         var vy = Math.sin(m.ang) * speed * move * (air ? 0.7 : 0.4);
-        m.ox += vx * dt;
-        m.oy += vy * dt;
-
+        m.ox += vx * dt; m.oy += vy * dt;
         var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
         if (away > radius) {
-          m.ox = m.ox / away * radius;
-          m.oy = m.oy / away * radius;
+          m.ox = m.ox / away * radius; m.oy = m.oy / away * radius;
           m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.6, 0.6);
         }
 
-        var wantX = it.x + m.ox, wantY = it.y + m.oy;
-        var lx = GG.clamp(wantX, 40, CW - 40);
-        var ly = GG.clamp(wantY, air ? 50 : GROUND - 6, air ? GROUND + 16 : CH - 46);
-        if (lx !== wantX) { m.ox = lx - it.x; m.ang = Math.PI - m.ang; }
-        if (ly !== wantY) { m.oy = ly - it.y; m.ang = -m.ang; }
+        var lo, hi;
+        if (air) { lo = b.air[0]; hi = b.air[1]; }
+        else if (skim && b.hasWater) { lo = b.waterTop - 4; hi = b.waterTop + 16; }
+        else { lo = b.ground[0]; hi = b.ground[1]; }
 
-        if (b === 'hop' && m.hop > 0) {
-          m.lift = Math.sin((1 - m.hop / 0.5) * Math.PI) * 24;
-        } else {
-          m.lift *= 0.86;
-        }
+        var wx = it.x + m.ox, wy = it.y + m.oy;
+        var lx = GG.clamp(wx, 40, CW - 40);
+        var ly = GG.clamp(wy, lo, hi);
+        if (lx !== wx) { m.ox = lx - it.x; m.ang = Math.PI - m.ang; }
+        if (ly !== wy) { m.oy = ly - it.y; m.ang = -m.ang; }
+
+        if (bh === 'hop' && m.hop > 0) m.lift = Math.sin((1 - m.hop / 0.5) * Math.PI) * 24;
+        else m.lift *= 0.86;
 
         m.lx = lx; m.ly = ly;
         if (move > 0.25) m.face = GG.angLerp(m.face, Math.atan2(vy, vx), Math.min(1, dt * 6));
@@ -4665,70 +4788,91 @@ ul.tips li{margin-bottom:3px}
       return { x: m.lx, y: m.ly - m.lift };
     },
 
-    items: function () {
-      var t = this.tank(), out = [];
-      t.decor.forEach(function (d) { out.push({ kind: 'decor', it: d }); });
-      (t.fish || []).forEach(function (f) { out.push({ kind: 'fish', it: f }); });
-      t.bugs.forEach(function (b) { out.push({ kind: 'bug', it: b }); });
-      return out;
-    },
-
     pick: function (x, y) {
       var all = this.items();
       for (var i = all.length - 1; i >= 0; i--) {
-        var e = all[i];
-        var pos = this.livePos(e);
-        if (GG.dist(x, y, pos.x, pos.y) < (e.kind === 'bug' ? 32 : 32)) return e;
+        var e = all[i], pos = this.livePos(e);
+        if (GG.dist(x, y, pos.x, pos.y) < 32) return e;
       }
       return null;
     },
 
     removeSelected: function () {
       if (!this.sel) return;
-      var t = this.tank();
-      var i = t.bugs.indexOf(this.sel);
-      if (i >= 0) t.bugs.splice(i, 1);
-      else if ((i = (t.fish || []).indexOf(this.sel)) >= 0) t.fish.splice(i, 1);
-      else { i = t.decor.indexOf(this.sel); if (i >= 0) t.decor.splice(i, 1); }
+      var tk = this.tank(), i;
+      if ((i = tk.bugs.indexOf(this.sel)) >= 0) tk.bugs.splice(i, 1);
+      else if ((i = (tk.fish || []).indexOf(this.sel)) >= 0) tk.fish.splice(i, 1);
+      else if ((i = tk.decor.indexOf(this.sel)) >= 0) tk.decor.splice(i, 1);
       this.sel = null;
       GG.Save.save();
       this.refresh();
     },
 
-    draw: function (t) {
-      var cv = $('tank-canvas'), c = cv.getContext('2d');
-      var tank = this.tank();
-      var bg = GG.TANK_BY_ID[tank.bg] || GG.TANK_BGS[0];
-      c.clearRect(0, 0, CW, CH);
-
-      c.save();
-      GG.roundRect(c, 6, 6, CW - 12, CH - 12, 18); c.clip();
-      if (bg.water) {
+    /* ---------- drawing ---------- */
+    drawScene: function (c, tk, bg, b, t) {
+      if (b.id === 'aquarium') {
         var wg = c.createLinearGradient(0, 0, 0, CH);
-        wg.addColorStop(0, '#b6e6f5'); wg.addColorStop(0.55, bg.sky); wg.addColorStop(1, '#3f93b8');
+        wg.addColorStop(0, GG.shade(bg.sky, 0.22));
+        wg.addColorStop(0.55, bg.sky);
+        wg.addColorStop(1, bg.deep);
         c.fillStyle = wg; c.fillRect(0, 0, CW, CH);
-        c.fillStyle = 'rgba(255,255,255,0.14)';
-        for (var sb = 0; sb < 7; sb++) {
-          var by = CH - ((t * 26 + sb * 63) % (CH + 40));
-          c.beginPath(); c.arc(52 + sb * 82, by, 3 + (sb % 3), 0, Math.PI * 2); c.fill();
-        }
-        c.fillStyle = 'rgba(255,255,255,0.12)';
-        for (var ry = 0; ry < 4; ry++) {
-          c.beginPath();
-          c.ellipse(CW / 2, 22 + ry * 16, CW * 0.42, 5, 0, 0, Math.PI * 2);
-          c.fill();
-        }
-      } else {
-        var g = c.createLinearGradient(0, 0, 0, GROUND);
-        g.addColorStop(0, bg.sky); g.addColorStop(1, GG.shade(bg.sky, 0.12));
-        c.fillStyle = g; c.fillRect(0, 0, CW, GROUND);
+        this.lightAndBubbles(c, t, 0);
+        c.fillStyle = bg.ground;
+        c.beginPath();
+        c.moveTo(0, b.sand + 14);
+        c.quadraticCurveTo(CW / 2, b.sand - 12, CW, b.sand + 14);
+        c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+        c.fillStyle = bg.ground2;
+        c.beginPath();
+        c.moveTo(0, b.sand + 40);
+        c.quadraticCurveTo(CW / 2, b.sand + 18, CW, b.sand + 40);
+        c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+        return;
       }
+
+      if (b.id === 'hybrid') {
+        // air above
+        var sg = c.createLinearGradient(0, 0, 0, b.bank);
+        sg.addColorStop(0, bg.sky); sg.addColorStop(1, GG.shade(bg.sky, 0.12));
+        c.fillStyle = sg; c.fillRect(0, 0, CW, b.bank + 6);
+        // grassy bank
+        c.fillStyle = bg.ground;
+        c.beginPath();
+        c.moveTo(0, b.bank + 4);
+        c.quadraticCurveTo(CW / 2, b.bank - 14, CW, b.bank + 4);
+        c.lineTo(CW, b.waterTop + 6); c.lineTo(0, b.waterTop + 6);
+        c.closePath(); c.fill();
+        c.fillStyle = bg.ground2;
+        c.fillRect(0, b.waterTop - 12, CW, 18);
+        // water below
+        var hg = c.createLinearGradient(0, b.waterTop, 0, CH);
+        hg.addColorStop(0, bg.water); hg.addColorStop(1, bg.deep);
+        c.fillStyle = hg; c.fillRect(0, b.waterTop, CW, CH - b.waterTop);
+        this.lightAndBubbles(c, t, b.waterTop);
+        // sandy bottom
+        c.fillStyle = '#dfd2a4';
+        c.beginPath();
+        c.moveTo(0, b.sand + 10);
+        c.quadraticCurveTo(CW / 2, b.sand - 8, CW, b.sand + 10);
+        c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+        // the waterline itself
+        c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(0, b.waterTop + 2);
+        for (var x = 0; x <= CW; x += 16) c.lineTo(x, b.waterTop + 2 + Math.sin(x * 0.06 + t * 1.6) * 1.8);
+        c.stroke();
+        return;
+      }
+
+      // plain terrarium
+      var g = c.createLinearGradient(0, 0, 0, b.air[1]);
+      g.addColorStop(0, bg.sky); g.addColorStop(1, GG.shade(bg.sky, 0.12));
+      c.fillStyle = g; c.fillRect(0, 0, CW, b.air[1]);
       if (bg.id === 'night') {
         c.fillStyle = '#fff';
         for (var s = 0; s < 26; s++) {
-          var sx = (s * 97) % CW, sy = (s * 53) % (GROUND - 40);
           c.globalAlpha = 0.3 + 0.6 * Math.abs(Math.sin(t + s));
-          c.fillRect(sx, sy, 2, 2);
+          c.fillRect((s * 97) % CW, (s * 53) % (b.air[1] - 40), 2, 2);
         }
         c.globalAlpha = 1;
         c.fillStyle = '#fff6c4';
@@ -4739,20 +4883,50 @@ ul.tips li{margin-bottom:3px}
       }
       c.fillStyle = bg.ground;
       c.beginPath();
-      c.moveTo(0, GROUND + 20);
-      c.quadraticCurveTo(CW / 2, GROUND - 26, CW, GROUND + 20);
+      c.moveTo(0, b.air[1] + 20);
+      c.quadraticCurveTo(CW / 2, b.air[1] - 26, CW, b.air[1] + 20);
       c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
       c.fillStyle = bg.ground2;
       c.beginPath();
-      c.moveTo(0, GROUND + 56);
-      c.quadraticCurveTo(CW / 2, GROUND + 22, CW, GROUND + 56);
+      c.moveTo(0, b.air[1] + 56);
+      c.quadraticCurveTo(CW / 2, b.air[1] + 22, CW, b.air[1] + 56);
       c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+    },
 
-      // items, back to front
+    lightAndBubbles: function (c, t, top) {
+      c.fillStyle = 'rgba(255,255,255,0.13)';
+      for (var ry = 0; ry < 4; ry++) {
+        c.beginPath();
+        c.ellipse(CW / 2, top + 20 + ry * 16, CW * 0.42, 5, 0, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.fillStyle = 'rgba(255,255,255,0.16)';
+      for (var sb = 0; sb < 7; sb++) {
+        var span = CH - top + 40;
+        var by = CH - ((t * 26 + sb * 63) % span);
+        if (by < top) continue;
+        c.beginPath(); c.arc(52 + sb * 82, by, 3 + (sb % 3), 0, Math.PI * 2); c.fill();
+      }
+    },
+
+    draw: function (t) {
+      var cv = $('tank-canvas'), c = cv.getContext('2d');
+      var tk = this.tank();
+      var b = this.bands(tk);
+      var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
+      c.clearRect(0, 0, CW, CH);
+
+      c.save();
+      GG.roundRect(c, 6, 6, CW - 12, CH - 12, 18); c.clip();
+      this.drawScene(c, tk, bg, b, t);
+
       var self = this;
       var all = this.items();
       all.forEach(function (e) { e.pos = self.livePos(e); });
-      all.sort(function (a, b) { return (a.kind === 'bug' ? a.pos.y : a.it.y) - (b.kind === 'bug' ? b.pos.y : b.it.y); });
+      all.sort(function (a, q) {
+        return (a.kind === 'decor' ? a.it.y : a.pos.y) - (q.kind === 'decor' ? q.it.y : q.pos.y);
+      });
+
       for (var i = 0; i < all.length; i++) {
         var e = all[i], it = e.it, pos = e.pos;
         if (e.kind === 'decor') {
@@ -4770,7 +4944,8 @@ ul.tips li{margin-bottom:3px}
           var flyer = !!AIR[def.behavior];
           var bob = Math.sin(t * 1.8 + it.seed * 9) * (flyer ? 3.4 : 0.8);
           if (flyer || m.lift > 1) {
-            GG.BugArt.shadow(c, m.lx, GROUND + 42, 13, 0.1);
+            var shadowY = b.id === 'hybrid' ? b.bank + 8 : b.air[1] + 36;
+            GG.BugArt.shadow(c, m.lx, shadowY, 13, 0.1);
           }
           GG.BugArt.draw(c, def, pos.x, pos.y + bob, 3.5, m.face, t + it.seed * 6);
         }
@@ -4806,7 +4981,7 @@ ul.tips li{margin-bottom:3px}
         if ($('screen-terrarium').classList.contains('hidden')) return;
         var dt = Math.min(0.05, (now - last) / 1000);
         last = now;
-        self.stepBugs(dt);
+        self.step(dt);
         self.draw((now - start) / 1000);
         self._raf = requestAnimationFrame(frame);
       }
@@ -4819,6 +4994,42 @@ ul.tips li{margin-bottom:3px}
       return { x: (p.clientX - r.left) / r.width * CW, y: (p.clientY - r.top) / r.height * CH };
     },
 
+    dragLimits: function (e) {
+      var tk = this.tank(), b = this.bands(tk);
+      if (e.kind === 'fish') return b.water;
+      if (e.kind === 'decor') return [b.decor[0], b.decor[1] + 10];
+      var def = GG.BUG_BY_ID[e.it.id];
+      if (def && AIR[def.behavior]) return b.air;
+      if (def && def.behavior === 'skim' && b.hasWater) return [b.waterTop - 4, b.waterTop + 16];
+      return b.ground;
+    },
+
+    /* Little pictures of each kind of tank on the chooser. */
+    drawChooser: function () {
+      var self = this;
+      document.querySelectorAll('#newtank-list .newtank').forEach(function (el) {
+        var type = el.getAttribute('data-type');
+        var cv = el.querySelector('canvas');
+        var c = cv.getContext('2d');
+        c.save();
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.clearRect(0, 0, cv.width, cv.height);
+        c.scale(cv.width / CW, cv.height / CH);
+        var tk = { type: type, bg: GG.defaultSceneFor(type), bugs: [], fish: [], decor: [] };
+        var b = self.bands(tk);
+        self.drawScene(c, tk, GG.TANK_BY_ID[tk.bg], b, 1.2);
+        if (type !== 'aquarium') {
+          GG.BugArt.draw(c, GG.BUG_BY_ID.monarch, 200, b.air[0] + 80, 3.6, -Math.PI / 2, 1.2);
+          GG.BugArt.draw(c, GG.BUG_BY_ID.ladybug, 430, b.ground[0] + 14, 3.4, 0, 1.2);
+        }
+        if (type !== 'terrarium') {
+          GG.FishArt.draw(c, GG.FISH_BY_ID.bluegill, 250, (b.water[0] + b.water[1]) / 2, 1.7, false, 1.2);
+          GG.FishArt.draw(c, GG.FISH_BY_ID.goldfish, 440, (b.water[0] + b.water[1]) / 2 + 26, 1.5, true, 1.2);
+        }
+        c.restore();
+      });
+    },
+
     initEvents: function () {
       var self = this, cv = $('tank-canvas');
 
@@ -4826,8 +5037,7 @@ ul.tips li{margin-bottom:3px}
         ev.preventDefault();
         var p = self.toCanvas(ev);
         var hit = self.pick(p.x, p.y);
-        if (hit && hit.kind === 'bug') {
-          // grab it where it has flown to, not where it was first put down
+        if (hit && hit.kind !== 'decor') {
           var m = self.motionFor(hit.it);
           hit.it.x = m.lx; hit.it.y = m.ly - m.lift;
           m.ox = 0; m.oy = 0; m.lift = 0;
@@ -4842,13 +5052,12 @@ ul.tips li{margin-bottom:3px}
         ev.preventDefault();
         var p = self.toCanvas(ev);
         var it = self.drag.e.it;
+        var lim = self.dragLimits(self.drag.e);
         it.x = GG.clamp(p.x - self.drag.dx, 34, CW - 34);
-        var lo = self.drag.e.kind === 'bug' ? 40 : GROUND - 40;
-        it.y = GG.clamp(p.y - self.drag.dy, lo, CH - 40);
+        it.y = GG.clamp(p.y - self.drag.dy, lim[0], lim[1]);
       }
-      function up() {
-        if (self.drag) { GG.Save.save(); self.drag = null; }
-      }
+      function up() { if (self.drag) { GG.Save.save(); self.drag = null; } }
+
       cv.addEventListener('touchstart', down, { passive: false });
       cv.addEventListener('touchmove', move, { passive: false });
       cv.addEventListener('touchend', up);
@@ -4856,7 +5065,7 @@ ul.tips li{margin-bottom:3px}
       window.addEventListener('mousemove', move);
       window.addEventListener('mouseup', up);
 
-      document.querySelectorAll('#screen-terrarium .tab').forEach(function (el) {
+      document.querySelectorAll('#screen-terrarium .tabs .tab').forEach(function (el) {
         el.addEventListener('click', function () {
           GG.Sfx.click();
           self.tab = el.getAttribute('data-tab');
@@ -4877,38 +5086,58 @@ ul.tips li{margin-bottom:3px}
       $('tank-remove').addEventListener('click', function () { GG.Sfx.click(); self.removeSelected(); });
       $('tank-clear').addEventListener('click', function () {
         GG.Sfx.click();
-        var t = self.tank(); t.bugs = []; t.decor = []; t.fish = []; self.sel = null;
+        var tk = self.tank(); tk.bugs = []; tk.decor = []; tk.fish = []; self.sel = null;
         GG.Save.save(); self.refresh();
       });
       $('tank-rename').addEventListener('click', function () {
         GG.Sfx.click();
-        var t = self.tank();
-        var v = window.prompt('What should this terrarium be called?', t.name);
-        if (v != null && v.trim()) { t.name = v.trim().slice(0, 28); GG.Save.save(); self.refresh(); }
+        var tk = self.tank();
+        var v = window.prompt('What should this tank be called?', tk.name);
+        if (v != null && v.trim()) { tk.name = v.trim().slice(0, 28); GG.Save.save(); self.refresh(); }
       });
       $('tank-bg').addEventListener('click', function () {
         GG.Sfx.click();
-        var t = self.tank();
-        var owned = GG.TANK_BGS.filter(function (b) {
+        var tk = self.tank();
+        var owned = GG.scenesFor(tk.type).filter(function (b) {
           return b.price === 0 || GG.Save.data.unlockedDecor.indexOf('bg_' + b.id) >= 0;
         });
+        if (owned.length < 2) { GG.UI.toast('Buy another scene in the Decoration Box first'); return; }
         var i = 0;
-        owned.forEach(function (b, k) { if (b.id === t.bg) i = k; });
-        t.bg = owned[(i + 1) % owned.length].id;
+        owned.forEach(function (b, k) { if (b.id === tk.bg) i = k; });
+        tk.bg = owned[(i + 1) % owned.length].id;
         GG.Save.save(); self.refresh();
-        GG.UI.toast('Scene: ' + GG.TANK_BY_ID[t.bg].name);
+        GG.UI.toast('Scene: ' + GG.TANK_BY_ID[tk.bg].name);
       });
+
       $('tank-new').addEventListener('click', function () {
         GG.Sfx.click();
         var d = GG.Save.data;
-        var cost = d.terrariums.length * 250;
-        if (d.terrariums.length >= 6) { GG.UI.toast('Six terrariums is plenty!'); return; }
-        if (d.sparkles < cost) { GG.UI.toast('A new terrarium costs ✦ ' + cost); return; }
-        d.sparkles -= cost;
-        d.terrariums.push({ name: 'Terrarium ' + (d.terrariums.length + 1), bg: 'meadow', decor: [], bugs: [], fish: [] });
-        self.index = d.terrariums.length - 1;
-        GG.Save.save(); GG.UI.refreshHud(); self.refresh();
-        GG.UI.toast('A brand new terrarium!');
+        if (d.terrariums.length >= 6) { GG.UI.toast('Six tanks is plenty!'); return; }
+        $('newtank-cost').textContent = '✦ ' + (d.terrariums.length * 250);
+        GG.UI.open('screen-newtank');
+        self.drawChooser();
+      });
+
+      document.querySelectorAll('#newtank-list .newtank').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var d = GG.Save.data;
+          var type = el.getAttribute('data-type');
+          var cost = d.terrariums.length * 250;
+          if (d.terrariums.length >= 6) { GG.UI.toast('Six tanks is plenty!'); return; }
+          if (d.sparkles < cost) { GG.UI.toast('That costs ✦ ' + cost); return; }
+          d.sparkles -= cost;
+          var ty = GG.TANK_TYPE_BY_ID[type];
+          d.terrariums.push({
+            name: ty.name + ' ' + (d.terrariums.length + 1),
+            type: type, bg: GG.defaultSceneFor(type), decor: [], bugs: [], fish: []
+          });
+          self.index = d.terrariums.length - 1;
+          GG.Sfx.coin();
+          GG.Save.save(); GG.UI.refreshHud();
+          GG.UI.close('screen-newtank');
+          self.sel = null; self.refresh();
+          GG.UI.toast('A brand new ' + ty.name.toLowerCase() + '!');
+        });
       });
     }
   };
@@ -4950,19 +5179,37 @@ ul.tips li{margin-bottom:3px}
       });
 
       var bgs = $('shop-bgs'); bgs.innerHTML = '';
-      GG.TANK_BGS.forEach(function (bg) {
+      var groups = [['land', 'For terrariums'], ['water', 'For fish tanks'], ['hybrid', 'For hybrid tanks']];
+      groups.forEach(function (grp) {
+        bgs.appendChild(GG.el('div', 'shop-group', grp[1]));
+        GG.TANK_BGS.filter(function (b) { return b.kind === grp[0]; }).forEach(function (bg) {
         var key = 'bg_' + bg.id;
         var owned = bg.price === 0 || d.unlockedDecor.indexOf(key) >= 0;
         var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
         var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
         var c = cv.getContext('2d'); c.scale(2, 2);
-        c.fillStyle = bg.sky; c.fillRect(0, 0, 88, 56);
-        c.fillStyle = bg.ground;
-        c.beginPath(); c.moveTo(0, 40); c.quadraticCurveTo(44, 30, 88, 40);
-        c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
-        c.fillStyle = bg.ground2;
-        c.beginPath(); c.moveTo(0, 49); c.quadraticCurveTo(44, 43, 88, 49);
-        c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+        if (bg.kind === 'water') {
+          var wg = c.createLinearGradient(0, 0, 0, 56);
+          wg.addColorStop(0, bg.sky); wg.addColorStop(1, bg.deep);
+          c.fillStyle = wg; c.fillRect(0, 0, 88, 56);
+          c.fillStyle = bg.ground;
+          c.beginPath(); c.moveTo(0, 47); c.quadraticCurveTo(44, 41, 88, 47);
+          c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+        } else if (bg.kind === 'hybrid') {
+          c.fillStyle = bg.sky; c.fillRect(0, 0, 88, 30);
+          c.fillStyle = bg.ground; c.fillRect(0, 26, 88, 10);
+          var hg = c.createLinearGradient(0, 34, 0, 56);
+          hg.addColorStop(0, bg.water); hg.addColorStop(1, bg.deep);
+          c.fillStyle = hg; c.fillRect(0, 34, 88, 22);
+        } else {
+          c.fillStyle = bg.sky; c.fillRect(0, 0, 88, 56);
+          c.fillStyle = bg.ground;
+          c.beginPath(); c.moveTo(0, 40); c.quadraticCurveTo(44, 30, 88, 40);
+          c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+          c.fillStyle = bg.ground2;
+          c.beginPath(); c.moveTo(0, 49); c.quadraticCurveTo(44, 43, 88, 49);
+          c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+        }
         el.appendChild(cv);
         el.appendChild(GG.el('div', 'nm', bg.name));
         el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + bg.price));
@@ -4975,6 +5222,7 @@ ul.tips li{margin-bottom:3px}
           GG.UI.toast('Bought the ' + bg.name + ' scene!');
         });
         bgs.appendChild(el);
+        });
       });
     }
   };
