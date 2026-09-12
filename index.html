@@ -155,6 +155,17 @@ ul.tips li{margin-bottom:3px}
 
 .tag.sting{background:#ffe0e0;color:#a33}
 
+#btn-fish{pointer-events:auto;position:absolute;right:calc(30px + env(safe-area-inset-right));
+  bottom:calc(132px + env(safe-area-inset-bottom));width:72px;height:72px;border-radius:50%;border:none;
+  background:linear-gradient(#bfe9ff,#4aa8d8);color:#0d3d54;font-family:var(--font);font-weight:bold;font-size:14px;
+  box-shadow:0 5px 0 #2b7ea6,0 10px 18px rgba(0,0,0,.3);transition:transform .06s,box-shadow .06s}
+#btn-fish.down{transform:translateY(4px);box-shadow:0 1px 0 #2b7ea6}
+#btn-fish small{display:block;font-size:10px;opacity:.75;font-weight:normal}
+#btn-fish.ready{background:linear-gradient(#fff1a8,#ffbe3c);color:#5b4310;box-shadow:0 5px 0 #b8871f,0 10px 18px rgba(0,0,0,.3);
+  animation:bitepulse .45s infinite alternate}
+@keyframes bitepulse{from{transform:scale(1)}to{transform:scale(1.09)}}
+#book-tabs{margin-top:0}
+
 </style>
 </head>
 <body>
@@ -175,6 +186,7 @@ ul.tips li{margin-bottom:3px}
 
   <div id="touch">
     <div id="stick"><div id="knob"></div></div>
+    <button id="btn-fish" class="hidden">FISH<small>cast</small></button>
     <button id="btn-a">NET<small>tap</small></button>
   </div>
 
@@ -199,6 +211,7 @@ ul.tips li{margin-bottom:3px}
           <li><b>Swing your net</b> with the big yellow button.</li>
           <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
           <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths!</li>
+          <li><b>Go fishing</b> at the Lily Pond. Stand on the bank facing the water and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
           <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
           <li>Go <b>home</b> (the little cottage) to read about every bug you have caught and to build terrariums.</li>
           <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
@@ -231,8 +244,12 @@ ul.tips li{margin-bottom:3px}
   <!-- bug book -->
   <div class="panel hidden" id="screen-book">
     <div class="sheet">
-      <header><h2>Bug Book</h2><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
+      <header><h2 id="book-title">Bug Book</h2><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
       <div class="body">
+        <div class="tabs" id="book-tabs">
+          <div class="tab on" data-book="bugs">Bugs</div>
+          <div class="tab" data-book="fish">Fish</div>
+        </div>
         <div id="book-grid"></div>
         <div id="book-detail"></div>
       </div>
@@ -257,7 +274,8 @@ ul.tips li{margin-bottom:3px}
           <button class="btn small pink" id="tank-remove">Remove</button>
         </div>
         <div class="tabs">
-          <div class="tab on" data-tab="bugs">My bugs</div>
+          <div class="tab on" data-tab="bugs">Bugs</div>
+          <div class="tab" data-tab="fish">Fish</div>
           <div class="tab" data-tab="decor">Decorations</div>
         </div>
         <div id="tray"></div>
@@ -376,9 +394,10 @@ ul.tips li{margin-bottom:3px}
       v: 1,
       name: 'Guin',
       sparkles: 0,
-      caught: {},          // bugId -> { count, first(ms), bestSize }
+      caught: {},          // bugId -> { count, first(ms) }
+      caughtFish: {},      // fishId -> { count, first(ms) }
       terrariums: [
-        { name: 'My First Terrarium', bg: 'meadow', decor: [], bugs: [] }
+        { name: 'My First Terrarium', bg: 'meadow', decor: [], bugs: [], fish: [] }
       ],
       unlockedDecor: ['leaf', 'pebble', 'twig', 'mushroom'],
       unlockedTanks: 1,
@@ -404,6 +423,11 @@ ul.tips li{margin-bottom:3px}
           var base = fresh();
           for (var k in base) if (!(k in d)) d[k] = base[k];
           if (!d.terrariums || !d.terrariums.length) d.terrariums = base.terrariums;
+          d.terrariums.forEach(function (t) {
+            if (!t.fish) t.fish = [];
+            if (!t.bugs) t.bugs = [];
+            if (!t.decor) t.decor = [];
+          });
           this.data = d;
         }
       } catch (e) { this.data = fresh(); }
@@ -416,6 +440,18 @@ ul.tips li{margin-bottom:3px}
     has: function (id) { return !!this.data.caught[id]; },
     countOf: function (id) { var c = this.data.caught[id]; return c ? c.count : 0; },
     totalSpecies: function () { return Object.keys(this.data.caught).length; },
+    hasFish: function (id) { return !!this.data.caughtFish[id]; },
+    countOfFish: function (id) { var c = this.data.caughtFish[id]; return c ? c.count : 0; },
+    totalFish: function () { return Object.keys(this.data.caughtFish).length; },
+    addFish: function (id) {
+      var c = this.data.caughtFish[id];
+      var isNew = !c;
+      if (!c) c = this.data.caughtFish[id] = { count: 0, first: Date.now() };
+      c.count++;
+      this.data.totalCatches++;
+      this.save();
+      return isNew;
+    },
     addCatch: function (id) {
       var c = this.data.caught[id];
       var isNew = !c;
@@ -437,11 +473,13 @@ ul.tips li{margin-bottom:3px}
     x: 0, y: 0,          // stick direction, -1..1
     mag: 0,              // 0..1 how far the stick is pushed
     actionPressed: false,// edge trigger for the A button
+    action2Pressed: false,// edge trigger for the fishing button
     keys: {},
     stick: { active: false, id: null, ox: 0, oy: 0, cx: 0, cy: 0 },
     _actionQueued: false,
 
-    init: function (rootEl, stickEl, knobEl, actionEl) {
+    init: function (rootEl, stickEl, knobEl, actionEl, action2El) {
+      this.action2El = action2El;
       var self = this;
       this.stickEl = stickEl; this.knobEl = knobEl;
 
@@ -476,6 +514,7 @@ ul.tips li{margin-bottom:3px}
       function onUI(target) {
         if (!target) return false;
         if (target === actionEl || actionEl.contains(target)) return true;
+        if (action2El && (target === action2El || action2El.contains(target))) return true;
         var el = target;
         while (el && el !== rootEl && el.nodeType === 1) {
           if (el.closest) return !!el.closest(UI_SELECTOR);
@@ -537,8 +576,19 @@ ul.tips li{margin-bottom:3px}
       actionEl.addEventListener('mouseup', release);
       actionEl.addEventListener('mouseleave', release);
 
+      if (action2El) {
+        var press2 = function (e) { e.preventDefault(); self._action2Queued = true; action2El.classList.add('down'); };
+        var rel2 = function () { action2El.classList.remove('down'); };
+        action2El.addEventListener('touchstart', press2, { passive: false });
+        action2El.addEventListener('touchend', rel2);
+        action2El.addEventListener('mousedown', press2);
+        action2El.addEventListener('mouseup', rel2);
+        action2El.addEventListener('mouseleave', rel2);
+      }
+
       window.addEventListener('keydown', function (e) {
         self.keys[e.key.toLowerCase()] = true;
+        if (e.key.toLowerCase() === 'f') { self._action2Queued = true; e.preventDefault(); }
         if (e.key === ' ' || e.key === 'Enter') { self._actionQueued = true; e.preventDefault(); }
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
       });
@@ -563,6 +613,8 @@ ul.tips li{margin-bottom:3px}
       }
       this.actionPressed = this._actionQueued;
       this._actionQueued = false;
+      this.action2Pressed = this._action2Queued;
+      this._action2Queued = false;
     }
   };
 })(window.GG = window.GG || {});
@@ -631,6 +683,11 @@ ul.tips li{margin-bottom:3px}
       tone(252, 0.5, 'square', 0.03, 166, 0.05);
       tone(196, 0.45, 'sawtooth', 0.04, 140, 0.14);
     },
+    cast: function () { noise(0.22, 0.05, 2600); tone(700, 0.12, 'sine', 0.04, 1200); },
+    plop: function () { tone(420, 0.1, 'sine', 0.09, 180); noise(0.09, 0.04, 600); },
+    nibble: function () { tone(880, 0.05, 'sine', 0.05); },
+    bite: function () { tone(300, 0.16, 'sine', 0.12, 640); noise(0.2, 0.08, 500); },
+    reel: function () { for (var i = 0; i < 5; i++) tone(520 + i * 40, 0.04, 'square', 0.035, null, i * 0.045); },
     ouch: function () {
       tone(560, 0.13, 'square', 0.11, 170);
       noise(0.16, 0.07, 900);
@@ -1024,6 +1081,170 @@ ul.tips li{margin-bottom:3px}
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
+})(window.GG = window.GG || {});
+
+/* ==== src/data/fish.js ==== */
+/* Guin's Garden — what lives in the Lily Pond.
+   Each fish: how big its shadow is, when it bites, how to draw it, and true facts. */
+(function (GG) {
+  'use strict';
+
+  // shadow: 1 tiny .. 5 huge   |   times: morning day evening night any
+  GG.FISH = [
+    {
+      id: 'minnow', name: 'Minnow', rarity: 1, value: 8, shadow: 1, size: 0.55,
+      times: ['any'], measure: '2 inches long',
+      art: { shape: 'minnow', back: '#7d8a6b', belly: '#eef0e2', fin: '#b9c4a4', accent: '#3f4636', pattern: 'line' },
+      facts: [
+        'Minnows swim in big groups called shoals. Hundreds of little eyes spot a hungry bass much sooner than two would.',
+        'Lots of different small fish get called minnows, but real minnows all belong to one big family of their own, cousins of the carp.'
+      ]
+    },
+    {
+      id: 'bluegill', name: 'Bluegill', rarity: 1, value: 14, shadow: 2, size: 0.85,
+      times: ['morning', 'day', 'evening'], measure: '7 inches long',
+      art: { shape: 'sunfish', back: '#4f7a52', belly: '#f2c85c', fin: '#3f6b58', accent: '#1f3a4a', pattern: 'bars' },
+      facts: [
+        'A bluegill gets its name from the shimmery blue on its chin and cheeks. The little flap on the edge of its gill cover is black, like a dark ear.',
+        'The male sweeps a round nest in the gravel with his tail, then guards the eggs until they hatch.',
+        'Bluegills are sunfish, and their bodies are flat and round like a dinner plate on its side.'
+      ]
+    },
+    {
+      id: 'pumpkinseed', name: 'Pumpkinseed', rarity: 1, value: 16, shadow: 2, size: 0.8,
+      times: ['morning', 'day'], measure: '6 inches long',
+      art: { shape: 'sunfish', back: '#4a8a4f', belly: '#ffb84a', fin: '#3f6b58', accent: '#d2453f', pattern: 'spots' },
+      facts: [
+        'Pumpkinseeds are named for their shape: flat and round, like a pumpkin seed.',
+        'They have wiggly blue lines on their cheeks and a bright orange spot on the gill flap.',
+        'They love to eat snails, and they have special teeth in their throat for crunching the shells.'
+      ]
+    },
+    {
+      id: 'crappie', name: 'Black Crappie', rarity: 2, value: 26, shadow: 2, size: 0.95,
+      times: ['morning', 'evening'], measure: '10 inches long',
+      art: { shape: 'sunfish', back: '#5e6b63', belly: '#e8ecdf', fin: '#4a5750', accent: '#2b332e', pattern: 'speckle' },
+      facts: [
+        'Crappie are covered in dark speckles scattered all over, like someone flicked a paintbrush at them.',
+        'They feed most at dawn and dusk, so early morning and evening are the best times to find one.'
+      ]
+    },
+    {
+      id: 'perch', name: 'Yellow Perch', rarity: 2, value: 30, shadow: 2, size: 0.95,
+      times: ['morning', 'day'], measure: '9 inches long',
+      art: { shape: 'torpedo', back: '#5f7a33', belly: '#ffd45c', fin: '#e07f2a', accent: '#3a4a1f', pattern: 'bars' },
+      facts: [
+        'Yellow perch wear six or seven dark bars down their golden sides, which helps them hide among the reeds.',
+        'They swim about in schools, so where you find one there are usually plenty more.'
+      ]
+    },
+    {
+      id: 'goldfish', name: 'Goldfish', rarity: 2, value: 34, shadow: 1, size: 0.7,
+      times: ['any'], measure: '8 inches long',
+      art: { shape: 'goldfish', back: '#f08a2a', belly: '#ffd08a', fin: '#ff9f4a', accent: '#c25a18', pattern: 'plain' },
+      facts: [
+        'Goldfish do not have three-second memories. That is a myth: they can be taught tricks and still remember them months later.',
+        'A goldfish is a kind of carp. Wild ones are a plain greeny-brown, and the golden colour was bred by people long ago in China.',
+        'A goldfish in a pond can live for decades, far longer than one in a little bowl.'
+      ]
+    },
+    {
+      id: 'bass', name: 'Largemouth Bass', rarity: 3, value: 65, shadow: 4, size: 1.3,
+      times: ['morning', 'day', 'evening'], measure: '14 inches long',
+      art: { shape: 'torpedo', back: '#4f6b3a', belly: '#e9edd8', fin: '#3f5730', accent: '#2b3a22', pattern: 'stripe' },
+      facts: [
+        'Its mouth really is enormous. The top jaw reaches back past its eye, which is how you tell it from a smallmouth bass.',
+        'A bass does not bite its food so much as open that huge mouth and suck it in with a gulp of water.'
+      ]
+    },
+    {
+      id: 'carp', name: 'Common Carp', rarity: 3, value: 70, shadow: 4, size: 1.35,
+      times: ['any'], measure: '20 inches long',
+      art: { shape: 'carp', back: '#8a7a3f', belly: '#e2d9a8', fin: '#6b5d2f', accent: '#4a4020', pattern: 'scales' },
+      facts: [
+        'Carp have two pairs of whiskery barbels by their mouth that they use to feel for food in the mud.',
+        'They root around in the bottom like underwater pigs, which is why a pond full of carp often looks cloudy.',
+        'A common carp can live twenty years or more, and keeps growing heavier the whole time.'
+      ]
+    },
+    {
+      id: 'catfish', name: 'Brown Bullhead', rarity: 3, value: 60, shadow: 3, size: 1.15,
+      times: ['evening', 'night'], measure: '12 inches long',
+      art: { shape: 'catfish', back: '#6b4a2f', belly: '#e6dcc0', fin: '#523823', accent: '#2f2015', pattern: 'mottle' },
+      facts: [
+        'Those whiskers are called barbels and they are covered in taste buds.',
+        'In fact a catfish has taste buds all over its skin, so it can taste the water with its whole body. Handy in muddy water where you cannot see.',
+        'Bullheads feed at night, so bring your rod to the pond after dark.'
+      ]
+    },
+    {
+      id: 'rainbow_trout', name: 'Rainbow Trout', rarity: 3, value: 80, shadow: 3, size: 1.15,
+      times: ['morning', 'day'], measure: '14 inches long',
+      art: { shape: 'torpedo', back: '#5f7f8a', belly: '#f2f0e4', fin: '#4f6b73', accent: '#e06f8f', pattern: 'speckle' },
+      facts: [
+        'A rainbow trout has a pink stripe down each side, which is where it gets its name.',
+        'Trout like cold water with lots of oxygen in it. That is why you find them in chilly streams and deep, cool ponds.',
+        'Some rainbow trout swim down to the sea, grow much bigger, and come back. Those ones are called steelhead.'
+      ]
+    },
+    {
+      id: 'brook_trout', name: 'Brook Trout', rarity: 4, value: 150, shadow: 3, size: 1.1,
+      times: ['morning', 'evening'], measure: '9 inches long',
+      art: { shape: 'torpedo', back: '#4a6b4f', belly: '#f0a05c', fin: '#d2453f', accent: '#f2e9c8', pattern: 'worm' },
+      facts: [
+        'Brook trout are not really trout at all. They are char, a close cousin. In autumn the males turn a blazing orange underneath, with a bright white edge to their fins.',
+        'The wiggly pale markings on their back look like little worms. Scientists really do call that pattern vermiculation.',
+        'They like cold streams and spring-fed ponds, and they are easily startled.'
+      ]
+    },
+    {
+      id: 'koi', name: 'Koi', rarity: 4, value: 180, shadow: 4, size: 1.3,
+      times: ['any'], measure: '2 feet long',
+      art: { shape: 'carp', back: '#f4f0e6', belly: '#ffffff', fin: '#ffd9c4', accent: '#e0533f', pattern: 'koi' },
+      facts: [
+        'Koi are a kind of carp. Farmers in Japan spotted the brightest ones in their ponds and bred them for their colours, starting about two hundred years ago.',
+        'Every koi has its own pattern, like a fingerprint. Keepers can tell their fish apart at a glance.',
+        'A well looked-after koi can live for decades, longer than most cats and dogs.'
+      ]
+    },
+    {
+      id: 'pike', name: 'Northern Pike', rarity: 4, value: 200, shadow: 5, size: 1.55,
+      times: ['day', 'evening'], measure: '2 feet long',
+      art: { shape: 'pike', back: '#4f6b33', belly: '#ecebd2', fin: '#e08a3a', accent: '#cfe0a8', pattern: 'dashes' },
+      facts: [
+        'A pike has a long flat snout like a duck bill, and a mouth full of very sharp teeth.',
+        'It hangs perfectly still in the weeds and then explodes forward to grab whatever swims past.',
+        'Pike can go from a standstill to a lunge in a blink, which is why smaller fish keep well away from weed beds.'
+      ]
+    },
+    {
+      id: 'sturgeon', name: 'Lake Sturgeon', rarity: 5, value: 420, shadow: 5, size: 1.85,
+      times: ['any'], measure: '4 feet long',
+      art: { shape: 'sturgeon', back: '#5a5f6b', belly: '#ded9c8', fin: '#474c56', accent: '#8a8f9a', pattern: 'scutes' },
+      facts: [
+        'Sturgeon were swimming about while the dinosaurs were alive. They still have the same armoured, pointy-nosed shape their ancestors had.',
+        'Instead of scales they wear rows of bony plates called scutes, like armour.',
+        'A sturgeon has no teeth at all. It hoovers food off the bottom with a mouth that sticks out like a tube.',
+        'Lake sturgeon grow slowly and live a very long time. The big old ones can reach a hundred years, older than anyone in your family.'
+      ]
+    }
+  ];
+
+  /* Not everything on the end of the line is a fish. */
+  GG.JUNK = [
+    { id: 'boot', name: 'Old Boot', value: 3, shadow: 2, size: 1,
+      art: { shape: 'boot' }, line: 'An old boot. Somebody is walking home with one wet sock.' },
+    { id: 'can', name: 'Tin Can', value: 3, shadow: 1, size: 0.9,
+      art: { shape: 'can' }, line: 'A rusty tin can. Good job fishing it out, the pond is tidier now.' },
+    { id: 'newspaper', name: 'Soggy Newspaper', value: 3, shadow: 2, size: 1,
+      art: { shape: 'news' }, line: 'A soggy newspaper. The headline has gone all runny.' }
+  ];
+
+  GG.FISH_BY_ID = {};
+  GG.FISH.forEach(function (f, i) { f.index = i; f.isFish = true; GG.FISH_BY_ID[f.id] = f; });
+  GG.JUNK.forEach(function (j) { j.isJunk = true; j.rarity = 1; GG.FISH_BY_ID[j.id] = j; });
+
+  GG.SHADOW_NAMES = ['', 'tiny', 'small', 'medium', 'large', 'huge'];
 })(window.GG = window.GG || {});
 
 /* ==== src/render/bugart.js ==== */
@@ -1645,6 +1866,361 @@ ul.tips li{margin-bottom:3px}
   };
 })(window.GG = window.GG || {});
 
+/* ==== src/render/fishart.js ==== */
+/* Every fish is drawn with code too. Shapes face RIGHT, centred on (0,0),
+   about 44 pixels long at scale 1. */
+(function (GG) {
+  'use strict';
+
+  function ell(c, x, y, rx, ry, rot) {
+    c.beginPath(); c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, Math.PI * 2); c.fill();
+  }
+
+  function eye(c, x, y, r, accent) {
+    c.fillStyle = '#f6f4ec'; ell(c, x, y, r, r);
+    c.fillStyle = '#22252a'; ell(c, x + r * 0.18, y, r * 0.56, r * 0.56);
+    c.fillStyle = '#ffffff'; ell(c, x + r * 0.4, y - r * 0.35, r * 0.2, r * 0.2);
+  }
+
+  function mouth(c, x, y, w, col) {
+    c.strokeStyle = col; c.lineWidth = 1.2; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x - w * 0.5, y + 1.4, x - w, y + 0.6); c.stroke();
+  }
+
+  /* Tail fin. `type`: fork, fan, round, long */
+  function tail(c, x, a, wag, type, depth) {
+    c.fillStyle = a.fin;
+    c.save();
+    c.translate(x, 0);
+    c.rotate(wag * 0.35);
+    c.beginPath();
+    if (type === 'fork') {
+      c.moveTo(2, 0);
+      c.lineTo(-11, -depth); c.lineTo(-6, 0); c.lineTo(-11, depth);
+    } else if (type === 'fan') {
+      c.moveTo(2, 0);
+      c.lineTo(-12, -depth * 1.1); c.lineTo(-9, 0); c.lineTo(-12, depth * 1.1);
+    } else if (type === 'long') {
+      c.moveTo(2, 0);
+      c.lineTo(-17, -depth * 1.25); c.lineTo(-9, 0); c.lineTo(-17, depth * 1.25);
+    } else {
+      c.moveTo(2, 0);
+      c.quadraticCurveTo(-12, -depth, -9, 0);
+      c.quadraticCurveTo(-12, depth, 2, 0);
+    }
+    c.closePath(); c.fill();
+    c.restore();
+  }
+
+  function pattern(c, a, L, D) {
+    var p = a.pattern;
+    if (p === 'bars') {
+      c.fillStyle = a.accent; c.globalAlpha = 0.55;
+      for (var i = -2; i <= 2; i++) ell(c, i * L * 0.26, -D * 0.1, L * 0.055, D * 0.72);
+      c.globalAlpha = 1;
+    } else if (p === 'stripe') {
+      c.fillStyle = a.accent; c.globalAlpha = 0.6;
+      c.beginPath();
+      c.moveTo(-L * 0.85, 1);
+      for (var x = -L * 0.85; x < L * 0.8; x += 4) c.lineTo(x, 1 + Math.sin(x * 0.35) * 1.6);
+      c.lineTo(L * 0.8, 4); c.lineTo(-L * 0.85, 4);
+      c.closePath(); c.fill();
+      c.globalAlpha = 1;
+    } else if (p === 'speckle') {
+      c.fillStyle = a.accent;
+      var rnd = GG.mulberry32(77);
+      for (var s = 0; s < 22; s++) {
+        ell(c, (rnd() - 0.5) * L * 1.7, (rnd() - 0.55) * D * 1.5, 1.1, 1.1);
+      }
+    } else if (p === 'spots') {
+      c.fillStyle = a.accent;
+      var r2 = GG.mulberry32(31);
+      for (var k = 0; k < 10; k++) ell(c, (r2() - 0.5) * L * 1.5, (r2() - 0.5) * D * 1.3, 1.5, 1.5);
+    } else if (p === 'worm') {
+      c.strokeStyle = a.accent; c.lineWidth = 1.2; c.lineCap = 'round';
+      for (var w = 0; w < 6; w++) {
+        var wx = -L * 0.7 + w * L * 0.26;
+        c.beginPath();
+        c.moveTo(wx, -D * 0.72);
+        c.quadraticCurveTo(wx + 3, -D * 0.5, wx - 1, -D * 0.3);
+        c.stroke();
+      }
+      c.fillStyle = '#e0533f';
+      var r3 = GG.mulberry32(13);
+      for (var d = 0; d < 7; d++) ell(c, (r3() - 0.5) * L * 1.4, (r3() - 0.2) * D * 0.8, 1.3, 1.3);
+    } else if (p === 'dashes') {
+      c.fillStyle = a.accent;
+      for (var q = 0; q < 12; q++) {
+        ell(c, -L * 0.85 + (q % 6) * L * 0.3, (q < 6 ? -1 : 1) * D * 0.32, L * 0.09, 1.5);
+      }
+    } else if (p === 'scales') {
+      c.strokeStyle = a.accent; c.lineWidth = 0.7; c.globalAlpha = 0.6;
+      for (var sy = -1; sy <= 1; sy++) {
+        for (var sx = -4; sx <= 3; sx++) {
+          c.beginPath();
+          c.arc(sx * L * 0.2, sy * D * 0.42, 3.2, -1.1, 1.1);
+          c.stroke();
+        }
+      }
+      c.globalAlpha = 1;
+    } else if (p === 'koi') {
+      c.fillStyle = a.accent;
+      c.beginPath(); c.ellipse(-L * 0.35, -D * 0.2, L * 0.3, D * 0.55, 0.2, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(L * 0.42, -D * 0.15, L * 0.22, D * 0.45, -0.2, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#2b2b33';
+      c.beginPath(); c.ellipse(L * 0.02, D * 0.3, L * 0.16, D * 0.26, 0.3, 0, Math.PI * 2); c.fill();
+    } else if (p === 'line') {
+      c.fillStyle = a.accent; c.globalAlpha = 0.6;
+      ell(c, 0, 0, L * 0.8, D * 0.12);
+      c.globalAlpha = 1;
+    } else if (p === 'mottle') {
+      c.fillStyle = a.accent; c.globalAlpha = 0.35;
+      var r4 = GG.mulberry32(5);
+      for (var m = 0; m < 8; m++) ell(c, (r4() - 0.5) * L * 1.6, (r4() - 0.5) * D * 1.2, 3.5, 2.4);
+      c.globalAlpha = 1;
+    } else if (p === 'scutes') {
+      c.fillStyle = a.accent;
+      for (var z = -4; z <= 3; z++) {
+        c.beginPath();
+        c.moveTo(z * L * 0.22, -D * 0.95);
+        c.lineTo(z * L * 0.22 + 3, -D * 0.7);
+        c.lineTo(z * L * 0.22 - 3, -D * 0.7);
+        c.closePath(); c.fill();
+      }
+      c.globalAlpha = 0.7;
+      for (var z2 = -4; z2 <= 2; z2++) ell(c, z2 * L * 0.24, D * 0.55, 2, 1.3);
+      c.globalAlpha = 1;
+    }
+  }
+
+  /* A standard fish: belly, back, fins, pattern, eye. */
+  function standard(c, a, t, opt) {
+    var L = opt.L, D = opt.D;
+    var wag = Math.sin(t * 5);
+    tail(c, -L - 2, a, wag, opt.tail || 'fork', opt.tailD || D * 1.1);
+
+    // dorsal + lower fins
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(-L * 0.35, -D * 0.7);
+    c.quadraticCurveTo(-L * 0.1, -D * (opt.dorsal || 1.9), L * 0.3, -D * 0.75);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(-L * 0.3, D * 0.65);
+    c.quadraticCurveTo(-L * 0.1, D * 1.5, L * 0.15, D * 0.7);
+    c.closePath(); c.fill();
+
+    // body
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(L, 0);
+    c.bezierCurveTo(L * 0.55, -D, -L * 0.5, -D * (opt.hump || 1), -L, -D * 0.22);
+    c.bezierCurveTo(-L * 1.05, 0, -L * 1.05, 0, -L, D * 0.22);
+    c.bezierCurveTo(-L * 0.5, D * (opt.hump || 1), L * 0.55, D * 0.86, L, 0);
+    c.closePath(); c.fill();
+
+    // belly
+    c.save();
+    c.beginPath();
+    c.moveTo(L, 0);
+    c.bezierCurveTo(L * 0.55, -D, -L * 0.5, -D * (opt.hump || 1), -L, -D * 0.22);
+    c.bezierCurveTo(-L * 1.05, 0, -L * 1.05, 0, -L, D * 0.22);
+    c.bezierCurveTo(-L * 0.5, D * (opt.hump || 1), L * 0.55, D * 0.86, L, 0);
+    c.closePath(); c.clip();
+    c.fillStyle = a.belly;
+    ell(c, -L * 0.05, D * 0.72, L * 1.05, D * 0.62);
+    pattern(c, a, L, D);
+    c.restore();
+
+    // side fin
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(L * 0.3, D * 0.1);
+    c.quadraticCurveTo(L * 0.05, D * 0.85, L * 0.32, D * 0.55);
+    c.closePath(); c.fill();
+
+    eye(c, L * 0.62, -D * 0.28, opt.eye || 2.6);
+    mouth(c, L * 0.97, D * 0.06, opt.mouth || 5, '#2b2b33');
+  }
+
+  var S = {};
+
+  S.minnow = function (c, a, t) { standard(c, a, t, { L: 15, D: 4.6, tail: 'fork', eye: 2, mouth: 3, dorsal: 1.6 }); };
+
+  S.sunfish = function (c, a, t) {
+    standard(c, a, t, { L: 17, D: 11.5, tail: 'fan', tailD: 9, hump: 1.02, dorsal: 1.25, eye: 2.8, mouth: 4 });
+    // dark ear flap at the back of the gill cover
+    c.fillStyle = a.accent;
+    ell(c, 3.4, -2.6, 2.4, 3.1, -0.25);
+    c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 0.9;
+    c.beginPath(); c.moveTo(6.5, -8); c.quadraticCurveTo(4, 0, 6.5, 8); c.stroke();
+  };
+
+  S.torpedo = function (c, a, t) { standard(c, a, t, { L: 22, D: 7.6, tail: 'fork', dorsal: 1.8, eye: 2.6, mouth: 6 }); };
+
+  S.goldfish = function (c, a, t) {
+    standard(c, a, t, { L: 14, D: 9, tail: 'long', tailD: 7.5, hump: 1.05, dorsal: 1.7, eye: 3, mouth: 4 });
+  };
+
+  S.carp = function (c, a, t) {
+    standard(c, a, t, { L: 22, D: 10.5, tail: 'fork', tailD: 10, hump: 1.02, dorsal: 1.5, eye: 2.6, mouth: 6 });
+    // barbels
+    c.strokeStyle = a.fin; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(20.5, 1.5); c.quadraticCurveTo(25, 3, 25.5, 6.5); c.stroke();
+    c.beginPath(); c.moveTo(19.5, 3); c.quadraticCurveTo(23, 6, 22.5, 9); c.stroke();
+  };
+
+  S.catfish = function (c, a, t) {
+    standard(c, a, t, { L: 21, D: 8, tail: 'round', tailD: 8, hump: 0.85, dorsal: 1.7, eye: 2.1, mouth: 8 });
+    c.strokeStyle = a.fin; c.lineWidth = 1.2; c.lineCap = 'round';
+    [[-0.4, 5.5], [0.4, 8], [1.2, 10]].forEach(function (p) {
+      c.beginPath();
+      c.moveTo(19, p[0] + 1);
+      c.quadraticCurveTo(26, p[0] + p[1] * 0.5, 27, p[1]);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(19, p[0] - 2);
+      c.quadraticCurveTo(26, -p[0] - p[1] * 0.4, 26, -p[1] * 0.7);
+      c.stroke();
+    });
+  };
+
+  S.pike = function (c, a, t) {
+    var L = 26, D = 6.4;
+    var wag = Math.sin(t * 4.5);
+    tail(c, -L - 2, a, wag, 'fork', D * 1.3);
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(-L * 0.72, -D * 0.7);
+    c.quadraticCurveTo(-L * 0.5, -D * 2.2, -L * 0.2, -D * 0.8);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(-L * 0.68, D * 0.7); c.quadraticCurveTo(-L * 0.45, D * 2, -L * 0.2, D * 0.8);
+    c.closePath(); c.fill();
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(L, 1.2);
+    c.lineTo(L * 0.62, -D * 0.42);
+    c.bezierCurveTo(L * 0.2, -D, -L * 0.55, -D * 0.95, -L, -D * 0.2);
+    c.bezierCurveTo(-L * 1.05, 0, -L * 1.05, 0, -L, D * 0.2);
+    c.bezierCurveTo(-L * 0.55, D * 0.95, L * 0.2, D * 0.9, L * 0.6, D * 0.5);
+    c.closePath(); c.fill();
+    c.save();
+    c.beginPath();
+    c.moveTo(L, 1.2); c.lineTo(L * 0.62, -D * 0.42);
+    c.bezierCurveTo(L * 0.2, -D, -L * 0.55, -D * 0.95, -L, -D * 0.2);
+    c.bezierCurveTo(-L * 1.05, 0, -L * 1.05, 0, -L, D * 0.2);
+    c.bezierCurveTo(-L * 0.55, D * 0.95, L * 0.2, D * 0.9, L * 0.6, D * 0.5);
+    c.closePath(); c.clip();
+    c.fillStyle = a.belly; ell(c, -L * 0.1, D * 0.8, L * 1.05, D * 0.6);
+    pattern(c, a, L, D);
+    c.restore();
+    c.strokeStyle = '#2b2b33'; c.lineWidth = 1.1;
+    c.beginPath(); c.moveTo(L * 1.0, 1.4); c.lineTo(L * 0.58, 2.2); c.stroke();
+    eye(c, L * 0.52, -D * 0.35, 2.4);
+  };
+
+  S.sturgeon = function (c, a, t) {
+    var L = 28, D = 6.2;
+    var wag = Math.sin(t * 3.4);
+    // upper lobe of the tail is longer, like a shark
+    c.fillStyle = a.fin;
+    c.save(); c.translate(-L - 2, 0); c.rotate(wag * 0.3);
+    c.beginPath();
+    c.moveTo(2, 0); c.lineTo(-13, -D * 1.7); c.lineTo(-8, -D * 0.2);
+    c.lineTo(-11, D * 1.0); c.closePath(); c.fill();
+    c.restore();
+    c.beginPath();
+    c.moveTo(-L * 0.6, -D * 0.8); c.quadraticCurveTo(-L * 0.42, -D * 2, -L * 0.16, -D * 0.85);
+    c.closePath(); c.fill();
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(L, -1);
+    c.lineTo(L * 0.55, -D * 0.55);
+    c.bezierCurveTo(L * 0.1, -D * 1.05, -L * 0.55, -D, -L, -D * 0.22);
+    c.bezierCurveTo(-L * 1.04, 0, -L * 1.04, 0, -L, D * 0.22);
+    c.bezierCurveTo(-L * 0.55, D, L * 0.1, D * 0.95, L * 0.55, D * 0.5);
+    c.lineTo(L, 1.4);
+    c.closePath(); c.fill();
+    c.save();
+    c.beginPath();
+    c.moveTo(L, -1); c.lineTo(L * 0.55, -D * 0.55);
+    c.bezierCurveTo(L * 0.1, -D * 1.05, -L * 0.55, -D, -L, -D * 0.22);
+    c.bezierCurveTo(-L * 1.04, 0, -L * 1.04, 0, -L, D * 0.22);
+    c.bezierCurveTo(-L * 0.55, D, L * 0.1, D * 0.95, L * 0.55, D * 0.5);
+    c.lineTo(L, 1.4); c.closePath(); c.clip();
+    c.fillStyle = a.belly; ell(c, -L * 0.1, D * 0.85, L * 1.05, D * 0.55);
+    pattern(c, a, L, D);
+    c.restore();
+    // barbels under the pointed snout
+    c.strokeStyle = a.fin; c.lineWidth = 1; c.lineCap = 'round';
+    for (var i = 0; i < 3; i++) {
+      c.beginPath();
+      c.moveTo(L * 0.72 + i * 2, D * 0.16);
+      c.lineTo(L * 0.68 + i * 2, D * 0.75);
+      c.stroke();
+    }
+    c.fillStyle = '#2b2b33';
+    ell(c, L * 0.86, D * 0.28, 2.2, 0.9);
+    eye(c, L * 0.42, -D * 0.4, 2.1);
+  };
+
+  /* ---- things that are not fish ---- */
+  S.boot = function (c) {
+    c.fillStyle = '#5b4a3a';
+    c.beginPath();
+    c.moveTo(-8, -14); c.lineTo(6, -14); c.lineTo(7, 4); c.lineTo(16, 6);
+    c.quadraticCurveTo(20, 8, 19, 12); c.lineTo(-9, 12);
+    c.quadraticCurveTo(-12, 6, -9, -2);
+    c.closePath(); c.fill();
+    c.fillStyle = '#3f3227'; c.fillRect(-10, 10, 30, 4);
+    c.fillStyle = '#7a6550'; c.fillRect(-8, -14, 14, 4);
+    c.strokeStyle = '#9a8468'; c.lineWidth = 1.2;
+    for (var i = 0; i < 3; i++) {
+      c.beginPath(); c.moveTo(-6, -9 + i * 4); c.lineTo(4, -11 + i * 4); c.stroke();
+    }
+  };
+  S.can = function (c) {
+    c.fillStyle = '#9aa3a8';
+    GG.roundRect(c, -12, -8, 24, 18, 3); c.fill();
+    c.fillStyle = '#b7bfc4'; ell(c, 0, -8, 12, 3.6);
+    c.fillStyle = '#c85a3f'; c.fillRect(-12, -3, 24, 7);
+    c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-9, -6, 3, 14);
+    c.strokeStyle = '#7d868b'; c.lineWidth = 1;
+    c.beginPath(); c.arc(0, -8, 7, 0, Math.PI * 2); c.stroke();
+  };
+  S.news = function (c) {
+    c.fillStyle = '#e6e2d4';
+    c.beginPath();
+    c.moveTo(-14, -9); c.quadraticCurveTo(0, -13, 14, -8);
+    c.lineTo(13, 10); c.quadraticCurveTo(0, 14, -13, 9);
+    c.closePath(); c.fill();
+    c.strokeStyle = '#b9b3a2'; c.lineWidth = 1; c.stroke();
+    c.fillStyle = '#a8a293';
+    for (var i = 0; i < 5; i++) c.fillRect(-10, -5 + i * 3.4, 20 - (i % 2) * 6, 1.6);
+    c.fillStyle = '#8a8474'; c.fillRect(-10, -8, 14, 2.4);
+  };
+
+  /* Bugs and fish are drawn by different modules; this picks the right one. */
+  GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft) {
+    if (def.isFish || def.isJunk) GG.FishArt.draw(c, def, x, y, scale * 0.5, !!faceLeft, t);
+    else GG.BugArt.draw(c, def, x, y, scale, angle, t);
+  };
+
+  GG.FishArt = {
+    shapes: S,
+    draw: function (c, def, x, y, scale, faceLeft, t) {
+      var fn = S[def.art.shape] || S.torpedo;
+      c.save();
+      c.translate(x, y);
+      var s = scale * (def.size || 1);
+      c.scale(faceLeft ? -s : s, s);
+      fn(c, def.art, t || 0);
+      c.restore();
+    }
+  };
+})(window.GG = window.GG || {});
+
 /* ==== src/render/propart.js ==== */
 /* Trees, flowers, rocks, the house - all drawn with code.
    Props are drawn with their BASE at (x, y), growing upward. */
@@ -2068,6 +2644,7 @@ ul.tips li{margin-bottom:3px}
   GG.DECOR.forEach(function (d) { GG.DECOR_BY_ID[d.id] = d; });
 
   GG.TANK_BGS = [
+    { id: 'aquarium', name: 'Aquarium', sky: '#8fd3ea', ground: '#e3d6a8', ground2: '#d2c28f', price: 0, water: true },
     { id: 'meadow', name: 'Meadow', sky: '#cfeeff', ground: '#8ecf63', ground2: '#7cbd53', price: 0 },
     { id: 'forest', name: 'Forest', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3f7f42', price: 0 },
     { id: 'pond', name: 'Pond', sky: '#d6f0ff', ground: '#9dcf7e', ground2: '#7fb8c9', price: 80 },
@@ -2528,6 +3105,7 @@ ul.tips li{margin-bottom:3px}
 
     startSwing: function () {
       if (this.swing > 0 || this.stun > 0) return false;
+      if (GG.Fishing && GG.Fishing.active()) return false;
       this.swing = this.SWING_TIME;
       GG.Sfx.swing();
       return true;
@@ -2553,8 +3131,9 @@ ul.tips li{margin-bottom:3px}
       c.fillStyle = 'rgba(30,60,25,0.22)';
       c.beginPath(); c.ellipse(sx, sy + 1, 11, 4.6, 0, 0, Math.PI * 2); c.fill();
 
+      var rodding = GG.Fishing && GG.Fishing.active();
       var behind = (d === 'up');
-      if (behind) this._net(c, sx, sy, t);
+      if (behind) { if (rodding) GG.Fishing.drawRod(c, sx, sy, this); else this._net(c, sx, sy, t); }
 
       c.save();
       c.translate(sx, sy - bob);
@@ -2646,7 +3225,7 @@ ul.tips li{margin-bottom:3px}
       }
       c.restore();
 
-      if (!behind) this._net(c, sx, sy, t);
+      if (!behind) { if (rodding) GG.Fishing.drawRod(c, sx, sy, this); else this._net(c, sx, sy, t); }
       if (this.stun > 0) this._stars(c, sx, sy - bob, t);
     },
 
@@ -3082,6 +3661,347 @@ ul.tips li{margin-bottom:3px}
   };
 })(window.GG = window.GG || {});
 
+/* ==== src/game/fishing.js ==== */
+/* Fishing in the Lily Pond.
+   Fish swim about as shadows. Cast near one, wait for the bobber to go under,
+   then tap at the right moment. */
+(function (GG) {
+  'use strict';
+
+  var TARGET_FISH = 12;
+  var BITE_WINDOW = 0.95;      // generous on purpose
+
+  var F = GG.Fishing = {
+    swimmers: [],
+    state: 'idle',             // idle cast wait nibble bite reel done
+    bob: null,
+    line: null,
+    hooked: null,
+    timer: 0,
+    nibbles: 0,
+    ripples: [],
+    castFrom: null,
+    result: null,
+
+    active: function () { return this.state !== 'idle'; },
+
+    reset: function () {
+      this.state = 'idle'; this.bob = null; this.hooked = null;
+      this.timer = 0; this.result = null; this.castFrom = null;
+      for (var i = 0; i < this.swimmers.length; i++) this.swimmers[i].chase = 0;
+    },
+
+    /* ---------- the fish living in the pond ---------- */
+    eligible: function () {
+      var phase = GG.Time.phase(), out = [];
+      for (var i = 0; i < GG.FISH.length; i++) {
+        var f = GG.FISH[i];
+        if (f.times.indexOf('any') < 0 && f.times.indexOf(phase) < 0) continue;
+        out.push({ f: f, w: 1 / Math.pow(f.rarity, 1.8) });
+      }
+      return out;
+    },
+
+    /* Fish hang around the weedy edges, which is also where Guin is standing. */
+    randomWaterPoint: function (edgeBias) {
+      var W = GG.World.water;
+      for (var i = 0; i < 24; i++) {
+        var a = Math.random() * Math.PI * 2;
+        var r = edgeBias ? (0.5 + Math.random() * 0.38) : Math.sqrt(Math.random()) * 0.86;
+        var x = W.cx + Math.cos(a) * W.rx * r, y = W.cy + Math.sin(a) * W.ry * r;
+        if (GG.World.isWater(x, y)) return { x: x, y: y };
+      }
+      return { x: W.cx, y: W.cy };
+    },
+
+    stock: function (dt) {
+      // keep the pond populated, and re-roll species as the day goes on
+      while (this.swimmers.length < TARGET_FISH) {
+        var cands = this.eligible();
+        if (!cands.length) return;
+        var total = 0, i;
+        for (i = 0; i < cands.length; i++) total += cands[i].w;
+        var r = Math.random() * total, pick = cands[cands.length - 1].f;
+        for (i = 0; i < cands.length; i++) { r -= cands[i].w; if (r <= 0) { pick = cands[i].f; break; } }
+        var p = this.randomWaterPoint(true);
+        this.swimmers.push({
+          def: pick, x: p.x, y: p.y, ang: Math.random() * Math.PI * 2,
+          sp: GG.rand(16, 34), timer: GG.rand(1, 3), chase: 0, t: Math.random() * 10,
+          left: Math.random() < 0.5, age: 0
+        });
+      }
+    },
+
+    update: function (dt, player) {
+      var W = GG.World;
+      this.stock(dt);
+
+      var i, s;
+      for (i = this.swimmers.length - 1; i >= 0; i--) {
+        s = this.swimmers[i];
+        s.t += dt; s.age += dt;
+        s.timer -= dt;
+
+        if (s.chase > 0 && this.bob) {
+          var toAng = Math.atan2(this.bob.y - s.y, this.bob.x - s.x);
+          s.ang = GG.angLerp(s.ang, toAng, Math.min(1, dt * 3));
+          var d = GG.dist(s.x, s.y, this.bob.x, this.bob.y);
+          var sp = d > 26 ? s.sp * 2.1 : 0;
+          s.x += Math.cos(s.ang) * sp * dt;
+          s.y += Math.sin(s.ang) * sp * dt;
+          if (d <= 26 && this.state === 'wait') {
+            this.state = 'nibble';
+            this.nibbles = GG.randInt(2, 3);
+            this.timer = 0.42;
+          }
+        } else {
+          if (s.timer <= 0) { s.ang += GG.rand(-1.5, 1.5); s.timer = GG.rand(1.2, 3.4); }
+          var nx = s.x + Math.cos(s.ang) * s.sp * dt;
+          var ny = s.y + Math.sin(s.ang) * s.sp * dt;
+          if (W.isWater(nx, s.y)) s.x = nx; else s.ang = Math.PI - s.ang;
+          if (W.isWater(s.x, ny)) s.y = ny; else s.ang = -s.ang;
+        }
+        if (Math.cos(s.ang) < -0.05) s.left = true;
+        else if (Math.cos(s.ang) > 0.05) s.left = false;
+      }
+
+      // the line and the bobber
+      if (this.state === 'cast') {
+        this.timer -= dt;
+        var p = GG.clamp(1 - this.timer / 0.42, 0, 1);
+        this.bob.x = GG.lerp(this.castFrom.x, this.bob.tx, p);
+        this.bob.y = GG.lerp(this.castFrom.y, this.bob.ty, p) - Math.sin(p * Math.PI) * 26;
+        if (this.timer <= 0) {
+          this.bob.x = this.bob.tx; this.bob.y = this.bob.ty;
+          this.state = 'wait';
+          this.timer = 9;
+          GG.Sfx.plop();
+          this.splash(this.bob.x, this.bob.y, 6);
+          this.interest();
+        }
+      } else if (this.state === 'wait') {
+        this.timer -= dt;
+        if (this.timer <= 0) {
+          if (this.junk) { this.state = 'nibble'; this.nibbles = 2; this.timer = 0.4; }
+          else this.finish('nothing');
+        }
+      } else if (this.state === 'nibble') {
+        this.timer -= dt;
+        if (this.timer <= 0) {
+          this.nibbles--;
+          GG.Sfx.nibble();
+          if (this.nibbles <= 0) {
+            this.state = 'bite';
+            this.timer = BITE_WINDOW;
+            GG.Sfx.bite();
+            this.splash(this.bob.x, this.bob.y, 10);
+          } else {
+            this.timer = GG.rand(0.34, 0.62);
+          }
+        }
+      } else if (this.state === 'bite') {
+        this.timer -= dt;
+        if (this.timer <= 0) this.finish('lost');
+      } else if (this.state === 'reel') {
+        this.timer -= dt;
+        if (this.bob) {
+          this.bob.x = GG.lerp(this.bob.x, player.x, Math.min(1, dt * 9));
+          this.bob.y = GG.lerp(this.bob.y, player.y - 14, Math.min(1, dt * 9));
+        }
+        if (this.timer <= 0) {
+          var r = this.result;
+          this.reset();
+          return r;
+        }
+      }
+
+      // she wandered off, so the line comes in
+      if (this.state !== 'idle' && this.state !== 'reel' && this.castFrom &&
+          GG.dist(player.x, player.y, this.castFrom.x, this.castFrom.y) > 26) {
+        this.finish('moved');
+      }
+
+      for (i = this.ripples.length - 1; i >= 0; i--) {
+        var rp = this.ripples[i];
+        rp.life -= dt; rp.r += rp.grow * dt;
+        if (rp.life <= 0) this.ripples.splice(i, 1);
+      }
+      return null;
+    },
+
+    /* Which fish notices the bait? */
+    interest: function () {
+      var best = null, bd = 260;
+      for (var i = 0; i < this.swimmers.length; i++) {
+        var s = this.swimmers[i];
+        var d = GG.dist(s.x, s.y, this.bob.x, this.bob.y);
+        if (d < bd) { bd = d; best = s; }
+      }
+      if (best) {
+        best.chase = 1;
+        this.hooked = best;
+      } else if (Math.random() < 0.6) {
+        // nothing swimming nearby - you have snagged something else
+        this.hooked = null;
+        this.junk = GG.pick(GG.JUNK);
+        this.timer = GG.rand(1.4, 2.6);
+      }
+    },
+
+    /* ---------- the player's side ---------- */
+    /* Where would a cast land? null if she is not facing water. */
+    castTarget: function (player) {
+      var W = GG.World;
+      var a = player.angle;
+      var found = null;
+      for (var d = 14; d <= 82; d += 6) {
+        var x = player.x + Math.cos(a) * d, y = player.y + Math.sin(a) * d;
+        if (W.isWater(x, y)) { found = { x: x, y: y, d: d }; break; }
+      }
+      if (!found) return null;
+      for (var extra = 62; extra >= 0; extra -= 8) {
+        var tx = player.x + Math.cos(a) * (found.d + extra);
+        var ty = player.y + Math.sin(a) * (found.d + extra);
+        if (W.isWater(tx, ty)) return { x: tx, y: ty };
+      }
+      return { x: found.x, y: found.y };
+    },
+
+    cast: function (player) {
+      var t = this.castTarget(player);
+      if (!t) return false;
+      this.castFrom = { x: player.x, y: player.y };
+      this.bob = { x: player.x, y: player.y - 16, tx: t.x, ty: t.y, dip: 0 };
+      this.state = 'cast';
+      this.timer = 0.42;
+      this.hooked = null;
+      this.junk = null;
+      GG.Sfx.cast();
+      return true;
+    },
+
+    /* Tapping the button. Returns what happened. */
+    tap: function () {
+      if (this.state === 'bite') {
+        this.result = { kind: 'catch', def: this.hooked ? this.hooked.def : this.junk };
+        if (this.hooked) {
+          var i = this.swimmers.indexOf(this.hooked);
+          if (i >= 0) this.swimmers.splice(i, 1);
+        }
+        this.splash(this.bob.x, this.bob.y, 14);
+        GG.Sfx.reel();
+        this.state = 'reel'; this.timer = 0.34;
+        return 'catch';
+      }
+      if (this.state === 'wait' || this.state === 'nibble') { this.finish('early'); return 'early'; }
+      if (this.state === 'cast') return null;
+      return null;
+    },
+
+    finish: function (why) {
+      if (this.state === 'reel' || this.state === 'idle') return;
+      if (this.hooked) this.hooked.chase = 0;
+      this.result = { kind: why };
+      this.splash(this.bob ? this.bob.x : 0, this.bob ? this.bob.y : 0, 5);
+      this.state = 'reel';
+      this.timer = 0.3;
+      GG.Sfx.reel();
+    },
+
+    splash: function (x, y, n) {
+      this.ripples.push({ x: x, y: y, r: 3, grow: 34, life: 0.7, max: 0.7 });
+      this.ripples.push({ x: x, y: y, r: 1, grow: 20, life: 0.9, max: 0.9 });
+    },
+
+    /* ---------- drawing ---------- */
+    drawShadows: function (c, cam, t) {
+      for (var i = 0; i < this.swimmers.length; i++) {
+        var s = this.swimmers[i];
+        var sx = s.x - cam.x, sy = s.y - cam.y;
+        if (sx < -80 || sy < -80 || sx > GG.view.w + 80 || sy > GG.view.h + 80) continue;
+        var len = 8 + s.def.shadow * 5.2;
+        var wob = Math.sin(s.t * 4) * 0.12;
+        c.save();
+        c.translate(sx, sy);
+        c.rotate(s.ang + wob);
+        c.fillStyle = 'rgba(12,44,62,0.36)';
+        c.beginPath(); c.ellipse(0, 0, len, len * 0.36, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath();
+        c.moveTo(-len * 0.9, 0);
+        c.lineTo(-len * 1.5, -len * 0.3);
+        c.lineTo(-len * 1.5, len * 0.3);
+        c.closePath(); c.fill();
+        c.restore();
+        // a faint wake
+        c.strokeStyle = 'rgba(255,255,255,0.16)'; c.lineWidth = 1.4;
+        c.beginPath();
+        c.arc(sx - Math.cos(s.ang) * len, sy - Math.sin(s.ang) * len, len * 0.8,
+          s.ang - 0.9, s.ang + 0.9);
+        c.stroke();
+      }
+    },
+
+    draw: function (c, cam, t, player) {
+      var i;
+      for (i = 0; i < this.ripples.length; i++) {
+        var rp = this.ripples[i];
+        c.strokeStyle = 'rgba(255,255,255,' + (0.5 * rp.life / rp.max).toFixed(3) + ')';
+        c.lineWidth = 2;
+        c.beginPath();
+        c.ellipse(rp.x - cam.x, rp.y - cam.y, rp.r, rp.r * 0.45, 0, 0, Math.PI * 2);
+        c.stroke();
+      }
+      if (!this.bob) return;
+
+      var bx = this.bob.x - cam.x, by = this.bob.y - cam.y;
+      var dip = 0;
+      if (this.state === 'nibble') dip = Math.sin(t * 30) * 2.2;
+      if (this.state === 'bite') dip = 7;
+
+      // line from the rod tip
+      var rod = this.rodTip(player, cam);
+      c.strokeStyle = 'rgba(255,255,255,0.75)'; c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(rod.x, rod.y);
+      c.quadraticCurveTo((rod.x + bx) / 2, (rod.y + by) / 2 + 6, bx, by + dip);
+      c.stroke();
+
+      // bobber
+      c.fillStyle = '#e8534a';
+      c.beginPath(); c.arc(bx, by + dip, 4.4, Math.PI, 0); c.fill();
+      c.fillStyle = '#f6f2e6';
+      c.beginPath(); c.arc(bx, by + dip, 4.4, 0, Math.PI); c.fill();
+      c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 0.8;
+      c.beginPath(); c.arc(bx, by + dip, 4.4, 0, Math.PI * 2); c.stroke();
+
+      if (this.state === 'bite') {
+        c.fillStyle = '#fff2a8';
+        c.font = 'bold 15px "Trebuchet MS", sans-serif';
+        c.textAlign = 'center';
+        c.fillText('!', bx, by - 13);
+      }
+    },
+
+    rodTip: function (player, cam) {
+      var a = player.angle;
+      return {
+        x: player.x - cam.x + Math.cos(a) * 20,
+        y: player.y - cam.y - 20 + Math.sin(a) * 8
+      };
+    },
+
+    drawRod: function (c, sx, sy, player) {
+      var a = player.angle;
+      var hx = sx + Math.cos(a) * 5, hy = sy - 13;
+      var tx = sx + Math.cos(a) * 20, ty = sy - 20 + Math.sin(a) * 8;
+      c.strokeStyle = '#b8875a'; c.lineWidth = 2.4; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(hx - Math.cos(a) * 7, hy + 4); c.lineTo(tx, ty); c.stroke();
+      c.fillStyle = '#6b5540';
+      c.beginPath(); c.arc(hx, hy + 2, 2.2, 0, Math.PI * 2); c.fill();
+    }
+  };
+})(window.GG = window.GG || {});
+
 /* ==== src/game/house.js ==== */
 /* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed.
    The room is drawn at the same scale as the world outside, so Guin is the same size indoors. */
@@ -3300,9 +4220,16 @@ ul.tips li{margin-bottom:3px}
       this._catchT = 0;
       $('catch-new').style.display = isNew ? 'inline-block' : 'none';
       $('catch-name').textContent = def.name;
-      var fact = def.facts[Math.floor(Math.random() * def.facts.length)];
-      $('catch-fact').textContent = isNew ? fact : ('You have caught ' + GG.Save.countOf(def.id) + ' of these.');
-      $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles' + (isNew ? ' &nbsp;+&nbsp; new page in your Bug Book!' : '');
+      var count = def.isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id);
+      if (def.isJunk) {
+        $('catch-fact').textContent = def.line;
+        $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles for tidying up';
+      } else {
+        var fact = def.facts[Math.floor(Math.random() * def.facts.length)];
+        $('catch-fact').textContent = isNew ? fact : ('You have caught ' + count + ' of these.');
+        $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles' +
+          (isNew ? ' &nbsp;+&nbsp; new page in your ' + (def.isFish ? 'Fish Book' : 'Bug Book') + '!' : '');
+      }
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
     },
@@ -3330,7 +4257,7 @@ ul.tips li{margin-bottom:3px}
         }
         c.restore();
         var bob = Math.sin(t * 2) * 6;
-        GG.BugArt.draw(c, self._catchDef, cv.width / 2, cv.height / 2 + bob, 7.2, -Math.PI / 2, t);
+        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob, 7.2, -Math.PI / 2, t);
         self._raf = requestAnimationFrame(frame);
       }
       this._raf = requestAnimationFrame(frame);
@@ -3360,7 +4287,7 @@ ul.tips li{margin-bottom:3px}
     var c = cv.getContext('2d');
     c.scale(2, 2);
     var scale = Math.min(w, h) / 34;
-    GG.BugArt.draw(c, def, w / 2, h / 2, scale * 1.05, -Math.PI / 2, 1.1);
+    GG.drawAny(c, def, w / 2, h / 2, scale * 1.05, -Math.PI / 2, 1.1);
     if (silhouette) {
       // paint the whole drawing one flat colour so it stays a mystery
       c.save();
@@ -3373,35 +4300,48 @@ ul.tips li{margin-bottom:3px}
   }
 
   var Book = GG.Book = {
-    open: function () {
+    tab: 'bugs',
+
+    open: function (tab) {
+      if (tab) this.tab = tab;
       GG.UI.open('screen-book');
       this.showGrid();
     },
 
+    setTab: function (tab) { this.tab = tab; this.showGrid(); },
+
     showGrid: function () {
       var grid = $('book-grid'), det = $('book-detail');
+      var fish = this.tab === 'fish';
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
+      $('book-tabs').style.display = '';
+      $('book-title').textContent = fish ? 'Fish Book' : 'Bug Book';
+      document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
+        el.classList.toggle('on', (el.getAttribute('data-book') === 'fish') === fish);
+      });
       grid.innerHTML = '';
-      var found = GG.Save.totalSpecies();
-      $('progress').textContent = found + ' / ' + GG.BUGS.length;
-      GG.BUGS.forEach(function (def) {
-        var got = GG.Save.has(def.id);
+      var list = fish ? GG.FISH : GG.BUGS;
+      var found = fish ? GG.Save.totalFish() : GG.Save.totalSpecies();
+      $('progress').textContent = found + ' / ' + list.length;
+      list.forEach(function (def) {
+        var got = fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id);
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
         cv.style.width = '100%'; cv.style.height = '54px';
         cell.appendChild(cv);
         cell.appendChild(GG.el('div', 'nm', got ? def.name : '???'));
         if (got) {
-          var cnt = GG.el('div', 'cnt', '×' + GG.Save.countOf(def.id));
-          cell.appendChild(cnt);
+          var n0 = fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id);
+          cell.appendChild(GG.el('div', 'cnt', '×' + n0));
           var r = GG.el('div', 'rar');
           r.style.background = GG.RARITY_COLORS[def.rarity];
           cell.appendChild(r);
         }
         cell.addEventListener('click', function () {
           GG.Sfx.click();
-          if (got) Book.showDetail(def); else GG.UI.toast('You have not met this one yet!');
+          if (got) Book.showDetail(def);
+          else GG.UI.toast(fish ? 'You have not caught this one yet!' : 'You have not met this one yet!');
         });
         grid.appendChild(cell);
       });
@@ -3411,7 +4351,9 @@ ul.tips li{margin-bottom:3px}
       var grid = $('book-grid'), det = $('book-detail');
       grid.style.display = 'none'; det.style.display = 'block';
       $('book-back').style.display = 'block';
+      $('book-tabs').style.display = 'none';
       det.innerHTML = '';
+      var isFish = !!def.isFish;
 
       var cv = GG.el('canvas'); cv.id = 'detail-art';
       cv.width = 640; cv.height = 300;
@@ -3422,11 +4364,19 @@ ul.tips li{margin-bottom:3px}
       det.appendChild(h);
 
       var meta = GG.el('div', 'meta');
-      var places = def.habitats.map(function (x) { return GG.HABITAT_NAMES[x]; }).join(', ');
       var times = def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
-      [['Found in', places], ['Comes out', times], ['Size', def.measure],
-       ['Rarity', GG.RARITY_NAMES[def.rarity]], ['Caught', GG.Save.countOf(def.id) + ' time' + (GG.Save.countOf(def.id) === 1 ? '' : 's')]
-      ].forEach(function (p) {
+      var n = isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id);
+      var rows;
+      if (isFish) {
+        rows = [['Found in', 'the Lily Pond'], ['Bites', times], ['Size', def.measure],
+          ['Shadow', GG.SHADOW_NAMES[def.shadow]], ['Rarity', GG.RARITY_NAMES[def.rarity]],
+          ['Caught', n + ' time' + (n === 1 ? '' : 's')]];
+      } else {
+        var places = def.habitats.map(function (x) { return GG.HABITAT_NAMES[x]; }).join(', ');
+        rows = [['Found in', places], ['Comes out', times], ['Size', def.measure],
+          ['Rarity', GG.RARITY_NAMES[def.rarity]], ['Caught', n + ' time' + (n === 1 ? '' : 's')]];
+      }
+      rows.forEach(function (p) {
         meta.appendChild(GG.el('span', 'tag', p[0] + ': ' + p[1]));
       });
       if (def.sting) {
@@ -3450,14 +4400,15 @@ ul.tips li{margin-bottom:3px}
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb');
+        if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
+        else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
         c.fillStyle = 'rgba(255,255,255,0.35)';
         for (var i = 0; i < 5; i++) {
           c.beginPath();
           c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
         }
-        GG.BugArt.draw(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t);
+        GG.drawAny(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t);
         self._raf = requestAnimationFrame(frame);
       }
       this._raf = requestAnimationFrame(frame);
@@ -3466,6 +4417,9 @@ ul.tips li{margin-bottom:3px}
 
   document.addEventListener('DOMContentLoaded', function () {
     $('book-back').addEventListener('click', function () { GG.Sfx.click(); Book.showGrid(); });
+    document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
+      el.addEventListener('click', function () { GG.Sfx.click(); Book.setTab(el.getAttribute('data-book')); });
+    });
   });
 })(window.GG = window.GG || {});
 
@@ -3475,7 +4429,7 @@ ul.tips li{margin-bottom:3px}
   'use strict';
   var $ = GG.$;
   var CW = 640, CH = 420, GROUND = 300;
-  var MAX_BUGS = 8, MAX_DECOR = 12;
+  var MAX_BUGS = 8, MAX_DECOR = 12, MAX_FISH = 6;
   var AIR = { flutter: 1, hover: 1, dart: 1, drift: 1, glow: 1 };
 
   var T = GG.Terrarium = {
@@ -3514,7 +4468,30 @@ ul.tips li{margin-bottom:3px}
         el.classList.toggle('on', el.getAttribute('data-tab') === self.tab);
       });
 
-      if (this.tab === 'bugs') {
+      if (this.tab === 'fish') {
+        var isWater = (GG.TANK_BY_ID[t.bg] || {}).water;
+        if (!isWater) {
+          tray.innerHTML = '<div class="note" style="grid-column:1/-1">Fish need water! Tap <b>Scene</b> until it says Aquarium, then put your fish in.</div>';
+          return;
+        }
+        var fids = Object.keys(d.caughtFish);
+        if (!fids.length) {
+          tray.innerHTML = '<div class="note" style="grid-column:1/-1">Go and catch a fish at the Lily Pond first!</div>';
+          return;
+        }
+        fids.forEach(function (id) {
+          var def = GG.FISH_BY_ID[id]; if (!def) return;
+          var item = GG.el('div', 'trayitem');
+          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
+          cv.style.height = '42px';
+          var c = cv.getContext('2d'); c.scale(2, 2);
+          GG.FishArt.draw(c, def, 33, 22, 0.62, false, 1.2);
+          item.appendChild(cv);
+          item.appendChild(GG.el('div', 'nm', def.name));
+          item.addEventListener('click', function () { self.addItem('fish', id); });
+          tray.appendChild(item);
+        });
+      } else if (this.tab === 'bugs') {
         var ids = Object.keys(d.caught);
         if (!ids.length) {
           tray.innerHTML = '<div class="note" style="grid-column:1/-1">Catch a bug first, then you can put it in here!</div>';
@@ -3555,13 +4532,13 @@ ul.tips li{margin-bottom:3px}
 
     addItem: function (kind, id) {
       var t = this.tank();
-      var arr = kind === 'bug' ? t.bugs : t.decor;
-      var max = kind === 'bug' ? MAX_BUGS : MAX_DECOR;
+      var arr = kind === 'bug' ? t.bugs : (kind === 'fish' ? t.fish : t.decor);
+      var max = kind === 'bug' ? MAX_BUGS : (kind === 'fish' ? MAX_FISH : MAX_DECOR);
       if (arr.length >= max) { GG.UI.toast('This terrarium is full!'); return; }
       var item = {
         id: id,
         x: CW / 2 + GG.rand(-120, 120),
-        y: kind === 'bug' ? GG.rand(150, 330) : GG.rand(GROUND - 20, CH - 40),
+        y: kind === 'bug' ? GG.rand(150, 330) : (kind === 'fish' ? GG.rand(90, 320) : GG.rand(GROUND - 20, CH - 40)),
         s: 1, seed: Math.random()
       };
       arr.push(item);
@@ -3583,7 +4560,44 @@ ul.tips li{margin-bottom:3px}
       return m;
     },
 
+    stepFish: function (dt) {
+      var tank = this.tank();
+      var list = tank.fish || [];
+      for (var i = 0; i < list.length; i++) {
+        var it = list[i];
+        var def = GG.FISH_BY_ID[it.id];
+        if (!def) continue;
+        var m = this.motionFor(it);
+        if (this.drag && this.drag.e.it === it) {
+          m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y;
+          continue;
+        }
+        m.timer -= dt;
+        if (m.timer <= 0) {
+          m.ang += GG.rand(-1.1, 1.1);
+          m.timer = GG.rand(1, 2.6);
+        }
+        var speed = 20 + (6 - def.shadow) * 5;
+        var vx = Math.cos(m.ang) * speed;
+        var vy = Math.sin(m.ang) * speed * 0.28;
+        m.ox += vx * dt; m.oy += vy * dt;
+        var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
+        if (away > 120) {
+          m.ox = m.ox / away * 120; m.oy = m.oy / away * 120;
+          m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.5, 0.5);
+        }
+        var wx = it.x + m.ox, wy = it.y + m.oy;
+        var lx = GG.clamp(wx, 46, CW - 46);
+        var ly = GG.clamp(wy, 56, CH - 54);
+        if (lx !== wx) { m.ox = lx - it.x; m.ang = Math.PI - m.ang; }
+        if (ly !== wy) { m.oy = ly - it.y; m.ang = -m.ang; }
+        m.lx = lx; m.ly = ly; m.lift = 0;
+        m.faceLeft = Math.cos(m.ang) < 0;
+      }
+    },
+
     stepBugs: function (dt) {
+      this.stepFish(dt);
       var tank = this.tank();
       for (var i = 0; i < tank.bugs.length; i++) {
         var it = tank.bugs[i];
@@ -3646,7 +4660,7 @@ ul.tips li{margin-bottom:3px}
     },
 
     livePos: function (e) {
-      if (e.kind !== 'bug') return { x: e.it.x, y: e.it.y - 18 };
+      if (e.kind === 'decor') return { x: e.it.x, y: e.it.y - 18 };
       var m = this.motionFor(e.it);
       return { x: m.lx, y: m.ly - m.lift };
     },
@@ -3654,6 +4668,7 @@ ul.tips li{margin-bottom:3px}
     items: function () {
       var t = this.tank(), out = [];
       t.decor.forEach(function (d) { out.push({ kind: 'decor', it: d }); });
+      (t.fish || []).forEach(function (f) { out.push({ kind: 'fish', it: f }); });
       t.bugs.forEach(function (b) { out.push({ kind: 'bug', it: b }); });
       return out;
     },
@@ -3673,6 +4688,7 @@ ul.tips li{margin-bottom:3px}
       var t = this.tank();
       var i = t.bugs.indexOf(this.sel);
       if (i >= 0) t.bugs.splice(i, 1);
+      else if ((i = (t.fish || []).indexOf(this.sel)) >= 0) t.fish.splice(i, 1);
       else { i = t.decor.indexOf(this.sel); if (i >= 0) t.decor.splice(i, 1); }
       this.sel = null;
       GG.Save.save();
@@ -3687,9 +4703,26 @@ ul.tips li{margin-bottom:3px}
 
       c.save();
       GG.roundRect(c, 6, 6, CW - 12, CH - 12, 18); c.clip();
-      var g = c.createLinearGradient(0, 0, 0, GROUND);
-      g.addColorStop(0, bg.sky); g.addColorStop(1, GG.shade(bg.sky, 0.12));
-      c.fillStyle = g; c.fillRect(0, 0, CW, GROUND);
+      if (bg.water) {
+        var wg = c.createLinearGradient(0, 0, 0, CH);
+        wg.addColorStop(0, '#b6e6f5'); wg.addColorStop(0.55, bg.sky); wg.addColorStop(1, '#3f93b8');
+        c.fillStyle = wg; c.fillRect(0, 0, CW, CH);
+        c.fillStyle = 'rgba(255,255,255,0.14)';
+        for (var sb = 0; sb < 7; sb++) {
+          var by = CH - ((t * 26 + sb * 63) % (CH + 40));
+          c.beginPath(); c.arc(52 + sb * 82, by, 3 + (sb % 3), 0, Math.PI * 2); c.fill();
+        }
+        c.fillStyle = 'rgba(255,255,255,0.12)';
+        for (var ry = 0; ry < 4; ry++) {
+          c.beginPath();
+          c.ellipse(CW / 2, 22 + ry * 16, CW * 0.42, 5, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+      } else {
+        var g = c.createLinearGradient(0, 0, 0, GROUND);
+        g.addColorStop(0, bg.sky); g.addColorStop(1, GG.shade(bg.sky, 0.12));
+        c.fillStyle = g; c.fillRect(0, 0, CW, GROUND);
+      }
       if (bg.id === 'night') {
         c.fillStyle = '#fff';
         for (var s = 0; s < 26; s++) {
@@ -3725,6 +4758,11 @@ ul.tips li{margin-bottom:3px}
         if (e.kind === 'decor') {
           var fn = GG.DecorArt[it.id];
           if (fn) fn(c, it.x, it.y, 1.75, t + it.seed * 10);
+        } else if (e.kind === 'fish') {
+          var fdef = GG.FISH_BY_ID[it.id];
+          if (!fdef) continue;
+          var fm = this.motionFor(it);
+          GG.FishArt.draw(c, fdef, pos.x, pos.y + Math.sin(t * 1.4 + it.seed * 8) * 2, 1.5, fm.faceLeft, t + it.seed * 5);
         } else {
           var def = GG.BUG_BY_ID[it.id];
           if (!def) continue;
@@ -3839,7 +4877,7 @@ ul.tips li{margin-bottom:3px}
       $('tank-remove').addEventListener('click', function () { GG.Sfx.click(); self.removeSelected(); });
       $('tank-clear').addEventListener('click', function () {
         GG.Sfx.click();
-        var t = self.tank(); t.bugs = []; t.decor = []; self.sel = null;
+        var t = self.tank(); t.bugs = []; t.decor = []; t.fish = []; self.sel = null;
         GG.Save.save(); self.refresh();
       });
       $('tank-rename').addEventListener('click', function () {
@@ -3867,7 +4905,7 @@ ul.tips li{margin-bottom:3px}
         if (d.terrariums.length >= 6) { GG.UI.toast('Six terrariums is plenty!'); return; }
         if (d.sparkles < cost) { GG.UI.toast('A new terrarium costs ✦ ' + cost); return; }
         d.sparkles -= cost;
-        d.terrariums.push({ name: 'Terrarium ' + (d.terrariums.length + 1), bg: 'meadow', decor: [], bugs: [] });
+        d.terrariums.push({ name: 'Terrarium ' + (d.terrariums.length + 1), bg: 'meadow', decor: [], bugs: [], fish: [] });
         self.index = d.terrariums.length - 1;
         GG.Save.save(); GG.UI.refreshHud(); self.refresh();
         GG.UI.toast('A brand new terrarium!');
@@ -3989,6 +5027,26 @@ ul.tips li{margin-bottom:3px}
     }
   }
 
+  var _fishLabel = '';
+  function updateFishButton(fishing, castable) {
+    var btn = $('btn-fish');
+    var show = fishing || castable;
+    btn.classList.toggle('hidden', !show);
+    if (!show) { _fishLabel = ''; btn.classList.remove('ready'); return; }
+    var st = GG.Fishing.state;
+    var main = 'FISH', sub = 'cast', ready = false;
+    if (st === 'bite') { main = 'CATCH'; sub = 'now!'; ready = true; }
+    else if (st === 'nibble') { main = 'WAIT'; sub = 'nibble\u2026'; }
+    else if (st === 'wait') { main = 'WAIT'; sub = 'reel in'; }
+    else if (st === 'cast' || st === 'reel') { main = '\u2026'; sub = ''; }
+    btn.classList.toggle('ready', ready);
+    var key = main + '|' + sub;
+    if (key !== _fishLabel) {
+      _fishLabel = key;
+      btn.innerHTML = main + '<small>' + sub + '</small>';
+    }
+  }
+
   var _label = '';
   function setActionLabel(main, sub) {
     if (_label === main + '|' + sub) return;
@@ -4027,10 +5085,18 @@ ul.tips li{margin-bottom:3px}
 
     var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
     var atDoor = doorD < 40;
+    var Fi = GG.Fishing;
 
     P.update(dt, function (x, y, r) { return W.blocked(x, y, r); });
 
-    if (GG.Input.actionPressed) {
+    var fishing = Fi.active();
+    var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
+    updateFishButton(fishing, !!castable);
+
+    if (GG.Input.action2Pressed || (fishing && GG.Input.actionPressed)) {
+      if (fishing) Fi.tap();
+      else if (castable) Fi.cast(P);
+    } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
       if (P.startSwing()) swingChecked = false;
     }
@@ -4042,6 +5108,9 @@ ul.tips li{margin-bottom:3px}
       }
       if (pr >= 0.8) { swingChecked = true; onSwingMiss(P); }
     }
+
+    var fishResult = Fi.update(dt, P);
+    if (fishResult) onFishResult(fishResult);
 
     GG.Critters.update(dt, P);
 
@@ -4057,6 +5126,7 @@ ul.tips li{margin-bottom:3px}
 
     GG.UI.prompt(atDoor ? 'Tap to go inside' : null);
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
+    else if (fishing) setActionLabel('\u2014', 'fishing');
     else setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
   }
 
@@ -4065,6 +5135,7 @@ ul.tips li{margin-bottom:3px}
     W.drawGround(ctx, cam, GG.view.w, GG.view.h);
     canvas._vw = GG.view.w;
     W.drawWater(ctx, cam, t);
+    GG.Fishing.drawShadows(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
 
     // everything that stands up gets sorted so Guin walks behind trees
@@ -4083,6 +5154,7 @@ ul.tips li{margin-bottom:3px}
       }
     }
     GG.Critters.draw(ctx, cam, t);
+    GG.Fishing.draw(ctx, cam, t, P);
 
     var tint = GG.Time.tint();
     if (tint.indexOf(',0.000)') < 0) {
@@ -4137,6 +5209,8 @@ ul.tips li{margin-bottom:3px}
   function enterHouse() {
     GG.Sfx.door();
     GG.Critters.calmAll();
+    GG.Fishing.reset();
+    $('btn-fish').classList.add('hidden');
     setScene('house');
     GG.Player.reset(GG.House.START.x, GG.House.START.y);
     GG.UI.prompt(null);
@@ -4192,6 +5266,32 @@ ul.tips li{margin-bottom:3px}
       ? 'Ouch! A honeybee stung you. She only gets one sting in her whole life, so she really did not want to.'
       : 'Ouch! A bumblebee stung you. Give her some space and she will calm down.';
     GG.UI.toast(line, 3400);
+  }
+
+  /* ---------- fishing ---------- */
+  function onFishResult(r) {
+    if (r.kind === 'catch' && r.def) {
+      var def = r.def;
+      if (def.isJunk) {
+        GG.Save.data.sparkles += def.value;
+        GG.Save.save();
+        GG.UI.refreshHud();
+        GG.Sfx.catchSmall();
+        GG.UI.showCatch(def, false, def.value);
+        return;
+      }
+      var isNew = GG.Save.addFish(def.id);
+      var reward = def.value + (isNew ? def.value * 2 : 0);
+      GG.Save.data.sparkles += reward;
+      GG.Save.save();
+      GG.UI.refreshHud();
+      if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
+      GG.UI.showCatch(def, isNew, reward);
+      return;
+    }
+    if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
+    else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
+    else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
   }
 
   /* ---------- catching ---------- */
@@ -4348,7 +5448,7 @@ ul.tips li{margin-bottom:3px}
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', function () { setTimeout(resize, 250); });
 
-    GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'));
+    GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'), $('btn-fish'));
     GG.UI.init();
     GG.UI.openPanels.push('screen-title');
     GG.UI.refreshHud();
@@ -4359,7 +5459,8 @@ ul.tips li{margin-bottom:3px}
     $('btn-howto').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
     $('btn-menu').addEventListener('click', function () {
       GG.Sfx.click();
-      $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs found';
+      $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs, ' +
+        GG.Save.totalFish() + ' of ' + GG.FISH.length + ' fish';
       $('menu-place').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.phaseName() +
         ' · ✦ ' + GG.Save.data.sparkles;
       $('menu-mute').textContent = 'Sound: ' + (GG.Save.data.muted ? 'off' : 'on');
