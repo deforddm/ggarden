@@ -214,6 +214,7 @@ ul.tips li{margin-bottom:3px}
 .newsline{background:var(--cream2);border-radius:14px;padding:10px 12px;margin:6px 0;font-size:14.5px;line-height:1.45}
 .newsline b{color:var(--green-d)}
 #title-card .btn#btn-guest{background:#e8eef8;border-color:#c4d4f0;box-shadow:0 3px 0 #c4d4f0;color:#3a5a9a}
+.tag.wet{background:#dff0f6;color:#2a6a86}
 
 </style>
 </head>
@@ -275,6 +276,7 @@ ul.tips li{margin-bottom:3px}
           <li>Out at <b>The Tidepools</b>, past Shell Beach, you can wade into the rock pools and net crabs, sea stars, urchins and sea slugs with your net. (In a real rock pool we look and put everything back exactly where we found it.)</li>
           <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
           <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are three kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, and a <b>hybrid tank</b> with a grassy bank above the water that holds both.</li>
+          <li>The rock-pool creatures &mdash; crabs, sea stars, urchins, limpets, periwinkles and sea slugs &mdash; <b>need water to live in</b>, so they go in a fish tank or a hybrid tank, never a dry terrarium. They potter about on the sand at the bottom.</li>
           <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them in the decoration box by your bed &mdash; there are things for every kind of tank, from ferns and fairy houses to coral, sea grass and a treasure chest.</li>
           <li><b>Settings</b> (on the title screen, or in the Garden Menu) turns the music, the garden sounds and the beeps up and down on their own.</li>
           <li>A friend can have a turn with <b>Let a friend play</b> on the title screen. They get a garden of their own to explore, and yours is kept completely safe until they finish.</li>
@@ -679,8 +681,18 @@ ul.tips li{margin-bottom:3px}
                 GG.TANK_BY_ID[t.bg].kind !== (t.type === 'aquarium' ? 'water' : (t.type === 'hybrid' ? 'hybrid' : 'land'))) {
               t.bg = GG.defaultSceneFor ? GG.defaultSceneFor(t.type) : 'meadow';
             }
-            if (t.type === 'aquarium') t.bugs = [];
             if (t.type === 'terrarium') t.fish = [];
+            /* Only creatures that can actually live in this tank stay in it.
+               A fish tank keeps its rock-pool creatures; a terrarium keeps its
+               land ones. Anything in the wrong tank goes back to the book -
+               nothing is lost, it just has to be placed again. */
+            if (GG.bugFitsTank) {
+              t.bugs = t.bugs.filter(function (x) {
+                return GG.bugFitsTank(GG.BUG_BY_ID[x.id], t.type);
+              });
+            } else if (t.type === 'aquarium') {
+              t.bugs = [];
+            }
           });
           this.data = d;
         }
@@ -1407,9 +1419,16 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.9.0';
+  GG.VERSION = '1.9.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.9.1', title: 'Rock-pool creatures need water',
+      lines: [
+        'Crabs, sea stars, urchins, limpets, periwinkles and sea slugs need water to live in, so now they can only go in a fish tank or a hybrid tank. They settle on the sand at the bottom and potter about.',
+        'A terrarium will politely say no if you try to put one in, and the Bug Book tells you which tank each creature needs.'
+      ]
+    },
     {
       v: '1.9.0', title: 'Music, settings and a friend pass',
       lines: [
@@ -1467,6 +1486,8 @@ ul.tips li{margin-bottom:3px}
   //           river, beach, shore, tidepool, anywhere
   // times:    morning, day, evening, night, any
   // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift, tide
+  // aquatic:  true means it needs water to live in, so it can only be kept in a
+  //           fish tank or a hybrid tank - never a dry terrarium
   // rarity:   1 common .. 5 legendary
 
   GG.BUGS = [
@@ -2373,7 +2394,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'hermit_crab', name: 'Hermit Crab',
       habitats: ['tidepool'], times: ['any'], rarity: 1, value: 22,
-      behavior: 'tide', speed: 13, shy: 40, size: 0.85,
+      aquatic: true, behavior: 'tide', speed: 13, shy: 40, size: 0.85,
       measure: 'three quarters of an inch across',
       art: { shape: 'hermitcrab', body: '#d2703f', wing: '#e8c9a0', accent: '#8a5a2f', eyes: '#2b2b2b' },
       facts: [
@@ -2385,7 +2406,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'shore_crab', name: 'Shore Crab',
       habitats: ['tidepool'], times: ['any'], rarity: 1, value: 26,
-      behavior: 'tide', speed: 22, shy: 58, size: 1.05,
+      aquatic: true, behavior: 'tide', speed: 22, shy: 58, size: 1.05,
       measure: '2 inches across',
       art: { shape: 'crab', body: '#6a3f6a', wing: '#8a5a88', accent: '#3f2440', eyes: '#f2e8d0' },
       facts: [
@@ -2397,7 +2418,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'sea_star', name: 'Ochre Sea Star',
       habitats: ['tidepool'], times: ['any'], rarity: 3, value: 110,
-      behavior: 'tide', speed: 4, shy: 0, size: 1.6,
+      aquatic: true, behavior: 'tide', speed: 4, shy: 0, size: 1.6,
       measure: '8 inches across',
       art: { shape: 'seastar', body: '#e0764a', wing: '#f0a070', accent: '#a84a28' },
       facts: [
@@ -2410,7 +2431,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'anemone', name: 'Green Anemone',
       habitats: ['tidepool'], times: ['any'], rarity: 2, value: 60,
-      behavior: 'tide', speed: 0, shy: 0, size: 1.4,
+      aquatic: true, behavior: 'tide', speed: 0, shy: 0, size: 1.4,
       measure: '6 inches across',
       art: { shape: 'anemone', body: '#3f8a5a', wing: '#7fc48a', accent: '#e8f0a0' },
       facts: [
@@ -2423,7 +2444,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'urchin', name: 'Purple Sea Urchin',
       habitats: ['tidepool'], times: ['any'], rarity: 2, value: 70,
-      behavior: 'tide', speed: 3, shy: 0, size: 1.15,
+      aquatic: true, behavior: 'tide', speed: 3, shy: 0, size: 1.15,
       measure: '3 inches across',
       art: { shape: 'urchin', body: '#7a4aa8', wing: '#9a6ac8', accent: '#4a2a6a' },
       facts: [
@@ -2436,7 +2457,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'limpet', name: 'Limpet',
       habitats: ['tidepool'], times: ['any'], rarity: 1, value: 20,
-      behavior: 'tide', speed: 2, shy: 0, size: 0.8,
+      aquatic: true, behavior: 'tide', speed: 2, shy: 0, size: 0.8,
       measure: '1 inch long',
       art: { shape: 'limpet', body: '#b8a888', wing: '#d8cbae', accent: '#7a6a4a' },
       facts: [
@@ -2448,7 +2469,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'periwinkle', name: 'Periwinkle',
       habitats: ['tidepool'], times: ['any'], rarity: 1, value: 16,
-      behavior: 'tide', speed: 5, shy: 0, size: 0.85,
+      aquatic: true, behavior: 'tide', speed: 5, shy: 0, size: 0.85,
       measure: 'three quarters of an inch tall',
       art: { shape: 'periwinkle', body: '#7a6a50', wing: '#b8a888', accent: '#463c2c' },
       facts: [
@@ -2460,7 +2481,7 @@ ul.tips li{margin-bottom:3px}
     {
       id: 'sea_slug', name: 'Sea Slug',
       habitats: ['tidepool'], times: ['any'], rarity: 3, value: 130,
-      behavior: 'tide', speed: 6, shy: 0, size: 1.0,
+      aquatic: true, behavior: 'tide', speed: 6, shy: 0, size: 1.0,
       measure: '2 inches long',
       art: { shape: 'nudibranch', body: '#ff8a4a', wing: '#ffd0a0', accent: '#ffffff', eyes: '#5a2a10' },
       facts: [
@@ -2471,6 +2492,11 @@ ul.tips li{margin-bottom:3px}
     }
 
   ];
+
+  /* Does this creature need water in its tank? */
+  GG.isAquaticBug = function (def) {
+    return !!def && (def.aquatic === true || def.behavior === 'tide');
+  };
 
   GG.BUG_BY_ID = {};
   GG.BUGS.forEach(function (b, i) { b.index = i; GG.BUG_BY_ID[b.id] = b; });
@@ -4379,42 +4405,37 @@ ul.tips li{margin-bottom:3px}
 
   S.periwinkle = function (c, a, t) {
     var bob = Math.sin(t * 2.4) * 0.4;
-    /* the foot creeping out at the front */
-    c.fillStyle = GG.shade(a.wing, 0.3);
-    ell(c, 0, 5.4 + bob * 0.3, 4.4, 2.8);
-    c.fillStyle = GG.shade(a.wing, 0.42);
-    ell(c, 0, 6.2 + bob * 0.3, 3, 1.6);
-    /* a little whorled cone, wide at the bottom, pointed at the top */
-    c.fillStyle = a.body;
-    c.beginPath();
-    c.moveTo(-5.6, 4.4);
-    c.quadraticCurveTo(-6.4, -2, -1.6, -8.6);
-    c.quadraticCurveTo(0.4, -10.4, 1.8, -8.2);
-    c.quadraticCurveTo(6, -1.6, 5.6, 4.4);
-    c.quadraticCurveTo(0, 6.6, -5.6, 4.4);
-    c.closePath(); c.fill();
-    /* the whorls */
-    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
-    var bands = [[4.4, 5.4], [1.6, 4.6], [-0.8, 3.6], [-2.8, 2.6], [-4.6, 1.7], [-6.2, 1]];
-    for (var i = 0; i < bands.length; i++) {
+    /* the pale foot creeping out at the front */
+    c.fillStyle = GG.shade(a.wing, 0.34);
+    ell(c, 0, 5.4 + bob * 0.3, 4.6, 2.9);
+    c.fillStyle = GG.shade(a.wing, 0.5);
+    ell(c, 0, 6.4 + bob * 0.3, 3.2, 1.7);
+    /* a little tower of whorls, widest at the bottom - a sea snail seen
+       from the side, which reads instantly at this size */
+    var whorls = [[4.2, 5.8, 4.4], [0.2, 4.7, 3.6], [-3.2, 3.5, 2.7], [-6, 2.3, 1.8], [-8.2, 1.2, 1]];
+    for (var i = 0; i < whorls.length; i++) {
+      var w = whorls[i];
+      c.fillStyle = (i % 2) ? GG.shade(a.body, 0.12) : a.body;
+      ell(c, 0, w[0], w[1], w[2]);
+    }
+    /* the seam running round each whorl */
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    for (var j = 0; j < whorls.length - 1; j++) {
+      var q = whorls[j];
       c.beginPath();
-      c.moveTo(-bands[i][1], bands[i][0]);
-      c.quadraticCurveTo(0, bands[i][0] + 1.4, bands[i][1], bands[i][0] - 0.3);
+      c.moveTo(-q[1] * 0.94, q[0] - q[2] * 0.5);
+      c.quadraticCurveTo(0, q[0] - q[2] * 1.15, q[1] * 0.94, q[0] - q[2] * 0.5);
       c.stroke();
     }
-    c.fillStyle = GG.shade(a.body, 0.28);
-    c.beginPath();
-    c.moveTo(-1, -8.4);
-    c.quadraticCurveTo(3.4, -2.4, 4.4, 3.4);
-    c.quadraticCurveTo(1.6, 4.2, 0.4, 3.6);
-    c.closePath(); c.fill();
-    c.fillStyle = 'rgba(255,255,255,0.3)';
-    ell(c, -2.4, -1.6, 1.4, 3, -0.25);
-    /* the aperture and its trapdoor */
-    c.fillStyle = GG.shade(a.body, -0.35);
-    ell(c, -0.6, 4, 3, 2.1, -0.12);
-    c.fillStyle = GG.shade(a.accent, 0.45);
-    ell(c, -0.6, 4.2 + bob * 0.3, 2.1, 1.5, -0.12);
+    c.fillStyle = 'rgba(255,255,255,0.34)';
+    ell(c, -1.8, -0.6, 1.5, 3.4, -0.22);
+    /* the mouth of the shell, with its little trapdoor */
+    c.fillStyle = GG.shade(a.body, -0.4);
+    ell(c, -0.4, 5.6, 3, 2.2, -0.1);
+    c.fillStyle = GG.shade(a.accent, 0.5);
+    ell(c, -0.4, 5.8 + bob * 0.3, 2.1, 1.5, -0.1);
+    c.fillStyle = 'rgba(255,255,255,0.28)';
+    ell(c, -1.1, 5.4 + bob * 0.3, 0.8, 0.6, -0.1);
   };
 
   S.nudibranch = function (c, a, t) {
@@ -6242,14 +6263,30 @@ ul.tips li{margin-bottom:3px}
   GG.DECOR.forEach(function (d) { GG.DECOR_BY_ID[d.id] = d; });
 
   /* Three kinds of tank, each with its own scenes. */
+  /* `creatures` says which bugs a tank will take:
+     land = the dry-land ones, water = the rock-pool ones (they need water to
+     live in), any = both. A hybrid has a bank AND a pool, so it takes both. */
   GG.TANK_TYPES = [
     { id: 'terrarium', name: 'Terrarium', short: 'Terrarium', blurb: 'Dry land for bugs.',
-      maxBugs: 8, maxFish: 0, maxDecor: 12 },
-    { id: 'aquarium', name: 'Fish Tank', short: 'Fish Tank', blurb: 'All water, for fish.',
-      maxBugs: 0, maxFish: 6, maxDecor: 8 },
+      maxBugs: 8, maxFish: 0, maxDecor: 12, creatures: 'land' },
+    { id: 'aquarium', name: 'Fish Tank', short: 'Fish Tank',
+      blurb: 'All water, for fish and rock-pool creatures.',
+      maxBugs: 4, maxFish: 6, maxDecor: 8, creatures: 'water' },
     { id: 'hybrid', name: 'Hybrid Tank', short: 'Hybrid', blurb: 'A grassy bank above, water below. Bugs and fish together.',
-      maxBugs: 5, maxFish: 4, maxDecor: 10 }
+      maxBugs: 5, maxFish: 4, maxDecor: 10, creatures: 'any' }
   ];
+
+  /* Can this creature live in that kind of tank? A sea star would dry out on a
+     terrarium's grass, and a ladybug would drown in a fish tank. */
+  GG.bugFitsTank = function (def, tankType) {
+    if (!def) return false;
+    var takes = (GG.TANK_TYPE_BY_ID[tankType] || {}).creatures || 'land';
+    if (takes === 'any') return true;
+    return GG.isAquaticBug(def) ? (takes === 'water') : (takes === 'land');
+  };
+  GG.tankNeededFor = function (def) {
+    return GG.isAquaticBug(def) ? 'a fish tank or a hybrid tank' : 'a terrarium or a hybrid tank';
+  };
   GG.TANK_TYPE_BY_ID = {};
   GG.TANK_TYPES.forEach(function (t) { GG.TANK_TYPE_BY_ID[t.id] = t; });
 
@@ -8360,6 +8397,9 @@ ul.tips li{margin-bottom:3px}
         var warn = GG.el('span', 'tag sting', 'Can sting if you upset her');
         meta.appendChild(warn);
       }
+      if (!isFish && GG.isAquaticBug(def)) {
+        meta.appendChild(GG.el('span', 'tag wet', 'Needs water: keep it in a fish tank or a hybrid tank'));
+      }
       det.appendChild(meta);
 
       def.facts.forEach(function (f) {
@@ -8409,6 +8449,16 @@ ul.tips li{margin-bottom:3px}
   var CW = 640, CH = 420;
   var AIR = { flutter: 1, hover: 1, dart: 1, drift: 1, glow: 1 };
 
+  /* Where in the glass does this creature belong? */
+  function bandFor(def, b) {
+    if (def && GG.isAquaticBug(def) && b.floor) return b.floor;      // on the bottom, under water
+    if (def && AIR[def.behavior] && b.air) return b.air;             // flying
+    if (def && def.behavior === 'skim' && b.hasWater && b.waterTop != null) {
+      return [b.waterTop - 4, b.waterTop + 16];                      // skating on the surface
+    }
+    return b.ground || b.floor || b.water;                           // walking
+  }
+
   var T = GG.Terrarium = {
     index: 0,
     tab: 'bugs',
@@ -8429,12 +8479,14 @@ ul.tips li{margin-bottom:3px}
       var id = (tank.type || 'terrarium');
       if (id === 'aquarium') {
         return { id: id, hasLand: false, hasWater: true,
-          sand: CH - 62, water: [50, CH - 68], decor: [CH - 80, CH - 48] };
+          sand: CH - 62, water: [50, CH - 68], decor: [CH - 80, CH - 48],
+          floor: [CH - 64, CH - 48] };
       }
       if (id === 'hybrid') {
         return { id: id, hasLand: true, hasWater: true,
           bank: 232, waterTop: 270, sand: CH - 40,
-          air: [42, 224], ground: [222, 264], water: [286, CH - 48], decor: [226, 264] };
+          air: [42, 224], ground: [222, 264], water: [286, CH - 48], decor: [226, 264],
+          floor: [CH - 56, CH - 42] };
       }
       return { id: id, hasLand: true, hasWater: false,
         ground: [292, CH - 46], air: [46, 300], decor: [282, CH - 42] };
@@ -8505,10 +8557,23 @@ ul.tips li{margin-bottom:3px}
           tray.innerHTML = '<div class="note" style="grid-column:1/-1">Catch a bug first, then you can put it in here!</div>';
           return;
         }
-        ids.forEach(function (id) {
-          var def = GG.BUG_BY_ID[id]; if (!def) return;
-          tile(def, false, function () { self.addItem('bug', id); });
+        var fits = ids.map(function (id) { return GG.BUG_BY_ID[id]; })
+          .filter(function (def) { return def && GG.bugFitsTank(def, tk.type || 'terrarium'); });
+        if (!fits.length) {
+          var msg = (tk.type === 'aquarium')
+            ? 'A fish tank is for fish and rock-pool creatures. Catch a crab, a sea star or an urchin in The Tidepools and it can live in here.'
+            : 'Nothing you have caught can live in this tank yet.';
+          tray.innerHTML = '<div class="note" style="grid-column:1/-1">' + msg + '</div>';
+          return;
+        }
+        fits.forEach(function (def) {
+          tile(def, false, function () { self.addItem('bug', def.id); });
         });
+        if (tk.type === 'aquarium') {
+          tray.appendChild(GG.el('div', 'note',
+            'Rock-pool creatures need water, so they live in here rather than a terrarium.'))
+            .style.gridColumn = '1/-1';
+        }
       } else {
         /* only the pieces that suit this kind of tank */
         var fits = GG.decorFor(this.tank().type || 'terrarium');
@@ -8546,17 +8611,29 @@ ul.tips li{margin-bottom:3px}
       var arr = this.listFor(tk, kind);
       var max = kind === 'bug' ? ty.maxBugs : (kind === 'fish' ? ty.maxFish : ty.maxDecor);
       if (!max) { GG.UI.toast('That does not belong in a ' + ty.name.toLowerCase() + '.'); return; }
+
+      /* A sea star would dry out on the grass, and a ladybug would drown. */
+      if (kind === 'bug') {
+        var d0 = GG.BUG_BY_ID[id];
+        if (d0 && !GG.bugFitsTank(d0, tk.type || 'terrarium')) {
+          GG.UI.toast(GG.isAquaticBug(d0)
+            ? d0.name + ' needs water \u2014 put it in ' + GG.tankNeededFor(d0) + '.'
+            : d0.name + ' would drown in there \u2014 it needs ' + GG.tankNeededFor(d0) + '.', 3000);
+          return;
+        }
+      }
       if (arr.length >= max) { GG.UI.toast('This tank is full! (' + max + ' is the limit)'); return; }
 
       var y;
       if (kind === 'fish') y = GG.rand(b.water[0] + 10, b.water[1] - 10);
       else if (kind === 'decor') y = GG.rand(b.decor[0], b.decor[1]);
       else {
-        var def = GG.BUG_BY_ID[id];
-        var flyer = def && AIR[def.behavior];
-        y = flyer ? GG.rand(b.air[0] + 20, b.air[1] - 30) : GG.rand(b.ground[0], b.ground[1]);
+        var band = bandFor(GG.BUG_BY_ID[id], b);
+        y = GG.rand(band[0] + 4, band[1] - 4);
       }
-      var item = { id: id, x: CW / 2 + GG.rand(-110, 110), y: y, s: 1, seed: Math.random() };
+      /* rock-pool creatures spread along the bottom rather than piling up */
+      var spread = (kind === 'bug' && GG.isAquaticBug(GG.BUG_BY_ID[id])) ? 200 : 110;
+      var item = { id: id, x: CW / 2 + GG.rand(-spread, spread), y: y, s: 1, seed: Math.random() };
       arr.push(item);
       this.sel = item;
       GG.Sfx.place();
@@ -8621,7 +8698,6 @@ ul.tips li{margin-bottom:3px}
     },
 
     stepBugs: function (dt, tk, b) {
-      if (!b.hasLand) return;
       for (var i = 0; i < tk.bugs.length; i++) {
         var it = tk.bugs[i];
         var def = GG.BUG_BY_ID[it.id];
@@ -8630,10 +8706,12 @@ ul.tips li{margin-bottom:3px}
         if (this.drag && this.drag.e.it === it) { m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y; continue; }
 
         var bh = def.behavior;
-        var air = !!AIR[bh];
+        var wet = GG.isAquaticBug(def);
+        var air = !wet && !!AIR[bh] && !!b.air;
         var skim = bh === 'skim';
-        var radius = air ? 108 : 76;
-        var speed = (air ? def.speed * 0.44 : Math.max(def.speed, 16) * 0.5);
+        var radius = air ? 108 : (wet ? 58 : 76);
+        var speed = air ? def.speed * 0.44
+          : (wet ? Math.max(def.speed, 6) * 0.55 : Math.max(def.speed, 16) * 0.5);
 
         m.timer -= dt;
         if (m.timer <= 0) {
@@ -8657,10 +8735,9 @@ ul.tips li{margin-bottom:3px}
           m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.6, 0.6);
         }
 
-        var lo, hi;
-        if (air) { lo = b.air[0]; hi = b.air[1]; }
-        else if (skim && b.hasWater) { lo = b.waterTop - 4; hi = b.waterTop + 16; }
-        else { lo = b.ground[0]; hi = b.ground[1]; }
+        var band = bandFor(def, b);
+        var lo = band[0], hi = band[1];
+        void skim;
 
         var wx = it.x + m.ox, wy = it.y + m.oy;
         var lx = GG.clamp(wx, 40, CW - 40);
@@ -8835,7 +8912,7 @@ ul.tips li{margin-bottom:3px}
           var def = GG.BUG_BY_ID[it.id];
           if (!def) continue;
           var m = this.motionFor(it);
-          var flyer = !!AIR[def.behavior];
+          var flyer = !GG.isAquaticBug(def) && !!AIR[def.behavior] && !!b.air;
           var bob = Math.sin(t * 1.8 + it.seed * 9) * (flyer ? 3.4 : 0.8);
           if (flyer || m.lift > 1) {
             var shadowY = b.id === 'hybrid' ? b.bank + 8 : b.air[1] + 36;
@@ -8892,10 +8969,7 @@ ul.tips li{margin-bottom:3px}
       var tk = this.tank(), b = this.bands(tk);
       if (e.kind === 'fish') return b.water;
       if (e.kind === 'decor') return [b.decor[0], b.decor[1] + 10];
-      var def = GG.BUG_BY_ID[e.it.id];
-      if (def && AIR[def.behavior]) return b.air;
-      if (def && def.behavior === 'skim' && b.hasWater) return [b.waterTop - 4, b.waterTop + 16];
-      return b.ground;
+      return bandFor(GG.BUG_BY_ID[e.it.id], b);
     },
 
     /* Little pictures of each kind of tank on the chooser. */
