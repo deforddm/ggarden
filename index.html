@@ -243,8 +243,11 @@ ul.tips li{margin-bottom:3px}
           <li><b>Walk</b> by holding your thumb anywhere on the left side of the screen and sliding it.</li>
           <li><b>Swing your net</b> with the big yellow button.</li>
           <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
-          <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths!</li>
-          <li><b>Go fishing</b> at the Lily Pond. Stand on the bank facing the water and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
+          <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths, and after dark on the beach for ghost crabs.</li>
+          <li><b>Go fishing</b> anywhere there is water. Stand on the bank facing it and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
+          <li>Every water holds different fish: the <b>Lily Pond</b>, <b>Pebble Stream</b> up in the hills, the <b>Winding River</b>, <b>Gull Inlet</b> where the river meets the sea, and the <b>open sea</b> off Shell Beach. Follow the stream downhill and see where it takes you.</li>
+          <li>You can paddle straight across the little stream, but the river and the sea are too deep, so look for a way round.</li>
+          <li>Out at <b>The Tidepools</b>, past Shell Beach, you can wade into the rock pools and net crabs, sea stars, urchins and sea slugs with your net. (In a real rock pool we look and put everything back exactly where we found it.)</li>
           <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
           <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are three kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, and a <b>hybrid tank</b> with a grassy bank above the water that holds both.</li>
           <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
@@ -777,9 +780,10 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  // habitats: meadow, garden, forest, pond, hill, anywhere
+  // habitats: meadow, garden, forest, pond, hill, orchard, riverbank,
+  //           river, beach, shore, tidepool, anywhere
   // times:    morning, day, evening, night, any
-  // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift
+  // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift, tide
   // rarity:   1 common .. 5 legendary
 
   GG.BUGS = [
@@ -1242,13 +1246,14 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'caddisfly', name: 'Caddisfly',
-      habitats: ['pond'], times: ['evening', 'night'], rarity: 2, value: 28,
+      habitats: ['pond', 'riverbank'], times: ['evening', 'night'], rarity: 2, value: 28,
       behavior: 'flutter', speed: 30, shy: 48, size: 0.9,
       measure: '1 inch long',
       art: { shape: 'caddis', body: '#8a7048', wing: '#b09a6a', accent: '#5a462c', pattern: 'plain' },
       facts: [
         'A baby caddisfly builds itself a case out of sand, pebbles and twigs, glued together with silk, and carries it about like a tiny suit of armour.',
-        'Most caddisflies need clean water, so scientists count them to check whether a stream is healthy.',
+        'Most caddisflies need clean, fast water, so scientists count them to check whether a stream is healthy.',
+        'The grown-up looks like a small furry moth, and it flies mostly at night.',
         'Some artists give caddisfly larvae gold and gemstones to build with, and the little cases turn into jewellery.'
       ]
     },
@@ -1326,14 +1331,15 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'tiger_beetle', name: 'Tiger Beetle',
-      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 75,
-      behavior: 'crawl', speed: 88, shy: 74, size: 0.95,
-      measure: 'half an inch',
-      art: { shape: 'beetle', body: '#1f8a6a', wing: '#2fd0a0', accent: '#c8e8d8', pattern: 'spots' },
+      habitats: ['hill', 'meadow', 'beach', 'riverbank'], times: ['day'], rarity: 3, value: 90,
+      behavior: 'dart', speed: 78, shy: 82, size: 0.9,
+      measure: 'three quarters of an inch long',
+      art: { shape: 'tigerbeetle', body: '#2f7a5a', wing: '#3f9a6a', accent: '#f2efe0', eyes: '#e8e2c8' },
       facts: [
-        'Tiger beetles are some of the fastest runners in the insect world for their size.',
-        'They run so fast that their eyes cannot keep up, so they have to stop, look, and dash again.',
-        'They have long legs, huge jaws and a metallic shine, and they hunt on hot open ground.'
+        'Tiger beetles are among the fastest runners on Earth for their size. One kind covers 125 body lengths every single second.',
+        'They run so fast their eyes cannot keep up, so they have to stop, look, and then dash again.',
+        'Baby tiger beetles live head-up in a straight tunnel in the ground and grab insects that walk past the door.',
+        'Some beach tiger beetles are protected by law, so in the real world we look at them and leave them be.'
       ]
     },
     {
@@ -1551,7 +1557,236 @@ ul.tips li{margin-bottom:3px}
         'You can tell them from other cicadas by their bright red eyes and orange wing veins.',
         'Coming out all at once is their trick: there are so many that the birds cannot possibly eat them all.'
       ]
+    },
+    /* ---------- the riverbank ---------- */
+    {
+      id: 'stonefly', name: 'Stonefly',
+      habitats: ['riverbank'], times: ['evening', 'night'], rarity: 2, value: 34,
+      behavior: 'crawl', speed: 15, shy: 40, size: 0.95,
+      measure: 'three quarters of an inch long',
+      art: { shape: 'stonefly', body: '#6b5a3c', wing: '#d8cdb0', accent: '#3c3222', pattern: 'plain' },
+      facts: [
+        'Stoneflies only live in cold, clean, well-oxygenated water, so finding one means the stream is healthy.',
+        'Most grown-up stoneflies never eat at all. They find a mate, and that is their whole grown-up life.',
+        'They are clumsy fliers, so you usually find them crawling on wet rocks right beside the water.'
+      ]
+    },
+    {
+      id: 'dobsonfly', name: 'Dobsonfly',
+      habitats: ['riverbank'], times: ['night'], rarity: 4, value: 200,
+      behavior: 'flutter', speed: 30, shy: 66, size: 1.45,
+      measure: '5 inches across',
+      art: { shape: 'dobsonfly', body: '#4a4038', wing: '#cfc6b4', accent: '#241f19', eyes: '#e8c86a' },
+      facts: [
+        'A male dobsonfly has enormous curved jaws, but they are far too long to give him any grip, so he cannot pinch you with them.',
+        'He uses those long jaws to hold on to a female, a bit like holding hands.',
+        'Its baby is called a hellgrammite, and it hunts under the stones of fast water for two or three years before it grows wings.',
+        'Grown-up dobsonflies never eat. They live only about a week.'
+      ]
+    },
+    {
+      id: 'whirligig', name: 'Whirligig Beetle',
+      habitats: ['pond', 'river'], times: ['morning', 'day'], rarity: 2, value: 30,
+      behavior: 'skim', speed: 52, shy: 56, size: 0.62,
+      measure: 'half an inch long',
+      art: { shape: 'whirligig', body: '#1d2026', wing: '#2f353f', accent: '#8fa3b8', eyes: '#d8e4ee' },
+      facts: [
+        'A whirligig beetle has two pairs of eyes: one pair looking up out of the water and one pair looking down into it.',
+        'They spin in fast circles on the surface in busy little crowds, watching for insects that have fallen in.',
+        'A whirligig can tuck a bubble of air under its wings and take it along when it dives.'
+      ]
+    },
+    {
+      id: 'boatman', name: 'Water Boatman',
+      habitats: ['pond', 'river'], times: ['any'], rarity: 1, value: 18,
+      behavior: 'skim', speed: 34, shy: 42, size: 0.66,
+      measure: 'a third of an inch long',
+      art: { shape: 'boatman', body: '#7a6a3c', wing: '#a89858', accent: '#3f3620', eyes: '#2b2418' },
+      facts: [
+        'A water boatman rows along with back legs shaped exactly like oars.',
+        'It carries a silvery bubble of air against its body, like a tiny scuba tank, so it can breathe underwater.',
+        'Water boatmen eat algae rather than animals, and they do not bite people. That is their upside-down cousin, the backswimmer.'
+      ]
+    },
+    {
+      id: 'mayfly_river', name: 'River Mayfly',
+      habitats: ['riverbank'], times: ['evening'], rarity: 2, value: 28,
+      behavior: 'drift', speed: 22, shy: 38, size: 0.95,
+      measure: '1 inch long with its tails',
+      art: { shape: 'mayfly', body: '#c8b06a', wing: '#eef2f6', accent: '#8a7440', pattern: 'plain' },
+      facts: [
+        'A grown-up mayfly has no working mouth. It cannot eat at all, and often lives just a single day.',
+        'Mayflies are the only insects in the world that shed their skin one more time after their wings already work.',
+        'Sometimes so many mayflies come out at once that weather radar picks up the swarm.'
+      ]
+    },
+
+    /* ---------- the beach ---------- */
+    {
+      id: 'ghost_crab', name: 'Ghost Crab',
+      habitats: ['beach'], times: ['night'], rarity: 3, value: 90,
+      behavior: 'crawl', speed: 48, shy: 78, size: 1.35,
+      measure: '2 inches across',
+      art: { shape: 'crab', body: '#efe2c0', wing: '#f8f0d8', accent: '#c9b58c', eyes: '#2b2b2b', stalks: true },
+      facts: [
+        'Ghost crabs are almost exactly the colour of dry sand, which is how they got their name.',
+        'They are the fastest crabs on land, and their tracks look like rows of little commas.',
+        'A ghost crab digs a burrow deeper than you are tall and hides in it all day, coming out after dark.',
+        'Its eyes sit up on little stalks, so it can see all around while the rest of it stays low.'
+      ]
+    },
+    {
+      id: 'sand_hopper', name: 'Sand Hopper',
+      habitats: ['beach'], times: ['evening', 'night'], rarity: 1, value: 14,
+      behavior: 'hop', speed: 30, shy: 44, size: 0.6,
+      measure: 'half an inch long',
+      art: { shape: 'sandhopper', body: '#d8c9a8', wing: '#efe4c8', accent: '#9a8a68', eyes: '#2b2b2b' },
+      facts: [
+        'A sand hopper is not an insect or a flea at all. It is a tiny shrimp-like crustacean.',
+        'They hide under damp seaweed all day and come out at night to eat it.',
+        'Shorebirds like sanderlings and plovers hunt for them along the tideline, so they are an important beach breakfast.'
+      ]
+    },
+    {
+      id: 'kelp_fly', name: 'Kelp Fly',
+      habitats: ['beach'], times: ['morning', 'day'], rarity: 1, value: 12,
+      behavior: 'dart', speed: 46, shy: 44, size: 0.55,
+      measure: 'a quarter of an inch long',
+      art: { shape: 'fly', body: '#3a3a34', wing: '#dfe6e8', accent: '#1f1f1c', eyes: '#8a5030' },
+      facts: [
+        'Kelp flies lay their eggs in the seaweed piled up at the tideline, and their babies grow up eating it.',
+        'They help clean the beach by breaking down the old seaweed.',
+        'Plovers and sandpipers hunt them in the wrack, so a beach full of kelp flies is a beach full of birds.'
+      ]
+    },
+    {
+      id: 'sand_wasp', name: 'Sand Wasp',
+      habitats: ['beach'], times: ['morning', 'day'], rarity: 2, value: 44,
+      behavior: 'hover', speed: 44, shy: 62, size: 0.95, sting: true,
+      measure: 'three quarters of an inch long',
+      art: { shape: 'wasp', body: '#f0e2b0', wing: '#e8f0f4', accent: '#3a3a34', eyes: '#4a4238', pattern: 'bands' },
+      facts: [
+        'A sand wasp digs her own burrow in bare sand. Lots of mothers dig side by side, but each one lives alone.',
+        'She catches flies and brings them home to her baby a few at a time, feeding it fresh food as it grows.',
+        'The grown-up sand wasp does not eat flies herself. She drinks flower nectar.',
+        'She is not aggressive, but she can sting, so it is kindest to watch her from a step away.'
+      ]
+    },
+    {
+      id: 'horseshoe_crab', name: 'Horseshoe Crab',
+      habitats: ['beach'], times: ['evening', 'night'], rarity: 4, value: 240,
+      behavior: 'slow', speed: 12, shy: 30, size: 2.0,
+      measure: '1 foot across',
+      art: { shape: 'horseshoe', body: '#8a6a44', wing: '#a8875a', accent: '#5a4128', eyes: '#3a2c1c' },
+      facts: [
+        'A horseshoe crab is not really a crab at all. It is a closer cousin to spiders and scorpions.',
+        'Its blood turns blue, and doctors use it to check that medicines are safe.',
+        'Horseshoe crabs come ashore to lay their eggs on the very highest tides, at the full moon and the new moon.',
+        'If one is upside down on the sand, you can gently turn it over by the edges of its shell. Never by the tail.'
+      ]
+    },
+
+    /* ---------- the tidepools ---------- */
+    {
+      id: 'hermit_crab', name: 'Hermit Crab',
+      habitats: ['tidepool'], times: ['any'], rarity: 1, value: 22,
+      behavior: 'tide', speed: 13, shy: 40, size: 0.85,
+      measure: 'three quarters of an inch across',
+      art: { shape: 'hermitcrab', body: '#d2703f', wing: '#e8c9a0', accent: '#8a5a2f', eyes: '#2b2b2b' },
+      facts: [
+        'A hermit crab does not grow its own shell. It borrows an empty snail shell to protect its soft, curly tail.',
+        'When it grows too big it moves into a larger shell, and it never harms a living snail to do it.',
+        'Sometimes hermit crabs line up biggest to smallest and all swap shells at once, so everybody gets a new home.'
+      ]
+    },
+    {
+      id: 'shore_crab', name: 'Shore Crab',
+      habitats: ['tidepool'], times: ['any'], rarity: 1, value: 26,
+      behavior: 'tide', speed: 22, shy: 58, size: 1.05,
+      measure: '2 inches across',
+      art: { shape: 'crab', body: '#6a3f6a', wing: '#8a5a88', accent: '#3f2440', eyes: '#f2e8d0' },
+      facts: [
+        'Shore crabs hide under rocks when the tide goes out, so lifting a rock gently is how you find one. Always put the rock back exactly as it was.',
+        'A crab cannot stretch its hard shell, so it grows by climbing right out of the old one.',
+        'Shore crabs mostly eat green algae they scrape off the rocks, so they are more gardeners than hunters.'
+      ]
+    },
+    {
+      id: 'sea_star', name: 'Ochre Sea Star',
+      habitats: ['tidepool'], times: ['any'], rarity: 3, value: 110,
+      behavior: 'tide', speed: 4, shy: 0, size: 1.6,
+      measure: '8 inches across',
+      art: { shape: 'seastar', body: '#e0764a', wing: '#f0a070', accent: '#a84a28' },
+      facts: [
+        'A sea star is not a fish at all. It is an echinoderm, a cousin of sea urchins and sand dollars.',
+        'It has no brain and no blood. It moves on hundreds of tiny water-powered tube feet underneath.',
+        'To eat a mussel, a sea star pushes its own stomach out through its mouth and digests the meal right inside the shell.',
+        'In a real tidepool we never pry a sea star off its rock, because that tears its little feet. We just look.'
+      ]
+    },
+    {
+      id: 'anemone', name: 'Green Anemone',
+      habitats: ['tidepool'], times: ['any'], rarity: 2, value: 60,
+      behavior: 'tide', speed: 0, shy: 0, size: 1.4,
+      measure: '6 inches across',
+      art: { shape: 'anemone', body: '#3f8a5a', wing: '#7fc48a', accent: '#e8f0a0' },
+      facts: [
+        'An anemone looks like a flower, but it is an animal, and those waving tentacles are how it catches its food.',
+        'It is bright green because tiny algae live inside it and share the food they make from sunlight.',
+        'It has stinging cells for catching food, but they are far too weak to hurt a person. Touching one just feels sticky.',
+        'An anemone eats so slowly that it only needs a meal once or twice a month.'
+      ]
+    },
+    {
+      id: 'urchin', name: 'Purple Sea Urchin',
+      habitats: ['tidepool'], times: ['any'], rarity: 2, value: 70,
+      behavior: 'tide', speed: 3, shy: 0, size: 1.15,
+      measure: '3 inches across',
+      art: { shape: 'urchin', body: '#7a4aa8', wing: '#9a6ac8', accent: '#4a2a6a' },
+      facts: [
+        'Purple urchin spines are not venomous. They are just for protection and for wedging into the rock.',
+        'An urchin has five teeth on its underside, and it slowly grinds a little hollow in the rock to sit in.',
+        'It passes food up to its mouth with its tube feet, like a bucket brigade.',
+        'Baby purple urchins are green. They turn purple as they grow up.'
+      ]
+    },
+    {
+      id: 'limpet', name: 'Limpet',
+      habitats: ['tidepool'], times: ['any'], rarity: 1, value: 20,
+      behavior: 'tide', speed: 2, shy: 0, size: 0.8,
+      measure: '1 inch long',
+      art: { shape: 'limpet', body: '#b8a888', wing: '#d8cbae', accent: '#7a6a4a' },
+      facts: [
+        'A limpet clamps down so hard on its rock that it traps a puddle of seawater inside and stays wet until the tide comes back.',
+        'Every limpet has its own home spot worn into the rock, and after grazing it finds its way back to exactly that spot.',
+        'It scrapes algae off the rock with a tongue covered in the strongest natural material scientists have ever measured.'
+      ]
+    },
+    {
+      id: 'periwinkle', name: 'Periwinkle',
+      habitats: ['tidepool'], times: ['any'], rarity: 1, value: 16,
+      behavior: 'tide', speed: 5, shy: 0, size: 0.85,
+      measure: 'three quarters of an inch tall',
+      art: { shape: 'periwinkle', body: '#7a6a50', wing: '#b8a888', accent: '#463c2c' },
+      facts: [
+        'A periwinkle carries a little door on its foot and pulls it shut like a trapdoor so it does not dry out.',
+        'It eats by scraping green slime off the rocks with a tongue like a tiny file.',
+        'Periwinkles move about much more when the water covers them, because sliding along is easier underwater.'
+      ]
+    },
+    {
+      id: 'sea_slug', name: 'Sea Slug',
+      habitats: ['tidepool'], times: ['any'], rarity: 3, value: 130,
+      behavior: 'tide', speed: 6, shy: 0, size: 1.0,
+      measure: '2 inches long',
+      art: { shape: 'nudibranch', body: '#ff8a4a', wing: '#ffd0a0', accent: '#ffffff', eyes: '#5a2a10' },
+      facts: [
+        'A sea slug is a snail that gave up its shell, so its gills and its little fingers are right out in the open.',
+        'Some sea slugs eat stinging anemones and then store the stingers in their own fingertips to use for themselves.',
+        'Their bright colours are a warning sign that says, quite clearly, do not eat me.'
+      ]
     }
+
   ];
 
   GG.BUG_BY_ID = {};
@@ -1563,6 +1798,8 @@ ul.tips li{margin-bottom:3px}
   GG.HABITAT_NAMES = {
     meadow: 'the Sunny Meadow', garden: 'the Flower Garden', forest: 'the Whispering Woods',
     pond: 'the Lily Pond', hill: 'the Pebble Hills', orchard: 'the Apple Orchard',
+    riverbank: 'the riverbank', beach: 'Shell Beach', shore: 'the rocky shore',
+    tidepool: 'the Tidepools', river: 'the river and the stream',
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
@@ -1578,7 +1815,7 @@ ul.tips li{margin-bottom:3px}
   GG.FISH = [
     {
       id: 'minnow', name: 'Minnow', rarity: 1, value: 8, shadow: 1, size: 0.55,
-      times: ['any'], measure: '2 inches long',
+      waters: ['pond', 'stream', 'river'], times: ['any'], measure: '2 inches long',
       art: { shape: 'minnow', back: '#7d8a6b', belly: '#eef0e2', fin: '#b9c4a4', accent: '#3f4636', pattern: 'line' },
       facts: [
         'Minnows swim in big groups called shoals. Hundreds of little eyes spot a hungry bass much sooner than two would.',
@@ -1587,7 +1824,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'bluegill', name: 'Bluegill', rarity: 1, value: 14, shadow: 2, size: 0.85,
-      times: ['morning', 'day', 'evening'], measure: '7 inches long',
+      waters: ['pond'], times: ['morning', 'day', 'evening'], measure: '7 inches long',
       art: { shape: 'sunfish', back: '#4f7a52', belly: '#f2c85c', fin: '#3f6b58', accent: '#1f3a4a', pattern: 'bars' },
       facts: [
         'A bluegill gets its name from the shimmery blue on its chin and cheeks. The little flap on the edge of its gill cover is black, like a dark ear.',
@@ -1597,7 +1834,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'pumpkinseed', name: 'Pumpkinseed', rarity: 1, value: 16, shadow: 2, size: 0.8,
-      times: ['morning', 'day'], measure: '6 inches long',
+      waters: ['pond'], times: ['morning', 'day'], measure: '6 inches long',
       art: { shape: 'sunfish', back: '#4a8a4f', belly: '#ffb84a', fin: '#3f6b58', accent: '#d2453f', pattern: 'spots' },
       facts: [
         'Pumpkinseeds are named for their shape: flat and round, like a pumpkin seed.',
@@ -1607,7 +1844,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'crappie', name: 'Black Crappie', rarity: 2, value: 26, shadow: 2, size: 0.95,
-      times: ['morning', 'evening'], measure: '10 inches long',
+      waters: ['pond'], times: ['morning', 'evening'], measure: '10 inches long',
       art: { shape: 'sunfish', back: '#5e6b63', belly: '#e8ecdf', fin: '#4a5750', accent: '#2b332e', pattern: 'speckle' },
       facts: [
         'Crappie are covered in dark speckles scattered all over, like someone flicked a paintbrush at them.',
@@ -1616,7 +1853,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'perch', name: 'Yellow Perch', rarity: 2, value: 30, shadow: 2, size: 0.95,
-      times: ['morning', 'day'], measure: '9 inches long',
+      waters: ['pond', 'river'], times: ['morning', 'day'], measure: '9 inches long',
       art: { shape: 'torpedo', back: '#5f7a33', belly: '#ffd45c', fin: '#e07f2a', accent: '#3a4a1f', pattern: 'bars' },
       facts: [
         'Yellow perch wear six or seven dark bars down their golden sides, which helps them hide among the reeds.',
@@ -1625,7 +1862,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'goldfish', name: 'Goldfish', rarity: 2, value: 34, shadow: 1, size: 0.7,
-      times: ['any'], measure: '8 inches long',
+      waters: ['pond'], times: ['any'], measure: '8 inches long',
       art: { shape: 'goldfish', back: '#f08a2a', belly: '#ffd08a', fin: '#ff9f4a', accent: '#c25a18', pattern: 'plain' },
       facts: [
         'Goldfish do not have three-second memories. That is a myth: they can be taught tricks and still remember them months later.',
@@ -1635,7 +1872,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'bass', name: 'Largemouth Bass', rarity: 3, value: 65, shadow: 4, size: 1.3,
-      times: ['morning', 'day', 'evening'], measure: '14 inches long',
+      waters: ['pond', 'river'], times: ['morning', 'day', 'evening'], measure: '14 inches long',
       art: { shape: 'torpedo', back: '#4f6b3a', belly: '#e9edd8', fin: '#3f5730', accent: '#2b3a22', pattern: 'stripe' },
       facts: [
         'Its mouth really is enormous. The top jaw reaches back past its eye, which is how you tell it from a smallmouth bass.',
@@ -1644,7 +1881,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'carp', name: 'Common Carp', rarity: 3, value: 70, shadow: 4, size: 1.35,
-      times: ['any'], measure: '20 inches long',
+      waters: ['pond', 'river'], times: ['any'], measure: '20 inches long',
       art: { shape: 'carp', back: '#8a7a3f', belly: '#e2d9a8', fin: '#6b5d2f', accent: '#4a4020', pattern: 'scales' },
       facts: [
         'Carp have two pairs of whiskery barbels by their mouth that they use to feel for food in the mud.',
@@ -1654,7 +1891,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'catfish', name: 'Brown Bullhead', rarity: 3, value: 60, shadow: 3, size: 1.15,
-      times: ['evening', 'night'], measure: '12 inches long',
+      waters: ['pond', 'river'], times: ['evening', 'night'], measure: '12 inches long',
       art: { shape: 'catfish', back: '#6b4a2f', belly: '#e6dcc0', fin: '#523823', accent: '#2f2015', pattern: 'mottle' },
       facts: [
         'Those whiskers are called barbels and they are covered in taste buds.',
@@ -1664,7 +1901,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'rainbow_trout', name: 'Rainbow Trout', rarity: 3, value: 80, shadow: 3, size: 1.15,
-      times: ['morning', 'day'], measure: '14 inches long',
+      waters: ['pond', 'stream', 'river'], times: ['morning', 'day'], measure: '14 inches long',
       art: { shape: 'torpedo', back: '#5f7f8a', belly: '#f2f0e4', fin: '#4f6b73', accent: '#e06f8f', pattern: 'speckle' },
       facts: [
         'A rainbow trout has a pink stripe down each side, which is where it gets its name.',
@@ -1674,7 +1911,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'brook_trout', name: 'Brook Trout', rarity: 4, value: 150, shadow: 3, size: 1.1,
-      times: ['morning', 'evening'], measure: '9 inches long',
+      waters: ['stream', 'river'], times: ['morning', 'evening'], measure: '9 inches long',
       art: { shape: 'torpedo', back: '#4a6b4f', belly: '#f0a05c', fin: '#d2453f', accent: '#f2e9c8', pattern: 'worm' },
       facts: [
         'Brook trout are not really trout at all. They are char, a close cousin. In autumn the males turn a blazing orange underneath, with a bright white edge to their fins.',
@@ -1684,7 +1921,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'koi', name: 'Koi', rarity: 4, value: 180, shadow: 4, size: 1.3,
-      times: ['any'], measure: '2 feet long',
+      waters: ['pond'], times: ['any'], measure: '2 feet long',
       art: { shape: 'carp', back: '#f4f0e6', belly: '#ffffff', fin: '#ffd9c4', accent: '#e0533f', pattern: 'koi' },
       facts: [
         'Koi are a kind of carp. Farmers in Japan spotted the brightest ones in their ponds and bred them for their colours, starting about two hundred years ago.',
@@ -1694,7 +1931,7 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'pike', name: 'Northern Pike', rarity: 4, value: 200, shadow: 5, size: 1.55,
-      times: ['day', 'evening'], measure: '2 feet long',
+      waters: ['pond', 'river'], times: ['day', 'evening'], measure: '2 feet long',
       art: { shape: 'pike', back: '#4f6b33', belly: '#ecebd2', fin: '#e08a3a', accent: '#cfe0a8', pattern: 'dashes' },
       facts: [
         'A pike has a long flat snout like a duck bill, and a mouth full of very sharp teeth.',
@@ -1704,13 +1941,169 @@ ul.tips li{margin-bottom:3px}
     },
     {
       id: 'sturgeon', name: 'Lake Sturgeon', rarity: 5, value: 420, shadow: 5, size: 1.85,
-      times: ['any'], measure: '4 feet long',
+      waters: ['pond', 'river'], times: ['any'], measure: '4 feet long',
       art: { shape: 'sturgeon', back: '#5a5f6b', belly: '#ded9c8', fin: '#474c56', accent: '#8a8f9a', pattern: 'scutes' },
       facts: [
         'Sturgeon were swimming about while the dinosaurs were alive. They still have the same armoured, pointy-nosed shape their ancestors had.',
         'Instead of scales they wear rows of bony plates called scutes, like armour.',
         'A sturgeon has no teeth at all. It hoovers food off the bottom with a mouth that sticks out like a tube.',
         'Lake sturgeon grow slowly and live a very long time. The big old ones can reach a hundred years, older than anyone in your family.'
+      ]
+    }
+,
+    /* ---------- the stream and the river ---------- */
+    {
+      id: 'creek_chub', name: 'Creek Chub', rarity: 1, value: 12, shadow: 1, size: 0.65,
+      waters: ['stream', 'river'], times: ['day'], measure: '6 inches long',
+      art: { shape: 'minnow', back: '#6b7a8a', belly: '#f0f0e6', fin: '#9aa8b4', accent: '#3a444e', pattern: 'line' },
+      facts: [
+        'A father creek chub builds a nest by carrying small stones in his mouth, one at a time, and piling them into a little ridge.',
+        'Creek chubs need moving water to lay their eggs, so they live in small creeks and streams.',
+        'They do their eating during the day, once the water has warmed up a bit.'
+      ]
+    },
+    {
+      id: 'smallmouth', name: 'Smallmouth Bass', rarity: 3, value: 75, shadow: 4, size: 1.25,
+      waters: ['stream', 'river'], times: ['morning', 'day'], measure: '16 inches long',
+      art: { shape: 'torpedo', back: '#8a7440', belly: '#f0e8cc', fin: '#6b5a2f', accent: '#4a3f22', pattern: 'bars' },
+      facts: [
+        'The father bass fans out a round nest in the gravel and then stands guard over the babies.',
+        'Crayfish are one of a smallmouth bass’s favourite meals.',
+        'It hunts by sight, so it needs clear, clean, cool water to live in.'
+      ]
+    },
+    {
+      id: 'sculpin', name: 'Mottled Sculpin', rarity: 2, value: 30, shadow: 1, size: 0.7,
+      waters: ['stream'], times: ['night'], measure: '3 inches long',
+      art: { shape: 'sculpin', back: '#6b5f4a', belly: '#e0d8c0', fin: '#8a7a5c', accent: '#3a3226', pattern: 'mottle' },
+      facts: [
+        'Sculpins have no swim bladder, the little air balloon most fish use to float, so they rest right on the bottom.',
+        'A sculpin can change colour to match the stones it is sitting on.',
+        'It comes out to hunt at night, when the stream is dark and quiet.'
+      ]
+    },
+    {
+      id: 'crayfish', name: 'Crayfish', rarity: 2, value: 34, shadow: 2, size: 0.9,
+      waters: ['stream', 'river'], times: ['night'], measure: '4 inches long',
+      art: { shape: 'crayfish', back: '#a8503a', belly: '#e8b48a', fin: '#8a3a28', accent: '#4a1f16', pattern: 'plain' },
+      facts: [
+        'When a crayfish grows too big for its shell, it wriggles right out of it and grows a brand new one.',
+        'If it loses a claw, it can slowly grow another, though the new one is often a little smaller.',
+        'It escapes danger by flipping its tail and shooting backwards through the water.'
+      ]
+    },
+    {
+      id: 'eel', name: 'American Eel', rarity: 4, value: 190, shadow: 4, size: 1.5,
+      waters: ['stream', 'river', 'estuary', 'sea'], times: ['night'], measure: '3 feet long',
+      art: { shape: 'eel', back: '#4a4a3a', belly: '#d8d0a8', fin: '#3a3a2c', accent: '#22221a', pattern: 'plain' },
+      facts: [
+        'Every American eel is born far out in the Sargasso Sea, then drifts to shore and swims up the rivers to grow up.',
+        'It hunts at night and spends the day tucked away under plants and driftwood.',
+        'Some eels live more than forty years before making the long journey back out to sea.'
+      ]
+    },
+    {
+      id: 'chinook', name: 'Chinook Salmon', rarity: 5, value: 460, shadow: 5, size: 1.8,
+      waters: ['stream', 'river', 'estuary', 'sea'], times: ['any'], measure: '3 feet long',
+      art: { shape: 'salmon', back: '#4a6b7a', belly: '#f0efe4', fin: '#3a5560', accent: '#2b3a42', pattern: 'speckle' },
+      facts: [
+        'The chinook is the biggest kind of Pacific salmon, which is why people call it the king salmon.',
+        'It hatches in a river, swims out to the ocean to grow up, and then comes back to the very stream where it was born.',
+        'The mother salmon digs a nest in the gravel called a redd, and lays her eggs safely inside it.'
+      ]
+    },
+
+    /* ---------- Gull Inlet, where the river meets the sea ---------- */
+    {
+      id: 'striped_bass', name: 'Striped Bass', rarity: 4, value: 210, shadow: 5, size: 1.55,
+      waters: ['river', 'estuary', 'sea'], times: ['any'], measure: '30 inches long',
+      art: { shape: 'torpedo', back: '#5a6b7a', belly: '#f2f2ea', fin: '#48555f', accent: '#2b333a', pattern: 'stripe' },
+      facts: [
+        'A striped bass has seven or eight dark stripes running along each side, from its gills all the way to its tail.',
+        'It lives in the ocean and the bays, but every spring it swims up into fresh water to lay its eggs.',
+        'A striped bass can live to be thirty years old.'
+      ]
+    },
+    {
+      id: 'flounder', name: 'Summer Flounder', rarity: 3, value: 95, shadow: 4, size: 1.3,
+      waters: ['estuary', 'sea'], times: ['morning', 'day'], measure: '2 feet long',
+      art: { shape: 'flatfish', back: '#8a7a5a', belly: '#efe8d4', fin: '#6b5f46', accent: '#4a4030', pattern: 'spots' },
+      facts: [
+        'A flounder is born looking like any other fish, and then one eye slowly travels over its head until both eyes are on the same side.',
+        'It can change colour to match the sand, which is why people call it the chameleon of the sea.',
+        'It hides in the sand and waits for dinner to swim past.'
+      ]
+    },
+    {
+      id: 'blue_crab', name: 'Blue Crab', rarity: 2, value: 55, shadow: 2, size: 1.0,
+      waters: ['estuary'], times: ['any'], measure: '6 inches across',
+      art: { shape: 'seacrab', back: '#3f6ba8', belly: '#e8e2c8', fin: '#2b4a78', accent: '#d24a3a', pattern: 'plain' },
+      facts: [
+        'Its two back legs are shaped like paddles, so a blue crab can really swim rather than only walk.',
+        'To grow bigger it has to shed its whole hard shell and grow a new one.',
+        'A grown-up female blue crab has bright red tips on her claws, like painted fingernails.'
+      ]
+    },
+
+    /* ---------- the open sea ---------- */
+    {
+      id: 'mackerel', name: 'Atlantic Mackerel', rarity: 1, value: 26, shadow: 2, size: 0.9,
+      waters: ['sea'], times: ['morning', 'day'], measure: '14 inches long',
+      art: { shape: 'torpedo', back: '#3f6b8a', belly: '#f2f4ee', fin: '#2f5570', accent: '#1f3348', pattern: 'wavy' },
+      facts: [
+        'A mackerel’s back is covered in twenty to thirty wavy dark stripes, like ripples drawn on with a brush.',
+        'They swim in big schools near the top of the water.',
+        'Mackerel travel long distances every year between their summer and winter homes.'
+      ]
+    },
+    {
+      id: 'sea_bass', name: 'Black Sea Bass', rarity: 2, value: 60, shadow: 3, size: 1.1,
+      waters: ['sea', 'estuary'], times: ['morning', 'day'], measure: '18 inches long',
+      art: { shape: 'sunfish', back: '#3a3f4a', belly: '#8a93a0', fin: '#2b303a', accent: '#5a8ad2', pattern: 'speckle' },
+      facts: [
+        'Nearly every black sea bass starts life as a female, and later turns into a male.',
+        'In spawning season the biggest males turn bright blue and grow a blue bump on their heads.',
+        'They like to live around shipwrecks, reefs and old oyster beds.'
+      ]
+    },
+    {
+      id: 'cod', name: 'Atlantic Cod', rarity: 3, value: 120, shadow: 4, size: 1.4,
+      waters: ['sea'], times: ['any'], measure: '3 feet long',
+      art: { shape: 'cod', back: '#7a8a5f', belly: '#f0eeda', fin: '#5f6b48', accent: '#4a5236', pattern: 'speckle' },
+      facts: [
+        'An Atlantic cod has a little whisker under its chin, rather like a catfish.',
+        'It lives down near the ocean floor, along rocky slopes and ledges.',
+        'An Atlantic cod can live more than twenty years.'
+      ]
+    },
+    {
+      id: 'snapper', name: 'Red Snapper', rarity: 3, value: 140, shadow: 3, size: 1.2,
+      waters: ['sea'], times: ['morning', 'day'], measure: '2 feet long',
+      art: { shape: 'sunfish', back: '#c8402f', belly: '#f6d8c4', fin: '#a82f22', accent: '#e8e2d0', pattern: 'plain' },
+      facts: [
+        'A red snapper’s red colour gets deeper the deeper down it lives.',
+        'It likes to hang around reefs, ledges and underwater caves.',
+        'Some red snapper have lived more than fifty years.'
+      ]
+    },
+    {
+      id: 'halibut', name: 'Atlantic Halibut', rarity: 4, value: 320, shadow: 5, size: 1.9,
+      waters: ['sea'], times: ['any'], measure: 'over 6 feet long',
+      art: { shape: 'flatfish', back: '#5a5f56', belly: '#eeeade', fin: '#464b44', accent: '#33372f', pattern: 'mottle' },
+      facts: [
+        'The Atlantic halibut is the biggest flatfish in the whole world.',
+        'Like other flatfish it has both eyes on one side, and for a halibut that is always the right side.',
+        'It grows very slowly and can live to be fifty years old.'
+      ]
+    },
+    {
+      id: 'mola', name: 'Ocean Sunfish', rarity: 5, value: 620, shadow: 5, size: 2.1,
+      waters: ['sea'], times: ['morning', 'day'], measure: '6 feet across',
+      art: { shape: 'mola', back: '#8a95a0', belly: '#e2e6ea', fin: '#6b757f', accent: '#4a525a', pattern: 'plain' },
+      facts: [
+        'An ocean sunfish looks like a giant swimming head, because it has no real tail at all, just a frilly edge at the back.',
+        'It mostly eats jellyfish, and a slippery lining inside keeps it from being stung.',
+        'It likes to lie over on its side at the surface of the open ocean, soaking up the sun.'
       ]
     }
   ];
@@ -1728,6 +2121,11 @@ ul.tips li{margin-bottom:3px}
   GG.FISH_BY_ID = {};
   GG.FISH.forEach(function (f, i) { f.index = i; f.isFish = true; GG.FISH_BY_ID[f.id] = f; });
   GG.JUNK.forEach(function (j) { j.isJunk = true; j.rarity = 1; GG.FISH_BY_ID[j.id] = j; });
+
+  GG.WATER_NAMES = {
+    pond: 'the Lily Pond', stream: 'Pebble Stream', river: 'the Winding River',
+    estuary: 'Gull Inlet', sea: 'the open sea'
+  };
 
   GG.SHADOW_NAMES = ['', 'tiny', 'small', 'medium', 'large', 'huge'];
 })(window.GG = window.GG || {});
@@ -2964,6 +3362,525 @@ ul.tips li{margin-bottom:3px}
     legs(c, a.accent, 2, 3, 5.4, t * 9, 1);
   };
 
+  /* ================= the river, the beach and the tidepools ================= */
+
+  S.stonefly = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.3), 3, 3.4, 6, t * 7, 1.1);
+    /* two long tails */
+    curve(c, -1.1, 7, -2.2, 10, -3.4, 13.5, 0.8, a.accent);
+    curve(c, 1.1, 7, 2.2, 10, 3.4, 13.5, 0.8, a.accent);
+    /* wings folded flat down the back */
+    c.fillStyle = a.wing; c.globalAlpha = 0.85;
+    ell(c, -1.5, 2.4, 2.9, 8.4, 0.06);
+    ell(c, 1.5, 2.4, 2.9, 8.4, -0.06);
+    c.globalAlpha = 1;
+    c.strokeStyle = GG.shade(a.wing, -0.28); c.lineWidth = 0.4;
+    for (var i = -1; i <= 1; i++) {
+      c.beginPath(); c.moveTo(i * 2.4, -4.4); c.lineTo(i * 3, 9.6); c.stroke();
+    }
+    c.fillStyle = a.body; ell(c, 0, 1.4, 2.2, 8);
+    c.fillStyle = GG.shade(a.body, 0.12); ell(c, 0, -5.2, 2.5, 3.2);
+    c.fillStyle = a.accent; ell(c, -1, -7.2, 0.7, 0.7); ell(c, 1, -7.2, 0.7, 0.7);
+    curve(c, -1.4, -7.8, -3, -11, -4.2, -14, 0.7, a.accent);
+    curve(c, 1.4, -7.8, 3, -11, 4.2, -14, 0.7, a.accent);
+  };
+
+  S.dobsonfly = function (c, a, t) {
+    var flap = 0.72 + Math.sin(t * 9) * 0.28;
+    legs(c, GG.shade(a.body, -0.3), 3, 4, 7, t * 7, 1.4);
+    /* the long soft wings, one pair each side */
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = a.wing; c.globalAlpha = 0.62;
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      ell(c, s2 * 5.4, 2.2, 4.4, 11, s2 * 0.1);
+      ell(c, s2 * 3.6, 4.6, 3.4, 8.6, s2 * 0.12);
+    }
+    c.globalAlpha = 1;
+    c.strokeStyle = GG.shade(a.wing, -0.3); c.lineWidth = 0.35;
+    for (var k = -1; k <= 1; k += 2) for (var j = -1; j <= 1; j++) {
+      c.beginPath();
+      c.moveTo(k * 2, -5); c.quadraticCurveTo(k * (5 + j), 3, k * (6 + j * 1.4), 11);
+      c.stroke();
+    }
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 2.6, 2.6, 10.5);
+    c.fillStyle = GG.shade(a.body, 0.14); ell(c, 0, -5.4, 3, 4);
+    c.fillStyle = a.eyes || '#e8c86a'; ell(c, -1.7, -7.2, 1.1, 1); ell(c, 1.7, -7.2, 1.1, 1);
+    /* the great harmless jaws: out, up, and hooked gently inward */
+    for (var g = -1; g <= 1; g += 2) {
+      c.strokeStyle = GG.shade(a.body, 0.22); c.lineWidth = 2; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(g * 1.8, -8.4);
+      c.bezierCurveTo(g * 6.4, -10.4, g * 7, -15.4, g * 3.4, -18.2);
+      c.stroke();
+      c.strokeStyle = GG.shade(a.body, 0.4); c.lineWidth = 1.1;
+      c.beginPath();
+      c.moveTo(g * 3.4, -18.2);
+      c.quadraticCurveTo(g * 2.6, -19.4, g * 1.8, -19.2);
+      c.stroke();
+      /* the little tooth halfway along */
+      c.beginPath();
+      c.moveTo(g * 5.9, -13.2); c.lineTo(g * 4.1, -13.6);
+      c.stroke();
+    }
+    curve(c, -2, -8.4, -5, -12, -7, -15, 0.6, a.accent);
+    curve(c, 2, -8.4, 5, -12, 7, -15, 0.6, a.accent);
+  };
+
+  S.whirligig = function (c, a, t) {
+    var spin = Math.sin(t * 6) * 0.5;
+    c.save(); c.rotate(spin * 0.16);
+    c.strokeStyle = GG.shade(a.body, 0.25); c.lineWidth = 1.1; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.beginPath();
+      c.moveTo(s2 * 3, 1.5);
+      c.quadraticCurveTo(s2 * 7, 3 + spin, s2 * 8.5, 6.5 + spin);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(s2 * 3, -1); c.lineTo(s2 * 6.5, -3.5);
+      c.stroke();
+    }
+    c.fillStyle = a.body; ell(c, 0, 0.6, 4.4, 7.4);
+    c.fillStyle = a.wing; ell(c, 0, 1.2, 3.8, 6.6);
+    c.fillStyle = 'rgba(255,255,255,0.42)'; ell(c, -1.6, -1.8, 1.6, 3, -0.3);
+    c.fillStyle = a.accent; ell(c, 0, 1.2, 0.4, 6.4);
+    /* the two pairs of eyes */
+    c.fillStyle = a.eyes || '#d8e4ee';
+    ell(c, -2.2, -5.4, 0.9, 0.8); ell(c, 2.2, -5.4, 0.9, 0.8);
+    ell(c, -2.4, -3.4, 0.7, 0.6); ell(c, 2.4, -3.4, 0.7, 0.6);
+    c.restore();
+  };
+
+  S.boatman = function (c, a, t) {
+    var row = Math.sin(t * 9);
+    c.strokeStyle = GG.shade(a.body, -0.2); c.lineWidth = 1.1; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      /* the oars */
+      c.beginPath();
+      c.moveTo(s2 * 2.6, 2);
+      c.quadraticCurveTo(s2 * 7, 4 + row * 1.6, s2 * 10, 7 + row * 2.4);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(s2 * 2.6, -1); c.lineTo(s2 * 5.6, -0.4); c.stroke();
+    }
+    /* the feathered blades */
+    c.strokeStyle = GG.shade(a.body, -0.05); c.lineWidth = 0.4;
+    for (var g = -1; g <= 1; g += 2) for (var i = 0; i < 4; i++) {
+      c.beginPath();
+      c.moveTo(g * (8 + i * 0.6), 5.6 + row * 2 + i * 0.4);
+      c.lineTo(g * (9.6 + i * 0.6), 7.4 + row * 2 + i * 0.4);
+      c.stroke();
+    }
+    c.fillStyle = a.body; ell(c, 0, 0.4, 3.6, 6.8);
+    c.fillStyle = a.wing; ell(c, 0, 1, 3.1, 6);
+    c.strokeStyle = a.accent; c.lineWidth = 0.45;
+    for (var j = -2; j <= 3; j++) {
+      c.beginPath(); c.moveTo(-3, j * 1.5 + 0.4); c.lineTo(3, j * 1.5 - 0.2); c.stroke();
+    }
+    c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -5.6, 2.6, 2.4);
+    c.fillStyle = a.eyes || '#2b2418';
+    ell(c, -1.5, -6.2, 0.9, 0.9); ell(c, 1.5, -6.2, 0.9, 0.9);
+    c.fillStyle = 'rgba(255,255,255,0.5)'; ell(c, -1.2, -2.2, 1.1, 2.2, -0.3);
+  };
+
+  /* a walking crab, seen from above, facing up */
+  S.crab = function (c, a, t) {
+    var step = Math.sin(t * 6);
+    c.strokeStyle = GG.shade(a.body, -0.25); c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var i = 0; i < 4; i++) {
+        var yy = -1.6 + i * 2.5;
+        var k = Math.sin(t * 6 + i * 1.5 + (s2 > 0 ? 0 : 1.8)) * 1.3;
+        c.beginPath();
+        c.moveTo(s2 * 4.5, yy);
+        c.quadraticCurveTo(s2 * 8.5, yy + 1 + k, s2 * 10.5, yy + 4 + k);
+        c.stroke();
+      }
+      /* the claw arms */
+      c.lineWidth = 1.8;
+      c.beginPath();
+      c.moveTo(s2 * 4.4, -3.6);
+      c.quadraticCurveTo(s2 * 9.5, -6, s2 * 8.6, -10.5);
+      c.stroke();
+    }
+    /* the claws */
+    c.fillStyle = GG.shade(a.body, -0.1);
+    for (var g = -1; g <= 1; g += 2) {
+      c.save(); c.translate(g * 8.6, -11.4); c.rotate(g * (0.2 + step * 0.12));
+      ell(c, 0, 0, 2.1, 3.1);
+      c.fillStyle = a.wing;
+      ell(c, g * 0.5, -1.6, 1.1, 1.9, g * 0.4);
+      c.fillStyle = GG.shade(a.body, -0.1);
+      c.restore();
+    }
+    /* the shell */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-6.4, -1.2);
+    c.quadraticCurveTo(-6.8, -6.4, 0, -7);
+    c.quadraticCurveTo(6.8, -6.4, 6.4, -1.2);
+    c.quadraticCurveTo(5.2, 4.4, 0, 5.2);
+    c.quadraticCurveTo(-5.2, 4.4, -6.4, -1.2);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing;
+    ell(c, 0, -1.6, 4.6, 3.2);
+    c.fillStyle = 'rgba(255,255,255,0.24)'; ell(c, -2, -3, 2, 1.3, -0.3);
+    c.fillStyle = a.accent;
+    ell(c, -3.4, 1.6, 0.7, 0.6); ell(c, 3.4, 1.6, 0.7, 0.6);
+    /* the eyes, on stalks for a ghost crab */
+    if (a.stalks) {
+      c.strokeStyle = GG.shade(a.body, -0.15); c.lineWidth = 1.2;
+      c.beginPath(); c.moveTo(-2.2, -5.6); c.lineTo(-2.6, -9.4); c.stroke();
+      c.beginPath(); c.moveTo(2.2, -5.6); c.lineTo(2.6, -9.4); c.stroke();
+      c.fillStyle = a.eyes || '#2b2b2b';
+      ell(c, -2.6, -10, 1.1, 1.4); ell(c, 2.6, -10, 1.1, 1.4);
+    } else {
+      c.fillStyle = a.eyes || '#2b2b2b';
+      ell(c, -2.2, -5.6, 1, 1.1); ell(c, 2.2, -5.6, 1, 1.1);
+    }
+  };
+
+  S.hermitcrab = function (c, a, t) {
+    var step = Math.sin(t * 5);
+    /* the borrowed shell behind */
+    c.fillStyle = a.wing;
+    ell(c, 0.4, 4.4, 6.6, 6.2, 0.1);
+    c.strokeStyle = GG.shade(a.wing, -0.3); c.lineWidth = 1;
+    c.beginPath();
+    for (var i = 0; i < 60; i++) {
+      var ang = i * 0.3, r = 0.6 + i * 0.09;
+      if (r > 5.6) break;
+      var x = 0.4 + Math.cos(ang) * r, y = 4.4 + Math.sin(ang) * r * 0.95;
+      if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.24)'; ell(c, -2, 2.4, 2.2, 1.8, -0.4);
+    /* the legs poking out at the front */
+    c.strokeStyle = GG.shade(a.body, -0.15); c.lineWidth = 1.2; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var j = 0; j < 2; j++) {
+        var k = Math.sin(t * 5 + j * 1.7 + (s2 > 0 ? 0 : 1.6)) * 1.2;
+        c.beginPath();
+        c.moveTo(s2 * 2.6, -1.4 + j * 2.2);
+        c.quadraticCurveTo(s2 * 6, 0.6 + j * 2 + k, s2 * 7.4, 3.4 + j * 1.6 + k);
+        c.stroke();
+      }
+    }
+    /* body and the one big claw */
+    c.fillStyle = a.body; ell(c, 0, -2.6, 3.4, 3.6);
+    c.fillStyle = GG.shade(a.body, -0.1);
+    c.save(); c.translate(-3.8, -7 + step * 0.4); c.rotate(-0.4); ell(c, 0, 0, 2.4, 3.2); c.restore();
+    c.fillStyle = a.body;
+    c.save(); c.translate(3.4, -6.4 - step * 0.4); c.rotate(0.4); ell(c, 0, 0, 1.7, 2.4); c.restore();
+    c.strokeStyle = GG.shade(a.body, 0.15); c.lineWidth = 0.9;
+    c.beginPath(); c.moveTo(-1.4, -5.4); c.lineTo(-2, -9); c.stroke();
+    c.beginPath(); c.moveTo(1.4, -5.4); c.lineTo(2, -9); c.stroke();
+    c.fillStyle = a.eyes || '#2b2b2b';
+    ell(c, -2, -9.4, 0.9, 1); ell(c, 2, -9.4, 0.9, 1);
+  };
+
+  S.seastar = function (c, a, t) {
+    var pulse = 1 + Math.sin(t * 1.4) * 0.02;
+    function arm(ang) { return Math.pow(Math.abs(Math.cos(ang * 2.5)), 1.5); }
+    function outline(c2, k) {
+      c2.beginPath();
+      for (var i = 0; i <= 72; i++) {
+        var ang = -Math.PI / 2 + i / 72 * Math.PI * 2;
+        var r = (4.2 + 7.6 * arm(ang)) * k;
+        var x = Math.cos(ang) * r, y = Math.sin(ang) * r;
+        if (i === 0) c2.moveTo(x, y); else c2.lineTo(x, y);
+      }
+      c2.closePath(); c2.fill();
+    }
+    c.save(); c.scale(pulse, pulse);
+    c.fillStyle = a.body; outline(c, 1);
+    c.fillStyle = a.wing; outline(c, 0.7);
+    /* the little bumps running down each of the five arms */
+    c.fillStyle = a.accent;
+    for (var k = 0; k < 5; k++) {
+      var dir = -Math.PI / 2 + k / 5 * Math.PI * 2;
+      for (var d = 2.4; d < 11; d += 2) {
+        ell(c, Math.cos(dir) * d, Math.sin(dir) * d, 0.62, 0.62);
+        if (d < 8) {
+          ell(c, Math.cos(dir + 0.2) * d * 0.92, Math.sin(dir + 0.2) * d * 0.92, 0.46, 0.46);
+          ell(c, Math.cos(dir - 0.2) * d * 0.92, Math.sin(dir - 0.2) * d * 0.92, 0.46, 0.46);
+        }
+      }
+    }
+    ell(c, 0, 0, 1.2, 1.2);
+    c.restore();
+  };
+
+  S.anemone = function (c, a, t) {
+    /* the column */
+    c.fillStyle = GG.shade(a.body, -0.15);
+    ell(c, 0, 2.6, 6.4, 5.4);
+    c.fillStyle = a.body;
+    ell(c, 0, 0.6, 6.8, 5.6);
+    /* the ring of tentacles */
+    c.strokeStyle = a.wing; c.lineWidth = 1.5; c.lineCap = 'round';
+    for (var i = 0; i < 22; i++) {
+      var ang = i / 22 * Math.PI * 2;
+      var wig = Math.sin(t * 2.2 + i * 0.9) * 1.4;
+      var r0 = 3.4, r1 = 8.4 + Math.sin(i * 2.3) * 0.9;
+      c.beginPath();
+      c.moveTo(Math.cos(ang) * r0, Math.sin(ang) * r0 * 0.9);
+      c.quadraticCurveTo(
+        Math.cos(ang) * (r1 * 0.7) + wig * 0.5, Math.sin(ang) * (r1 * 0.7) * 0.9,
+        Math.cos(ang) * r1 + wig, Math.sin(ang) * r1 * 0.9 + wig * 0.4);
+      c.stroke();
+    }
+    c.strokeStyle = a.accent; c.lineWidth = 0.7;
+    for (var j = 0; j < 11; j++) {
+      var an = j / 11 * Math.PI * 2 + 0.14;
+      c.beginPath();
+      c.moveTo(Math.cos(an) * 3.4, Math.sin(an) * 3);
+      c.lineTo(Math.cos(an) * 7, Math.sin(an) * 6.3);
+      c.stroke();
+    }
+    /* the mouth */
+    c.fillStyle = GG.shade(a.body, -0.3); ell(c, 0, 0.4, 2.4, 1.9);
+    c.fillStyle = a.accent; ell(c, 0, 0.4, 1.1, 0.7);
+  };
+
+  S.urchin = function (c, a, t) {
+    var wob = Math.sin(t * 1.6) * 0.06;
+    c.strokeStyle = a.body; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var i = 0; i < 26; i++) {
+      var ang = i / 26 * Math.PI * 2 + wob;
+      var len = 7 + ((i * 7) % 5) * 0.75;
+      c.beginPath();
+      c.moveTo(Math.cos(ang) * 3.4, Math.sin(ang) * 3.2);
+      c.lineTo(Math.cos(ang) * len, Math.sin(ang) * len * 0.95);
+      c.stroke();
+    }
+    c.strokeStyle = GG.shade(a.body, 0.25); c.lineWidth = 0.6;
+    for (var j = 0; j < 13; j++) {
+      var an = j / 13 * Math.PI * 2 + 0.24 + wob;
+      c.beginPath();
+      c.moveTo(Math.cos(an) * 3.2, Math.sin(an) * 3);
+      c.lineTo(Math.cos(an) * 6, Math.sin(an) * 5.7);
+      c.stroke();
+    }
+    c.fillStyle = a.accent; ell(c, 0, 0, 4.2, 4);
+    c.fillStyle = a.wing; ell(c, 0, -0.4, 3.4, 3.2);
+    c.fillStyle = GG.shade(a.accent, -0.2); ell(c, 0, 0, 1.2, 1.1);
+    c.fillStyle = 'rgba(255,255,255,0.3)'; ell(c, -1.4, -1.6, 1.1, 0.9, -0.4);
+  };
+
+  S.limpet = function (c, a, t) {
+    c.fillStyle = GG.shade(a.body, -0.25);
+    ell(c, 0, 2.6, 7.2, 3.4);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-7.2, 3);
+    c.quadraticCurveTo(-4.4, -6.4, 0.4, -7.4);
+    c.quadraticCurveTo(5, -6.2, 7.2, 3);
+    c.quadraticCurveTo(0, 5.4, -7.2, 3);
+    c.closePath(); c.fill();
+    c.strokeStyle = a.accent; c.lineWidth = 0.55;
+    for (var i = -3; i <= 3; i++) {
+      c.beginPath();
+      c.moveTo(0.4, -7);
+      c.quadraticCurveTo(i * 2.2, -1, i * 2.35, 3.4);
+      c.stroke();
+    }
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(-3.4, -1.4);
+    c.quadraticCurveTo(-1.6, -6.4, 0.4, -6.8);
+    c.quadraticCurveTo(2.2, -6, 3, -1.6);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -1.6, -3, 1.4, 2.2, -0.3);
+  };
+
+  S.periwinkle = function (c, a, t) {
+    var bob = Math.sin(t * 2.4) * 0.4;
+    /* the foot creeping out at the front */
+    c.fillStyle = GG.shade(a.wing, 0.3);
+    ell(c, 0, 5.4 + bob * 0.3, 4.4, 2.8);
+    c.fillStyle = GG.shade(a.wing, 0.42);
+    ell(c, 0, 6.2 + bob * 0.3, 3, 1.6);
+    /* a little whorled cone, wide at the bottom, pointed at the top */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-5.6, 4.4);
+    c.quadraticCurveTo(-6.4, -2, -1.6, -8.6);
+    c.quadraticCurveTo(0.4, -10.4, 1.8, -8.2);
+    c.quadraticCurveTo(6, -1.6, 5.6, 4.4);
+    c.quadraticCurveTo(0, 6.6, -5.6, 4.4);
+    c.closePath(); c.fill();
+    /* the whorls */
+    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
+    var bands = [[4.4, 5.4], [1.6, 4.6], [-0.8, 3.6], [-2.8, 2.6], [-4.6, 1.7], [-6.2, 1]];
+    for (var i = 0; i < bands.length; i++) {
+      c.beginPath();
+      c.moveTo(-bands[i][1], bands[i][0]);
+      c.quadraticCurveTo(0, bands[i][0] + 1.4, bands[i][1], bands[i][0] - 0.3);
+      c.stroke();
+    }
+    c.fillStyle = GG.shade(a.body, 0.28);
+    c.beginPath();
+    c.moveTo(-1, -8.4);
+    c.quadraticCurveTo(3.4, -2.4, 4.4, 3.4);
+    c.quadraticCurveTo(1.6, 4.2, 0.4, 3.6);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    ell(c, -2.4, -1.6, 1.4, 3, -0.25);
+    /* the aperture and its trapdoor */
+    c.fillStyle = GG.shade(a.body, -0.35);
+    ell(c, -0.6, 4, 3, 2.1, -0.12);
+    c.fillStyle = GG.shade(a.accent, 0.45);
+    ell(c, -0.6, 4.2 + bob * 0.3, 2.1, 1.5, -0.12);
+  };
+
+  S.nudibranch = function (c, a, t) {
+    var ripple = Math.sin(t * 3);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -9.4);
+    c.quadraticCurveTo(4.6, -6, 4.2, 1);
+    c.quadraticCurveTo(3.6, 8.4, 0, 10.4);
+    c.quadraticCurveTo(-3.6, 8.4, -4.2, 1);
+    c.quadraticCurveTo(-4.6, -6, 0, -9.4);
+    c.closePath(); c.fill();
+    c.fillStyle = GG.shade(a.body, 0.2);
+    ell(c, 0, 0.4, 2.6, 7.4);
+    /* the fingers along its back */
+    c.strokeStyle = a.wing; c.lineWidth = 1.5; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var i = 0; i < 5; i++) {
+        var yy = -5.4 + i * 3;
+        var k = Math.sin(t * 3 + i * 0.8 + (s2 > 0 ? 0 : 1.2)) * 0.8;
+        c.beginPath();
+        c.moveTo(s2 * 2.2, yy);
+        c.quadraticCurveTo(s2 * 4.6, yy - 1 + k, s2 * 5.6, yy - 3 + k);
+        c.stroke();
+      }
+    }
+    c.fillStyle = a.accent;
+    for (var g = -1; g <= 1; g += 2) for (var j = 0; j < 5; j++) {
+      var y2 = -8.2 + j * 3 + Math.sin(t * 3 + j * 0.8 + (g > 0 ? 0 : 1.2)) * 0.8;
+      ell(c, g * 5.6, y2, 0.8, 0.9);
+    }
+    /* the pair of little horns */
+    c.strokeStyle = a.wing; c.lineWidth = 1.3;
+    c.beginPath(); c.moveTo(-1.5, -8.4); c.lineTo(-2.6, -12 + ripple * 0.4); c.stroke();
+    c.beginPath(); c.moveTo(1.5, -8.4); c.lineTo(2.6, -12 - ripple * 0.4); c.stroke();
+    c.fillStyle = a.accent;
+    ell(c, -2.6, -12.4 + ripple * 0.4, 0.8, 1); ell(c, 2.6, -12.4 - ripple * 0.4, 0.8, 1);
+    /* the gill plume at the back */
+    c.strokeStyle = a.wing; c.lineWidth = 1;
+    for (var m = -2; m <= 2; m++) {
+      c.beginPath(); c.moveTo(0, 6.6);
+      c.quadraticCurveTo(m * 1.6, 8.6, m * 2.4, 10.6 + Math.abs(m) * -0.5);
+      c.stroke();
+    }
+  };
+
+  S.tigerbeetle = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.3), 3, 5.4, 8.4, t * 12, 1.2);
+    c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -6.4, 4, 3);
+    c.fillStyle = a.eyes || '#e8e2c8';
+    ell(c, -2.8, -7.2, 1.7, 1.6); ell(c, 2.8, -7.2, 1.7, 1.6);
+    c.fillStyle = GG.shade(a.body, -0.4);
+    ell(c, -2.8, -7.4, 0.9, 0.9); ell(c, 2.8, -7.4, 0.9, 0.9);
+    /* the sickle jaws */
+    c.strokeStyle = '#f0ead4'; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.4, -8.4); c.quadraticCurveTo(-3.4, -11, -0.6, -12.4); c.stroke();
+    c.beginPath(); c.moveTo(1.4, -8.4); c.quadraticCurveTo(3.4, -11, 0.6, -12.4); c.stroke();
+    c.fillStyle = GG.shade(a.body, -0.05); ell(c, 0, -3.4, 2.8, 2.4);
+    c.fillStyle = a.body; ell(c, 0, 2.6, 5, 7);
+    c.fillStyle = a.wing; ell(c, 0, 2.8, 4.5, 6.4);
+    c.fillStyle = GG.shade(a.body, -0.35); ell(c, 0, 2.8, 0.45, 6.3);
+    /* the pale squiggles */
+    c.fillStyle = a.accent;
+    ell(c, -3.4, 0.4, 1.5, 0.6, -0.5); ell(c, 3.4, 0.4, 1.5, 0.6, 0.5);
+    ell(c, -3.6, 4.4, 1.7, 0.7, 0.35); ell(c, 3.6, 4.4, 1.7, 0.7, -0.35);
+    ell(c, 0, 8.2, 1.5, 0.7);
+    c.fillStyle = 'rgba(255,255,255,0.3)'; ell(c, -2, 0.2, 1.5, 2.6, -0.3);
+  };
+
+  S.sandhopper = function (c, a, t) {
+    var kick = Math.sin(t * 8);
+    c.strokeStyle = GG.shade(a.body, -0.25); c.lineWidth = 0.9; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var i = 0; i < 4; i++) {
+        var yy = -2 + i * 2.1;
+        var k = Math.sin(t * 8 + i * 1.3 + (s2 > 0 ? 0 : 1.7)) * 1;
+        c.beginPath();
+        c.moveTo(s2 * 2, yy);
+        c.quadraticCurveTo(s2 * 4.4, yy + 1.4 + k, s2 * 5.2, yy + 3.4 + k);
+        c.stroke();
+      }
+    }
+    /* the curled shrimpy body */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -8);
+    c.quadraticCurveTo(3.6, -5, 3.4, 1.4);
+    c.quadraticCurveTo(3, 7, 0.4, 9.4 + kick * 0.8);
+    c.quadraticCurveTo(-1.4, 7.4, -1, 3.6);
+    c.quadraticCurveTo(-3.4, 1, -3.2, -3.4);
+    c.quadraticCurveTo(-2.6, -7, 0, -8);
+    c.closePath(); c.fill();
+    c.strokeStyle = GG.shade(a.body, -0.22); c.lineWidth = 0.5;
+    for (var j = 0; j < 6; j++) {
+      c.beginPath();
+      c.moveTo(-3, -4.4 + j * 2); c.quadraticCurveTo(0, -3.8 + j * 2, 3.2, -4.6 + j * 2);
+      c.stroke();
+    }
+    c.fillStyle = a.wing; ell(c, 0, -5.6, 2.6, 2.8);
+    c.fillStyle = a.eyes || '#2b2b2b'; ell(c, -1.2, -6.6, 0.8, 0.8); ell(c, 1.2, -6.6, 0.8, 0.8);
+    c.strokeStyle = GG.shade(a.body, -0.2); c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(-1, -7.8); c.quadraticCurveTo(-2.6, -11, -3.4, -13.4); c.stroke();
+    c.beginPath(); c.moveTo(1, -7.8); c.quadraticCurveTo(2.6, -11, 3.4, -13.4); c.stroke();
+  };
+
+  S.horseshoe = function (c, a, t) {
+    var step = Math.sin(t * 3) * 0.6;
+    /* the tail spike */
+    c.strokeStyle = a.accent; c.lineWidth = 1.6; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 6.4); c.lineTo(step * 0.4, 13); c.stroke();
+    /* the little legs underneath */
+    c.strokeStyle = GG.shade(a.body, -0.35); c.lineWidth = 0.9;
+    for (var s2 = -1; s2 <= 1; s2 += 2) for (var i = 0; i < 4; i++) {
+      var k = Math.sin(t * 5 + i * 1.4 + (s2 > 0 ? 0 : 1.6)) * 0.7;
+      c.beginPath();
+      c.moveTo(s2 * 2.4, -2.6 + i * 1.9);
+      c.lineTo(s2 * (5 + k * 0.4), -1.4 + i * 2 + k);
+      c.stroke();
+    }
+    /* the abdomen, the smaller back plate */
+    c.fillStyle = GG.shade(a.body, -0.12);
+    c.beginPath();
+    c.moveTo(-5.4, 1.4);
+    c.lineTo(-4, 6.6); c.lineTo(0, 7.8); c.lineTo(4, 6.6); c.lineTo(5.4, 1.4);
+    c.closePath(); c.fill();
+    c.strokeStyle = GG.shade(a.body, -0.35); c.lineWidth = 0.6;
+    for (var j = -2; j <= 2; j++) {
+      c.beginPath(); c.moveTo(j * 1.9, 1.8); c.lineTo(j * 1.5, 6.8); c.stroke();
+    }
+    /* the great horseshoe shell */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-8.4, 3.4);
+    c.quadraticCurveTo(-9.4, -7.4, 0, -9.4);
+    c.quadraticCurveTo(9.4, -7.4, 8.4, 3.4);
+    c.quadraticCurveTo(4.4, 2, 0, 2);
+    c.quadraticCurveTo(-4.4, 2, -8.4, 3.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing;
+    ell(c, 0, -3.4, 6.2, 4.2);
+    c.fillStyle = 'rgba(255,255,255,0.2)'; ell(c, -2.6, -5, 2.6, 1.6, -0.3);
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.6;
+    c.beginPath(); c.moveTo(-3.2, -8.2); c.lineTo(-3.6, 2.6); c.stroke();
+    c.beginPath(); c.moveTo(3.2, -8.2); c.lineTo(3.6, 2.6); c.stroke();
+    c.fillStyle = a.eyes || '#3a2c1c';
+    ell(c, -4.6, -4.4, 1, 0.75, -0.3); ell(c, 4.6, -4.4, 1, 0.75, 0.3);
+  };
+
+
   GG.BugArt = {
     shapes: S,
     /* Draw a bug. (x,y) is its centre, angle is where it is heading (radians),
@@ -3118,6 +4035,15 @@ ul.tips li{margin-bottom:3px}
     } else if (p === 'line') {
       c.fillStyle = a.accent; c.globalAlpha = 0.6;
       ell(c, 0, 0, L * 0.8, D * 0.12);
+      c.globalAlpha = 1;
+    } else if (p === 'wavy') {
+      c.strokeStyle = a.accent; c.globalAlpha = 0.6; c.lineWidth = 1.2;
+      for (var wv = -5; wv <= 4; wv++) {
+        c.beginPath();
+        c.moveTo(wv * L * 0.18, -D * 0.95);
+        c.quadraticCurveTo(wv * L * 0.18 + 2.4, -D * 0.5, wv * L * 0.18 - 1, -D * 0.06);
+        c.stroke();
+      }
       c.globalAlpha = 1;
     } else if (p === 'mottle') {
       c.fillStyle = a.accent; c.globalAlpha = 0.35;
@@ -3348,6 +4274,309 @@ ul.tips li{margin-bottom:3px}
   };
 
   /* Bugs and fish are drawn by different modules; this picks the right one. */
+  /* ---------- the stream, the inlet and the open sea ---------- */
+
+  S.sculpin = function (c, a, t) {
+    standard(c, a, t, { L: 15, D: 5.6, tail: 'fan', tailD: 5.6, hump: 0.72, dorsal: 1.5, eye: 2.4, mouth: 7 });
+    /* the big fanned-out side fins it props itself up on */
+    c.fillStyle = a.fin; c.globalAlpha = 0.9;
+    c.beginPath();
+    c.moveTo(4, 1.4);
+    c.quadraticCurveTo(-1, 9.6, -6.5, 6.6);
+    c.quadraticCurveTo(-1.5, 4.4, 2.5, 2.6);
+    c.closePath(); c.fill();
+    c.globalAlpha = 1;
+    /* the wide flat head */
+    c.fillStyle = a.back;
+    ell(c, 10, -0.6, 6.2, 5);
+    c.fillStyle = a.accent; c.globalAlpha = 0.4;
+    ell(c, 7, 2, 3.4, 1.8, 0.2); ell(c, 1, -2.4, 3, 1.7, -0.3);
+    c.globalAlpha = 1;
+    eye(c, 11.4, -2.8, 2.3);
+    mouth(c, 15.4, 1.4, 7, '#2b2b33');
+  };
+
+  S.cod = function (c, a, t) {
+    standard(c, a, t, { L: 22, D: 8.4, tail: 'fan', tailD: 7.4, hump: 0.94, dorsal: 1.5, eye: 2.6, mouth: 6 });
+    /* the pale lateral line that curves over the shoulder */
+    c.strokeStyle = '#f4f2e4'; c.globalAlpha = 0.8; c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(-19, -1.4); c.quadraticCurveTo(0, -5.4, 17, -2);
+    c.stroke(); c.globalAlpha = 1;
+    /* the little chin whisker */
+    c.strokeStyle = a.fin; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(20.4, 2.6); c.quadraticCurveTo(21.6, 6, 20, 8); c.stroke();
+    /* three dorsal fins, the cod's giveaway */
+    c.fillStyle = a.fin;
+    [[-13, 5], [-2, 5.4], [9, 4.6]].forEach(function (d) {
+      c.beginPath();
+      c.moveTo(d[0] - 4, -7);
+      c.quadraticCurveTo(d[0], -7 - d[1], d[0] + 4, -7);
+      c.closePath(); c.fill();
+    });
+  };
+
+  S.salmon = function (c, a, t) {
+    standard(c, a, t, { L: 24, D: 8, tail: 'fork', tailD: 9.5, hump: 0.98, dorsal: 1.7, eye: 2.4, mouth: 8 });
+    /* the pink flush along the flank */
+    c.fillStyle = '#e88a86'; c.globalAlpha = 0.34;
+    ell(c, -1, 1.4, 17, 4.2);
+    c.globalAlpha = 1;
+    /* the little fatty fin salmon and trout both have */
+    c.fillStyle = a.fin;
+    ell(c, -16, -5.6, 2.4, 1.4, -0.2);
+    /* the hooked jaw of a spawning male */
+    c.strokeStyle = a.accent; c.lineWidth = 1.6; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(21, 1.6); c.quadraticCurveTo(26.5, 2.4, 25.5, -1.6);
+    c.stroke();
+  };
+
+  S.eel = function (c, a, t) {
+    var wag = Math.sin(t * 3.2);
+    /* one long ribbon of a body */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(24, 0);
+    for (var i = 24; i >= -24; i -= 4) {
+      var d = 1.4 + 2.4 * Math.max(0, 1 - Math.abs(i + 4) / 30);
+      c.lineTo(i, Math.sin(i * 0.16 + t * 3.2) * (2.6 * (1 - (i + 24) / 52)) - d);
+    }
+    for (var j = -24; j <= 24; j += 4) {
+      var d2 = 1.4 + 2.4 * Math.max(0, 1 - Math.abs(j + 4) / 30);
+      c.lineTo(j, Math.sin(j * 0.16 + t * 3.2) * (2.6 * (1 - (j + 24) / 52)) + d2);
+    }
+    c.closePath(); c.fill();
+    /* the fin running all along the back and round the tail */
+    c.strokeStyle = a.fin; c.lineWidth = 1.6; c.globalAlpha = 0.85;
+    c.beginPath();
+    for (var k = 14; k >= -25; k -= 3) {
+      var y = Math.sin(k * 0.16 + t * 3.2) * (2.6 * (1 - (k + 24) / 52)) - 3.4;
+      if (k === 14) c.moveTo(k, y); else c.lineTo(k, y);
+    }
+    c.stroke(); c.globalAlpha = 1;
+    /* the pale belly */
+    c.fillStyle = a.belly; c.globalAlpha = 0.6;
+    c.beginPath();
+    for (var m = 22; m >= -22; m -= 4) {
+      var yy = Math.sin(m * 0.16 + t * 3.2) * (2.6 * (1 - (m + 24) / 52));
+      if (m === 22) c.moveTo(m, yy + 0.6); else c.lineTo(m, yy + 0.6);
+    }
+    for (var n = -22; n <= 22; n += 4) {
+      var y2 = Math.sin(n * 0.16 + t * 3.2) * (2.6 * (1 - (n + 24) / 52));
+      var dd = 1.2 + 2 * Math.max(0, 1 - Math.abs(n + 4) / 30);
+      c.lineTo(n, y2 + dd);
+    }
+    c.closePath(); c.fill(); c.globalAlpha = 1;
+    eye(c, 19.5, Math.sin(19.5 * 0.16 + t * 3.2) * 0.4 - 1.4, 1.9);
+    mouth(c, 24, Math.sin(24 * 0.16 + t * 3.2) * 0.4 + 0.6, 6, '#22221a');
+    void wag;
+  };
+
+  S.flatfish = function (c, a, t) {
+    var ripple = Math.sin(t * 2.6);
+    /* seen from above: a wide oval with a frill all round */
+    c.fillStyle = a.fin;
+    c.beginPath();
+    for (var i = 0; i <= 44; i++) {
+      var ang = i / 44 * Math.PI * 2;
+      var rx = 21 + Math.sin(ang * 6 + ripple) * 1.4;
+      var ry = 13.5 + Math.sin(ang * 6 + ripple) * 1.4;
+      var x = Math.cos(ang) * rx, y = Math.sin(ang) * ry;
+      if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = a.back;
+    ell(c, -0.5, 0, 18.5, 11.4);
+    c.save();
+    c.beginPath(); c.ellipse(-0.5, 0, 18.5, 11.4, 0, 0, Math.PI * 2); c.clip();
+    c.fillStyle = a.belly; c.globalAlpha = 0.3;
+    ell(c, 4, 4.4, 13, 6.4);
+    c.globalAlpha = 1;
+    if (a.pattern === 'spots') {
+      c.fillStyle = a.accent; c.globalAlpha = 0.55;
+      var r = GG.mulberry32(9);
+      for (var s2 = 0; s2 < 11; s2++) {
+        var px = (r() - 0.5) * 32, py = (r() - 0.5) * 19;
+        ell(c, px, py, 2.2, 2);
+        c.globalAlpha = 0.28;
+        ell(c, px, py, 3.4, 3.1);
+        c.globalAlpha = 0.55;
+      }
+      c.globalAlpha = 1;
+    } else {
+      c.fillStyle = a.accent; c.globalAlpha = 0.3;
+      var r2 = GG.mulberry32(4);
+      for (var m = 0; m < 12; m++) ell(c, (r2() - 0.5) * 34, (r2() - 0.5) * 20, 3.6, 2.6);
+      c.globalAlpha = 1;
+    }
+    c.restore();
+    /* both eyes on the same side, up at the head end */
+    eye(c, 12.5, -3.6, 2.5);
+    eye(c, 12, 2.2, 2.3);
+    mouth(c, 18.4, 0.4, 6, '#2b2b33');
+  };
+
+  S.seacrab = function (c, a, t) {
+    var step = Math.sin(t * 4);
+    /* seen from above, facing right */
+    c.strokeStyle = GG.shade(a.back, -0.2); c.lineWidth = 1.7; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var i = 0; i < 3; i++) {
+        var xx = -2 + i * 4.4;
+        var k = Math.sin(t * 4 + i * 1.5 + (s2 > 0 ? 0 : 1.8)) * 1.6;
+        c.beginPath();
+        c.moveTo(xx, s2 * 6);
+        c.quadraticCurveTo(xx - 2 + k, s2 * 11, xx - 5 + k, s2 * 14);
+        c.stroke();
+      }
+      /* the paddle legs at the back */
+      c.beginPath();
+      c.moveTo(-9, s2 * 5.4);
+      c.quadraticCurveTo(-14, s2 * 9, -17, s2 * 12);
+      c.stroke();
+      c.fillStyle = GG.shade(a.back, 0.1);
+      ell(c, -18, s2 * 13.4, 3.6, 1.9, s2 * 0.7);
+      /* the claw arms */
+      c.strokeStyle = GG.shade(a.back, -0.15); c.lineWidth = 2.2;
+      c.beginPath();
+      c.moveTo(6, s2 * 5);
+      c.quadraticCurveTo(13, s2 * 8, 17, s2 * 5.6 + step * s2);
+      c.stroke();
+      c.strokeStyle = GG.shade(a.back, -0.2); c.lineWidth = 1.7;
+    }
+    /* the claws */
+    for (var g = -1; g <= 1; g += 2) {
+      c.save(); c.translate(18.5, g * 5 + step * g); c.rotate(g * 0.3);
+      c.fillStyle = GG.shade(a.back, 0.05); ell(c, 0, 0, 4.4, 2.6);
+      c.fillStyle = a.accent; ell(c, 3, g * -0.6, 2.2, 1.2, g * 0.4);
+      c.restore();
+    }
+    /* the wide shell, points at each side */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(11, 0);
+    c.quadraticCurveTo(9, -6.4, 0, -7.6);
+    c.lineTo(-14, -9.4);
+    c.quadraticCurveTo(-11, 0, -14, 9.4);
+    c.lineTo(0, 7.6);
+    c.quadraticCurveTo(9, 6.4, 11, 0);
+    c.closePath(); c.fill();
+    c.fillStyle = a.belly; c.globalAlpha = 0.35;
+    ell(c, -1, 0.6, 8.4, 4.4);
+    c.globalAlpha = 1;
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    ell(c, 1, -3.4, 6, 2, -0.15);
+    c.fillStyle = '#f2ecd8';
+    ell(c, 8.4, -3.2, 1.5, 1.6); ell(c, 8.4, 3.2, 1.5, 1.6);
+    c.fillStyle = '#22252a';
+    ell(c, 8.9, -3.2, 0.8, 0.9); ell(c, 8.9, 3.2, 0.8, 0.9);
+  };
+
+  S.crayfish = function (c, a, t) {
+    var step = Math.sin(t * 4.5);
+    c.strokeStyle = GG.shade(a.back, -0.2); c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      for (var i = 0; i < 4; i++) {
+        var xx = 1 + i * 3.4;
+        var k = Math.sin(t * 4.5 + i * 1.4 + (s2 > 0 ? 0 : 1.7)) * 1.2;
+        c.beginPath();
+        c.moveTo(xx, s2 * 3.6);
+        c.quadraticCurveTo(xx - 1 + k, s2 * 7, xx - 3 + k, s2 * 9.4);
+        c.stroke();
+      }
+      /* the big pincer arms out front */
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(11, s2 * 3);
+      c.quadraticCurveTo(17, s2 * 6, 21, s2 * 4.4 + step * s2 * 0.8);
+      c.stroke();
+      c.lineWidth = 1.3;
+    }
+    for (var g = -1; g <= 1; g += 2) {
+      c.save(); c.translate(23, g * 4 + step * g * 0.8); c.rotate(g * 0.28);
+      c.fillStyle = GG.shade(a.back, 0.06); ell(c, 0, 0, 4.6, 2.2);
+      c.fillStyle = a.belly; ell(c, 3.2, g * -0.5, 2.4, 1);
+      c.restore();
+    }
+    /* the tail, curling under */
+    c.fillStyle = a.back;
+    for (var j = 0; j < 5; j++) {
+      ell(c, -4 - j * 3.4, Math.sin(t * 4.5) * (0.3 + j * 0.2), 3 - j * 0.24, 4.6 - j * 0.5);
+    }
+    c.fillStyle = GG.shade(a.back, 0.12);
+    c.beginPath();
+    var ty = Math.sin(t * 4.5) * 1.4;
+    c.moveTo(-19, ty);
+    c.lineTo(-25, ty - 5.4); c.lineTo(-23, ty); c.lineTo(-25, ty + 5.4);
+    c.closePath(); c.fill();
+    /* the head and shell */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(15, 0);
+    c.quadraticCurveTo(12, -5.4, 4, -5.2);
+    c.quadraticCurveTo(-3, -4.8, -4, 0);
+    c.quadraticCurveTo(-3, 4.8, 4, 5.2);
+    c.quadraticCurveTo(12, 5.4, 15, 0);
+    c.closePath(); c.fill();
+    c.fillStyle = a.belly; c.globalAlpha = 0.4;
+    ell(c, 5, 1.4, 7, 2.8);
+    c.globalAlpha = 1;
+    c.fillStyle = 'rgba(255,255,255,0.24)'; ell(c, 6, -2.4, 5, 1.4, -0.1);
+    /* the rostrum, the little pointed nose */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(14, -1.4); c.lineTo(20, 0); c.lineTo(14, 1.4); c.closePath(); c.fill();
+    c.fillStyle = '#22252a';
+    ell(c, 13, -2.6, 1.1, 1.1); ell(c, 13, 2.6, 1.1, 1.1);
+    c.strokeStyle = a.accent; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(15, -1.6); c.quadraticCurveTo(22, -5, 27, -7.4); c.stroke();
+    c.beginPath(); c.moveTo(15, 1.6); c.quadraticCurveTo(22, 5, 27, 7.4); c.stroke();
+  };
+
+  S.mola = function (c, a, t) {
+    var flap = Math.sin(t * 1.8);
+    /* the tall fins that row it along */
+    c.fillStyle = a.fin;
+    c.save(); c.rotate(flap * 0.1);
+    c.beginPath();
+    c.moveTo(-2, -12); c.quadraticCurveTo(4, -26, 8, -13);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(-2, 12); c.quadraticCurveTo(4, 26, 8, 13);
+    c.closePath(); c.fill();
+    c.restore();
+    /* the round body, blunt at the back */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(19, 0);
+    c.bezierCurveTo(17, -13, 4, -16, -6, -13.5);
+    c.lineTo(-15, -11);
+    c.quadraticCurveTo(-13, 0, -15, 11);
+    c.lineTo(-6, 13.5);
+    c.bezierCurveTo(4, 16, 17, 13, 19, 0);
+    c.closePath(); c.fill();
+    /* the frilly clavus where a tail should be */
+    c.fillStyle = a.fin;
+    for (var i = -4; i <= 4; i++) {
+      ell(c, -15.4, i * 2.6, 2, 1.5);
+    }
+    c.fillStyle = a.belly; c.globalAlpha = 0.42;
+    ell(c, 2, 6.4, 13, 6.4);
+    c.globalAlpha = 1;
+    c.fillStyle = a.accent; c.globalAlpha = 0.25;
+    ell(c, 0, -5, 11, 5.4, -0.1);
+    c.globalAlpha = 1;
+    c.fillStyle = 'rgba(255,255,255,0.2)';
+    ell(c, 4, -7, 7, 2.6, -0.2);
+    eye(c, 13.5, -3.4, 2.8);
+    mouth(c, 18.6, 1.4, 4, '#2b2b33');
+    /* the little pursed beak */
+    c.fillStyle = GG.shade(a.back, -0.25);
+    ell(c, 18.8, 1.2, 1.8, 1.6);
+  };
+
+
   GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft) {
     if (def.isFish || def.isJunk) GG.FishArt.draw(c, def, x, y, scale * 0.5, !!faceLeft, t);
     else GG.BugArt.draw(c, def, x, y, scale, angle, t);
@@ -3644,6 +4873,164 @@ ul.tips li{margin-bottom:3px}
     GG.roundRect(c, x - w * 0.24, y - 6, w * 0.48, 8, 3); c.fill();
   };
 
+  /* ---------- the river, the beach and the tidepools ---------- */
+
+  P.willow = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 0.7 + seed * 6) * 3.2;
+    shadow(c, x + 2, y, r * 0.66);
+    c.fillStyle = '#6a5233';
+    c.beginPath();
+    c.moveTo(x - r * 0.16, y);
+    c.lineTo(x - r * 0.10 + sway * 0.3, y - r * 0.86);
+    c.lineTo(x + r * 0.12 + sway * 0.3, y - r * 0.86);
+    c.lineTo(x + r * 0.18, y);
+    c.closePath(); c.fill();
+    var cx = x + sway, cy = y - r * 1.02;
+    c.fillStyle = '#4d7f38';
+    ell(c, cx, cy - r * 0.16, r * 0.86, r * 0.5);
+    c.fillStyle = '#6ea247';
+    ell(c, cx - r * 0.34, cy - r * 0.26, r * 0.44, r * 0.32);
+    ell(c, cx + r * 0.36, cy - r * 0.22, r * 0.40, r * 0.30);
+    /* the trailing curtain of leaves */
+    c.strokeStyle = '#79ad4c'; c.lineWidth = Math.max(1.1, r * 0.055); c.lineCap = 'round';
+    for (var i = -4; i <= 4; i++) {
+      var bx = cx + i * r * 0.19;
+      var len = r * (0.62 + 0.34 * Math.cos(i * 0.55)) + Math.sin(seed * 9 + i) * r * 0.1;
+      var dr = sway * 0.6 + Math.sin(t * 1.1 + i * 0.8 + seed * 4) * 2.2;
+      c.beginPath();
+      c.moveTo(bx, cy + r * 0.08);
+      c.quadraticCurveTo(bx + dr * 0.5, cy + len * 0.6, bx + dr, cy + len);
+      c.stroke();
+    }
+  };
+
+  P.palmGrass = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.3 + seed * 8) * 2.6;
+    c.strokeStyle = '#8fae5c'; c.lineWidth = Math.max(1.2, r * 0.13); c.lineCap = 'round';
+    for (var i = -3; i <= 3; i++) {
+      var lean = i * 0.26;
+      c.beginPath();
+      c.moveTo(x + i * r * 0.07, y);
+      c.quadraticCurveTo(x + lean * r * 0.7 + sway * 0.4, y - r * 0.8,
+                         x + lean * r * 1.5 + sway, y - r * (1.05 - Math.abs(i) * 0.13));
+      c.stroke();
+    }
+    c.strokeStyle = '#b6cd7e'; c.lineWidth = Math.max(1, r * 0.09);
+    c.beginPath();
+    c.moveTo(x, y);
+    c.quadraticCurveTo(x + sway * 0.5, y - r * 0.9, x + sway * 1.2, y - r * 1.25);
+    c.stroke();
+  };
+
+  P.driftwood = function (c, x, y, r, t, seed) {
+    shadow(c, x + 1, y, r * 0.74);
+    var tilt = -0.16 + seed * 0.3;
+    c.save(); c.translate(x, y - r * 0.16); c.rotate(tilt);
+    c.fillStyle = '#c8b79a';
+    GG.roundRect(c, -r * 0.95, -r * 0.24, r * 1.9, r * 0.44, r * 0.2); c.fill();
+    c.fillStyle = '#ab977a';
+    GG.roundRect(c, -r * 0.95, r * 0.02, r * 1.9, r * 0.18, r * 0.09); c.fill();
+    /* a couple of bleached stubs */
+    c.fillStyle = '#d6c6a9';
+    c.beginPath(); c.moveTo(-r * 0.2, -r * 0.2);
+    c.lineTo(-r * 0.52, -r * 0.66); c.lineTo(-r * 0.3, -r * 0.2); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(r * 0.42, -r * 0.2);
+    c.lineTo(r * 0.74, -r * 0.52); c.lineTo(r * 0.56, -r * 0.18); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(120,100,74,0.5)'; c.lineWidth = Math.max(1, r * 0.05);
+    for (var i = -1; i <= 1; i++) {
+      c.beginPath();
+      c.moveTo(-r * 0.8, i * r * 0.1);
+      c.quadraticCurveTo(0, i * r * 0.16, r * 0.8, i * r * 0.08);
+      c.stroke();
+    }
+    c.restore();
+  };
+
+  P.shellProp = function (c, x, y, r, t, seed) {
+    var kind = seed > 0.5 ? 1 : 0;
+    c.fillStyle = 'rgba(120,110,88,0.16)';
+    ell(c, x + 1, y, r * 0.8, r * 0.3);
+    if (kind) {
+      /* a little spiral snail shell */
+      c.fillStyle = '#f2d9bd';
+      ell(c, x, y - r * 0.42, r * 0.72, r * 0.6, 0.2);
+      c.strokeStyle = '#cf9f79'; c.lineWidth = Math.max(1, r * 0.11);
+      c.beginPath();
+      for (var a = 0; a < 8; a += 0.2) {
+        var rr = r * 0.66 * (1 - a / 9);
+        var px = x + Math.cos(a + 0.4) * rr, py = y - r * 0.42 + Math.sin(a + 0.4) * rr * 0.84;
+        if (a === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.stroke();
+    } else {
+      /* a scallop */
+      c.fillStyle = '#ffe6cf';
+      c.beginPath();
+      c.moveTo(x, y);
+      c.arc(x, y, r * 0.92, Math.PI, 0);
+      c.closePath(); c.fill();
+      c.strokeStyle = '#e6b48f'; c.lineWidth = Math.max(1, r * 0.09);
+      for (var i = -2; i <= 2; i++) {
+        c.beginPath(); c.moveTo(x, y);
+        c.lineTo(x + i * r * 0.34, y - r * (0.86 - Math.abs(i) * 0.11));
+        c.stroke();
+      }
+    }
+  };
+
+  P.pebbles = function (c, x, y, r, t, seed) {
+    var cols = ['#c9c3b4', '#b3ac9c', '#ddd6c6', '#a89f90'];
+    for (var i = 0; i < 5; i++) {
+      var a = seed * 9 + i * 1.29;
+      var px = x + Math.cos(a) * r * 0.78, py = y + Math.sin(a) * r * 0.32;
+      var rr = r * (0.2 + ((i * 7 + seed * 13) % 10) / 42);
+      c.fillStyle = cols[i % 4];
+      ell(c, px, py, rr, rr * 0.72, a);
+      c.fillStyle = 'rgba(255,255,255,0.32)';
+      ell(c, px - rr * 0.22, py - rr * 0.26, rr * 0.34, rr * 0.22, a);
+    }
+  };
+
+  P.kelp = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 0.9 + seed * 7) * 3;
+    c.strokeStyle = '#5c7a3a'; c.lineWidth = Math.max(1.4, r * 0.16); c.lineCap = 'round';
+    for (var i = -1; i <= 1; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.22, y);
+      c.quadraticCurveTo(x + i * r * 0.3 + sway * 0.6, y - r * 0.6,
+                         x + i * r * 0.36 + sway, y - r * 1.15);
+      c.stroke();
+    }
+    c.fillStyle = '#7d9b48';
+    for (var j = 0; j < 5; j++) {
+      var ty = y - r * (0.24 + j * 0.22);
+      var tx = x + sway * (j / 5) + (j % 2 ? r * 0.3 : -r * 0.3);
+      ell(c, tx, ty, r * 0.26, r * 0.14, j % 2 ? 0.5 : -0.5);
+    }
+    c.fillStyle = '#c8b46a';
+    ell(c, x + sway, y - r * 1.2, r * 0.14, r * 0.2);
+  };
+
+  P.wetrock = function (c, x, y, r, t, seed) {
+    c.fillStyle = 'rgba(20,60,80,0.20)';
+    ell(c, x + 1, y + r * 0.16, r * 1.05, r * 0.42);
+    c.fillStyle = '#8e8b80';
+    c.beginPath();
+    for (var i = 0; i < 7; i++) {
+      var a = i / 7 * Math.PI * 2;
+      var rr = r * (0.78 + ((i * 5 + seed * 11) % 10) / 34);
+      var px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr * 0.62;
+      if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = '#a8a599';
+    ell(c, x - r * 0.16, y - r * 0.22, r * 0.5, r * 0.3, -0.3);
+    c.fillStyle = 'rgba(255,255,255,0.34)';
+    ell(c, x - r * 0.24, y - r * 0.3, r * 0.24, r * 0.12, -0.3);
+    c.fillStyle = 'rgba(90,140,80,0.42)';
+    ell(c, x + r * 0.34, y + r * 0.16, r * 0.3, r * 0.14, 0.2);
+  };
+
   GG.Props = P;
 })(window.GG = window.GG || {});
 
@@ -3895,90 +5282,257 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/game/world.js ==== */
-/* The open world: six places to explore, drawn from a little map. */
+/* The open world: hills, meadow, garden, woods, orchard, a pond,
+   a stream that becomes a river, an estuary, a beach and the sea. */
 (function (GG) {
   'use strict';
 
-  var CELL = 160, COLS = 20, ROWS = 15;
-  // M meadow  G garden  F forest  P pond  H hill  O orchard
+  var CELL = 160, COLS = 30, ROWS = 20;
+  // H hill  M meadow  G garden  F forest  O orchard  P pond bank
   var MAP = [
-    'HHHHMMMFFFFFFFFFFFFF',
-    'HHHHMMMFFFFFFFFFFFFF',
-    'HHHMMMMMFFFFFFFFFFFF',
-    'HHMMMMMMFFFFFFFFFFFF',
-    'MMMMMMMMMFFFFFFFFFFF',
-    'MMMMMMMMMMFFFFFFFFFF',
-    'MMMMMMMGGGGOOOFFFFFF',
-    'MMMMMMGGGGGOOOOFFFFF',
-    'PPMMMMGGGGGGOOOOFFFF',
-    'PPPMMMGGGGGGOOOOFFFF',
-    'PPPPMMGGGGGGGOOOOFFF',
-    'PPPPPMMGGGGGGOOOMMFF',
-    'PPPPPMMMGGGGMMMMMMMM',
-    'PPPPMMMMMMMMMMMMMMMM',
-    'PPPMMMMMMMMMMMMMMMMM'
+    'HHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'HHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'HHHHMMMMMMFFFFFFFFFFFFFFFFFFFF',
+    'HHHMMMMMMMFFFFFFFFFFFFFFFFFFFF',
+    'HHMMMMMMMMMFFFFFFFFFFFFFFFFFFF',
+    'MMMMMMMMMMMMFFFFFFFFFFFFFFFFFF',
+    'MMMMMMMGGGGGOOOOOFFFFFFFFFFFFF',
+    'MMMMMMGGGGGGOOOOOOFFFFFFFFFFFF',
+    'PPMMMMGGGGGGGOOOOOOFFFFFFFFFFF',
+    'PPPMMMGGGGGGGOOOOOOFFFFFFFFFFF',
+    'PPPPMMGGGGGGGOOOOOMMMFFFFFFFFF',
+    'PPPPPMMGGGGGGOOOOMMMMMMFFFFFFF',
+    'PPPPPMMMGGGGMMMMMMMMMMMMMFFFFF',
+    'PPPPMMMMMMMMMMMMMMMMMMMMMMMFFF',
+    'PPPMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
   ];
   var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard' };
 
+  /* water kinds */
+  var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6;
+
   var GROUND = {
     meadow: ['#8ecf63', '#83c55a', '#98d76d'],
-    garden: ['#93d munch'],
+    garden: ['#9ad96f', '#90d065', '#a5e17b'],
     forest: ['#4f9450', '#478a49', '#589c58'],
     pond: ['#9dcf7e', '#94c777', '#a7d78a'],
     hill: ['#c3bf94', '#b8b489', '#cdc9a0'],
-    orchard: ['#a3d46a', '#99cb60', '#aeda78']
+    orchard: ['#a3d46a', '#99cb60', '#aeda78'],
+    riverbank: ['#7fc472', '#74ba67', '#8cd07f'],
+    beach: ['#efe0b4', '#e8d6a6', '#f5e9c2'],
+    shore: ['#b9b3a4', '#aaa595', '#c6c0b0']
   };
-  GROUND.garden = ['#9ad96f', '#90d065', '#a5e17b'];
 
-  var WATER = { cx: 620, cy: 2020, rx: 460, ry: 300 };
+  var POND_E = { cx: 620, cy: 2020, rx: 460, ry: 300 };
+
+  /* the stream grows into a river and then opens into the estuary */
+  var FLOW = [
+    { x: 520,  y: 260,  w: 13, kind: STREAM },
+    { x: 700,  y: 560,  w: 15, kind: STREAM },
+    { x: 900,  y: 880,  w: 17, kind: STREAM },
+    { x: 1060, y: 1210, w: 20, kind: STREAM },
+    { x: 1180, y: 1560, w: 24, kind: STREAM },
+    { x: 1370, y: 1860, w: 31, kind: RIVER },
+    { x: 1700, y: 2030, w: 42, kind: RIVER },
+    { x: 2080, y: 2150, w: 52, kind: RIVER },
+    { x: 2450, y: 2230, w: 64, kind: RIVER },
+    { x: 2790, y: 2330, w: 82, kind: RIVER },
+    { x: 3070, y: 2520, w: 125, kind: ESTUARY },
+    { x: 3290, y: 2770, w: 180, kind: ESTUARY },
+    { x: 3470, y: 2910, w: 245, kind: ESTUARY }
+  ];
+
+  /* the sea fills everything below this line */
+  function shoreY(x) {
+    return 3050 - (x / 4800) * 760
+      + Math.sin(x * 0.0022) * 52
+      + Math.sin(x * 0.0071 + 1.2) * 22;
+  }
+
+  /* [x, height above the tide line, rx, ry] - always on the shelf, never in the sea */
+  var TIDEPOOLS = (function () {
+    var defs = [
+      [3760, 132, 62, 40], [3920, 214, 46, 32], [4120, 118, 74, 44],
+      [4330, 196, 52, 36], [4520, 126, 64, 42], [3990, 322, 44, 30],
+      [4270, 306, 50, 34]
+    ];
+    var out = [], i, d;
+    for (i = 0; i < defs.length; i++) {
+      d = defs[i];
+      out.push({ x: d[0], y: shoreY(d[0]) - d[1], rx: d[2], ry: d[3] });
+    }
+    return out;
+  })();
+
+  var SHELF = { x0: 3620, x1: 4800, pad: 210 };
+
+  var MS = 8;   // water mask resolution, in pixels
 
   var World = GG.World = {
     CELL: CELL, COLS: COLS, ROWS: ROWS,
     W: COLS * CELL, H: ROWS * CELL,
     HOUSE: { x: 1520, y: 1480, w: 150 },
     DOOR: { x: 1520, y: 1486 },
-    props: [],
-    solids: [],
-    hive: null,
-    grid: {},
-    chunks: {},
+    KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL },
+    props: [], solids: [], hive: null, grid: {}, chunks: {},
     CHUNK: 400,
+    pond: POND_E,
+    flow: FLOW,
+    tidepools: TIDEPOOLS,
 
+    /* ---------- water ---------- */
+    _kindAtRaw: function (x, y) {
+      var i;
+      // tidepools first - they sit close to the tide line and must win it
+      for (i = 0; i < TIDEPOOLS.length; i++) {
+        var p = TIDEPOOLS[i];
+        var ex = (x - p.x) / p.rx, ey = (y - p.y) / p.ry;
+        var wb = 1 + (GG.noise2(x / 40, y / 40, 19) - 0.5) * 0.3;
+        if (ex * ex + ey * ey < wb) return TIDEPOOL;
+      }
+      // stream / river / estuary
+      var best = 1e9, bestKind = NONE;
+      for (i = 0; i < FLOW.length - 1; i++) {
+        var a = FLOW[i], b = FLOW[i + 1];
+        var vx = b.x - a.x, vy = b.y - a.y;
+        var t = ((x - a.x) * vx + (y - a.y) * vy) / (vx * vx + vy * vy);
+        t = t < 0 ? 0 : (t > 1 ? 1 : t);
+        var px = a.x + vx * t, py = a.y + vy * t;
+        var d = Math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
+        var w = a.w + (b.w - a.w) * t;
+        w *= 1 + (GG.noise2(x / 70, y / 70, 11) - 0.5) * 0.34;
+        if (d - w < best) { best = d - w; bestKind = (t > 0.5 ? b.kind : a.kind); }
+      }
+      if (best < 0) return bestKind;
+      // the pond
+      var dx = (x - POND_E.cx) / POND_E.rx, dy = (y - POND_E.cy) / POND_E.ry;
+      var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
+      if (dx * dx + dy * dy < wob) return POND;
+      // and the sea fills everything below the tide line
+      if (y > shoreY(x)) return SEA;
+      return NONE;
+    },
+
+    buildWater: function () {
+      var mw = this.MW = Math.ceil(this.W / MS), mh = this.MH = Math.ceil(this.H / MS);
+      var kind = this.mask = new Uint8Array(mw * mh);
+      var x, y, i;
+      for (y = 0; y < mh; y++) {
+        for (x = 0; x < mw; x++) {
+          kind[y * mw + x] = this._kindAtRaw(x * MS + MS / 2, y * MS + MS / 2);
+        }
+      }
+      function chamfer(test) {
+        var d = new Uint16Array(mw * mh);
+        var BIG = 9999;
+        for (i = 0; i < d.length; i++) d[i] = test(kind[i]) ? 0 : BIG;
+        for (y = 0; y < mh; y++) for (x = 0; x < mw; x++) {
+          i = y * mw + x; var v = d[i];
+          if (x > 0 && d[i - 1] + 1 < v) v = d[i - 1] + 1;
+          if (y > 0 && d[i - mw] + 1 < v) v = d[i - mw] + 1;
+          if (x > 0 && y > 0 && d[i - mw - 1] + 2 < v) v = d[i - mw - 1] + 2;
+          if (x < mw - 1 && y > 0 && d[i - mw + 1] + 2 < v) v = d[i - mw + 1] + 2;
+          d[i] = v;
+        }
+        for (y = mh - 1; y >= 0; y--) for (x = mw - 1; x >= 0; x--) {
+          i = y * mw + x; var v2 = d[i];
+          if (x < mw - 1 && d[i + 1] + 1 < v2) v2 = d[i + 1] + 1;
+          if (y < mh - 1 && d[i + mw] + 1 < v2) v2 = d[i + mw] + 1;
+          if (x < mw - 1 && y < mh - 1 && d[i + mw + 1] + 2 < v2) v2 = d[i + mw + 1] + 2;
+          if (x > 0 && y < mh - 1 && d[i + mw - 1] + 2 < v2) v2 = d[i + mw - 1] + 2;
+          d[i] = v2;
+        }
+        return d;
+      }
+      this.dShore = chamfer(function (k) { return k === NONE; });          // water: how deep
+      this.dSea = chamfer(function (k) { return k === SEA || k === ESTUARY; });
+      this.dRiver = chamfer(function (k) { return k === STREAM || k === RIVER; });
+      this.dPool = chamfer(function (k) { return k === TIDEPOOL; });
+    },
+
+    maskIndex: function (x, y) {
+      var mx = (x / MS) | 0, my = (y / MS) | 0;
+      if (mx < 0) mx = 0; if (my < 0) my = 0;
+      if (mx >= this.MW) mx = this.MW - 1;
+      if (my >= this.MH) my = this.MH - 1;
+      return my * this.MW + mx;
+    },
+    waterKind: function (x, y) { return this.mask[this.maskIndex(x, y)]; },
+    isWater: function (x, y) { return this.mask[this.maskIndex(x, y)] !== NONE; },
+    /* The stream and the tidepools are shallow enough to paddle through.
+       Everything else is over her wellies. */
+    isDeepWater: function (x, y) {
+      var k = this.mask[this.maskIndex(x, y)];
+      return k !== NONE && k !== TIDEPOOL && k !== STREAM;
+    },
+    /* 0 at the edge, 1 well out in the middle */
+    waterDepth: function (x, y) {
+      var i = this.maskIndex(x, y);
+      if (this.mask[i] === NONE) return -1;
+      return Math.min(1, this.dShore[i] / 9);
+    },
+    shoreY: shoreY,
+
+    /* ---------- biomes ---------- */
     biomeLetter: function (x, y) {
       var cx = GG.clamp(Math.floor(x / CELL), 0, COLS - 1);
       var cy = GG.clamp(Math.floor(y / CELL), 0, ROWS - 1);
       return MAP[cy][cx];
     },
+    biomeRaw: function (x, y) {
+      var i = this.maskIndex(x, y);
+      if (this.mask[i] !== NONE) {
+        if (this.mask[i] === TIDEPOOL) return 'shore';
+        if (this.mask[i] === SEA || this.mask[i] === ESTUARY) return 'beach';
+        if (this.mask[i] === POND) return 'pond';
+        return 'riverbank';
+      }
+      /* The inland edges of the sand and the rock wander about a bit, so the
+         shore does not end in a ruler-straight line. The water edge itself
+         stays exact. */
+      var wob = (GG.noise2(x / 78, y / 78, 31) - 0.5) * 20;
+      if (x > SHELF.x0 - 120 && this.dSea[i] < 30 + wob) return 'shore';
+      if (this.dPool[i] < 13 + wob * 0.5) return 'shore';
+      if (this.dSea[i] < 26 + wob) return 'beach';
+      if (this.dRiver[i] < 15 + wob * 0.7) return 'riverbank';
+      return LETTER[this.biomeLetter(x, y)];
+    },
     biomeAt: function (x, y) {
-      // Wobble the lookup so the borders between places look natural.
       var wx = x + (GG.noise2(x / 110, y / 110, 7) - 0.5) * 150 + (GG.noise2(x / 34, y / 34, 17) - 0.5) * 44;
       var wy = y + (GG.noise2(x / 110, y / 110, 13) - 0.5) * 150 + (GG.noise2(x / 34, y / 34, 23) - 0.5) * 44;
-      return LETTER[this.biomeLetter(wx, wy)];
+      // the water-led biomes must not wobble, or the sand walks into the sea
+      var hard = this.biomeRaw(x, y);
+      if (hard === 'beach' || hard === 'shore' || hard === 'riverbank' || hard === 'pond') return hard;
+      var soft = this.biomeRaw(wx, wy);
+      if (soft === 'beach' || soft === 'shore' || soft === 'riverbank') return hard;
+      return soft;
     },
-    biomeRaw: function (x, y) { return LETTER[this.biomeLetter(x, y)]; },
-
-    isWater: function (x, y) {
-      var dx = (x - WATER.cx) / WATER.rx, dy = (y - WATER.cy) / WATER.ry;
-      var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
-      return dx * dx + dy * dy < wob;
-    },
-    waterDepth: function (x, y) {
-      var dx = (x - WATER.cx) / WATER.rx, dy = (y - WATER.cy) / WATER.ry;
-      return 1 - Math.sqrt(dx * dx + dy * dy);
-    },
-    water: WATER,
 
     placeName: function (x, y) {
-      if (this.isWater(x, y)) return 'Lily Pond';
-      var b = this.biomeRaw(x, y);
-      return { meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
-        pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard' }[b];
+      var k = this.waterKind(x, y);
+      if (k === SEA) return 'The Open Sea';
+      if (k === ESTUARY) return 'Gull Inlet';
+      if (k === RIVER) return 'Winding River';
+      if (k === STREAM) return 'Pebble Stream';
+      if (k === TIDEPOOL) return 'The Tidepools';
+      if (k === POND) return 'Lily Pond';
+      return {
+        meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
+        pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
+        riverbank: 'Riverbank', beach: 'Shell Beach', shore: 'The Tidepools'
+      }[this.biomeRaw(x, y)];
     },
 
-    /* ---------- building the world ---------- */
+    /* ---------- building ---------- */
     build: function () {
+      this.buildWater();
       this.props = []; this.solids = []; this.grid = {};
-      var rnd = GG.mulberry32(20260911);
+      var rnd = GG.mulberry32(20260912);
       var self = this;
 
       function add(type, x, y, r, solid, rad, extra) {
@@ -4001,7 +5555,7 @@ ul.tips li{margin-bottom:3px}
 
       var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
 
-      for (var i = 0; i < 5200; i++) {
+      for (var i = 0; i < 13000; i++) {
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
         if (nearHouse(x, y, 40)) continue;
@@ -4039,43 +5593,68 @@ ul.tips li{margin-bottom:3px}
           else if (v < 0.55) add('grassTuft', x, y, 10 + rnd() * 5);
           else if (v < 0.62) add('flower', x, y, 9 + rnd() * 3, false, 0, { col: '#ffe9a8' });
         } else if (b === 'pond') {
-          var d = this.waterDepth(x, y);
-          if (d > -0.22 && d < 0) { if (v < 0.5) add('reed', x, y, 16 + rnd() * 8); else add('grassTuft', x, y, 12 + rnd() * 5); }
-          else if (v < 0.06) add('rock', x, y, 14 + rnd() * 10, true, 13);
-          else if (v < 0.14) add('reed', x, y, 15 + rnd() * 7);
-          else if (v < 0.60) add('grassTuft', x, y, 13 + rnd() * 6);
-          else if (v < 0.70) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#c6e9ff' });
+          var d = this.dShore[this.maskIndex(x, y)];
+          if (v < 0.06) add('rock', x, y, 14 + rnd() * 10, true, 13);
+          else if (v < 0.30) add('reed', x, y, 15 + rnd() * 7);
+          else if (v < 0.70) add('grassTuft', x, y, 13 + rnd() * 6);
+          else if (v < 0.78) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#c6e9ff' });
+        } else if (b === 'riverbank') {
+          if (v < 0.05) add('willow', x, y, 46 + rnd() * 16, true, 15);
+          else if (v < 0.10) add('bush', x, y, 20 + rnd() * 8, true, 12);
+          else if (v < 0.20) add('rock', x, y, 12 + rnd() * 10, true, 12);
+          else if (v < 0.46) add('reed', x, y, 16 + rnd() * 8);
+          else if (v < 0.82) add('grassTuft', x, y, 13 + rnd() * 7);
+          else if (v < 0.90) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#fff0a8' });
+        } else if (b === 'beach') {
+          if (v < 0.030) add('palmGrass', x, y, 20 + rnd() * 10);
+          else if (v < 0.055) add('driftwood', x, y, 22 + rnd() * 12, true, 16);
+          else if (v < 0.085) add('shellProp', x, y, 9 + rnd() * 5);
+          else if (v < 0.100) add('rock', x, y, 12 + rnd() * 8, true, 12);
+          else if (v < 0.30) add('pebbles', x, y, 10 + rnd() * 6);
+        } else if (b === 'shore') {
+          if (v < 0.16) add('rock', x, y, 14 + rnd() * 16, true, 14);
+          else if (v < 0.26) add('pebbles', x, y, 11 + rnd() * 7);
+          else if (v < 0.34) add('shellProp', x, y, 9 + rnd() * 5);
+          else if (v < 0.44) add('kelp', x, y, 16 + rnd() * 8);
         }
       }
 
-      // Lily pads floating on the pond.
+      // lily pads on the pond
       for (var j = 0; j < 34; j++) {
         var a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * 0.85;
-        var lx = WATER.cx + Math.cos(a) * WATER.rx * rr;
-        var ly = WATER.cy + Math.sin(a) * WATER.ry * rr;
-        if (this.isWater(lx, ly)) add('lilypad', lx, ly, 20 + rnd() * 12);
+        var lx = POND_E.cx + Math.cos(a) * POND_E.rx * rr;
+        var ly = POND_E.cy + Math.sin(a) * POND_E.ry * rr;
+        if (this.waterKind(lx, ly) === POND) add('lilypad', lx, ly, 20 + rnd() * 12);
+      }
+      // stepping stones and a few rocks in the stream
+      for (var k2 = 0; k2 < 90; k2++) {
+        var f = FLOW[Math.floor(rnd() * 5)];
+        var sx = f.x + (rnd() - 0.5) * 120, sy = f.y + (rnd() - 0.5) * 120;
+        if (this.waterKind(sx, sy) === STREAM) add('wetrock', sx, sy, 8 + rnd() * 7);
       }
 
-      // A tidy little fence and some flowers around the house.
-      for (var f = -3; f <= 3; f++) {
-        if (Math.abs(f) < 1) continue;
-        add('fence', HOUSE.x + f * 46, HOUSE.y + 66, 22, true, 16);
+      // the house and its garden
+      for (var f2 = -3; f2 <= 3; f2++) {
+        if (Math.abs(f2) < 1) continue;
+        add('fence', HOUSE.x + f2 * 46, HOUSE.y + 66, 22, true, 16);
       }
       add('flower', HOUSE.x - 96, HOUSE.y - 10, 14, false, 0, { col: '#ff8fb0' });
       add('flower', HOUSE.x + 96, HOUSE.y - 10, 14, false, 0, { col: '#ffd45c' });
       this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
       add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
-      // Signposts so the map is easy to learn.
       add('sign', 980, 700, 26, false, 0, { label: 'Meadow' });
       add('sign', 2200, 900, 26, false, 0, { label: 'Woods' });
       add('sign', 1050, 1900, 26, false, 0, { label: 'Pond' });
-      add('sign', 2050, 1300, 26, false, 0, { label: 'Orchard' });
+      add('sign', 2280, 1280, 26, false, 0, { label: 'Orchard' });
       add('sign', 420, 560, 26, false, 0, { label: 'Hills' });
+      add('sign', 1230, 1290, 26, false, 0, { label: 'Stream' });
+      add('sign', 2300, 2000, 26, false, 0, { label: 'River' });
+      add('sign', 3150, 2400, 26, false, 0, { label: 'Inlet' });
+      add('sign', 2660, 2510, 26, false, 0, { label: 'Beach' });
+      add('sign', 4000, 2200, 26, false, 0, { label: 'Tidepools' });
 
-      // The house itself blocks the player (except the doorway).
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
-
       this.props.sort(function (p, q) { return p.y - q.y; });
       this.chunks = {};
     },
@@ -4083,7 +5662,7 @@ ul.tips li{margin-bottom:3px}
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
-      if (this.isWater(x, y)) return true;
+      if (this.isDeepWater(x, y)) return true;   // the stream and the pools are waded, not blocked
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
           y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
@@ -4102,7 +5681,26 @@ ul.tips li{margin-bottom:3px}
       return false;
     },
 
-    /* ---------- ground painting ---------- */
+    /* ---------- painting the ground ---------- */
+    waterRGB: function (kind, depth) {
+      var shallow, deep;
+      if (kind === SEA) { shallow = [126, 214, 224]; deep = [26, 92, 150]; }
+      else if (kind === ESTUARY) { shallow = [148, 198, 190]; deep = [56, 118, 136]; }
+      else if (kind === RIVER) { shallow = [126, 198, 214]; deep = [58, 134, 168]; }
+      else if (kind === STREAM) { shallow = [160, 220, 228]; deep = [96, 176, 200]; }
+      else if (kind === TIDEPOOL) { shallow = [150, 214, 216]; deep = [86, 168, 178]; }
+      else { shallow = [126, 200, 214]; deep = [61, 147, 184]; }
+      var t = GG.clamp(depth, 0, 1);
+      return [shallow[0] + (deep[0] - shallow[0]) * t,
+              shallow[1] + (deep[1] - shallow[1]) * t,
+              shallow[2] + (deep[2] - shallow[2]) * t];
+    },
+
+    waterColour: function (kind, depth) {
+      var c = this.waterRGB(kind, depth);
+      return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
+    },
+
     chunkCanvas: function (cx, cy) {
       var key = cx + ',' + cy;
       if (this.chunks[key]) return this.chunks[key];
@@ -4110,10 +5708,11 @@ ul.tips li{margin-bottom:3px}
       var cv = document.createElement('canvas');
       cv.width = C; cv.height = C;
       var c = cv.getContext('2d');
-      var step = 10;
-      for (var y = 0; y < C; y += step) {
-        for (var x = 0; x < C; x += step) {
-          var wx = cx * C + x, wy = cy * C + y;
+      var step = 10, x, y, wx, wy;
+
+      for (y = 0; y < C; y += step) {
+        for (x = 0; x < C; x += step) {
+          wx = cx * C + x; wy = cy * C + y;
           var b = this.biomeAt(wx + step / 2, wy + step / 2);
           var pal = GROUND[b] || GROUND.meadow;
           var n = GG.noise2(wx / 26, wy / 26, 21);
@@ -4121,18 +5720,55 @@ ul.tips li{margin-bottom:3px}
           c.fillRect(x, y, step + 1, step + 1);
         }
       }
-      // Sandy shore and pond water.
-      var rnd = GG.mulberry32(cx * 131 + cy * 977);
-      for (var yy = 0; yy < C; yy += 8) {
-        for (var xx = 0; xx < C; xx += 8) {
-          var px = cx * C + xx, py = cy * C + yy;
-          var d = this.waterDepth(px + 4, py + 4);
-          if (d > -0.12 && d < 0.02) {
-            c.fillStyle = d < -0.05 ? '#ddd0a4' : '#e8dcb4';
-            c.fillRect(xx, yy, 9, 9);
+
+      // damp sand right at the water's edge
+      for (y = 0; y < C; y += 6) {
+        for (x = 0; x < C; x += 6) {
+          wx = cx * C + x; wy = cy * C + y;
+          var i = this.maskIndex(wx, wy);
+          if (this.mask[i] !== NONE) continue;
+          var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
+          if (this.dSea[i] <= 4.5 + damp || this.dPool[i] <= 2.5 + damp) {
+            c.fillStyle = 'rgba(196,176,132,0.55)';
+            c.fillRect(x, y, 7, 7);
           }
         }
       }
+
+      /* The water goes onto a little canvas one pixel per mask cell, then gets
+         blown up smoothly over the ground, so the banks curve instead of
+         stepping. One extra cell all round keeps the edges honest. */
+      var pad = 3;
+      var mw = Math.ceil(C / MS) + pad * 2, mh = mw;
+      var lay = document.createElement('canvas');
+      lay.width = mw; lay.height = mh;
+      var lc = lay.getContext('2d');
+      var img = lc.createImageData(mw, mh);
+      var px = img.data;
+      for (y = 0; y < mh; y++) {
+        for (x = 0; x < mw; x++) {
+          wx = cx * C + (x - pad) * MS + MS / 2;
+          wy = cy * C + (y - pad) * MS + MS / 2;
+          var idx = this.maskIndex(wx, wy);
+          var k = this.mask[idx];
+          var o = (y * mw + x) * 4;
+          if (k === NONE ||
+              wx < 0 || wy < 0 || wx >= this.W || wy >= this.H) { px[o + 3] = 0; continue; }
+          var dep = Math.min(1, this.dShore[idx] / 10);
+          var rgb = this.waterRGB(k, dep);
+          if (this.dShore[idx] <= 1) {
+            rgb = [rgb[0] + (255 - rgb[0]) * 0.34,
+                   rgb[1] + (255 - rgb[1]) * 0.34,
+                   rgb[2] + (255 - rgb[2]) * 0.34];
+          }
+          px[o] = rgb[0]; px[o + 1] = rgb[1]; px[o + 2] = rgb[2]; px[o + 3] = 255;
+        }
+      }
+      lc.putImageData(img, 0, 0);
+      c.imageSmoothingEnabled = true;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(lay, 0, 0, mw, mh, -pad * MS, -pad * MS, mw * MS, mh * MS);
+
       this.chunks[key] = cv;
       return cv;
     },
@@ -4149,31 +5785,72 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
-    drawWater: function (c, cam, t) {
-      var W = WATER;
-      if (W.cx + W.rx < cam.x || W.cx - W.rx > cam.x + c.canvas._vw) return;
+    /* sparkles, currents and surf, drawn live on top of the water */
+    drawWater: function (c, cam, t, vw, vh) {
+      var step = 26;
+      var x0 = Math.floor(cam.x / step) * step, y0 = Math.floor(cam.y / step) * step;
       c.save();
-      c.translate(-cam.x, -cam.y);
-      c.fillStyle = '#4fa8c9';
-      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.fill();
-      c.save();
-      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.clip();
-      c.fillStyle = '#3d93b8';
-      c.beginPath(); c.ellipse(W.cx + 10, W.cy + 16, W.rx * 0.72, W.ry * 0.68, 0, 0, Math.PI * 2); c.fill();
-      c.strokeStyle = 'rgba(255,255,255,0.30)'; c.lineWidth = 3; c.lineCap = 'round';
-      for (var i = 0; i < 16; i++) {
-        var sx = W.cx - W.rx + ((i * 137) % (W.rx * 2));
-        var sy = W.cy - W.ry + ((i * 211) % (W.ry * 2));
-        var w = 22 + (i % 3) * 10;
-        var off = Math.sin(t * 0.9 + i) * 8;
-        c.beginPath();
-        c.moveTo(sx + off, sy);
-        c.quadraticCurveTo(sx + w / 2 + off, sy - 4, sx + w + off, sy);
-        c.stroke();
+      c.lineCap = 'round';
+      for (var y = y0; y < cam.y + vh + step; y += step) {
+        for (var x = x0; x < cam.x + vw + step; x += step) {
+          var i = this.maskIndex(x, y);
+          var k = this.mask[i];
+          if (k === NONE) continue;
+          var sx = x - cam.x, sy = y - cam.y;
+          var h = GG.hash2(x / step | 0, y / step | 0, 5);
+          var edge = this.dShore[i];
+
+          if (k === SEA || k === ESTUARY) {
+            if (edge <= 3) {
+              // surf along the shore
+              var f = 0.5 + 0.5 * Math.sin(t * 1.5 + x * 0.01);
+              c.strokeStyle = 'rgba(255,255,255,' + (0.30 + 0.4 * f).toFixed(2) + ')';
+              c.lineWidth = 2.4;
+              c.beginPath();
+              c.moveTo(sx - 12, sy + Math.sin(x * 0.05 + t * 2) * 2);
+              c.lineTo(sx + 12, sy + Math.sin(x * 0.05 + 1 + t * 2) * 2);
+              c.stroke();
+            } else if (h > 0.72) {
+              c.strokeStyle = 'rgba(255,255,255,0.26)';
+              c.lineWidth = 2;
+              var off = Math.sin(t * 0.8 + h * 9) * 7;
+              c.beginPath();
+              c.moveTo(sx - 9 + off, sy);
+              c.quadraticCurveTo(sx + off, sy - 3.5, sx + 9 + off, sy);
+              c.stroke();
+            }
+          } else if (k === RIVER || k === STREAM) {
+            if (h > 0.55) {
+              // current streaks that slide downstream
+              var slide = ((t * 34 + h * 200) % 90) - 45;
+              c.strokeStyle = 'rgba(255,255,255,' + (k === STREAM ? 0.34 : 0.24) + ')';
+              c.lineWidth = 1.6;
+              c.beginPath();
+              c.moveTo(sx - 7 + slide * 0.55, sy - 5 + slide * 0.42);
+              c.lineTo(sx + 5 + slide * 0.55, sy + 3 + slide * 0.42);
+              c.stroke();
+            }
+          } else if (k === TIDEPOOL) {
+            if (h > 0.6) {
+              c.strokeStyle = 'rgba(255,255,255,0.30)';
+              c.lineWidth = 1.4;
+              c.beginPath();
+              c.arc(sx, sy, 5 + Math.sin(t * 1.6 + h * 8) * 1.6, 0.3, 2.4);
+              c.stroke();
+            }
+          } else if (k === POND) {
+            if (h > 0.7) {
+              c.strokeStyle = 'rgba(255,255,255,0.28)';
+              c.lineWidth = 2.2;
+              var o2 = Math.sin(t * 0.9 + h * 9) * 7;
+              c.beginPath();
+              c.moveTo(sx - 9 + o2, sy);
+              c.quadraticCurveTo(sx + o2, sy - 3.5, sx + 9 + o2, sy);
+              c.stroke();
+            }
+          }
+        }
       }
-      c.restore();
-      c.strokeStyle = 'rgba(255,255,255,0.45)'; c.lineWidth = 2.5;
-      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.stroke();
       c.restore();
     },
 
@@ -4184,7 +5861,7 @@ ul.tips li{margin-bottom:3px}
         var p = this.props[i];
         if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
         if (p.y < cam.y - pad * 2.4 || p.y > cam.y + vh + pad) continue;
-        var isFlat = (p.type === 'lilypad');
+        var isFlat = (p.type === 'lilypad' || p.type === 'wetrock' || p.type === 'pebbles' || p.type === 'kelp');
         if (layer === 'flat' && !isFlat) continue;
         if (layer === 'sorted' && isFlat) continue;
         var fn = P[p.type];
@@ -4196,7 +5873,7 @@ ul.tips li{margin-bottom:3px}
       var out = [], pad = 150;
       for (var i = 0; i < this.props.length; i++) {
         var p = this.props[i];
-        if (p.type === 'lilypad') continue;
+        if (p.type === 'lilypad' || p.type === 'wetrock' || p.type === 'pebbles' || p.type === 'kelp') continue;
         if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
         if (p.y < cam.y - pad * 2.6 || p.y > cam.y + vh + pad) continue;
         out.push(p);
@@ -4463,6 +6140,9 @@ ul.tips li{margin-bottom:3px}
 
   var TARGET = 16;
 
+  /* water kind -> which habitat name the roster uses */
+  var WATER_BIOME = { 1: 'pond', 2: 'river', 3: 'river', 4: 'sea', 5: 'sea', 6: 'tidepool' };
+
   /* The little red cross that means "this bee is cross with you". */
   function angerMark(c, x, y, r) {
     c.strokeStyle = '#ff3b3b';
@@ -4515,13 +6195,19 @@ ul.tips li{margin-bottom:3px}
         var d = GG.rand(radMin, radMax);
         var x = px + Math.cos(a) * d, y = py + Math.sin(a) * d;
         if (x < 60 || y < 70 || x > W.W - 60 || y > W.H - 60) continue;
-        var onWater = W.isWater(x, y);
-        var biome = onWater ? 'pond' : W.biomeRaw(x, y);
+        var kind = W.waterKind(x, y);
+        var onWater = kind !== 0;
+        var inPool = kind === W.KIND.TIDEPOOL;
+        var biome = onWater ? WATER_BIOME[kind] : W.biomeRaw(x, y);
         var cands = this.eligible(biome, phase, rain);
         if (!cands.length) continue;
-        // Water striders only on water; everyone else only on land.
+        // Skimmers on open water, tidepool creatures in the pools,
+        // and everybody else on dry land.
         cands = cands.filter(function (c) {
-          return (c.b.behavior === 'skim') === onWater;
+          var bh = c.b.behavior;
+          if (inPool) return bh === 'tide' || bh === 'skim';
+          if (onWater) return bh === 'skim';
+          return bh !== 'skim' && bh !== 'tide';
         });
         if (!cands.length) continue;
         var def = this.pickWeighted(cands);
@@ -4535,7 +6221,7 @@ ul.tips li{margin-bottom:3px}
 
     add: function (def, x, y) {
       var z = { flutter: 20, hover: 15, dart: 22, drift: 13, glow: 17, skim: 1,
-        crawl: 0, hop: 0, cling: 3, slow: 0 }[def.behavior] || 0;
+        crawl: 0, hop: 0, cling: 3, slow: 0, tide: 0 }[def.behavior] || 0;
       this.list.push({
         def: def, x: x, y: y, z: z, baseZ: z,
         vx: 0, vy: 0, angle: Math.random() * Math.PI * 2,
@@ -4655,6 +6341,13 @@ ul.tips li{margin-bottom:3px}
             b.vx = Math.cos(b.angle) * sp * mv; b.vy = Math.sin(b.angle) * sp * mv;
             b.z = 3 + Math.sin(b.t * 2) * 0.6;
             break;
+          case 'tide':
+            /* pottering along the bottom of a pool, never leaving it */
+            if (b.timer <= 0) { b.angle += GG.rand(-1.8, 1.8); b.timer = GG.rand(2.4, 5.5); }
+            var drift = sp * (b.flee > 0 ? 1.4 : (Math.sin(b.t * 0.4) > 0.2 ? 1 : 0.15));
+            b.vx = Math.cos(b.angle) * drift; b.vy = Math.sin(b.angle) * drift;
+            b.z = 0;
+            break;
           case 'slow':
           case 'crawl':
           default:
@@ -4667,7 +6360,10 @@ ul.tips li{margin-bottom:3px}
         var nx = b.x + b.vx * dt, ny = b.y + b.vy * dt;
         var onWater = d.behavior === 'skim';
         var okx, oky;
-        if (onWater) {
+        if (d.behavior === 'tide') {
+          okx = W.waterKind(nx, b.y) === W.KIND.TIDEPOOL;
+          oky = W.waterKind(b.x, ny) === W.KIND.TIDEPOOL;
+        } else if (onWater) {
           okx = W.isWater(nx, b.y); oky = W.isWater(b.x, ny);
         } else if (b.z > 8) {
           okx = !W.isWater(nx, b.y) && nx > 40 && nx < W.W - 40;
@@ -4794,7 +6490,8 @@ ul.tips li{margin-bottom:3px}
         if (sx < -60 || sy < -60 || sx > GG.view.w + 60 || sy > GG.view.h + 60) continue;
         if (b.z > 2) A.shadow(c, sx, sy, 5 * (b.def.size || 1), 0.16);
         var ang = Math.atan2(b.vy, b.vx);
-        if (b.def.behavior === 'cling' || b.def.behavior === 'slow') {
+        if (b.def.behavior === 'cling' || b.def.behavior === 'slow' ||
+            b.def.behavior === 'tide') {
           if (Math.abs(b.vx) + Math.abs(b.vy) < 1) ang = b.angle;
         }
         if (b.angry > 0) sx += Math.sin(b.t * 44) * 0.9;
@@ -4834,9 +6531,9 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/game/fishing.js ==== */
-/* Fishing in the Lily Pond.
+/* Fishing in the pond, the stream, the river, the inlet and the sea.
    Fish swim about as shadows. Cast near one, wait for the bobber to go under,
-   then tap at the right moment. */
+   then tap at the right moment. Every body of water holds its own fish. */
 (function (GG) {
   'use strict';
 
@@ -4863,54 +6560,74 @@ ul.tips li{margin-bottom:3px}
       for (var i = 0; i < this.swimmers.length; i++) this.swimmers[i].chase = 0;
     },
 
-    /* ---------- the fish living in the pond ---------- */
-    eligible: function () {
+    /* ---------- which water is this, and who lives in it? ---------- */
+    WATER_NAMES: { 1: 'pond', 2: 'stream', 3: 'river', 4: 'estuary', 5: 'sea' },
+
+    waterAt: function (x, y) {
+      return this.WATER_NAMES[GG.World.waterKind(x, y)] || null;
+    },
+
+    /* Fish do not live in the tidepools - those are for the net. */
+    fishable: function (x, y) { return !!this.waterAt(x, y); },
+
+    eligible: function (water) {
       var phase = GG.Time.phase(), out = [];
       for (var i = 0; i < GG.FISH.length; i++) {
         var f = GG.FISH[i];
         if (f.times.indexOf('any') < 0 && f.times.indexOf(phase) < 0) continue;
+        if (water && f.waters && f.waters.indexOf(water) < 0) continue;
         out.push({ f: f, w: 1 / Math.pow(f.rarity, 1.8) });
       }
       return out;
     },
 
-    /* Fish hang around the weedy edges, which is also where Guin is standing. */
-    randomWaterPoint: function (edgeBias) {
-      var W = GG.World.water;
-      for (var i = 0; i < 24; i++) {
+    /* A random fishable spot near Guin, so every water she stands beside
+       fills up with its own fish. */
+    randomWaterPoint: function (edgeBias, near) {
+      var W = GG.World;
+      var cx = near ? near.x : W.pond.cx, cy = near ? near.y : W.pond.cy;
+      var far = Math.max(GG.view.w, GG.view.h) * 0.62 + 140;
+      for (var i = 0; i < 40; i++) {
         var a = Math.random() * Math.PI * 2;
-        var r = edgeBias ? (0.5 + Math.random() * 0.38) : Math.sqrt(Math.random()) * 0.86;
-        var x = W.cx + Math.cos(a) * W.rx * r, y = W.cy + Math.sin(a) * W.ry * r;
-        if (GG.World.isWater(x, y)) return { x: x, y: y };
+        var r = (edgeBias ? 0.35 + Math.random() * 0.65 : Math.sqrt(Math.random())) * far;
+        var x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        if (x < 20 || y < 20 || x > W.W - 20 || y > W.H - 20) continue;
+        if (this.fishable(x, y)) return { x: x, y: y };
       }
-      return { x: W.cx, y: W.cy };
+      return null;
     },
 
-    stock: function (dt) {
-      // keep the pond populated, and re-roll species as the day goes on
-      while (this.swimmers.length < TARGET_FISH) {
-        var cands = this.eligible();
-        if (!cands.length) return;
+    stock: function (dt, player) {
+      var guard = 0;
+      while (this.swimmers.length < TARGET_FISH && guard++ < TARGET_FISH) {
+        var p = this.randomWaterPoint(true, player);
+        if (!p) return;
+        var water = this.waterAt(p.x, p.y);
+        var cands = this.eligible(water);
+        if (!cands.length) continue;
         var total = 0, i;
         for (i = 0; i < cands.length; i++) total += cands[i].w;
         var r = Math.random() * total, pick = cands[cands.length - 1].f;
         for (i = 0; i < cands.length; i++) { r -= cands[i].w; if (r <= 0) { pick = cands[i].f; break; } }
-        var p = this.randomWaterPoint(true);
         this.swimmers.push({
           def: pick, x: p.x, y: p.y, ang: Math.random() * Math.PI * 2,
           sp: GG.rand(16, 34), timer: GG.rand(1, 3), chase: 0, t: Math.random() * 10,
-          left: Math.random() < 0.5, age: 0
+          left: Math.random() < 0.5, age: 0, water: water
         });
       }
     },
 
     update: function (dt, player) {
       var W = GG.World;
-      this.stock(dt);
+      this.stock(dt, player);
 
       var i, s;
+      var gone = Math.max(GG.view.w, GG.view.h) * 0.95 + 320;
       for (i = this.swimmers.length - 1; i >= 0; i--) {
         s = this.swimmers[i];
+        if (s !== this.hooked && GG.dist(s.x, s.y, player.x, player.y) > gone) {
+          this.swimmers.splice(i, 1); continue;
+        }
         s.t += dt; s.age += dt;
         s.timer -= dt;
 
@@ -4930,8 +6647,8 @@ ul.tips li{margin-bottom:3px}
           if (s.timer <= 0) { s.ang += GG.rand(-1.5, 1.5); s.timer = GG.rand(1.2, 3.4); }
           var nx = s.x + Math.cos(s.ang) * s.sp * dt;
           var ny = s.y + Math.sin(s.ang) * s.sp * dt;
-          if (W.isWater(nx, s.y)) s.x = nx; else s.ang = Math.PI - s.ang;
-          if (W.isWater(s.x, ny)) s.y = ny; else s.ang = -s.ang;
+          if (this.fishable(nx, s.y)) s.x = nx; else s.ang = Math.PI - s.ang;
+          if (this.fishable(s.x, ny)) s.y = ny; else s.ang = -s.ang;
         }
         if (Math.cos(s.ang) < -0.05) s.left = true;
         else if (Math.cos(s.ang) > 0.05) s.left = false;
@@ -5023,18 +6740,17 @@ ul.tips li{margin-bottom:3px}
     /* ---------- the player's side ---------- */
     /* Where would a cast land? null if she is not facing water. */
     castTarget: function (player) {
-      var W = GG.World;
       var a = player.angle;
       var found = null;
       for (var d = 14; d <= 82; d += 6) {
         var x = player.x + Math.cos(a) * d, y = player.y + Math.sin(a) * d;
-        if (W.isWater(x, y)) { found = { x: x, y: y, d: d }; break; }
+        if (this.fishable(x, y)) { found = { x: x, y: y, d: d }; break; }
       }
       if (!found) return null;
       for (var extra = 62; extra >= 0; extra -= 8) {
         var tx = player.x + Math.cos(a) * (found.d + extra);
         var ty = player.y + Math.sin(a) * (found.d + extra);
-        if (W.isWater(tx, ty)) return { x: tx, y: ty };
+        if (this.fishable(tx, ty)) return { x: tx, y: ty };
       }
       return { x: found.x, y: found.y };
     },
@@ -5554,7 +7270,8 @@ ul.tips li{margin-bottom:3px}
       var n = isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id);
       var rows;
       if (isFish) {
-        rows = [['Found in', 'the Lily Pond'], ['Bites', times], ['Size', def.measure],
+        var waters = (def.waters || ['pond']).map(function (w) { return GG.WATER_NAMES[w]; }).join(', ');
+        rows = [['Found in', waters], ['Bites', times], ['Size', def.measure],
           ['Shadow', GG.SHADOW_NAMES[def.shadow]], ['Rarity', GG.RARITY_NAMES[def.rarity]],
           ['Caught', n + ' time' + (n === 1 ? '' : 's')]];
       } else {
@@ -6657,20 +8374,25 @@ ul.tips li{margin-bottom:3px}
     var W = GG.World;
     var sx = cv.width / W.W, sy = cv.height / W.H;
     var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
-      hill: '#d8d2a4', orchard: '#bfe07a' };
+      hill: '#d8d2a4', orchard: '#bfe07a', riverbank: '#8fd07f', beach: '#f0e2b8',
+      shore: '#c2bcac' };
+    var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
       for (var x = 0; x < W.W; x += step) {
-        c.fillStyle = W.isWater(x + 10, y + 10) ? '#4fa8c9' : (COLS[W.biomeAt(x + 10, y + 10)] || '#9ad96f');
+        var k = W.waterKind(x + 10, y + 10);
+        c.fillStyle = k ? WCOL[k] : (COLS[W.biomeAt(x + 10, y + 10)] || '#9ad96f');
         c.fillRect(x * sx, y * sy, step * sx + 1, step * sy + 1);
       }
     }
-    c.fillStyle = 'rgba(255,255,255,0.9)';
-    c.font = 'bold 17px "Trebuchet MS", sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.92)';
+    c.font = 'bold 15px "Trebuchet MS", sans-serif';
     c.textAlign = 'center';
     c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
-    [['Hills', 380, 380], ['Meadow', 760, 1000], ['Woods', 2500, 620], ['Orchard', 2140, 1500],
-     ['Pond', 620, 2020], ['Garden', 1520, 1720]].forEach(function (p) {
+    [['Hills', 380, 380], ['Meadow', 820, 980], ['Woods', 2500, 620], ['Orchard', 2360, 1420],
+     ['Pond', 620, 2020], ['Garden', 1520, 1720], ['Stream', 1000, 1330],
+     ['River', 2150, 2020], ['Inlet', 3180, 2560], ['Beach', 2500, 2820],
+     ['Tidepools', 4120, 2130], ['The Sea', 3900, 3060]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
