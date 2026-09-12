@@ -1141,6 +1141,417 @@ ul.tips li{margin-bottom:3px}
         'A snail carries its house on its back and can pull all the way inside when it is scared.'
       ]
     }
+,
+    /* ===== the second wave ===== */
+    {
+      id: 'earthworm', name: 'Earthworm',
+      habitats: ['garden', 'meadow', 'forest'], times: ['any'], rarity: 1, value: 10,
+      behavior: 'slow', speed: 9, shy: 18, size: 1.15, rainLover: true,
+      measure: '4 inches long',
+      art: { shape: 'worm', body: '#c98a8a', wing: '#e0a5a5', accent: '#a86a6a', pattern: 'rings' },
+      facts: [
+        'Earthworms eat their way through soil and leave it richer behind them. Gardeners call them nature’s ploughs.',
+        'A worm has no lungs. It breathes through its damp skin, so it has to stay moist all the time.',
+        'Worms come up in the rain to travel. On wet ground they can cross to a new patch of garden without drying out.',
+        'An earthworm has bristles along its body to grip the tunnel, which is why a bird has to pull so hard.'
+      ]
+    },
+    {
+      id: 'centipede', name: 'Centipede',
+      habitats: ['forest', 'garden'], times: ['evening', 'night'], rarity: 2, value: 28,
+      behavior: 'crawl', speed: 62, shy: 44, size: 1.25,
+      measure: '2 inches long',
+      art: { shape: 'centipede', body: '#c4682f', wing: '#e08a45', accent: '#7a3d18', pattern: 'plain' },
+      facts: [
+        'Centipedes have one pair of legs on each body segment, and they run fast on all of them.',
+        'No centipede actually has a hundred legs. They always have an odd number of pairs, so 100 is impossible.',
+        'Centipedes hunt other little creepy-crawlies at night, which makes them useful to have under a log.'
+      ]
+    },
+    {
+      id: 'millipede', name: 'Millipede',
+      habitats: ['forest', 'garden'], times: ['any'], rarity: 2, value: 24,
+      behavior: 'slow', speed: 13, shy: 26, size: 1.2,
+      measure: '1.5 inches long',
+      art: { shape: 'millipede', body: '#3f2f28', wing: '#5a443a', accent: '#241a16', pattern: 'rings' },
+      facts: [
+        'A millipede has two pairs of legs on every segment, twice as many as a centipede, but it is much slower.',
+        'Almost no millipede really has a thousand legs. Most have a few hundred. But one deep-burrowing millipede in Australia has 1,306, the most legs of any animal on Earth.',
+        'Instead of biting, a frightened millipede curls into a tight spiral and can give off a smell predators dislike.'
+      ]
+    },
+    {
+      id: 'harvestman', name: 'Harvestman',
+      habitats: ['forest', 'garden'], times: ['evening', 'night'], rarity: 2, value: 26,
+      behavior: 'crawl', speed: 30, shy: 46, size: 1.2,
+      measure: 'body the size of a pea',
+      art: { shape: 'harvestman', body: '#8a6a4a', wing: '#3a2f26', accent: '#4a3a2a', pattern: 'plain' },
+      facts: [
+        'People call them daddy long-legs, but a harvestman is not a spider. Its body is one little blob instead of two parts, and it spins no web.',
+        'Harvestmen have no venom and no fangs at all. The story that they are the most poisonous spider is completely made up.',
+        'They eat tiny bugs and bits of rotting fruit, and they walk on legs that can be ten times longer than their body.'
+      ]
+    },
+    {
+      id: 'crane_fly', name: 'Crane Fly',
+      habitats: ['meadow', 'pond', 'garden'], times: ['evening', 'night'], rarity: 1, value: 12,
+      behavior: 'drift', speed: 34, shy: 44, size: 1.25,
+      measure: '2 inches across',
+      art: { shape: 'cranefly', body: '#9a8a6a', wing: '#eae6d8', accent: '#6b5f47', pattern: 'plain' },
+      facts: [
+        'Crane flies look like giant wobbly mosquitoes, but they do not bite anyone at all.',
+        'Most adult crane flies barely eat. They live a few days, just long enough to lay eggs.',
+        'Their legs snap off very easily, which helps them wriggle free of a spider web.'
+      ]
+    },
+    {
+      id: 'hoverfly', name: 'Hoverfly',
+      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 14,
+      behavior: 'hover', speed: 48, shy: 46, size: 0.8,
+      measure: 'half an inch',
+      art: { shape: 'fly', body: '#e0a832', wing: '#f2f6ff', accent: '#2b2b20', pattern: 'bands' },
+      facts: [
+        'A hoverfly wears wasp stripes as a disguise, but it has no sting at all. Birds leave it alone anyway.',
+        'The easy way to tell: a hoverfly has two wings and enormous eyes, while a wasp has four wings and a pinched waist.',
+        'Hoverflies can hang perfectly still in the air, and many kinds have babies that hunt aphids. One grub can munch hundreds of them.'
+      ]
+    },
+    {
+      id: 'housefly', name: 'House Fly',
+      habitats: ['anywhere'], times: ['morning', 'day', 'evening'], rarity: 1, value: 6,
+      behavior: 'dart', speed: 62, shy: 48, size: 0.75,
+      measure: 'a quarter inch',
+      art: { shape: 'fly', body: '#4a4a52', wing: '#eef2f6', accent: '#22242a', pattern: 'plain' },
+      facts: [
+        'A house fly tastes with its feet, so it walks over your sandwich to find out what it is.',
+        'Flies cannot chew. They dribble spit onto food to turn it soupy, then sponge it up.',
+        'Its eyes are made of thousands of little lenses, which is why it sees your hand coming.'
+      ]
+    },
+    {
+      id: 'mayfly', name: 'Mayfly',
+      habitats: ['pond'], times: ['evening'], rarity: 2, value: 30,
+      behavior: 'drift', speed: 30, shy: 50, size: 0.9,
+      measure: '1 inch long',
+      art: { shape: 'mayfly', body: '#d8c98a', wing: '#f4f8ff', accent: '#8a7a4a', pattern: 'plain' },
+      facts: [
+        'A mayfly spends a year or more as a nymph under the water, then lives as a winged adult for only a day or two.',
+        'Grown-up mayflies cannot eat at all. They have no working mouth, so they just dance over the water and lay eggs.',
+        'Mayflies are the only insects that moult once more after they already have working wings.'
+      ]
+    },
+    {
+      id: 'caddisfly', name: 'Caddisfly',
+      habitats: ['pond'], times: ['evening', 'night'], rarity: 2, value: 28,
+      behavior: 'flutter', speed: 30, shy: 48, size: 0.9,
+      measure: '1 inch long',
+      art: { shape: 'caddis', body: '#8a7048', wing: '#b09a6a', accent: '#5a462c', pattern: 'plain' },
+      facts: [
+        'A baby caddisfly builds itself a case out of sand, pebbles and twigs, glued together with silk, and carries it about like a tiny suit of armour.',
+        'Most caddisflies need clean water, so scientists count them to check whether a stream is healthy.',
+        'Some artists give caddisfly larvae gold and gemstones to build with, and the little cases turn into jewellery.'
+      ]
+    },
+    {
+      id: 'lacewing', name: 'Green Lacewing',
+      habitats: ['garden', 'meadow'], times: ['evening', 'night'], rarity: 2, value: 32,
+      behavior: 'drift', speed: 28, shy: 46, size: 0.95,
+      measure: '1 inch across',
+      art: { shape: 'lacewing', body: '#a8dc6a', wing: '#e6ffe0', accent: '#5f9c3a', pattern: 'veins' },
+      facts: [
+        'Lacewing wings look like they are made of pale green stained glass, criss-crossed with tiny veins.',
+        'The babies are such fierce aphid hunters that gardeners nickname them aphid lions.',
+        'A lacewing lays each egg on top of a thin stalk of silk, so the first baby to hatch cannot eat the others.'
+      ]
+    },
+    {
+      id: 'antlion', name: 'Antlion',
+      habitats: ['hill', 'forest'], times: ['evening', 'night'], rarity: 3, value: 70,
+      behavior: 'drift', speed: 26, shy: 56, size: 1.1,
+      measure: '2 inches across',
+      art: { shape: 'antlion', body: '#9a8a6a', wing: '#efe8d2', accent: '#6b5c3a', pattern: 'veins' },
+      facts: [
+        'A baby antlion digs a funnel-shaped pit in dry sand and hides at the bottom, waiting for an ant to slip in.',
+        'If the ant tries to climb out, the antlion flicks sand at it to start a little landslide.',
+        'The grown-up looks a bit like a damselfly, but you can tell them apart by the antlion’s short clubbed feelers.'
+      ]
+    },
+    {
+      id: 'clearwing', name: 'Hummingbird Clearwing',
+      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 3, value: 80,
+      behavior: 'hover', speed: 56, shy: 62, size: 1.1,
+      measure: '2 inches across',
+      art: { shape: 'clearwing', body: '#9a6a3a', wing: '#f0e4d2', accent: '#c25a6a', pattern: 'window' },
+      facts: [
+        'This is a moth, not a bird and not a bee, even though people call it a hummingbird moth or a bumblebee moth.',
+        'It hovers in front of a flower in broad daylight and sips nectar through a long curled tongue.',
+        'Its wings start out covered in scales like any moth, then the middle scales fall away and leave clear windows.'
+      ]
+    },
+    {
+      id: 'hawk_moth', name: 'Hawk Moth',
+      habitats: ['garden', 'meadow'], times: ['evening', 'night'], rarity: 3, value: 85,
+      behavior: 'hover', speed: 62, shy: 66, size: 1.35,
+      measure: '3 inches across',
+      art: { shape: 'hawkmoth', body: '#6b5a42', wing: '#8a7050', accent: '#e0a06a', pattern: 'bands' },
+      facts: [
+        'Hawk moths are powerful, speedy fliers, and they hover at flowers like little helicopters.',
+        'They come out at dusk, when pale flowers open and smell strongest.',
+        'Some have a tongue longer than their whole body, curled up like a party blower until they need it.'
+      ]
+    },
+    {
+      id: 'io_moth', name: 'Io Moth',
+      habitats: ['forest', 'orchard'], times: ['night'], rarity: 3, value: 90,
+      behavior: 'flutter', speed: 28, shy: 58, size: 1.2,
+      measure: '2.5 inches across',
+      art: { shape: 'moth', body: '#f0d24a', wing: '#f2c23a', wing2: '#e8a23a', accent: '#2b2b6b', pattern: 'eyespots' },
+      facts: [
+        'When something bothers an Io moth it flicks its front wings forward to show two huge eyespots, like a startled owl.',
+        'The spiky green caterpillar can sting, so it is one to look at and not touch.',
+        'The male\u2019s antennae are big and feathery, far bushier than the female\u2019s, and he uses them to smell her from far away.'
+      ]
+    },
+    {
+      id: 'weevil', name: 'Acorn Weevil',
+      habitats: ['orchard', 'forest'], times: ['morning', 'day'], rarity: 2, value: 30,
+      behavior: 'slow', speed: 16, shy: 34, size: 0.8,
+      measure: 'a third of an inch, plus a long snout',
+      art: { shape: 'weevil', body: '#8a6a3a', wing: '#a98a52', accent: '#5a4425', pattern: 'plain' },
+      facts: [
+        'A weevil has a long curved snout with tiny jaws right on the tip, like a drill.',
+        'The acorn weevil drills a hole in a green acorn and lays an egg inside, and the grub eats the acorn from within.',
+        'Weevils are the biggest family of animals on Earth. There are more kinds of weevil than there are kinds of bird, fish and mammal put together.'
+      ]
+    },
+    {
+      id: 'tiger_beetle', name: 'Tiger Beetle',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 75,
+      behavior: 'crawl', speed: 88, shy: 74, size: 0.95,
+      measure: 'half an inch',
+      art: { shape: 'beetle', body: '#1f8a6a', wing: '#2fd0a0', accent: '#c8e8d8', pattern: 'spots' },
+      facts: [
+        'Tiger beetles are some of the fastest runners in the insect world for their size.',
+        'They run so fast that their eyes cannot keep up, so they have to stop, look, and dash again.',
+        'They have long legs, huge jaws and a metallic shine, and they hunt on hot open ground.'
+      ]
+    },
+    {
+      id: 'stink_bug', name: 'Stink Bug',
+      habitats: ['garden', 'orchard', 'meadow'], times: ['any'], rarity: 1, value: 14,
+      behavior: 'crawl', speed: 22, shy: 34, size: 0.95,
+      measure: 'half an inch',
+      art: { shape: 'shieldbug', body: '#8a8a5a', wing: '#a3a36a', accent: '#5a5a38', pattern: 'speckle' },
+      facts: [
+        'A stink bug really does stink. Squeeze one and it squirts a smelly liquid from holes in its chest.',
+        'The smell is its whole defence, and it works: birds spit them straight back out.',
+        'Its back is shaped like a little shield, which is why they are also called shield bugs.'
+      ]
+    },
+    {
+      id: 'picasso_bug', name: 'Picasso Bug',
+      habitats: ['forest', 'orchard'], times: ['day'], rarity: 5, value: 330,
+      behavior: 'cling', speed: 18, shy: 86, size: 0.95,
+      measure: 'half an inch',
+      art: { shape: 'shieldbug', body: '#e8d24a', wing: '#f2df6a', accent: '#1f4a8a', pattern: 'picasso' },
+      facts: [
+        'A Picasso bug is pale green and gold with eleven dark rings, each one with a red dot inside, like a tiny modern painting.',
+        'The bright pattern is a warning. It is a kind of shield bug, and it smells terrible if you bother it.',
+        'That shield is not a wing case like a beetle\u2019s. It is a giant plate grown from its back that covers its four folded wings like a lid.'
+      ]
+    },
+    {
+      id: 'firebug', name: 'Firebug',
+      habitats: ['meadow', 'garden'], times: ['morning', 'day'], rarity: 2, value: 26,
+      behavior: 'crawl', speed: 26, shy: 36, size: 0.85,
+      measure: 'half an inch',
+      art: { shape: 'shieldbug', body: '#d8322a', wing: '#e8483a', accent: '#1a1a1a', pattern: 'firebug' },
+      facts: [
+        'Firebugs are bright red and black, and they gather in big huddles on sunny days, often at the foot of a lime tree.',
+        'Bright red and black is a warning sign. Birds learn that firebugs taste horrible and leave them alone.',
+        'They eat fallen seeds, so they do no harm to the garden at all.'
+      ]
+    },
+    {
+      id: 'assassin_bug', name: 'Assassin Bug',
+      habitats: ['garden', 'forest'], times: ['day', 'evening'], rarity: 3, value: 72,
+      behavior: 'cling', speed: 26, shy: 62, size: 1.0,
+      measure: '0.75 inches long',
+      art: { shape: 'assassinbug', body: '#6b2f2a', wing: '#8a3f36', accent: '#2b1a16', pattern: 'plain' },
+      facts: [
+        'An assassin bug stabs its prey with a curved beak and turns the insides to soup before drinking them.',
+        'It tucks that beak into a groove under its chest when it is not using it.',
+        'Some assassin bugs stick the leftover shells of their meals onto their own backs as a disguise.'
+      ]
+    },
+    {
+      id: 'wheel_bug', name: 'Wheel Bug',
+      habitats: ['orchard', 'forest'], times: ['day', 'evening'], rarity: 4, value: 155,
+      behavior: 'cling', speed: 22, shy: 72, size: 1.3,
+      measure: '1.25 inches long',
+      art: { shape: 'wheelbug', body: '#6b6b60', wing: '#84847a', accent: '#3a3a33', pattern: 'plain' },
+      facts: [
+        'A wheel bug wears a cog on its back, like half a gearwheel. No other insect in North America has one.',
+        'It is the biggest assassin bug around, and it hunts caterpillars that would otherwise eat the orchard.',
+        'It can give a painful jab if you grab it, so this is a bug to admire from a step back.'
+      ]
+    },
+    {
+      id: 'aphid', name: 'Aphid',
+      habitats: ['garden', 'orchard'], times: ['any'], rarity: 1, value: 6,
+      behavior: 'slow', speed: 8, shy: 16, size: 0.5,
+      measure: 'smaller than a grain of rice',
+      art: { shape: 'aphid', body: '#8fd86a', wing: '#b6ea94', accent: '#3f7a2a', pattern: 'plain' },
+      facts: [
+        'Aphids drink sap through a straw-like beak, and the sweet leftovers they drip are called honeydew.',
+        'Ants farm aphids for that honeydew. They protect them from ladybirds and even carry them to fresh leaves.',
+        'A mother aphid can give birth to daughters that are already carrying their own daughters inside them.'
+      ]
+    },
+    {
+      id: 'leafhopper', name: 'Leafhopper',
+      habitats: ['meadow', 'garden'], times: ['morning', 'day'], rarity: 1, value: 14,
+      behavior: 'hop', speed: 34, shy: 44, size: 0.6,
+      measure: 'a quarter inch',
+      art: { shape: 'leafhopper', body: '#4fc8a0', wing: '#6fe0bc', accent: '#1f6b52', pattern: 'stripes' },
+      facts: [
+        'Leafhoppers can jump many times their own height, using legs that work like a catapult.',
+        'They come in astonishing colours for such tiny insects: mint green, sky blue, candy stripes.',
+        'When you walk through long grass in summer, the little things pinging off your legs are usually leafhoppers.'
+      ]
+    },
+    {
+      id: 'treehopper', name: 'Thorn Treehopper',
+      habitats: ['forest', 'orchard'], times: ['day'], rarity: 3, value: 78,
+      behavior: 'cling', speed: 20, shy: 56, size: 0.7,
+      measure: 'a quarter inch',
+      art: { shape: 'treehopper', body: '#6b9a3a', wing: '#86b84a', accent: '#3f6b22', pattern: 'plain' },
+      facts: [
+        'A thorn treehopper has a spike on its back that makes it look exactly like a thorn on the twig.',
+        'Sit still on a branch and even a sharp-eyed bird walks straight past it.',
+        'Treehoppers talk to each other by shaking the plant they are standing on, sending buzzes down the stem.'
+      ]
+    },
+    {
+      id: 'lanternfly', name: 'Spotted Lanternfly',
+      habitats: ['orchard', 'forest'], times: ['day', 'evening'], rarity: 3, value: 68,
+      behavior: 'hop', speed: 40, shy: 58, size: 1.05,
+      measure: '1 inch long',
+      art: { shape: 'lanternfly', body: '#d8c0a0', wing: '#e8d8bc', accent: '#2b2b2b', pattern: 'lantern' },
+      facts: [
+        'A spotted lanternfly keeps bright red underwings hidden beneath its spotty grey front wings and flashes them when it jumps.',
+        'It is not really a fly. It is a planthopper, and it is a much better jumper than it is a flier.',
+        'In many places it is an unwelcome visitor that arrived from far away and harms trees, so scientists ask people to report where they see one.'
+      ]
+    },
+    {
+      id: 'water_bug', name: 'Giant Water Bug',
+      habitats: ['pond'], times: ['any'], rarity: 4, value: 170,
+      behavior: 'skim', speed: 44, shy: 68, size: 1.35,
+      measure: '1.5 inches long',
+      art: { shape: 'waterbug', body: '#7a6b4a', wing: '#9a8a60', accent: '#4a4030', pattern: 'plain' },
+      facts: [
+        'Giant water bugs are fierce hunters. They can catch tadpoles and even small fish bigger than themselves.',
+        'In many kinds of giant water bug the mother glues her eggs onto the father’s back, and he carries them about and keeps them wet until they hatch.',
+        'They can fly from pond to pond at night, and they head for lights, which is why some people call them electric light bugs.'
+      ]
+    },
+    {
+      id: 'backswimmer', name: 'Backswimmer',
+      habitats: ['pond'], times: ['any'], rarity: 2, value: 34,
+      behavior: 'skim', speed: 58, shy: 52, size: 0.8,
+      measure: 'half an inch',
+      art: { shape: 'backswimmer', body: '#d8d0b0', wing: '#efe8cc', accent: '#5a4a2a', pattern: 'plain' },
+      facts: [
+        'A backswimmer swims upside down, rowing along with long back legs like a pair of oars.',
+        'Its colours are back to front: its belly is dark and its back is pale. Swimming upside down puts the dark side up and the pale side down, so it is hard to spot from above or below.',
+        'It carries a silvery bubble of air against its belly so it can stay under the water and keep breathing.'
+      ]
+    },
+    {
+      id: 'cockroach', name: 'Cockroach',
+      habitats: ['anywhere'], times: ['evening', 'night'], rarity: 1, value: 10,
+      behavior: 'crawl', speed: 74, shy: 40, size: 1.0,
+      measure: '1 inch long',
+      art: { shape: 'cockroach', body: '#6b4526', wing: '#8a5c33', accent: '#3a2414', pattern: 'plain' },
+      facts: [
+        'Cockroaches can run incredibly fast for their size and squash flat enough to slip through a gap as thin as two coins stacked up.',
+        'Little hairs on their back ends feel the tiniest puff of air, so they are already running before your foot moves.',
+        'Out of thousands of kinds of cockroach in the world, only a handful ever come into houses. Most live quietly in forests.'
+      ]
+    },
+    {
+      id: 'silverfish', name: 'Silverfish',
+      habitats: ['anywhere'], times: ['night'], rarity: 2, value: 24,
+      behavior: 'crawl', speed: 56, shy: 42, size: 0.75,
+      measure: 'half an inch',
+      art: { shape: 'silverfish', body: '#a8adb8', wing: '#c8ccd6', accent: '#6b7080', pattern: 'plain' },
+      facts: [
+        'Silverfish are shaped like a little fish and wriggle along in the same way, which is how they got the name.',
+        'They are one of the oldest kinds of insect. Their ancestors were scurrying about before there were any dinosaurs.',
+        'They eat starchy things like paper and wallpaper paste, and they can go a very long time without a meal.'
+      ]
+    },
+    {
+      id: 'earwig', name: 'Earwig',
+      habitats: ['garden', 'forest'], times: ['evening', 'night'], rarity: 1, value: 14,
+      behavior: 'crawl', speed: 40, shy: 36, size: 0.9,
+      measure: '0.75 inches long',
+      art: { shape: 'earwig', body: '#7a4a26', wing: '#9a6133', accent: '#3a2210', pattern: 'plain' },
+      facts: [
+        'Earwigs do not crawl into ears. That is an old story with nothing behind it.',
+        'The pincers on the tail are for folding away its wings, wrestling other earwigs and warding off attackers.',
+        'An earwig mother is unusual among insects: she guards her eggs, cleans them one by one, and looks after the babies.'
+      ]
+    },
+    {
+      id: 'termite', name: 'Termite',
+      habitats: ['forest', 'orchard'], times: ['any'], rarity: 2, value: 20,
+      behavior: 'crawl', speed: 30, shy: 30, size: 0.6,
+      measure: 'a quarter inch',
+      art: { shape: 'termite', body: '#e8dcc0', wing: '#f4ecd8', accent: '#a88a5a', pattern: 'plain' },
+      facts: [
+        'Termites can digest wood because of the tiny helpers living in their guts that break it down for them.',
+        'They are not white ants. Their closest relatives are cockroaches.',
+        'Some termites build towers of mud taller than a person, with tunnels that keep the inside cool all day.'
+      ]
+    },
+    {
+      id: 'bed_bug', name: 'Bed Bug',
+      habitats: ['anywhere'], times: ['night'], rarity: 4, value: 120,
+      behavior: 'crawl', speed: 30, shy: 58, size: 0.55,
+      measure: 'the size of an apple seed',
+      art: { shape: 'bedbug', body: '#a8552f', wing: '#c46b3a', accent: '#5a2a14', pattern: 'rings' },
+      facts: [
+        'Bed bugs are flat and oval, about the size of an apple seed, and they hide in cracks during the day.',
+        'They feed on blood at night, but scientists have not found them to spread any disease.',
+        'They hitch rides in bags and suitcases, which is how they travel the world. Hot washing and a hot tumble dry sees them off.'
+      ]
+    },
+    {
+      id: 'paper_wasp', name: 'Paper Wasp',
+      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 3, value: 70,
+      behavior: 'hover', speed: 54, shy: 60, size: 1.0, sting: true,
+      measure: '0.75 inches long',
+      art: { shape: 'wasp', body: '#e8a820', wing: '#f6efd8', accent: '#2b2016', pattern: 'stripes' },
+      facts: [
+        'Paper wasps really do make paper. They chew up old wood, mix it with spit, and build a nest of grey papery cells.',
+        'Unlike a honeybee, a wasp’s sting is smooth, so she can sting more than once. She would still rather not.',
+        'They are good for a garden, because they carry off the caterpillars that eat the leaves.'
+      ]
+    },
+    {
+      id: 'periodical_cicada', name: 'Periodical Cicada',
+      habitats: ['forest', 'orchard'], times: ['day'], rarity: 4, value: 160,
+      behavior: 'cling', speed: 30, shy: 66, size: 1.05,
+      measure: 'about an inch long',
+      art: { shape: 'cicada', body: '#2b2b33', wing: '#ffd9b0', accent: '#d83a2a', eyes: '#e0402a', pattern: 'veins' },
+      facts: [
+        'Periodical cicadas spend 13 or 17 years underground, then the whole brood climbs out in the same few weeks.',
+        'You can tell them from other cicadas by their bright red eyes and orange wing veins.',
+        'Coming out all at once is their trick: there are so many that the birds cannot possibly eat them all.'
+      ]
+    }
   ];
 
   GG.BUG_BY_ID = {};
@@ -1498,6 +1909,13 @@ ul.tips li{margin-bottom:3px}
       if (a.pattern === 'bands') {
         c.strokeStyle = a.accent; c.lineWidth = 1.2;
         c.beginPath(); c.moveTo(s * 3, -4.2); c.lineTo(s * 9.5, -2.4); c.stroke();
+      } else if (a.pattern === 'eyespots') {
+        c.fillStyle = a.accent;
+        ell(c, s * 5.2, 5.4, 2.8, 2.8);
+        c.fillStyle = '#f2f2f2'; ell(c, s * 5.2, 5.4, 1.1, 1.1);
+        c.fillStyle = '#1a1a1a'; ell(c, s * 5.2, 5.4, 0.5, 0.5);
+        c.strokeStyle = a.accent; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(s * 3, -4.4); c.lineTo(s * 10, -3); c.stroke();
       }
       c.restore();
     }
@@ -1794,7 +2212,8 @@ ul.tips li{margin-bottom:3px}
     c.fillStyle = a.body; ell(c, 0, 2, 3.4, 7);
     c.fillStyle = a.accent; ell(c, 0, -1, 3.6, 2.2);
     c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -5.4, 3.8, 3.2);
-    c.fillStyle = '#1c1c22'; ell(c, -3, -6, 1.4, 1.5); ell(c, 3, -6, 1.4, 1.5);
+    c.fillStyle = a.eyes || '#1c1c22';
+    ell(c, -3.2, -6, 1.7, 1.8); ell(c, 3.2, -6, 1.7, 1.8);
     c.fillStyle = 'rgba(255,255,255,0.4)'; ell(c, -3.3, -6.4, 0.5, 0.5); ell(c, 3.3, -6.4, 0.5, 0.5);
   };
 
@@ -1890,6 +2309,659 @@ ul.tips li{margin-bottom:3px}
     ell(c, -1.5, -12.4 + bob, 0.9, 0.9); ell(c, 3.3, -12.6 + bob, 0.9, 0.9);
     c.fillStyle = '#fff';
     ell(c, -1.7, -12.7 + bob, 0.3, 0.3); ell(c, 3.1, -12.9 + bob, 0.3, 0.3);
+  };
+
+
+  /* ---------- second wave ---------- */
+
+  S.worm = function (c, a, t) {
+    var seg = 16;
+    function px(i) { return Math.sin(t * 2.6 - i * 0.42) * 2.2; }
+    function py(i) { return 13 - i * 1.85; }
+    // one smooth body
+    c.strokeStyle = a.body; c.lineWidth = 5.4; c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath();
+    c.moveTo(px(0), py(0));
+    for (var i = 1; i <= seg; i++) c.lineTo(px(i), py(i));
+    c.stroke();
+    c.strokeStyle = GG.shade(a.body, 0.16); c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(px(0) - 1, py(0));
+    for (var j = 1; j <= seg; j++) c.lineTo(px(j) - 1, py(j));
+    c.stroke();
+    // faint rings
+    c.strokeStyle = 'rgba(0,0,0,0.12)'; c.lineWidth = 0.8;
+    for (var k = 1; k < seg; k++) {
+      c.beginPath();
+      c.moveTo(px(k) - 2.7, py(k)); c.lineTo(px(k) + 2.7, py(k));
+      c.stroke();
+    }
+    // the saddle
+    c.strokeStyle = a.accent; c.lineWidth = 5.6;
+    c.beginPath();
+    c.moveTo(px(9), py(9)); c.lineTo(px(11), py(11));
+    c.stroke();
+    c.fillStyle = GG.shade(a.body, -0.1);
+    ell(c, px(seg), py(seg) - 0.6, 2.5, 2.2);
+  };
+
+  S.centipede = function (c, a, t) {
+    var n = 11;
+    c.strokeStyle = a.accent; c.lineWidth = 1; c.lineCap = 'round';
+    for (var i = 0; i < n; i++) {
+      var y = 12 - i * 2.4;
+      var wob = Math.sin(t * 7 - i * 0.7) * 1.6;
+      for (var s = -1; s <= 1; s += 2) {
+        var k = Math.sin(t * 9 + i * 1.1 + (s > 0 ? 0 : 1.7)) * 2;
+        c.beginPath();
+        c.moveTo(wob + s * 2, y);
+        c.quadraticCurveTo(wob + s * 5.5, y + 1, wob + s * 7.5 + k * 0.4, y + 2.6 + k);
+        c.stroke();
+      }
+    }
+    for (var j = 0; j < n; j++) {
+      var yy = 12 - j * 2.4;
+      var w2 = Math.sin(t * 7 - j * 0.7) * 1.6;
+      c.fillStyle = (j % 2) ? a.body : a.wing;
+      ell(c, w2, yy, 2.7 - Math.abs(j - 5) * 0.06, 1.6);
+    }
+    var hx = Math.sin(t * 7 - n * 0.7) * 1.6;
+    c.fillStyle = a.wing; ell(c, hx, -15, 2.6, 2.1);
+    c.strokeStyle = a.accent; c.lineWidth = 0.9;
+    c.beginPath(); c.moveTo(hx - 1, -16.6); c.lineTo(hx - 4.6, -21); c.stroke();
+    c.beginPath(); c.moveTo(hx + 1, -16.6); c.lineTo(hx + 4.6, -21); c.stroke();
+  };
+
+  S.millipede = function (c, a, t) {
+    var n = 12;
+    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
+    for (var i = 0; i < n; i++) {
+      var y = 13 - i * 2.3;
+      var wob = Math.sin(t * 2.4 - i * 0.45) * 1.2;
+      for (var s = -1; s <= 1; s += 2) {
+        c.beginPath();
+        c.moveTo(wob + s * 2, y);
+        c.lineTo(wob + s * 4.6, y + 1.6 + Math.sin(t * 8 + i) * 0.8);
+        c.stroke();
+      }
+    }
+    for (var j = 0; j < n; j++) {
+      var yy = 13 - j * 2.3;
+      var w2 = Math.sin(t * 2.4 - j * 0.45) * 1.2;
+      c.fillStyle = (j % 2) ? a.body : a.wing;
+      ell(c, w2, yy, 3.1 - Math.abs(j - 6) * 0.05, 1.5);
+      c.fillStyle = 'rgba(255,255,255,0.10)';
+      ell(c, w2 - 1, yy - 0.4, 1.1, 0.8);
+    }
+    var hx = Math.sin(t * 2.4 - n * 0.45) * 1.2;
+    c.fillStyle = a.wing; ell(c, hx, -15.5, 2.8, 2.2);
+    line(c, hx - 1, -17, hx - 2.8, -19.6, 0.8, a.accent);
+    line(c, hx + 1, -17, hx + 2.8, -19.6, 0.8, a.accent);
+  };
+
+  S.harvestman = function (c, a, t) {
+    c.strokeStyle = a.wing; c.lineWidth = 1; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 4; i++) {
+        var k = Math.sin(t * 3 + i * 1.3 + (s > 0 ? 0 : 1.5)) * 2;
+        var knee = 11 + i * 2;
+        c.beginPath();
+        c.moveTo(s * 1.6, -1 + i * 1.4);
+        c.quadraticCurveTo(s * knee, -10 - i * 1.5 + k, s * (knee - 3), 6 + i * 3 + k);
+        c.stroke();
+      }
+    }
+    c.fillStyle = a.body; ell(c, 0, 0, 3.4, 4.2);
+    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -1.6, 2.6, 2);
+    c.fillStyle = '#20202a';
+    ell(c, -1.1, -2.4, 0.9, 0.9); ell(c, 1.1, -2.4, 0.9, 0.9);
+  };
+
+  S.cranefly = function (c, a, t) {
+    var k = Math.sin(t * 2.6);
+    c.strokeStyle = a.accent; c.lineWidth = 0.95; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        c.beginPath();
+        c.moveTo(s * 1.4, -3 + i * 2.4);
+        c.quadraticCurveTo(s * (11 + i * 3.5), 3 + i * 4 + k * 2, s * (8 + i * 2.5), 19 + i * 5 + k * 3);
+        c.stroke();
+      }
+    }
+    c.save(); c.globalAlpha = 0.5;
+    c.fillStyle = a.wing;
+    ell(c, -5.4, 0, 3.2, 8.6, 0.3); ell(c, 5.4, 0, 3.2, 8.6, -0.3);
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 2, 1.7, 8.5);
+    c.fillStyle = GG.shade(a.body, 0.14); ell(c, 0, -5.4, 1.8, 2.6);
+    c.fillStyle = '#2b2b33'; ell(c, 0, -7.4, 1.5, 1.4);
+    line(c, -0.8, -8.6, -2.4, -11.4, 0.7, a.accent);
+    line(c, 0.8, -8.6, 2.4, -11.4, 0.7, a.accent);
+  };
+
+  S.fly = function (c, a, t) {
+    var flap = 0.35 + 0.65 * Math.abs(Math.cos(t * 22));
+    c.save(); c.globalAlpha = 0.55; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -4.6, 0.6, 3.4, 6, 0.32); ell(c, 4.6, 0.6, 3.4, 6, -0.32);
+    c.restore();
+    legs(c, a.accent, 3, 3, 5, t * 10, 1);
+    c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
+    if (a.pattern === 'bands') {
+      c.fillStyle = a.accent;
+      ell(c, 0, 0.6, 3.1, 0.9); ell(c, 0, 3.2, 2.9, 0.9); ell(c, 0, 5.4, 2.2, 0.8);
+    } else {
+      c.fillStyle = a.accent;
+      ell(c, -1.1, 1.4, 0.55, 4.4); ell(c, 1.1, 1.4, 0.55, 4.4);
+    }
+    c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -3.4, 3, 2.6);
+    c.fillStyle = '#8a3a2a';
+    ell(c, -1.9, -5, 2, 2.3); ell(c, 1.9, -5, 2, 2.3);
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    ell(c, -2.3, -5.6, 0.6, 0.6); ell(c, 2.3, -5.6, 0.6, 0.6);
+  };
+
+  S.mayfly = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 9));
+    c.save(); c.globalAlpha = 0.7; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    c.beginPath(); c.moveTo(-1, -1); c.lineTo(-9.5, -13); c.lineTo(-2.8, 2.5); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(1, -1); c.lineTo(9.5, -13); c.lineTo(2.8, 2.5); c.closePath(); c.fill();
+    c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(120,130,150,0.45)'; c.lineWidth = 0.5;
+    c.beginPath(); c.moveTo(-1, -1); c.lineTo(-9.5, -13);
+    c.moveTo(-1.8, 0.5); c.lineTo(-6.5, -9);
+    c.moveTo(1, -1); c.lineTo(9.5, -13);
+    c.moveTo(1.8, 0.5); c.lineTo(6.5, -9);
+    c.stroke();
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 1, 1.5, 7.5);
+    c.fillStyle = a.accent;
+    for (var i = 0; i < 4; i++) ell(c, 0, 2 + i * 1.9, 1.4 - i * 0.12, 0.4);
+    c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -5.6, 1.7, 2.2);
+    c.fillStyle = '#2b2b33'; ell(c, -1.1, -6.4, 0.9, 0.9); ell(c, 1.1, -6.4, 0.9, 0.9);
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s++) {
+      c.beginPath();
+      c.moveTo(0, 8.4);
+      c.quadraticCurveTo(s * 2.4, 13, s * 4 + Math.sin(t * 3 + s) * 1.4, 18);
+      c.stroke();
+    }
+  };
+
+  S.caddis = function (c, a, t) {
+    var flap = 0.6 + 0.4 * Math.abs(Math.cos(t * 10));
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    c.beginPath(); c.moveTo(-0.8, -5); c.lineTo(-6.6, 4); c.lineTo(-2.6, 10); c.lineTo(-0.8, 4); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(0.8, -5); c.lineTo(6.6, 4); c.lineTo(2.6, 10); c.lineTo(0.8, 4); c.closePath(); c.fill();
+    c.strokeStyle = a.accent; c.lineWidth = 0.6;
+    c.beginPath(); c.moveTo(-1, -4); c.lineTo(-3.4, 8); c.moveTo(1, -4); c.lineTo(3.4, 8); c.stroke();
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 0, 1.9, 7);
+    c.fillStyle = GG.shade(a.body, 0.12); ell(c, 0, -5.6, 2, 2.2);
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-0.9, -7); c.lineTo(-2.6, -17); c.stroke();
+    c.beginPath(); c.moveTo(0.9, -7); c.lineTo(2.6, -17); c.stroke();
+  };
+
+  S.lacewing = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 8));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.globalAlpha = 0.55; c.scale(flap, 1);
+      c.fillStyle = a.wing;
+      ell(c, s * 5.6, 2.6, 3.6, 8, s * 0.22);
+      ell(c, s * 4.6, -2.4, 3.2, 7.4, s * 0.3);
+      c.restore();
+      c.save(); c.scale(flap, 1);
+      c.strokeStyle = 'rgba(90,150,70,0.55)'; c.lineWidth = 0.45;
+      for (var i = 0; i < 5; i++) {
+        c.beginPath();
+        c.moveTo(s * 2.4, -8 + i * 3.4);
+        c.lineTo(s * 8.6, -5 + i * 3.6);
+        c.stroke();
+      }
+      c.restore();
+    }
+    c.fillStyle = a.body; ell(c, 0, 0.5, 1.6, 7);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -5.4, 1.8, 2.2);
+    c.fillStyle = '#f2c23a'; ell(c, -1.3, -6.2, 1.1, 1.1); ell(c, 1.3, -6.2, 1.1, 1.1);
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-0.9, -7.4); c.quadraticCurveTo(-4, -11, -3, -15); c.stroke();
+    c.beginPath(); c.moveTo(0.9, -7.4); c.quadraticCurveTo(4, -11, 3, -15); c.stroke();
+  };
+
+  S.antlion = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 7));
+    c.save(); c.globalAlpha = 0.5; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -4.6, 3, 3, 9.5, 0.3); ell(c, 4.6, 3, 3, 9.5, -0.3);
+    ell(c, -4, -2.4, 2.6, 8, 0.34); ell(c, 4, -2.4, 2.6, 8, -0.34);
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 2, 1.5, 9);
+    c.fillStyle = a.accent;
+    for (var i = 0; i < 5; i++) ell(c, 0, 3 + i * 2.1, 1.4 - i * 0.1, 0.45);
+    c.fillStyle = GG.shade(a.body, 0.12); ell(c, 0, -6.4, 1.9, 2.4);
+    c.fillStyle = '#2b2b33'; ell(c, -1.2, -7.4, 1, 1); ell(c, 1.2, -7.4, 1, 1);
+    // short clubbed antennae - the antlion's giveaway
+    c.strokeStyle = a.accent; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(-0.9, -8.4); c.lineTo(-2.8, -12.4); c.stroke();
+    c.beginPath(); c.moveTo(0.9, -8.4); c.lineTo(2.8, -12.4); c.stroke();
+    c.fillStyle = a.accent;
+    ell(c, -3, -13.2, 1.4, 1.2); ell(c, 3, -13.2, 1.4, 1.2);
+  };
+
+  S.clearwing = function (c, a, t) {
+    var flap = 0.3 + 0.7 * Math.abs(Math.cos(t * 20));
+    c.save(); c.scale(flap, 1);
+    for (var s = -1; s <= 1; s += 2) {
+      c.globalAlpha = 0.32;
+      c.fillStyle = '#ffffff';
+      ell(c, s * 8.4, -2.4, 7.6, 3.2, s * 0.14);
+      c.globalAlpha = 1;
+      c.strokeStyle = a.accent; c.lineWidth = 1.1;
+      c.beginPath(); c.ellipse(s * 8.4, -2.4, 7.6, 3.2, s * 0.14, 0, Math.PI * 2); c.stroke();
+      c.globalAlpha = 0.3; c.fillStyle = '#ffffff';
+      ell(c, s * 5.4, 2.6, 4.4, 2.4, -s * 0.2);
+      c.globalAlpha = 1;
+      c.strokeStyle = a.accent; c.lineWidth = 0.9;
+      c.beginPath(); c.ellipse(s * 5.4, 2.6, 4.4, 2.4, -s * 0.2, 0, Math.PI * 2); c.stroke();
+    }
+    c.restore();
+    c.fillStyle = a.wing; ell(c, 0, -1, 2.6, 5.4);
+    c.fillStyle = a.accent; ell(c, 0, 4.2, 2.4, 3.4);
+    c.fillStyle = GG.shade(a.accent, -0.2);
+    c.beginPath();
+    c.moveTo(-3.4, 7); c.lineTo(0, 5.4); c.lineTo(3.4, 7); c.lineTo(0, 9.6);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing; ell(c, 0, -6, 2.2, 2.4);
+    c.strokeStyle = a.body; c.lineWidth = 0.8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-0.8, -7.4); c.lineTo(-3.4, -11.4); c.stroke();
+    c.beginPath(); c.moveTo(0.8, -7.4); c.lineTo(3.4, -11.4); c.stroke();
+  };
+
+  S.hawkmoth = function (c, a, t) {
+    var flap = 0.35 + 0.65 * Math.abs(Math.cos(t * 16));
+    c.save(); c.scale(flap, 1);
+    for (var s = -1; s <= 1; s += 2) {
+      c.fillStyle = a.accent;
+      c.beginPath();
+      c.moveTo(s * 1.2, 1); c.lineTo(s * 8.5, 5.5); c.lineTo(s * 4, 8.5); c.closePath(); c.fill();
+      c.fillStyle = a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, -4.5);
+      c.lineTo(s * 15, -2.5);
+      c.lineTo(s * 11, 3.5);
+      c.lineTo(s * 2, 2);
+      c.closePath(); c.fill();
+      c.strokeStyle = GG.shade(a.wing, -0.28); c.lineWidth = 0.8;
+      c.beginPath(); c.moveTo(s * 2.4, -3.4); c.lineTo(s * 13, -1.6); c.stroke();
+    }
+    c.restore();
+    c.fillStyle = a.body; ell(c, 0, 1, 2.6, 8);
+    c.fillStyle = GG.shade(a.body, 0.16);
+    for (var i = 0; i < 4; i++) ell(c, 0, 2 + i * 2, 2.2 - i * 0.2, 0.55);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -6.4, 2.4, 2.6);
+    c.strokeStyle = a.body; c.lineWidth = 1.3; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1, -8); c.lineTo(-3.4, -11.6); c.stroke();
+    c.beginPath(); c.moveTo(1, -8); c.lineTo(3.4, -11.6); c.stroke();
+  };
+
+  S.weevil = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.3), 3, 3.2, 5.6, t * 7, 1.2);
+    c.fillStyle = a.wing; ell(c, 0, 2.4, 4.6, 6);
+    c.fillStyle = GG.shade(a.wing, -0.22); ell(c, 0, 2.4, 0.5, 5.6);
+    c.fillStyle = 'rgba(255,255,255,0.2)'; ell(c, -1.9, 0.4, 1.5, 2.2, -0.3);
+    c.fillStyle = a.body; ell(c, 0, -3.4, 2.6, 2.6);
+    // the long snout
+    c.strokeStyle = a.body; c.lineWidth = 1.5; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(0, -5); c.quadraticCurveTo(1.4, -10, -0.6, -13.6);
+    c.stroke();
+    c.fillStyle = '#20202a'; ell(c, -1.6, -4.2, 0.8, 0.8); ell(c, 1.6, -4.2, 0.8, 0.8);
+    // elbowed antennae halfway down the snout
+    c.strokeStyle = a.accent; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(0.5, -8.6); c.lineTo(4, -10.4); c.lineTo(5, -13.4); c.stroke();
+    c.beginPath(); c.moveTo(0.2, -8.6); c.lineTo(-3.2, -10.4); c.lineTo(-4.2, -13.4); c.stroke();
+  };
+
+  S.shieldbug = function (c, a, t) {
+    legs(c, GG.shade(a.accent, 0.1), 3, 3.2, 6.4, t * 6, 1.2);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -8.4);
+    c.lineTo(6.4, -4.6); c.lineTo(5.4, 5.4); c.lineTo(0, 9);
+    c.lineTo(-5.4, 5.4); c.lineTo(-6.4, -4.6);
+    c.closePath(); c.fill();
+    // scutellum
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(-3.6, -3.4); c.lineTo(3.6, -3.4); c.lineTo(0, 7.4);
+    c.closePath(); c.fill();
+    if (a.pattern === 'picasso') {
+      c.strokeStyle = '#1f3a6b'; c.lineWidth = 1;
+      var spots = [[-3.4, -1], [0, -2], [3.4, -1], [-2.6, 2.6], [2.6, 2.6], [0, 1.4], [-4, -5], [4, -5], [0, 5.4], [-1.6, -5.6], [1.6, -5.6]];
+      for (var i = 0; i < spots.length; i++) {
+        c.beginPath(); c.arc(spots[i][0], spots[i][1], 1.5, 0, Math.PI * 2); c.stroke();
+        c.fillStyle = '#d8433a';
+        c.beginPath(); c.arc(spots[i][0], spots[i][1], 0.65, 0, Math.PI * 2); c.fill();
+      }
+    } else if (a.pattern === 'firebug') {
+      c.fillStyle = a.accent;
+      c.beginPath(); c.moveTo(-6.4, -4.6); c.lineTo(6.4, -4.6); c.lineTo(5.9, -1.4); c.lineTo(-5.9, -1.4); c.closePath(); c.fill();
+      ell(c, -2.9, 3.2, 1.9, 1.9); ell(c, 2.9, 3.2, 1.9, 1.9);
+      c.beginPath(); c.moveTo(-5.4, 5.4); c.lineTo(0, 9); c.lineTo(5.4, 5.4); c.closePath(); c.fill();
+    } else if (a.pattern === 'speckle') {
+      c.fillStyle = a.accent;
+      var rnd = GG.mulberry32(9);
+      for (var k = 0; k < 16; k++) ell(c, (rnd() - 0.5) * 10, (rnd() - 0.35) * 13, 0.6, 0.6);
+    }
+    c.fillStyle = GG.shade(a.body, -0.12);
+    c.beginPath();
+    c.moveTo(-4.4, -7); c.lineTo(4.4, -7); c.lineTo(3, -10); c.lineTo(-3, -10);
+    c.closePath(); c.fill();
+    c.fillStyle = '#20202a'; ell(c, -3, -9, 0.9, 0.9); ell(c, 3, -9, 0.9, 0.9);
+    line(c, -1.6, -10, -3.4, -14.4, 0.8, a.accent);
+    line(c, 1.6, -10, 3.4, -14.4, 0.8, a.accent);
+  };
+
+  S.assassinbug = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.2), 2, 4.4, 8, t * 6, 1.2);
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(0, -2); c.quadraticCurveTo(6.4, 2, 4.2, 7.4);
+    c.quadraticCurveTo(0, 10.4, -4.2, 7.4);
+    c.quadraticCurveTo(-6.4, 2, 0, -2);
+    c.closePath(); c.fill();
+    c.fillStyle = GG.shade(a.wing, -0.25);
+    ell(c, 0, 3.4, 1.9, 5.4);
+    c.fillStyle = a.body; ell(c, 0, -4.4, 2.4, 3.4);
+    c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -8.4, 1.9, 2.4);
+    c.fillStyle = '#20202a'; ell(c, -1.7, -9, 1, 1); ell(c, 1.7, -9, 1, 1);
+    // curved stabbing beak, tucked under
+    c.strokeStyle = a.accent; c.lineWidth = 1.2; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(0, -10.4); c.quadraticCurveTo(2.6, -12.6, 1.2, -15.4);
+    c.stroke();
+    c.strokeStyle = a.accent; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(-1.4, -10.6); c.quadraticCurveTo(-5, -14, -4, -18); c.stroke();
+    c.beginPath(); c.moveTo(1.4, -10.6); c.quadraticCurveTo(5, -14, 4, -18); c.stroke();
+  };
+
+  S.wheelbug = function (c, a, t) {
+    S.assassinbug(c, a, t);
+    // the cogwheel crest
+    c.fillStyle = GG.shade(a.body, -0.2);
+    c.beginPath(); c.arc(0, -4.6, 4.4, Math.PI, 0); c.fill();
+    c.fillStyle = a.wing;
+    for (var i = 0; i < 8; i++) {
+      var ang = Math.PI + 0.18 + i * (Math.PI - 0.36) / 7;
+      c.beginPath();
+      c.moveTo(Math.cos(ang) * 4.2, -4.6 + Math.sin(ang) * 4.2);
+      c.lineTo(Math.cos(ang) * 6.1, -4.6 + Math.sin(ang) * 6.1);
+      c.lineTo(Math.cos(ang + 0.16) * 4.2, -4.6 + Math.sin(ang + 0.16) * 4.2);
+      c.closePath(); c.fill();
+    }
+  };
+
+  S.aphid = function (c, a, t) {
+    legs(c, a.accent, 3, 2.8, 4.4, t * 6, 0.9);
+    c.fillStyle = a.body; ell(c, 0, 1.4, 3.8, 4.6);
+    c.fillStyle = a.wing; ell(c, -1.2, 0.2, 1.8, 2.2, -0.3);
+    // cornicles - the two little exhaust pipes
+    c.strokeStyle = a.accent; c.lineWidth = 1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-2.4, 4.6); c.lineTo(-3.4, 7.4); c.stroke();
+    c.beginPath(); c.moveTo(2.4, 4.6); c.lineTo(3.4, 7.4); c.stroke();
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -3.2, 2.2, 2);
+    c.fillStyle = '#2b2b33'; ell(c, -1.2, -3.8, 0.6, 0.6); ell(c, 1.2, -3.8, 0.6, 0.6);
+    line(c, -0.9, -4.6, -2.6, -8.4, 0.7, a.accent);
+    line(c, 0.9, -4.6, 2.6, -8.4, 0.7, a.accent);
+  };
+
+  S.leafhopper = function (c, a, t) {
+    var k = Math.sin(t * 5) * 0.5;
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 1.1; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 1.4, -2); c.quadraticCurveTo(s * 4, -1, s * 5, 1.4); c.stroke();
+      c.beginPath(); c.moveTo(s * 1.6, 1); c.lineTo(s * 5.4, 5 + k); c.lineTo(s * 3.2, 9.4 + k); c.stroke();
+    }
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(0, -7.4); c.lineTo(3.4, -2); c.lineTo(2.4, 9); c.lineTo(-2.4, 9); c.lineTo(-3.4, -2);
+    c.closePath(); c.fill();
+    if (a.pattern === 'stripes') {
+      c.strokeStyle = a.accent; c.lineWidth = 0.7;
+      for (var i = 0; i < 3; i++) {
+        c.beginPath(); c.moveTo(-3 + i * 0.5, -2 + i * 3); c.lineTo(3 - i * 0.5, -2 + i * 3); c.stroke();
+      }
+    }
+    c.fillStyle = a.body;
+    c.beginPath(); c.moveTo(0, -9.4); c.lineTo(2.4, -5); c.lineTo(-2.4, -5); c.closePath(); c.fill();
+    c.fillStyle = '#20202a'; ell(c, -1.7, -5.4, 0.8, 0.8); ell(c, 1.7, -5.4, 0.8, 0.8);
+  };
+
+  S.treehopper = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.3), 3, 2.8, 4.6, t * 6, 1);
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(0, -4); c.quadraticCurveTo(3.6, 0, 2.4, 8); c.lineTo(-2.4, 8);
+    c.quadraticCurveTo(-3.6, 0, 0, -4);
+    c.closePath(); c.fill();
+    // the thorn
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-3.4, -3.4); c.lineTo(3.4, -3.4); c.lineTo(1.6, -6);
+    c.lineTo(2.6, -14.4); c.lineTo(-2, -5.6);
+    c.closePath(); c.fill();
+    c.fillStyle = GG.shade(a.body, 0.18);
+    c.beginPath();
+    c.moveTo(-1.4, -5.4); c.lineTo(1.2, -6); c.lineTo(2.2, -13); c.closePath(); c.fill();
+    c.fillStyle = '#20202a'; ell(c, -2.4, -3.2, 0.8, 0.8); ell(c, 2.4, -3.2, 0.8, 0.8);
+  };
+
+  S.lanternfly = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 9));
+    legs(c, '#2b2b2b', 3, 3.4, 5.6, t * 6, 1.1);
+    // a flash of the red underwings
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = '#d8402f';
+    ell(c, -4.2, 3.4, 3.4, 6.4, 0.22); ell(c, 4.2, 3.4, 3.4, 6.4, -0.22);
+    c.fillStyle = '#1a1a1a';
+    ell(c, -5.4, 7.4, 2, 2.4); ell(c, 5.4, 7.4, 2, 2.4);
+    c.restore();
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(-1, -6); c.quadraticCurveTo(-7.4, 0, -5, 9.4); c.lineTo(-1, 8);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(1, -6); c.quadraticCurveTo(7.4, 0, 5, 9.4); c.lineTo(1, 8);
+    c.closePath(); c.fill();
+    c.fillStyle = a.accent;
+    var rnd = GG.mulberry32(17);
+    for (var i = 0; i < 14; i++) {
+      var sx = (rnd() < 0.5 ? -1 : 1) * (1.6 + rnd() * 4.4);
+      ell(c, sx, -4 + rnd() * 11, 0.85, 0.85);
+    }
+    c.fillStyle = GG.shade(a.body, -0.18); ell(c, 0, -6.4, 2, 3.2);
+    c.fillStyle = '#20202a'; ell(c, -1.7, -7.4, 0.9, 0.9); ell(c, 1.7, -7.4, 0.9, 0.9);
+  };
+
+  S.waterbug = function (c, a, t) {
+    var row = Math.sin(t * 5) * 2.6;
+    c.strokeStyle = GG.shade(a.body, -0.25); c.lineWidth = 1.6; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath();
+      c.moveTo(s * 3, 2); c.quadraticCurveTo(s * 9, 6 + row, s * 11, 11 + row); c.stroke();
+      c.beginPath();
+      c.moveTo(s * 3, 5); c.quadraticCurveTo(s * 9, 10 - row, s * 10, 15 - row); c.stroke();
+      // raptorial front legs
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(s * 2.6, -4.4); c.lineTo(s * 7, -8.4); c.lineTo(s * 4.4, -12);
+      c.stroke();
+      c.lineWidth = 1.6;
+    }
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -10.4); c.quadraticCurveTo(5.6, -6, 5, 6.4);
+    c.quadraticCurveTo(2.6, 12.4, 0, 13.4);
+    c.quadraticCurveTo(-2.6, 12.4, -5, 6.4);
+    c.quadraticCurveTo(-5.6, -6, 0, -10.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing; ell(c, 0, 2, 3.7, 7);
+    c.fillStyle = GG.shade(a.wing, -0.22); ell(c, 0, 2, 0.45, 6.6);
+    // the short breathing tube at the tail
+    c.strokeStyle = GG.shade(a.body, -0.2); c.lineWidth = 1.4; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 12.6); c.lineTo(0, 15.4); c.stroke();
+    // flat triangular head
+    c.fillStyle = GG.shade(a.body, -0.12);
+    c.beginPath();
+    c.moveTo(-3.4, -8.4); c.lineTo(3.4, -8.4); c.lineTo(0, -14);
+    c.closePath(); c.fill();
+    c.fillStyle = '#20202a'; ell(c, -2.4, -9.2, 1.2, 1.2); ell(c, 2.4, -9.2, 1.2, 1.2);
+  };
+
+  S.backswimmer = function (c, a, t) {
+    var row = Math.sin(t * 7) * 3.4;
+    c.strokeStyle = GG.shade(a.accent, 0.15); c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath();
+      c.moveTo(s * 2, 2.4);
+      c.quadraticCurveTo(s * 9, 5 + row, s * 12, 9 + row);
+      c.stroke();
+      c.lineWidth = 2.4; c.strokeStyle = 'rgba(255,255,255,0.5)';
+      c.beginPath();
+      c.moveTo(s * 9, 7 + row); c.lineTo(s * 12, 9 + row); c.stroke();
+      c.lineWidth = 1.3; c.strokeStyle = GG.shade(a.accent, 0.15);
+      c.beginPath(); c.moveTo(s * 1.6, -1); c.quadraticCurveTo(s * 5, -3, s * 6.4, -6); c.stroke();
+    }
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -8.4); c.quadraticCurveTo(4.4, -4, 3.4, 6);
+    c.lineTo(0, 9.4); c.lineTo(-3.4, 6);
+    c.quadraticCurveTo(-4.4, -4, 0, -8.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing; ell(c, 0, 0, 1.9, 6);
+    c.fillStyle = 'rgba(255,255,255,0.55)'; ell(c, 0, 4.4, 2.4, 2.4);
+    c.fillStyle = a.accent; ell(c, 0, -7.4, 2.2, 2.2);
+    c.fillStyle = '#1a1a1a'; ell(c, -1.4, -8, 0.9, 0.9); ell(c, 1.4, -8, 0.9, 0.9);
+  };
+
+  S.cockroach = function (c, a, t) {
+    legs(c, a.accent, 3, 4, 7.4, t * 12, 1.3);
+    c.fillStyle = a.body;
+    ell(c, 0, 1.4, 5.4, 8);
+    c.fillStyle = a.wing; ell(c, 0, 2.4, 4.6, 7);
+    c.fillStyle = GG.shade(a.wing, -0.2); ell(c, 0, 2.4, 0.5, 6.6);
+    c.fillStyle = 'rgba(255,255,255,0.18)'; ell(c, -2, -0.6, 1.6, 2.6, -0.3);
+    // pronotum shield over the head
+    c.fillStyle = GG.shade(a.body, -0.18);
+    ell(c, 0, -5.4, 4.4, 3.4);
+    c.fillStyle = GG.shade(a.body, -0.35); ell(c, 0, -6, 2.6, 1.9);
+    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.4, -8.4); c.quadraticCurveTo(-6, -13, -4.4, -18.4); c.stroke();
+    c.beginPath(); c.moveTo(1.4, -8.4); c.quadraticCurveTo(6, -13, 4.4, -18.4); c.stroke();
+    // cerci
+    c.beginPath(); c.moveTo(-2, 9); c.lineTo(-3.4, 12); c.stroke();
+    c.beginPath(); c.moveTo(2, 9); c.lineTo(3.4, 12); c.stroke();
+  };
+
+  S.silverfish = function (c, a, t) {
+    var wig = Math.sin(t * 8);
+    legs(c, a.accent, 3, 2.6, 4.4, t * 12, 0.9);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -8.4);
+    c.quadraticCurveTo(3.6 + wig, -2, 2.2 + wig * 1.4, 6);
+    c.lineTo(0 + wig * 1.6, 9.4);
+    c.lineTo(-2.2 + wig * 1.4, 6);
+    c.quadraticCurveTo(-3.6 + wig, -2, 0, -8.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.wing;
+    for (var i = 0; i < 5; i++) {
+      ell(c, wig * (i * 0.3), -5 + i * 2.8, 2.8 - i * 0.35, 0.8);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.3)'; ell(c, -1, -4, 1.1, 2.4, -0.2);
+    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s++) {
+      c.beginPath();
+      c.moveTo(wig * 1.6, 9);
+      c.quadraticCurveTo(s * 2.6 + wig, 12.6, s * 4.4 + wig, 16.4);
+      c.stroke();
+    }
+    c.beginPath(); c.moveTo(-1, -8.4); c.quadraticCurveTo(-4.4, -13, -3.4, -17.4); c.stroke();
+    c.beginPath(); c.moveTo(1, -8.4); c.quadraticCurveTo(4.4, -13, 3.4, -17.4); c.stroke();
+  };
+
+  S.earwig = function (c, a, t) {
+    legs(c, a.accent, 3, 3.2, 5.4, t * 9, 1.1);
+    c.fillStyle = a.body; ell(c, 0, 2.4, 3.4, 7.4);
+    c.fillStyle = a.wing; ell(c, 0, -1.4, 3.2, 3.4);
+    c.fillStyle = GG.shade(a.body, 0.15);
+    for (var i = 0; i < 4; i++) ell(c, 0, 3 + i * 2, 3.2 - i * 0.2, 0.5);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -6.4, 2.8, 2.8);
+    c.fillStyle = '#20202a'; ell(c, -1.4, -7.2, 0.8, 0.8); ell(c, 1.4, -7.2, 0.8, 0.8);
+    c.strokeStyle = a.accent; c.lineWidth = 0.8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.2, -8.4); c.lineTo(-4, -13.4); c.stroke();
+    c.beginPath(); c.moveTo(1.2, -8.4); c.lineTo(4, -13.4); c.stroke();
+    // pincers
+    c.strokeStyle = GG.shade(a.accent, 0.2); c.lineWidth = 1.6;
+    c.beginPath();
+    c.moveTo(-1.9, 9.4); c.quadraticCurveTo(-4.4, 13, -1.4, 15.4); c.stroke();
+    c.beginPath();
+    c.moveTo(1.9, 9.4); c.quadraticCurveTo(4.4, 13, 1.4, 15.4); c.stroke();
+  };
+
+  S.termite = function (c, a, t) {
+    legs(c, GG.shade(a.accent, 0.1), 3, 2.6, 4.4, t * 9, 0.9);
+    c.fillStyle = a.body; ell(c, 0, 3, 3, 5);
+    c.fillStyle = GG.shade(a.body, -0.06); ell(c, 0, -1.4, 2.2, 2.4);
+    c.fillStyle = a.accent; ell(c, 0, -5.4, 3, 3.2);
+    c.fillStyle = '#3a2a18'; ell(c, -1.4, -6, 0.7, 0.7); ell(c, 1.4, -6, 0.7, 0.7);
+    c.strokeStyle = GG.shade(a.accent, -0.15); c.lineWidth = 1.2; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.6, -7.6); c.lineTo(-3.2, -10.4); c.stroke();
+    c.beginPath(); c.moveTo(1.6, -7.6); c.lineTo(3.2, -10.4); c.stroke();
+    c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(-1, -8); c.quadraticCurveTo(-3.4, -10, -3, -12.6); c.stroke();
+    c.beginPath(); c.moveTo(1, -8); c.quadraticCurveTo(3.4, -10, 3, -12.6); c.stroke();
+  };
+
+  S.bedbug = function (c, a, t) {
+    legs(c, a.accent, 3, 2.6, 4.4, t * 7, 1);
+    c.fillStyle = a.body; ell(c, 0, 1.4, 4.4, 5.2);
+    c.fillStyle = a.wing;
+    for (var i = 0; i < 4; i++) ell(c, 0, -0.6 + i * 2, 4.1 - i * 0.5, 0.65);
+    c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -4.4, 2.6, 2.2);
+    c.fillStyle = '#2b1a10'; ell(c, -1.7, -5, 0.8, 0.8); ell(c, 1.7, -5, 0.8, 0.8);
+    line(c, -1.2, -6, -3, -9.4, 0.7, a.accent);
+    line(c, 1.2, -6, 3, -9.4, 0.7, a.accent);
+  };
+
+  S.wasp = function (c, a, t) {
+    var flap = 0.3 + 0.7 * Math.abs(Math.cos(t * 22));
+    c.save(); c.globalAlpha = 0.5; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -4.6, -1, 3.4, 6.4, -0.36); ell(c, 4.6, -1, 3.4, 6.4, 0.36);
+    c.restore(); c.globalAlpha = 1;
+    c.fillStyle = a.accent; ell(c, 0, -6.4, 2.4, 2.2);
+    c.fillStyle = '#f6efd8'; ell(c, -1.1, -6.8, 0.5, 0.6); ell(c, 1.1, -6.8, 0.5, 0.6);
+    c.fillStyle = a.body; ell(c, 0, -3, 3, 2.8);
+    // the pinched waist
+    c.strokeStyle = a.accent; c.lineWidth = 1.1;
+    c.beginPath(); c.moveTo(0, -0.6); c.lineTo(0, 1.4); c.stroke();
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, 1); c.quadraticCurveTo(3.8, 3, 2.4, 7.4);
+    c.quadraticCurveTo(0, 10.4, -2.4, 7.4);
+    c.quadraticCurveTo(-3.8, 3, 0, 1);
+    c.closePath(); c.fill();
+    c.fillStyle = a.accent;
+    ell(c, 0, 3.2, 3, 0.9); ell(c, 0, 5.6, 2.4, 0.9);
+    c.strokeStyle = a.accent; c.lineWidth = 0.9; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 9.6); c.lineTo(0, 12); c.stroke();
+    line(c, -1, -7.8, -3, -10.8, 0.8, a.accent);
+    line(c, 1, -7.8, 3, -10.8, 0.8, a.accent);
+    legs(c, a.accent, 2, 3, 5.4, t * 9, 1);
   };
 
   GG.BugArt = {
