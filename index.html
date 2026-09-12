@@ -1187,7 +1187,16 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  /* ---------- one continuous noise layer ---------- */
+  /* ---------- one continuous noise layer ----------
+
+     Signal path: noise -> filter -> swell -> level -> the ambience bus.
+
+     The swell and the level are SEPARATE gain stages on purpose. An
+     AudioParam's value is its own value PLUS whatever is connected to it, so
+     wiring the swell LFO straight onto the level gain made every bed audible
+     at the full depth of its swell no matter how far away the water was -
+     which is why the sea could be heard indoors. The LFO now rides its own
+     stage, centred on a positive base, and multiplies the level instead. */
   function Bed(opts) {
     this.opts = opts;
     this.level = 0;
@@ -1203,18 +1212,27 @@ ul.tips li{margin-bottom:3px}
     filt.type = this.opts.filter || 'lowpass';
     filt.frequency.value = this.opts.freq;
     if (this.opts.q) filt.Q.value = this.opts.q;
-    var gain = a.createGain();
-    gain.gain.value = 0;
-    src.connect(filt); filt.connect(gain); gain.connect(GG.Audio.bus('ambience'));
+
+    var swell = a.createGain();
+    swell.gain.value = 1;
+    var level = a.createGain();
+    level.gain.value = 0;
+
+    src.connect(filt); filt.connect(swell); swell.connect(level);
+    level.connect(GG.Audio.bus('ambience'));
     src.start(a.currentTime + Math.random() * 0.2);
-    this.nodes = { src: src, filt: filt, gain: gain };
-    /* a slow swell, so surf breathes and wind gusts */
+    this.nodes = { src: src, filt: filt, swell: swell, gain: level };
+
+    /* a slow breathing swell, so surf rolls and wind gusts - always between
+       (1 - depth) and 1, never negative, and always scaled by the level */
     if (this.opts.swell) {
+      var d = GG.clamp(this.opts.swellDepth || 0.4, 0, 0.9) * 0.5;
+      swell.gain.value = 1 - d;
       var lfo = a.createOscillator(), depth = a.createGain();
       lfo.type = 'sine';
       lfo.frequency.value = this.opts.swell;
-      depth.gain.value = this.opts.swellDepth || 0.4;
-      lfo.connect(depth); depth.connect(gain.gain);
+      depth.gain.value = d;
+      lfo.connect(depth); depth.connect(swell.gain);
       lfo.start();
       this.nodes.lfo = lfo;
     }
@@ -1222,11 +1240,14 @@ ul.tips li{margin-bottom:3px}
   Bed.prototype.set = function (v) { this.target = v; };
   Bed.prototype.step = function (dt) {
     var a = GG.Audio.ctx(); if (!a) return;
-    if (this.target > 0.001 && !this.nodes) this.build();
+    if (this.target > 0.004 && !this.nodes) this.build();
     if (!this.nodes) return;
-    var k = Math.min(1, dt * 0.9);
+    /* fade away quicker than it fades in, so stepping indoors goes quiet */
+    var k = Math.min(1, dt * (this.target < this.level ? 2.6 : 0.9));
     this.level += (this.target - this.level) * k;
-    this.nodes.gain.gain.setTargetAtTime(this.level * this.opts.max, a.currentTime, 0.08);
+    /* below a whisper, go properly silent rather than nearly silent */
+    var lv = this.level < 0.02 ? 0 : this.level;
+    this.nodes.gain.gain.setTargetAtTime(lv * this.opts.max, a.currentTime, 0.08);
   };
 
   /* ---------- a voice that chirps now and then ---------- */
@@ -1282,13 +1303,13 @@ ul.tips li{margin-bottom:3px}
     init: function () {
       if (this.beds) return;
       this.beds = {
-        wind:   new Bed({ freq: 420, max: 0.055, swell: 0.07, swellDepth: 0.5 }),
-        leaves: new Bed({ freq: 1900, filter: 'bandpass', q: 0.7, max: 0.030, swell: 0.11, swellDepth: 0.6 }),
-        stream: new Bed({ freq: 2400, filter: 'bandpass', q: 0.6, max: 0.055, swell: 0.9, swellDepth: 0.35 }),
-        river:  new Bed({ freq: 900, filter: 'bandpass', q: 0.5, max: 0.060, swell: 0.35, swellDepth: 0.4 }),
-        surf:   new Bed({ freq: 700, max: 0.115, swell: 0.115, swellDepth: 0.85 }),
-        rain:   new Bed({ freq: 3200, filter: 'highpass', max: 0.085, swell: 0.25, swellDepth: 0.3 }),
-        hearth: new Bed({ freq: 280, max: 0.045, swell: 0.5, swellDepth: 0.5 })
+        wind:   new Bed({ freq: 420, max: 0.026, swell: 0.07, swellDepth: 0.5 }),
+        leaves: new Bed({ freq: 1900, filter: 'bandpass', q: 0.7, max: 0.018, swell: 0.11, swellDepth: 0.6 }),
+        stream: new Bed({ freq: 2400, filter: 'bandpass', q: 0.6, max: 0.022, swell: 0.9, swellDepth: 0.35 }),
+        river:  new Bed({ freq: 900, filter: 'bandpass', q: 0.5, max: 0.026, swell: 0.35, swellDepth: 0.4 }),
+        surf:   new Bed({ freq: 700, max: 0.042, swell: 0.115, swellDepth: 0.7 }),
+        rain:   new Bed({ freq: 3200, filter: 'highpass', max: 0.046, swell: 0.25, swellDepth: 0.3 }),
+        hearth: new Bed({ freq: 280, max: 0.030, swell: 0.5, swellDepth: 0.5 })
       };
       this.callers = {
         /* morning and daytime birdsong: two or three quick rising notes */
@@ -1354,9 +1375,10 @@ ul.tips li{margin-bottom:3px}
       }
 
       if (scene === 'house') {
+        /* indoors you hear the fire and, if it is raining, the roof.
+           Nothing of the garden gets in - and certainly not the sea. */
         want.hearth = 1;
-        want.wind = 0.18;
-        want.rain = GG.Time.rain ? 0.25 : 0;
+        want.rain = GG.Time.rain ? 0.2 : 0;
       } else if (scene === 'title') {
         want.wind = 0.5;
         want.leaves = 0.5;
@@ -1369,16 +1391,19 @@ ul.tips li{margin-bottom:3px}
         want.wind = 0.55;
         want.rain = GG.Time.rain ? 1 : 0;
 
-        /* how close is the nearest water of each kind? the distance fields
-           are in 8px cells, so 30 cells is about 240 pixels */
+        /* How close is the nearest water? The distance fields are in 8px
+           cells, so 26 cells is about 210 pixels - roughly a screen's width
+           on a phone. Water should be something you walk up to and hear, not
+           a bed that plays across half the garden, so the falloff is steep
+           and it is silent well before the next place along. */
         var i = W.maskIndex ? W.maskIndex(x, y) : -1;
         function near(field, reach) {
           if (i < 0 || !W[field]) return 0;
           return GG.clamp(1 - W[field][i] / reach, 0, 1);
         }
-        want.surf = Math.pow(near('dSea', 46), 1.4);
-        want.river = Math.pow(near('dRiver', 26), 1.5) * 0.9;
-        want.stream = want.river * 0.8;
+        want.surf = Math.pow(near('dSea', 26), 2.2);
+        want.river = Math.pow(near('dRiver', 17), 2.2) * 0.85;
+        want.stream = want.river * 0.7;
         if (biome === 'forest') { want.leaves = 0.85; }
         else if (biome === 'orchard' || biome === 'garden') { want.leaves = 0.45; }
         else { want.leaves = 0.22; }
@@ -1394,7 +1419,7 @@ ul.tips li{margin-bottom:3px}
         if (GG.Time.rain) { call.birds *= 0.25; call.hum = 0; }
         if (atPond && (phase === 'evening' || phase === 'night')) call.frogs = 0.9;
         else if (pondNear > 0.5 && phase === 'night') call.frogs = 0.5;
-        call.gulls = want.surf * (phase === 'night' ? 0.25 : 1);
+        call.gulls = Math.min(1, want.surf * 1.6) * (phase === 'night' ? 0.25 : 1);
       }
 
       for (var k in want) b[k].set(want[k]);
@@ -1419,9 +1444,16 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.9.1';
+  GG.VERSION = '1.9.2';
 
   GG.CHANGELOG = [
+    {
+      v: '1.9.2', title: 'Quieter water',
+      lines: [
+        'The sea and the river were far too loud, and you could hear them all over the garden and even inside the house. Now they are much softer, and you only hear them when you are close to the water.',
+        'Indoors it is properly cosy: just the fire, and the rain on the roof if it is raining.'
+      ]
+    },
     {
       v: '1.9.1', title: 'Rock-pool creatures need water',
       lines: [
@@ -9738,6 +9770,8 @@ ul.tips li{margin-bottom:3px}
   }
 
   GG.debugShowUpdate = showUpdate;   // used by the tests
+  GG.debugSetScene = setScene;       // used by the tests
+  GG.debugScene = function () { return scene; };
 
   /* ---------- start ---------- */
   function startGame() {
