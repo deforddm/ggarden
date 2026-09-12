@@ -465,23 +465,42 @@ ul.tips li{margin-bottom:3px}
         stickEl.classList.remove('on');
       }
 
+      // A touch that lands on a button, a menu or a popup belongs to that
+      // control - never swallow it, or nothing in the menus can be tapped.
+      var UI_SELECTOR = '.panel, button, input, select, textarea, a, #catch-pop, #hud-top, #btn-update';
+      function onUI(target) {
+        if (!target) return false;
+        if (target === actionEl || actionEl.contains(target)) return true;
+        var el = target;
+        while (el && el !== rootEl && el.nodeType === 1) {
+          if (el.closest) return !!el.closest(UI_SELECTOR);
+          el = el.parentNode;
+        }
+        return false;
+      }
+
       rootEl.addEventListener('touchstart', function (e) {
+        if (GG.UI && GG.UI.anyOpen()) return;
+        var grabbed = false;
         for (var i = 0; i < e.changedTouches.length; i++) {
           var t = e.changedTouches[i];
-          if (t.target === actionEl || actionEl.contains(t.target)) continue;
+          if (onUI(t.target)) continue;
           if (!self.stick.active && t.clientX < window.innerWidth * 0.62) {
             startStick(t.identifier, t.clientX, t.clientY);
+            grabbed = true;
           }
         }
-        e.preventDefault();
+        if (grabbed) e.preventDefault();
       }, { passive: false });
 
       rootEl.addEventListener('touchmove', function (e) {
+        if (!self.stick.active) return;
+        var mine = false;
         for (var i = 0; i < e.changedTouches.length; i++) {
           var t = e.changedTouches[i];
-          if (self.stick.active && t.identifier === self.stick.id) moveStick(t.clientX, t.clientY);
+          if (t.identifier === self.stick.id) { moveStick(t.clientX, t.clientY); mine = true; }
         }
-        e.preventDefault();
+        if (mine) e.preventDefault();
       }, { passive: false });
 
       function touchEnd(e) {
@@ -494,7 +513,8 @@ ul.tips li{margin-bottom:3px}
 
       // Mouse, for playing on a computer.
       rootEl.addEventListener('mousedown', function (e) {
-        if (e.target === actionEl || actionEl.contains(e.target)) return;
+        if (GG.UI && GG.UI.anyOpen()) return;
+        if (onUI(e.target)) return;
         startStick('mouse', e.clientX, e.clientY);
       });
       window.addEventListener('mousemove', function (e) {
@@ -4016,6 +4036,7 @@ ul.tips li{margin-bottom:3px}
 
     GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'));
     GG.UI.init();
+    GG.UI.openPanels.push('screen-title');
     GG.UI.refreshHud();
     GG.Terrarium.initEvents();
     titleAnim();
