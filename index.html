@@ -149,8 +149,6 @@ input[type=text]{font-family:var(--font);font-size:15px;padding:8px 10px;border:
 ul.tips{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.6}
 ul.tips li{margin-bottom:3px}
 
-#btn-update{pointer-events:auto;background:var(--gold);border:none;border-radius:999px;padding:6px 12px;
-  font-family:var(--font);font-weight:bold;font-size:12px;color:#5b4310;box-shadow:0 2px 0 #b8871f}
 #minimap{width:100%;display:block;border-radius:16px;border:3px solid #e5d5b4;background:#8ecf63}
 
 .tag.sting{background:#ffe0e0;color:#a33}
@@ -177,6 +175,24 @@ ul.tips li{margin-bottom:3px}
 
 .shop-group{grid-column:1/-1;font-weight:bold;font-size:13px;color:var(--ink2);margin:6px 0 0}
 
+/* ---------- update-ready bar (on the title screen) ---------- */
+.update-bar{width:100%;max-width:352px;margin:16px auto 0;display:grid;
+  grid-template-columns:42px 1fr auto 24px;align-items:center;gap:8px;
+  padding:8px 8px 8px 10px;background:var(--cream);border:3px solid var(--gold);border-radius:18px;
+  box-shadow:0 5px 0 rgba(184,135,31,.55),0 10px 24px rgba(0,0,0,.22);
+  animation:updpop .32s cubic-bezier(.2,1.5,.4,1)}
+.update-bar[hidden]{display:none!important}
+.update-bar canvas{width:42px;height:42px;display:block;animation:updbob 1.3s ease-in-out infinite}
+@keyframes updbob{50%{transform:translateY(-4px)}}
+@keyframes updpop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.update-bar span{display:flex;flex-direction:column;line-height:1.2;min-width:0;text-align:left}
+.update-bar b{font-size:15px;color:#8a6212;white-space:nowrap}
+.update-bar small{font-size:11.5px;color:var(--ink2);font-weight:bold}
+.update-bar .btn{margin:0;padding:8px 12px;font-size:14px;width:auto;white-space:nowrap}
+.upd-x{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--ink2);
+  font-size:17px;font-weight:bold;font-family:var(--font);padding:0}
+#menu-update[hidden]{display:none!important}
+
 </style>
 </head>
 <body>
@@ -189,7 +205,6 @@ ul.tips li{margin-bottom:3px}
       <div class="chip" id="chip-time">Day 1 &middot; 8:00am</div>
       <div class="chip gold" id="chip-sparkles">&#10022; 0</div>
       <button id="btn-menu" aria-label="Menu">&#9776;</button>
-      <button id="btn-update" class="hidden">New version &mdash; tap to update</button>
     </div>
     <div id="prompt"></div>
     <div id="toast"></div>
@@ -209,6 +224,13 @@ ul.tips li{margin-bottom:3px}
       <canvas id="title-canvas" width="680" height="300"></canvas>
       <button class="btn primary" id="btn-play">Play</button>
       <button class="btn" id="btn-howto">How to play</button>
+
+      <div id="update-bar" class="update-bar" role="status" hidden>
+        <canvas id="update-icon" width="88" height="88"></canvas>
+        <span><b>Update ready!</b><small>New things to find</small></span>
+        <button class="btn primary small" id="btn-update">Update</button>
+        <button class="upd-x" id="btn-update-later" aria-label="Later">&times;</button>
+      </div>
     </div>
   </div>
 
@@ -238,6 +260,9 @@ ul.tips li{margin-bottom:3px}
     <div class="sheet">
       <header><h2>Garden Menu</h2><button class="x" data-close="screen-menu">&times;</button></header>
       <div class="body">
+        <button class="btn primary" id="menu-update" style="width:100%;margin-bottom:10px" hidden>
+          &#10022; Update ready &mdash; tap to get it
+        </button>
         <div class="row" style="margin-bottom:10px">
           <div class="grow"><b id="menu-progress">0 of 31 bugs found</b><div class="note" id="menu-place"></div></div>
         </div>
@@ -5667,6 +5692,89 @@ ul.tips li{margin-bottom:3px}
     $('chip-place').textContent = scene === 'house' ? 'Home' : GG.World.placeName(GG.Player.x, GG.Player.y);
   }
 
+  /* ---------- "update ready" on the title screen ---------- */
+  var swReg = null, updateAsked = false, updateReady = false, updateRaf = 0;
+
+  function drawUpdateIcon() {
+    var cv = $('update-icon');
+    if (!cv) return;
+    var c = cv.getContext('2d');
+    var start = performance.now();
+    cancelAnimationFrame(updateRaf);
+    function frame(now) {
+      var bar = $('update-bar');
+      if (!bar || bar.hidden) return;
+      var t = (now - start) / 1000;
+      c.clearRect(0, 0, cv.width, cv.height);
+      c.fillStyle = 'rgba(242,185,60,0.22)';
+      c.beginPath(); c.arc(44, 44, 34 + Math.sin(t * 2) * 2, 0, Math.PI * 2); c.fill();
+      GG.BugArt.draw(c, GG.BUG_BY_ID.monarch, 44, 44, 2.4, -Math.PI / 2, t);
+      updateRaf = requestAnimationFrame(frame);
+    }
+    updateRaf = requestAnimationFrame(frame);
+  }
+
+  function showUpdate() {
+    if (updateReady) return;
+    updateReady = true;
+    var bar = $('update-bar');
+    if (bar) { bar.hidden = false; drawUpdateIcon(); }
+    var mb = $('menu-update');
+    if (mb) mb.hidden = false;
+    GG.Sfx.coin();
+    if (started) GG.UI.toast('An update is ready! It is in the menu.', 3200);
+  }
+
+  function applyUpdate(btn) {
+    GG.Sfx.click();
+    GG.Save.data.clock = GG.Time.minutes;
+    GG.Save.data.day = GG.Time.day;
+    GG.Save.save();
+    updateAsked = true;
+    if (btn) { btn.textContent = 'Updating\u2026'; btn.disabled = true; }
+    if (swReg && swReg.waiting) swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    else location.reload();
+    setTimeout(function () { location.reload(); }, 4000);   // safety net
+  }
+
+  function setupUpdates() {
+    var bar = $('update-bar');
+    if (bar) {
+      $('btn-update').addEventListener('click', function () { applyUpdate($('btn-update')); });
+      $('btn-update-later').addEventListener('click', function () {
+        GG.Sfx.click(); bar.hidden = true;
+      });
+    }
+    var mb = $('menu-update');
+    if (mb) mb.addEventListener('click', function () { applyUpdate(mb); });
+
+    if (!('serviceWorker' in navigator) || location.protocol.indexOf('http') !== 0) return;
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (updateAsked) location.reload();
+    });
+
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        swReg = reg;
+        var hadController = !!navigator.serviceWorker.controller;
+        if (reg.waiting && hadController) showUpdate();
+        reg.addEventListener('updatefound', function () {
+          var w = reg.installing;
+          if (!w) return;
+          w.addEventListener('statechange', function () {
+            if (w.state === 'installed' && navigator.serviceWorker.controller && reg.waiting) showUpdate();
+          });
+        });
+        function check() { reg.update().catch(function () {}); }
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+        setInterval(check, 15 * 60 * 1000);
+      }).catch(function () {});
+    });
+  }
+
+  GG.debugShowUpdate = showUpdate;   // used by the tests
+
   /* ---------- start ---------- */
   function startGame() {
     if (started) {
@@ -5741,31 +5849,7 @@ ul.tips li{margin-bottom:3px}
 
     requestAnimationFrame(function (t) { lastTime = t; loop(t); });
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js').then(function (reg) {
-          function offer(worker) {
-            if (!worker) return;
-            var btn = $('btn-update');
-            btn.classList.remove('hidden');
-            btn.onclick = function () {
-              btn.textContent = 'Updating\u2026';
-              worker.postMessage({ type: 'SKIP_WAITING' });
-              setTimeout(function () { location.reload(); }, 500);
-            };
-          }
-          if (reg.waiting) offer(reg.waiting);
-          reg.addEventListener('updatefound', function () {
-            var w = reg.installing;
-            if (!w) return;
-            w.addEventListener('statechange', function () {
-              if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w);
-            });
-          });
-          setInterval(function () { reg.update().catch(function () {}); }, 60000);
-        }).catch(function () {});
-      });
-    }
+    setupUpdates();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
