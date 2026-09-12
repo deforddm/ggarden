@@ -193,6 +193,28 @@ ul.tips li{margin-bottom:3px}
   font-size:17px;font-weight:bold;font-family:var(--font);padding:0}
 #menu-update[hidden]{display:none!important}
 
+/* ---------- settings, guest and what's new ---------- */
+.set-h{font-size:15px;margin:14px 0 6px;color:var(--ink);border-bottom:2px solid #ece0c6;padding-bottom:4px}
+.set-h:first-child{margin-top:0}
+.slide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;margin:10px 0}
+.slide span{font-weight:bold;font-size:14px}
+.slide em{font-style:normal;font-weight:bold;font-size:13px;color:var(--ink2);min-width:42px;text-align:right}
+.slide input[type=range]{grid-column:1/-1;width:100%;height:30px;accent-color:var(--green);background:transparent}
+.danger-h{color:#a33;border-bottom-color:#f0cfcf}
+.danger{background:#fdeeee;border:2px solid #f0cfcf;border-radius:14px;padding:10px}
+.danger .btn{background:#fff;border-color:#e8b8b8;box-shadow:0 3px 0 #e8b8b8;color:#a33}
+.danger .btn.pink{background:var(--pink);border-color:#cf6f8f;color:#fff;box-shadow:0 3px 0 #cf6f8f}
+.danger .btn.pink.arming{background:#d94a6a;border-color:#a83550;box-shadow:0 3px 0 #a83550}
+.guest-banner{background:#eef4ff;border:2px solid #c4d4f0;border-radius:14px;padding:10px;margin-bottom:12px}
+.guest-banner b{color:#3a5a9a}
+.chip.guest{background:rgba(200,222,255,.95);color:#2f4f8a}
+#news-art{width:100%;height:92px;display:block;border-radius:16px;background:linear-gradient(#cfeeff,#9ed98a)}
+.newsver{font-size:13px;font-weight:bold;color:var(--ink2);margin:12px 0 2px}
+.newsver:first-of-type{margin-top:10px}
+.newsline{background:var(--cream2);border-radius:14px;padding:10px 12px;margin:6px 0;font-size:14.5px;line-height:1.45}
+.newsline b{color:var(--green-d)}
+#title-card .btn#btn-guest{background:#e8eef8;border-color:#c4d4f0;box-shadow:0 3px 0 #c4d4f0;color:#3a5a9a}
+
 </style>
 </head>
 <body>
@@ -202,6 +224,7 @@ ul.tips li{margin-bottom:3px}
   <div id="hud">
     <div id="hud-top">
       <div class="chip" id="chip-place">Flower Garden</div>
+      <div class="chip guest" id="chip-guest" hidden>Guest visit</div>
       <div class="chip" id="chip-time">Day 1 &middot; 8:00am</div>
       <div class="chip gold" id="chip-sparkles">&#10022; 0</div>
       <button id="btn-menu" aria-label="Menu">&#9776;</button>
@@ -224,6 +247,8 @@ ul.tips li{margin-bottom:3px}
       <canvas id="title-canvas" width="680" height="300"></canvas>
       <button class="btn primary" id="btn-play">Play</button>
       <button class="btn" id="btn-howto">How to play</button>
+      <button class="btn" id="btn-settings">Settings</button>
+      <button class="btn" id="btn-guest">Let a friend play</button>
 
       <div id="update-bar" class="update-bar" role="status" hidden>
         <canvas id="update-icon" width="88" height="88"></canvas>
@@ -250,11 +275,90 @@ ul.tips li{margin-bottom:3px}
           <li>Out at <b>The Tidepools</b>, past Shell Beach, you can wade into the rock pools and net crabs, sea stars, urchins and sea slugs with your net. (In a real rock pool we look and put everything back exactly where we found it.)</li>
           <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
           <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are three kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, and a <b>hybrid tank</b> with a grassy bank above the water that holds both.</li>
-          <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
+          <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them in the decoration box by your bed &mdash; there are things for every kind of tank, from ferns and fairy houses to coral, sea grass and a treasure chest.</li>
+          <li><b>Settings</b> (on the title screen, or in the Garden Menu) turns the music, the garden sounds and the beeps up and down on their own.</li>
+          <li>A friend can have a turn with <b>Let a friend play</b> on the title screen. They get a garden of their own to explore, and yours is kept completely safe until they finish.</li>
         </ul>
         <p class="note">On a computer you can use the arrow keys (or WASD) to walk, hold <b>shift</b> to tiptoe, and press <b>space</b> to swing.</p>
       </div>
       <footer><button class="btn primary grow" data-close="screen-help">Got it</button></footer>
+    </div>
+  </div>
+
+  <!-- settings -->
+  <div class="panel hidden" id="screen-settings">
+    <div class="sheet">
+      <header><h2>Settings</h2><button class="x" data-close="screen-settings">&times;</button></header>
+      <div class="body">
+        <div id="guest-banner" class="guest-banner" hidden>
+          <b>A friend is visiting</b>
+          <div class="note">This is a guest garden. Guin's own garden is saved and untouched.</div>
+        </div>
+
+        <h3 class="set-h">Sound</h3>
+        <label class="slide" for="set-music"><span>Music</span><em id="set-music-val">50%</em>
+          <input type="range" id="set-music" min="0" max="100" step="5" value="50"></label>
+        <label class="slide" for="set-amb"><span>Garden sounds</span><em id="set-amb-val">70%</em>
+          <input type="range" id="set-amb" min="0" max="100" step="5" value="70"></label>
+        <label class="slide" for="set-sfx"><span>Beeps and splashes</span><em id="set-sfx-val">80%</em>
+          <input type="range" id="set-sfx" min="0" max="100" step="5" value="80"></label>
+        <button class="btn" id="set-mute" style="width:100%;margin-top:4px">Turn all sound off</button>
+        <p class="note" style="margin-top:6px">Birds sing in the morning, crickets after dark, and you can
+          hear the river and the waves when you are near them.</p>
+
+        <h3 class="set-h">Your garden</h3>
+        <button class="btn" id="set-whatsnew" style="width:100%;margin-bottom:8px">What&rsquo;s new in this version</button>
+        <div class="note" id="set-version" style="text-align:center;margin-bottom:12px"></div>
+
+        <h3 class="set-h danger-h">Careful</h3>
+        <div class="danger">
+          <div class="note" id="danger-note">Starting again forgets every bug and fish, every tank and
+            all your sparkles. There is no way to get them back.</div>
+          <button class="btn small" id="set-reset" style="margin-top:8px">Start a brand new garden&hellip;</button>
+          <div id="reset-step2" hidden style="margin-top:8px">
+            <div class="note"><b id="reset-q">Are you sure? Guin has <span id="reset-count">0</span> bugs
+              and fish in her books.</b></div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn small grow" id="reset-no">No, keep my garden</button>
+              <button class="btn small pink" id="reset-yes">Yes, forget it all</button>
+            </div>
+            <div class="note" style="margin-top:6px">Hold the pink button down for three seconds.</div>
+          </div>
+        </div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-settings">Done</button></footer>
+    </div>
+  </div>
+
+  <!-- what's new after an update -->
+  <div class="panel hidden" id="screen-news">
+    <div class="sheet">
+      <header><h2 id="news-title">What&rsquo;s new</h2><button class="x" data-close="screen-news">&times;</button></header>
+      <div class="body">
+        <canvas id="news-art" width="640" height="180"></canvas>
+        <div id="news-body"></div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-news">Let&rsquo;s go!</button></footer>
+    </div>
+  </div>
+
+  <!-- let a friend play -->
+  <div class="panel hidden" id="screen-guest">
+    <div class="sheet">
+      <header><h2>Let a friend play</h2><button class="x" data-close="screen-guest">&times;</button></header>
+      <div class="body">
+        <p class="note">A visitor gets a garden of their very own to explore. Nothing they do
+          changes Guin&rsquo;s garden &mdash; her bugs, fish, tanks and sparkles are kept safe and
+          separate, and they come straight back when the visit ends.</p>
+        <p class="note"><b>A visit is not saved forever.</b> When you finish the visit the guest
+          garden is cleared out, ready for the next friend.</p>
+        <label class="slide" style="margin-top:10px" for="guest-name"><span>Friend&rsquo;s name</span></label>
+        <input type="text" id="guest-name" maxlength="14" placeholder="Friend">
+      </div>
+      <footer>
+        <button class="btn grow" data-close="screen-guest">Not now</button>
+        <button class="btn primary grow" id="guest-start">Start the visit</button>
+      </footer>
     </div>
   </div>
 
@@ -273,8 +377,8 @@ ul.tips li{margin-bottom:3px}
         <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house.</div>
         <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Bug Book</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
-        <button class="btn grow" id="menu-mute" style="width:100%;margin-bottom:8px">Sound: on</button>
-        <button class="btn grow" id="menu-reset" style="width:100%">Start a brand new garden</button>
+        <button class="btn grow" id="menu-settings" style="width:100%;margin-bottom:8px">Settings</button>
+        <button class="btn grow pink" id="menu-endguest" style="width:100%" hidden>Finish the visit</button>
       </div>
       <footer><button class="btn primary grow" data-close="screen-menu">Back to the garden</button></footer>
     </div>
@@ -451,10 +555,18 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/core/save.js ==== */
-/* Saving and loading the player's garden. */
+/* Saving and loading the player's garden.
+
+   There are two slots. The MAIN slot is Guin's garden and it is the only one
+   that ever loads on its own. The GUEST slot is a short visit for a friend:
+   it starts empty every time, saves to a key of its own, and can be thrown
+   away without touching Guin's. Nothing a guest does can reach the main
+   save - they are separate keys and only one is loaded at a time. */
 (function (GG) {
   'use strict';
   var KEY = 'guins-garden-save-v1';
+  var GUEST_KEY = 'guins-garden-guest-v1';
+  var SLOT_KEY = 'guins-garden-slot';
 
   function fresh() {
     return {
@@ -475,16 +587,81 @@ ul.tips li{margin-bottom:3px}
       seenHouseTip: false,
       seenBeeTip: false,
       stings: 0,
-      muted: false
+      muted: false,
+      settings: { music: 0.5, ambience: 0.7, sfx: 0.8 },
+      version: null,            // the build she last played; drives "What's new"
+      guest: false,
+      guestName: ''
     };
   }
 
   GG.Save = {
     data: fresh(),
     fresh: fresh,
+    slot: 'main',
+
+    key: function () { return this.slot === 'guest' ? GUEST_KEY : KEY; },
+
+    /* Which slot was in use last time the page was open? A guest visit is
+       remembered only so a reload mid-visit does not dump them into Guin's
+       garden; "Back to Guin's garden" clears it. */
+    rememberedSlot: function () {
+      try { return localStorage.getItem(SLOT_KEY) === 'guest' ? 'guest' : 'main'; }
+      catch (e) { return 'main'; }
+    },
+
+    setSlot: function (slot) {
+      this.slot = (slot === 'guest') ? 'guest' : 'main';
+      try { localStorage.setItem(SLOT_KEY, this.slot); } catch (e) {}
+    },
+
+    /* Start a guest visit: a brand new garden in the guest slot. Guin's save
+       is not read, not written, and not touched in any way. */
+    startGuest: function (name) {
+      this.setSlot('guest');
+      this.data = fresh();
+      this.data.guest = true;
+      this.data.name = name || 'Friend';
+      this.data.guestName = this.data.name;
+      this.data.version = GG.VERSION || null;
+      this.data.seenIntro = true;
+      this.data.settings = this.readSettings();
+      this.save();
+      return this.data;
+    },
+
+    /* End the visit and go back to Guin's garden. The guest's garden is
+       wiped, because it was only ever a visit. */
+    endGuest: function () {
+      try { localStorage.removeItem(GUEST_KEY); } catch (e) {}
+      this.setSlot('main');
+      return this.load();
+    },
+
+    isGuest: function () { return this.slot === 'guest'; },
+
+    /* Sound settings follow the device, not the garden, so a guest visit
+       does not turn the music off for Guin (or leave it blaring). */
+    readSettings: function () {
+      var base = { music: 0.5, ambience: 0.7, sfx: 0.8 };
+      try {
+        var raw = localStorage.getItem('guins-garden-settings');
+        if (raw) {
+          var v = JSON.parse(raw);
+          for (var k in base) if (typeof v[k] === 'number') base[k] = GG.clamp(v[k], 0, 1);
+        }
+      } catch (e) {}
+      return base;
+    },
+    writeSettings: function () {
+      try {
+        localStorage.setItem('guins-garden-settings', JSON.stringify(this.data.settings));
+      } catch (e) {}
+    },
+
     load: function () {
       try {
-        var raw = localStorage.getItem(KEY);
+        var raw = localStorage.getItem(this.key());
         if (raw) {
           var d = JSON.parse(raw);
           var base = fresh();
@@ -508,12 +685,22 @@ ul.tips li{margin-bottom:3px}
           this.data = d;
         }
       } catch (e) { this.data = fresh(); }
+      this.data.guest = (this.slot === 'guest');
+      this.data.settings = this.readSettings();
       return this.data;
     },
     save: function () {
-      try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {}
+      try { localStorage.setItem(this.key(), JSON.stringify(this.data)); } catch (e) {}
     },
-    reset: function () { this.data = fresh(); this.save(); },
+    /* Wipe THIS slot only. */
+    reset: function () {
+      var keep = this.data.settings;
+      this.data = fresh();
+      this.data.settings = keep || this.readSettings();
+      this.data.guest = (this.slot === 'guest');
+      this.data.version = GG.VERSION || null;
+      this.save();
+    },
     has: function (id) { return !!this.data.caught[id]; },
     countOf: function (id) { var c = this.data.caught[id]; return c ? c.count : 0; },
     totalSpecies: function () { return Object.keys(this.data.caught).length; },
@@ -697,23 +884,76 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/core/audio.js ==== */
-/* Tiny synthesised sounds - no audio files, so the game stays small and works offline. */
+/* Tiny synthesised sounds - no audio files, so the game stays small and works offline.
+   Three buses hang off the master: effects, music and ambience, each with its own
+   volume in Settings. Everything below is generated; nothing is downloaded. */
 (function (GG) {
   'use strict';
   var ctx = null;
+  var master = null, busSfx = null, busMusic = null, busAmb = null;
+
+  function vol(which) {
+    var s = (GG.Save && GG.Save.data && GG.Save.data.settings) || {};
+    if (GG.Save && GG.Save.data && GG.Save.data.muted) return 0;
+    var v = s[which];
+    return (v == null ? (which === 'music' ? 0.5 : 0.7) : v);
+  }
 
   function ac() {
     if (!ctx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       ctx = new AC();
+      master = ctx.createGain(); master.gain.value = 1; master.connect(ctx.destination);
+      busSfx = ctx.createGain(); busSfx.connect(master);
+      busMusic = ctx.createGain(); busMusic.connect(master);
+      busAmb = ctx.createGain(); busAmb.connect(master);
+      GG.Audio.applyVolumes();
     }
     if (ctx.state === 'suspended') ctx.resume();
     return ctx;
   }
 
+  /* A shared strip of noise, so we are not allocating buffers all day. */
+  var noiseBuf = null;
+  function noiseBuffer(a) {
+    if (!noiseBuf) {
+      var n = a.sampleRate * 3;
+      noiseBuf = a.createBuffer(1, n, a.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      var last = 0;
+      for (var i = 0; i < n; i++) {
+        var white = Math.random() * 2 - 1;
+        last = (last + 0.02 * white) / 1.02;   // brown-ish, easier on the ears
+        d[i] = last * 3.2;
+      }
+    }
+    return noiseBuf;
+  }
+
+  GG.Audio = {
+    ctx: function () { return ctx; },
+    ready: function () { return !!ctx; },
+    bus: function (which) {
+      ac();
+      return which === 'music' ? busMusic : (which === 'ambience' ? busAmb : busSfx);
+    },
+    noiseBuffer: function () { var a = ac(); return a ? noiseBuffer(a) : null; },
+    applyVolumes: function () {
+      if (!ctx) return;
+      var t = ctx.currentTime;
+      busSfx.gain.setTargetAtTime(vol('sfx'), t, 0.05);
+      busMusic.gain.setTargetAtTime(vol('music') * 0.8, t, 0.3);
+      busAmb.gain.setTargetAtTime(vol('ambience') * 0.75, t, 0.3);
+    },
+    /* Ducked while a panel is open, so menus are quiet. */
+    duck: function (on) {
+      if (!ctx) return;
+      master.gain.setTargetAtTime(on ? 0.45 : 1, ctx.currentTime, 0.12);
+    }
+  };
+
   function tone(freq, dur, type, vol, slideTo, delay) {
-    if (GG.Save.data.muted) return;
     var a = ac(); if (!a) return;
     var t0 = a.currentTime + (delay || 0);
     var o = a.createOscillator(), g = a.createGain();
@@ -723,12 +963,11 @@ ul.tips li{margin-bottom:3px}
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(vol == null ? 0.12 : vol, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(a.destination);
+    o.connect(g); g.connect(busSfx);
     o.start(t0); o.stop(t0 + dur + 0.02);
   }
 
   function noise(dur, vol, freq) {
-    if (GG.Save.data.muted) return;
     var a = ac(); if (!a) return;
     var n = Math.floor(a.sampleRate * dur);
     var buf = a.createBuffer(1, n, a.sampleRate);
@@ -737,12 +976,12 @@ ul.tips li{margin-bottom:3px}
     var s = a.createBufferSource(); s.buffer = buf;
     var f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq || 1400;
     var g = a.createGain(); g.gain.value = vol == null ? 0.12 : vol;
-    s.connect(f); f.connect(g); g.connect(a.destination);
+    s.connect(f); f.connect(g); g.connect(busSfx);
     s.start();
   }
 
   GG.Sfx = {
-    unlock: function () { ac(); },
+    unlock: function () { ac(); GG.Audio.applyVolumes(); },
     swing: function () { noise(0.14, 0.07, 2200); },
     step: function () { noise(0.05, 0.02, 700); },
     catchSmall: function () { tone(660, 0.10, 'triangle', 0.13); tone(880, 0.14, 'triangle', 0.11, null, 0.08); },
@@ -770,6 +1009,450 @@ ul.tips li{margin-bottom:3px}
       noise(0.16, 0.07, 900);
       tone(300, 0.28, 'sine', 0.06, 190, 0.1);
     }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/core/music.js ==== */
+/* Guin's Garden - the music.
+
+   There is no music file. A little generative music box plays a gentle
+   pentatonic tune over soft chords, and the mood follows the time of day:
+   bright and skippy in the morning, calm through the afternoon, warm at
+   sunset, slow and starry at night. Indoors it goes soft and close.
+
+   Notes are scheduled a second ahead of the clock so nothing stutters when
+   the game is busy drawing. */
+(function (GG) {
+  'use strict';
+
+  /* A four-bar chord loop per mood, as scale degrees of a pentatonic scale.
+     keyHz is the root; the pentatonic steps are the safe, always-pretty ones. */
+  var PENT = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
+
+  var MOODS = {
+    morning: { key: 293.66, bpm: 96, chords: [[0, 4, 7], [5, 9, 12], [7, 11, 14], [5, 9, 12]],
+      lead: 0.82, pad: 0.30, bell: 0.30, wave: 'triangle' },
+    day: { key: 261.63, bpm: 84, chords: [[0, 4, 7], [-3, 2, 5], [5, 9, 12], [2, 7, 11]],
+      lead: 0.70, pad: 0.34, bell: 0.22, wave: 'triangle' },
+    evening: { key: 233.08, bpm: 70, chords: [[0, 4, 7], [-2, 3, 7], [-5, 0, 5], [-3, 2, 7]],
+      lead: 0.58, pad: 0.42, bell: 0.26, wave: 'sine' },
+    night: { key: 196.00, bpm: 58, chords: [[0, 3, 7], [-4, 0, 5], [-2, 3, 7], [-5, 2, 7]],
+      lead: 0.44, pad: 0.50, bell: 0.34, wave: 'sine' },
+    indoors: { key: 261.63, bpm: 64, chords: [[0, 4, 7], [-3, 0, 5], [2, 5, 9], [-5, 0, 4]],
+      lead: 0.50, pad: 0.44, bell: 0.30, wave: 'sine' },
+    title: { key: 293.66, bpm: 88, chords: [[0, 4, 7], [5, 9, 12], [2, 7, 11], [-3, 2, 5]],
+      lead: 0.78, pad: 0.34, bell: 0.30, wave: 'triangle' }
+  };
+
+  function semis(n) { return Math.pow(2, n / 12); }
+
+  var M = GG.Music = {
+    playing: false,
+    mood: 'title',
+    _next: 0,
+    _step: 0,
+    _timer: null,
+    _out: null,
+
+    /* Start (or quietly restart) the music box. */
+    start: function () {
+      var a = GG.Audio.ctx() || (GG.Audio.bus('music'), GG.Audio.ctx());
+      if (!a) return;
+      if (this.playing) return;
+      this.playing = true;
+      this._out = GG.Audio.bus('music');
+      this._next = a.currentTime + 0.15;
+      this._step = 0;
+      var self = this;
+      this._timer = setInterval(function () { self._schedule(); }, 120);
+      this._schedule();
+    },
+
+    stop: function () {
+      this.playing = false;
+      if (this._timer) { clearInterval(this._timer); this._timer = null; }
+    },
+
+    /* Called whenever the place or the hour changes. Takes effect at the
+       start of the next bar, so it never cuts a phrase off. */
+    setMood: function (m) {
+      if (!MOODS[m] || this.mood === m) return;
+      this.mood = m;
+    },
+
+    moodForNow: function (scene) {
+      if (scene === 'title') return 'title';
+      if (scene === 'house') return 'indoors';
+      return GG.Time.phase();
+    },
+
+    _schedule: function () {
+      var a = GG.Audio.ctx();
+      if (!a || !this.playing) return;
+      var mood = MOODS[this.mood] || MOODS.day;
+      var spb = 60 / mood.bpm;          // one beat
+      var stepLen = spb / 2;            // eighth notes
+      while (this._next < a.currentTime + 1.1) {
+        this._voice(mood, this._next, this._step);
+        this._next += stepLen;
+        this._step++;
+      }
+    },
+
+    _voice: function (mood, t, step) {
+      var a = GG.Audio.ctx();
+      var inBar = step % 8;
+      var bar = Math.floor(step / 8) % 4;
+      var phrase = Math.floor(step / 32) % 4;
+      var chord = mood.chords[bar];
+      var root = mood.key;
+
+      /* the pad: one long soft chord per bar */
+      if (inBar === 0) {
+        for (var i = 0; i < chord.length; i++) {
+          this._note(root * semis(chord[i]) * 0.5, t, spbOf(mood) * 4.1,
+            'sine', mood.pad * (i === 0 ? 0.5 : 0.30), 0.5);
+        }
+      }
+
+      /* the bass, on the one and the three */
+      if (inBar === 0 || inBar === 4) {
+        this._note(root * semis(chord[0]) * 0.25, t, spbOf(mood) * 1.3,
+          'sine', mood.pad * 0.55, 0.02);
+      }
+
+      /* the tune: a little pentatonic walk that changes every phrase */
+      var pattern = [
+        [0, null, 2, 3, null, 2, 4, null],
+        [4, null, 3, null, 2, 1, null, 0],
+        [2, 3, null, 4, null, 5, 4, null],
+        [3, null, 2, null, 1, null, 0, null]
+      ][phrase];
+      var deg = pattern[inBar];
+      if (deg != null) {
+        var lift = (bar === 1 || bar === 3) ? 1 : 0;
+        var n = PENT[GG.clamp(deg + lift + 3, 0, PENT.length - 1)];
+        this._note(root * semis(n + chord[0]), t, spbOf(mood) * 0.62,
+          mood.wave, mood.lead * 0.34, 0.012);
+      }
+
+      /* a sparkle on the off-beat, once a bar */
+      if (inBar === 6 && (bar % 2 === 1)) {
+        var hi = PENT[6 + (bar % 3)];
+        this._note(root * semis(hi + chord[0]) * 2, t + 0.01, 0.7,
+          'triangle', mood.bell * 0.16, 0.005);
+      }
+      void a;
+    },
+
+    _note: function (freq, t, dur, type, gain, attack) {
+      var a = GG.Audio.ctx();
+      if (!a || !this._out || gain <= 0) return;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(gain, t + (attack || 0.01));
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(this._out);
+      o.start(t); o.stop(t + dur + 0.05);
+    }
+  };
+
+  function spbOf(mood) { return 60 / mood.bpm; }
+})(window.GG = window.GG || {});
+
+/* ==== src/core/ambience.js ==== */
+/* Guin's Garden - the sound of the place she is standing in.
+
+   Layers of synthesised sound, faded up and down as she walks about and as
+   the hours pass. Nothing is a recording: wind and surf are filtered noise,
+   birds and crickets and frogs are little shaped tones fired at random.
+
+   Each layer has a target level; every frame the real level eases toward it,
+   so walking from the meadow down to the beach is a slow cross-fade rather
+   than a switch. */
+(function (GG) {
+  'use strict';
+
+  /* ---------- one continuous noise layer ---------- */
+  function Bed(opts) {
+    this.opts = opts;
+    this.level = 0;
+    this.target = 0;
+    this.nodes = null;
+  }
+  Bed.prototype.build = function () {
+    var a = GG.Audio.ctx(); if (!a || this.nodes) return;
+    var buf = GG.Audio.noiseBuffer(); if (!buf) return;
+    var src = a.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    var filt = a.createBiquadFilter();
+    filt.type = this.opts.filter || 'lowpass';
+    filt.frequency.value = this.opts.freq;
+    if (this.opts.q) filt.Q.value = this.opts.q;
+    var gain = a.createGain();
+    gain.gain.value = 0;
+    src.connect(filt); filt.connect(gain); gain.connect(GG.Audio.bus('ambience'));
+    src.start(a.currentTime + Math.random() * 0.2);
+    this.nodes = { src: src, filt: filt, gain: gain };
+    /* a slow swell, so surf breathes and wind gusts */
+    if (this.opts.swell) {
+      var lfo = a.createOscillator(), depth = a.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = this.opts.swell;
+      depth.gain.value = this.opts.swellDepth || 0.4;
+      lfo.connect(depth); depth.connect(gain.gain);
+      lfo.start();
+      this.nodes.lfo = lfo;
+    }
+  };
+  Bed.prototype.set = function (v) { this.target = v; };
+  Bed.prototype.step = function (dt) {
+    var a = GG.Audio.ctx(); if (!a) return;
+    if (this.target > 0.001 && !this.nodes) this.build();
+    if (!this.nodes) return;
+    var k = Math.min(1, dt * 0.9);
+    this.level += (this.target - this.level) * k;
+    this.nodes.gain.gain.setTargetAtTime(this.level * this.opts.max, a.currentTime, 0.08);
+  };
+
+  /* ---------- a voice that chirps now and then ---------- */
+  function Caller(opts) {
+    this.opts = opts;
+    this.level = 0;
+    this.target = 0;
+    this.timer = GG.rand(0.5, opts.gap[1]);
+  }
+  Caller.prototype.set = function (v) { this.target = v; };
+  Caller.prototype.step = function (dt) {
+    this.level += (this.target - this.level) * Math.min(1, dt * 0.8);
+    if (this.level < 0.04) return;
+    this.timer -= dt * (0.5 + this.level);
+    if (this.timer > 0) return;
+    this.timer = GG.rand(this.opts.gap[0], this.opts.gap[1]);
+    this.opts.play(this.level);
+  };
+
+  /* little shaped tones */
+  function blip(freq, dur, type, gain, slide, delay, wobble) {
+    var a = GG.Audio.ctx(); if (!a || gain <= 0.0005) return;
+    var t = a.currentTime + (delay || 0);
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    if (wobble) {
+      var lfo = a.createOscillator(), d = a.createGain();
+      lfo.frequency.value = wobble; d.gain.value = freq * 0.05;
+      lfo.connect(d); d.connect(o.frequency); lfo.start(t); lfo.stop(t + dur + 0.05);
+    }
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), t + dur * 0.18);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(GG.Audio.bus('ambience'));
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  function rasp(freq, dur, gain, pulses) {
+    var a = GG.Audio.ctx(); if (!a || gain <= 0.0005) return;
+    var t = a.currentTime;
+    for (var i = 0; i < pulses; i++) {
+      blip(freq * (1 + (i % 2) * 0.02), 0.035, 'square', gain * 0.35, null, i * (dur / pulses));
+    }
+  }
+
+  var A = GG.Ambience = {
+    on: false,
+    beds: null,
+    callers: null,
+
+    init: function () {
+      if (this.beds) return;
+      this.beds = {
+        wind:   new Bed({ freq: 420, max: 0.055, swell: 0.07, swellDepth: 0.5 }),
+        leaves: new Bed({ freq: 1900, filter: 'bandpass', q: 0.7, max: 0.030, swell: 0.11, swellDepth: 0.6 }),
+        stream: new Bed({ freq: 2400, filter: 'bandpass', q: 0.6, max: 0.055, swell: 0.9, swellDepth: 0.35 }),
+        river:  new Bed({ freq: 900, filter: 'bandpass', q: 0.5, max: 0.060, swell: 0.35, swellDepth: 0.4 }),
+        surf:   new Bed({ freq: 700, max: 0.115, swell: 0.115, swellDepth: 0.85 }),
+        rain:   new Bed({ freq: 3200, filter: 'highpass', max: 0.085, swell: 0.25, swellDepth: 0.3 }),
+        hearth: new Bed({ freq: 280, max: 0.045, swell: 0.5, swellDepth: 0.5 })
+      };
+      this.callers = {
+        /* morning and daytime birdsong: two or three quick rising notes */
+        birds: new Caller({ gap: [1.6, 6.5], play: function (v) {
+          var base = GG.rand(1500, 2600);
+          var n = GG.randInt(2, 4);
+          for (var i = 0; i < n; i++) {
+            blip(base * (1 + i * 0.12), GG.rand(0.07, 0.13), 'sine',
+              0.020 * v, base * (1 + i * 0.12) * GG.rand(1.1, 1.5), i * 0.09, 26);
+          }
+        } }),
+        /* one deeper, slower bird for the woods */
+        dove: new Caller({ gap: [5, 15], play: function (v) {
+          blip(560, 0.26, 'sine', 0.016 * v, 470, 0);
+          blip(500, 0.34, 'sine', 0.013 * v, 440, 0.34);
+        } }),
+        /* crickets after dark */
+        crickets: new Caller({ gap: [0.55, 1.5], play: function (v) {
+          rasp(GG.rand(4200, 5000), 0.16, 0.012 * v, 5);
+        } }),
+        /* frogs by the pond at night */
+        frogs: new Caller({ gap: [1.8, 6], play: function (v) {
+          blip(GG.rand(150, 210), 0.22, 'sawtooth', 0.020 * v, null, 0, 22);
+        } }),
+        /* gulls over the sea */
+        gulls: new Caller({ gap: [4, 13], play: function (v) {
+          var f = GG.rand(900, 1200);
+          for (var i = 0; i < 3; i++) {
+            blip(f, 0.19, 'sawtooth', 0.011 * v, f * 1.5, i * 0.26, 14);
+          }
+        } }),
+        /* a bee or two humming past on a warm afternoon */
+        hum: new Caller({ gap: [7, 20], play: function (v) {
+          blip(GG.rand(190, 240), 1.1, 'sawtooth', 0.008 * v, GG.rand(210, 260), 0, 30);
+        } })
+      };
+    },
+
+    start: function () {
+      this.init();
+      GG.Audio.bus('ambience');
+      this.on = true;
+    },
+
+    stop: function () {
+      this.on = false;
+      if (!this.beds) return;
+      for (var k in this.beds) this.beds[k].set(0);
+    },
+
+    /* Called every frame with where she is and what she is doing. */
+    update: function (dt, scene, x, y) {
+      if (!this.beds) return;
+      var b = this.beds, c = this.callers;
+      var want = { wind: 0, leaves: 0, stream: 0, river: 0, surf: 0, rain: 0, hearth: 0 };
+      var call = { birds: 0, dove: 0, crickets: 0, frogs: 0, gulls: 0, hum: 0 };
+
+      if (!this.on) {
+        for (var z in b) b[z].set(0);
+        for (var z2 in c) c[z2].set(0);
+        this._step(dt);
+        return;
+      }
+
+      if (scene === 'house') {
+        want.hearth = 1;
+        want.wind = 0.18;
+        want.rain = GG.Time.rain ? 0.25 : 0;
+      } else if (scene === 'title') {
+        want.wind = 0.5;
+        want.leaves = 0.5;
+        call.birds = 0.7;
+      } else {
+        var W = GG.World;
+        var phase = GG.Time.phase();
+        var biome = W.biomeRaw ? W.biomeRaw(x, y) : 'meadow';
+
+        want.wind = 0.55;
+        want.rain = GG.Time.rain ? 1 : 0;
+
+        /* how close is the nearest water of each kind? the distance fields
+           are in 8px cells, so 30 cells is about 240 pixels */
+        var i = W.maskIndex ? W.maskIndex(x, y) : -1;
+        function near(field, reach) {
+          if (i < 0 || !W[field]) return 0;
+          return GG.clamp(1 - W[field][i] / reach, 0, 1);
+        }
+        want.surf = Math.pow(near('dSea', 46), 1.4);
+        want.river = Math.pow(near('dRiver', 26), 1.5) * 0.9;
+        want.stream = want.river * 0.8;
+        if (biome === 'forest') { want.leaves = 0.85; }
+        else if (biome === 'orchard' || biome === 'garden') { want.leaves = 0.45; }
+        else { want.leaves = 0.22; }
+
+        var pondNear = (W.waterKind && W.dShore && i >= 0) ? near('dShore', 40) : 0;
+        var atPond = (W.placeName && W.placeName(x, y) === 'Lily Pond');
+
+        if (phase === 'morning') { call.birds = 1; call.dove = 0.6; }
+        else if (phase === 'day') { call.birds = 0.6; call.dove = 0.5; call.hum = 0.8; }
+        else if (phase === 'evening') { call.birds = 0.25; call.crickets = 0.55; }
+        else { call.crickets = 1; }
+
+        if (GG.Time.rain) { call.birds *= 0.25; call.hum = 0; }
+        if (atPond && (phase === 'evening' || phase === 'night')) call.frogs = 0.9;
+        else if (pondNear > 0.5 && phase === 'night') call.frogs = 0.5;
+        call.gulls = want.surf * (phase === 'night' ? 0.25 : 1);
+      }
+
+      for (var k in want) b[k].set(want[k]);
+      for (var n in call) c[n].set(call[n]);
+      this._step(dt);
+    },
+
+    _step: function (dt) {
+      var d = Math.min(dt, 0.1);
+      for (var k in this.beds) this.beds[k].step(d);
+      for (var n in this.callers) this.callers[n].step(d);
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/data/changelog.js ==== */
+/* What changed, in words Guin can read.
+
+   When the game starts and the saved version is older than this one, the
+   "What's new" card appears with everything she has missed since. Add a new
+   entry at the TOP whenever you ship, and bump GG.VERSION to match. */
+(function (GG) {
+  'use strict';
+
+  GG.VERSION = '1.9.0';
+
+  GG.CHANGELOG = [
+    {
+      v: '1.9.0', title: 'Music, settings and a friend pass',
+      lines: [
+        'There is music now, and the garden makes its own sounds: birds in the morning, crickets after dark, frogs by the pond, the river burbling and waves on the beach.',
+        'A new Settings button lets you turn the music, the garden sounds and the beeps up and down on their own.',
+        'A friend can tap "Let a friend play" on the title screen for a little visit. They get their own garden to mess about in, and yours is kept completely safe.',
+        'Lots of new things for your tanks: sea plants and coral for fish, a rock pool with a starfish for the hybrid tanks, a fairy house, a teacup, a driftwood branch and more.',
+        'The "start a brand new garden" button has moved into Settings and now asks you twice, so nobody can wipe your garden by accident.'
+      ]
+    },
+    {
+      v: '1.8.0', title: 'Rivers, the beach and rock pools',
+      lines: [
+        'The garden is twice as big! A stream starts up in the hills, grows into a river, and opens into Gull Inlet where it meets the sea.',
+        'Shell Beach and The Tidepools are past the inlet. You can wade into the rock pools and net hermit crabs, sea stars, urchins and sea slugs.',
+        '15 new fish, each in its own kind of water, and 20 new creatures to find.'
+      ]
+    },
+    {
+      v: '1.7.0', title: 'Lots more bugs',
+      lines: [
+        '34 new bugs to find, including worms, centipedes, millipedes, lacewings, cicadas, lanternflies and the beautiful Picasso bug.'
+      ]
+    }
+  ];
+
+  /* Everything newer than `since`, newest first. */
+  GG.changesSince = function (since) {
+    if (!since) return [];
+    var out = [];
+    for (var i = 0; i < GG.CHANGELOG.length; i++) {
+      if (GG.cmpVersion(GG.CHANGELOG[i].v, since) > 0) out.push(GG.CHANGELOG[i]);
+    }
+    return out;
+  };
+
+  GG.cmpVersion = function (a, b) {
+    var pa = String(a).split('.'), pb = String(b).split('.');
+    for (var i = 0; i < 3; i++) {
+      var x = parseInt(pa[i] || '0', 10), y = parseInt(pb[i] || '0', 10);
+      if (x !== y) return x < y ? -1 : 1;
+    }
+    return 0;
   };
 })(window.GG = window.GG || {});
 
@@ -5152,27 +5835,409 @@ ul.tips li{margin-bottom:3px}
     c.fillRect(x - 2 * s, y - 4 * s, 4 * s, 4 * s);
   };
 
+  /* ---------- things for a fish tank ---------- */
+
+  D.seagrass = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.1) * 4 * s;
+    c.strokeStyle = '#3f9a6a'; c.lineCap = 'round';
+    for (var i = -2; i <= 2; i++) {
+      c.lineWidth = (3.4 - Math.abs(i) * 0.5) * s;
+      c.strokeStyle = i % 2 ? '#3f9a6a' : '#56b884';
+      c.beginPath();
+      c.moveTo(x + i * 5 * s, y);
+      c.quadraticCurveTo(x + i * 7 * s + sway * 0.5, y - 18 * s,
+        x + i * 9 * s + sway, y - (34 - Math.abs(i) * 6) * s);
+      c.stroke();
+    }
+  };
+
+  D.coral = function (c, x, y, s) {
+    c.fillStyle = '#e8746a';
+    ell(c, x, y - 5 * s, 15 * s, 6 * s);
+    c.strokeStyle = '#ef8f84'; c.lineCap = 'round';
+    var arms = [[-9, -22, -14], [0, -30, 2], [9, -24, 14], [-4, -18, -7], [5, -16, 8]];
+    for (var i = 0; i < arms.length; i++) {
+      c.lineWidth = (5 - i * 0.5) * s;
+      c.beginPath();
+      c.moveTo(x + arms[i][0] * s, y - 4 * s);
+      c.quadraticCurveTo(x + arms[i][0] * s, y + arms[i][1] * 0.6 * s,
+        x + arms[i][2] * s, y + arms[i][1] * s);
+      c.stroke();
+    }
+    c.fillStyle = '#ffc2b4';
+    for (var j = 0; j < arms.length; j++) {
+      ell(c, x + arms[j][2] * s, y + arms[j][1] * s, 2.6 * s, 2.6 * s);
+    }
+  };
+
+  D.anemonedeco = function (c, x, y, s, t) {
+    var wig = Math.sin((t || 0) * 1.8);
+    c.fillStyle = '#3f8a5a';
+    ell(c, x, y - 5 * s, 12 * s, 6 * s);
+    c.strokeStyle = '#8fd8a8'; c.lineCap = 'round'; c.lineWidth = 2.4 * s;
+    for (var i = 0; i < 13; i++) {
+      var a = -Math.PI + i * (Math.PI / 12);
+      var w = Math.sin((t || 0) * 1.6 + i) * 2.4 * s;
+      c.beginPath();
+      c.moveTo(x + Math.cos(a) * 6 * s, y - 7 * s);
+      c.quadraticCurveTo(x + Math.cos(a) * 13 * s + w * 0.5, y - 16 * s,
+        x + Math.cos(a) * 15 * s + w, y - 23 * s + Math.sin(a) * 2 * s);
+      c.stroke();
+    }
+    c.fillStyle = '#ffe9a8';
+    for (var j = 0; j < 7; j++) {
+      var b = -Math.PI + 0.3 + j * (Math.PI / 6.5);
+      ell(c, x + Math.cos(b) * 15 * s + wig, y - 23 * s + Math.sin(b) * 2 * s, 1.8 * s, 1.8 * s);
+    }
+  };
+
+  D.bubbler = function (c, x, y, s, t) {
+    var tt = (t || 0);
+    c.fillStyle = '#6b6f78';
+    GG.roundRect(c, x - 7 * s, y - 15 * s, 14 * s, 15 * s, 3 * s); c.fill();
+    c.fillStyle = '#8a8f9a';
+    GG.roundRect(c, x - 7 * s, y - 15 * s, 14 * s, 5 * s, 3 * s); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    GG.roundRect(c, x - 5 * s, y - 13 * s, 4 * s, 10 * s, 2 * s); c.fill();
+    for (var i = 0; i < 7; i++) {
+      var ph = (tt * 0.55 + i / 7) % 1;
+      var by = y - 12 * s - ph * 30 * s;
+      var bx = x + Math.sin(ph * 7 + i) * 4 * s;
+      c.fillStyle = 'rgba(255,255,255,' + (0.55 * (1 - ph)).toFixed(3) + ')';
+      ell(c, bx, by, (1.8 + (i % 3)) * s, (1.8 + (i % 3)) * s);
+    }
+  };
+
+  D.treasure = function (c, x, y, s, t) {
+    var lid = -0.3 + Math.sin((t || 0) * 0.7) * 0.06;
+    c.fillStyle = '#7a5330';
+    GG.roundRect(c, x - 16 * s, y - 14 * s, 32 * s, 14 * s, 2 * s); c.fill();
+    c.fillStyle = '#c8a35e';
+    c.fillRect(x - 16 * s, y - 9 * s, 32 * s, 2.4 * s);
+    c.save(); c.translate(x - 16 * s, y - 14 * s); c.rotate(lid);
+    c.fillStyle = '#8a6238';
+    c.beginPath();
+    c.moveTo(0, 0); c.lineTo(0, -6 * s);
+    c.quadraticCurveTo(16 * s, -15 * s, 32 * s, -6 * s);
+    c.lineTo(32 * s, 0); c.closePath(); c.fill();
+    c.fillStyle = '#c8a35e';
+    c.beginPath();
+    c.moveTo(0, -4 * s); c.quadraticCurveTo(16 * s, -13 * s, 32 * s, -4 * s);
+    c.lineTo(32 * s, -2 * s); c.quadraticCurveTo(16 * s, -11 * s, 0, -2 * s);
+    c.closePath(); c.fill();
+    c.restore();
+    c.fillStyle = '#ffe08a';
+    ell(c, x - 5 * s, y - 13 * s, 3.4 * s, 2.4 * s);
+    ell(c, x + 4 * s, y - 13.5 * s, 3 * s, 2.2 * s);
+    c.fillStyle = '#9fe8ff';
+    ell(c, x + 10 * s, y - 12.6 * s, 2.4 * s, 2 * s);
+  };
+
+  D.seastardeco = function (c, x, y, s) {
+    c.save(); c.translate(x, y - 9 * s); c.rotate(0.3);
+    c.fillStyle = '#e8845a';
+    c.beginPath();
+    for (var i = 0; i <= 60; i++) {
+      var ang = i / 60 * Math.PI * 2;
+      var r = (7 + 12 * Math.pow(Math.abs(Math.cos(ang * 2.5)), 1.5)) * s;
+      var px = Math.cos(ang) * r, py = Math.sin(ang) * r * 0.62;
+      if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = '#f6a878';
+    c.beginPath();
+    for (var j = 0; j <= 60; j++) {
+      var an = j / 60 * Math.PI * 2;
+      var rr = (7 + 12 * Math.pow(Math.abs(Math.cos(an * 2.5)), 1.5)) * s * 0.66;
+      var qx = Math.cos(an) * rr, qy = Math.sin(an) * rr * 0.62;
+      if (j === 0) c.moveTo(qx, qy); else c.lineTo(qx, qy);
+    }
+    c.closePath(); c.fill();
+    c.restore();
+  };
+
+  D.sandcastle = function (c, x, y, s) {
+    c.fillStyle = '#e6d2a0';
+    c.fillRect(x - 18 * s, y - 14 * s, 36 * s, 14 * s);
+    [-14, 0, 14].forEach(function (dx, i) {
+      var h = i === 1 ? 26 : 21;
+      c.fillStyle = '#eddcb0';
+      c.fillRect(x + dx * s - 6 * s, y - h * s, 12 * s, (h - 12) * s);
+      c.fillStyle = '#d8c48e';
+      c.beginPath();
+      c.moveTo(x + dx * s - 7 * s, y - h * s);
+      c.lineTo(x + dx * s, y - (h + 8) * s);
+      c.lineTo(x + dx * s + 7 * s, y - h * s);
+      c.closePath(); c.fill();
+    });
+    c.strokeStyle = '#c8a35e'; c.lineWidth = 1.2 * s;
+    c.beginPath(); c.moveTo(x, y - 34 * s); c.lineTo(x, y - 42 * s); c.stroke();
+    c.fillStyle = '#ef8fae';
+    c.beginPath();
+    c.moveTo(x, y - 42 * s); c.lineTo(x + 9 * s, y - 39 * s); c.lineTo(x, y - 36 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#8a7a5a';
+    c.fillRect(x - 18 * s, y - 3 * s, 36 * s, 3 * s);
+  };
+
+  /* ---------- things for a hybrid tank ---------- */
+
+  D.rockpool = function (c, x, y, s, t) {
+    var rip = Math.sin((t || 0) * 1.4);
+    c.fillStyle = '#9a958a';
+    ell(c, x, y - 6 * s, 26 * s, 12 * s);
+    c.fillStyle = '#7fc8c4';
+    ell(c, x, y - 7 * s, 20 * s, 8.4 * s);
+    c.fillStyle = '#a8dedb';
+    ell(c, x, y - 8 * s, 15 * s, 5.6 * s);
+    c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 1 * s;
+    c.beginPath();
+    c.ellipse(x + rip * 2 * s, y - 8 * s, (8 + rip) * s, 3 * s, 0, 0, Math.PI * 2);
+    c.stroke();
+    c.fillStyle = '#b8b2a4';
+    ell(c, x - 21 * s, y - 9 * s, 7 * s, 5 * s, -0.3);
+    ell(c, x + 20 * s, y - 8 * s, 6 * s, 4.4 * s, 0.3);
+    c.fillStyle = '#e8845a';
+    c.save(); c.translate(x + 6 * s, y - 8 * s); c.scale(0.5, 0.5);
+    D.seastardeco(c, 0, 9 * s, s);
+    c.restore();
+  };
+
+  D.lilypaddeco = function (c, x, y, s, t) {
+    var bob = Math.sin((t || 0) * 1.1) * 1.4 * s;
+    c.fillStyle = '#3f9350';
+    c.beginPath();
+    c.ellipse(x, y - 4 * s + bob, 18 * s, 8 * s, 0, 0.45, Math.PI * 2 + 0.1);
+    c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(20,70,30,0.3)'; c.lineWidth = 1 * s;
+    for (var i = 0; i < 5; i++) {
+      var a = 0.8 + i * 0.95;
+      c.beginPath(); c.moveTo(x, y - 4 * s + bob);
+      c.lineTo(x + Math.cos(a) * 16 * s, y - 4 * s + bob + Math.sin(a) * 7 * s);
+      c.stroke();
+    }
+    c.fillStyle = '#fff0f6';
+    ell(c, x + 8 * s, y - 9 * s + bob, 5 * s, 4 * s);
+    c.fillStyle = '#ffd7e6';
+    for (var j = 0; j < 6; j++) {
+      var b = j * 1.05;
+      ell(c, x + 8 * s + Math.cos(b) * 3.4 * s, y - 9 * s + bob + Math.sin(b) * 2.6 * s, 2.6 * s, 1.8 * s, b);
+    }
+    c.fillStyle = '#ffd45c';
+    ell(c, x + 8 * s, y - 9 * s + bob, 1.6 * s, 1.2 * s);
+  };
+
+  D.cattail = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.2) * 2.4 * s;
+    c.strokeStyle = '#4f8a4a'; c.lineCap = 'round';
+    for (var i = -1; i <= 1; i++) {
+      c.lineWidth = 2.4 * s;
+      c.beginPath();
+      c.moveTo(x + i * 5 * s, y);
+      c.quadraticCurveTo(x + i * 7 * s + sway * 0.5, y - 20 * s,
+        x + i * 9 * s + sway, y - (36 - Math.abs(i) * 8) * s);
+      c.stroke();
+      if (i !== 0) continue;
+      c.fillStyle = '#8a5f33';
+      ell(c, x + sway, y - 42 * s, 3.4 * s, 8 * s);
+      c.strokeStyle = '#8a5f33'; c.lineWidth = 1.6 * s;
+      c.beginPath(); c.moveTo(x + sway, y - 50 * s); c.lineTo(x + sway, y - 55 * s); c.stroke();
+      c.strokeStyle = '#4f8a4a';
+    }
+  };
+
+  /* ---------- things for any tank ---------- */
+
+  D.fairyhouse = function (c, x, y, s, t) {
+    var glow = 0.55 + 0.45 * Math.sin((t || 0) * 1.5);
+    c.fillStyle = '#c8a882';
+    GG.roundRect(c, x - 12 * s, y - 20 * s, 24 * s, 20 * s, 3 * s); c.fill();
+    c.fillStyle = '#e8556a';
+    c.beginPath();
+    c.moveTo(x - 17 * s, y - 19 * s);
+    c.quadraticCurveTo(x, y - 42 * s, x + 17 * s, y - 19 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#fff0f0';
+    [[-8, -26], [7, -25], [0, -32]].forEach(function (p) {
+      ell(c, x + p[0] * s, y + p[1] * s, 2.6 * s, 2.2 * s);
+    });
+    c.fillStyle = '#6b4a2c';
+    c.beginPath();
+    c.moveTo(x - 5 * s, y); c.lineTo(x - 5 * s, y - 9 * s);
+    c.quadraticCurveTo(x, y - 14 * s, x + 5 * s, y - 9 * s);
+    c.lineTo(x + 5 * s, y); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,226,140,' + (0.35 + 0.35 * glow).toFixed(3) + ')';
+    ell(c, x + 8 * s, y - 13 * s, 3.4 * s, 3.4 * s);
+    c.fillStyle = '#ffe9a8';
+    ell(c, x + 8 * s, y - 13 * s, 2 * s, 2 * s);
+  };
+
+  D.teacup = function (c, x, y, s) {
+    c.fillStyle = '#efe6d8';
+    ell(c, x, y - 2 * s, 17 * s, 5 * s);
+    c.fillStyle = '#fdf8ef';
+    c.beginPath();
+    c.moveTo(x - 11 * s, y - 18 * s);
+    c.quadraticCurveTo(x, y + 1 * s, x + 11 * s, y - 18 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#9fd6f0';
+    ell(c, x, y - 18 * s, 11 * s, 3.4 * s);
+    c.strokeStyle = '#efe6d8'; c.lineWidth = 2.4 * s;
+    c.beginPath();
+    c.arc(x + 13 * s, y - 12 * s, 5 * s, -1.2, 1.5);
+    c.stroke();
+    c.strokeStyle = '#ef8fae'; c.lineWidth = 1.4 * s;
+    c.beginPath();
+    c.moveTo(x - 8 * s, y - 13 * s);
+    c.quadraticCurveTo(x, y - 11 * s, x + 8 * s, y - 13 * s);
+    c.stroke();
+  };
+
+  D.driftbranch = function (c, x, y, s) {
+    c.strokeStyle = '#c8b79a'; c.lineCap = 'round';
+    c.lineWidth = 5 * s;
+    c.beginPath();
+    c.moveTo(x - 20 * s, y - 3 * s);
+    c.quadraticCurveTo(x, y - 14 * s, x + 20 * s, y - 5 * s);
+    c.stroke();
+    c.lineWidth = 3 * s; c.strokeStyle = '#d8c9ac';
+    c.beginPath(); c.moveTo(x - 6 * s, y - 10 * s); c.lineTo(x - 12 * s, y - 22 * s); c.stroke();
+    c.beginPath(); c.moveTo(x + 7 * s, y - 10 * s); c.lineTo(x + 15 * s, y - 20 * s); c.stroke();
+    c.lineWidth = 2 * s;
+    c.beginPath(); c.moveTo(x - 12 * s, y - 22 * s); c.lineTo(x - 18 * s, y - 28 * s); c.stroke();
+    c.beginPath(); c.moveTo(x + 15 * s, y - 20 * s); c.lineTo(x + 21 * s, y - 27 * s); c.stroke();
+    c.fillStyle = 'rgba(120,100,74,0.35)';
+    ell(c, x, y - 1 * s, 20 * s, 3 * s);
+  };
+
+  D.pinecone = function (c, x, y, s) {
+    c.fillStyle = '#7a5330';
+    ell(c, x, y - 11 * s, 7 * s, 12 * s);
+    c.fillStyle = '#96693d';
+    for (var r = 0; r < 5; r++) {
+      for (var i = -1; i <= 1; i++) {
+        ell(c, x + i * 4 * s, y - 3 * s - r * 4.4 * s, 3.4 * s, 2.2 * s);
+      }
+    }
+    c.fillStyle = '#5f9a4a';
+    ell(c, x - 7 * s, y - 21 * s, 5 * s, 2.2 * s, -0.5);
+    ell(c, x + 7 * s, y - 20 * s, 5 * s, 2.2 * s, 0.5);
+  };
+
+  D.toadstool = function (c, x, y, s) {
+    c.fillStyle = '#f3ece0';
+    GG.roundRect(c, x - 3.4 * s, y - 16 * s, 7 * s, 16 * s, 2 * s); c.fill();
+    c.fillStyle = '#7f56c8';
+    c.beginPath();
+    c.moveTo(x - 15 * s, y - 15 * s);
+    c.quadraticCurveTo(x, y - 32 * s, x + 15 * s, y - 15 * s);
+    c.quadraticCurveTo(x, y - 10 * s, x - 15 * s, y - 15 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#c8a8f0';
+    [[-7, -19], [4, -21], [9, -16], [-2, -23]].forEach(function (p) {
+      ell(c, x + p[0] * s, y + p[1] * s, 2.6 * s, 2 * s);
+    });
+  };
+
+  D.tinypond = function (c, x, y, s, t) {
+    var rip = Math.sin((t || 0) * 1.6);
+    c.fillStyle = '#8a8272';
+    ell(c, x, y - 5 * s, 22 * s, 10 * s);
+    c.fillStyle = '#6fc3e0';
+    ell(c, x, y - 6 * s, 17 * s, 7 * s);
+    c.fillStyle = '#a8e0f0';
+    ell(c, x - 3 * s, y - 7 * s, 9 * s, 3.4 * s);
+    c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 1 * s;
+    c.beginPath();
+    c.ellipse(x, y - 6 * s, (7 + rip * 2) * s, (3 + rip) * s, 0, 0, Math.PI * 2);
+    c.stroke();
+    c.fillStyle = '#a9a9a2';
+    for (var i = 0; i < 7; i++) {
+      var a = i * 0.9;
+      ell(c, x + Math.cos(a) * 20 * s, y - 5 * s + Math.sin(a) * 9 * s, 4 * s, 2.6 * s, a);
+    }
+  };
+
+  D.bunting = function (c, x, y, s) {
+    c.strokeStyle = '#c8b79a'; c.lineWidth = 1.4 * s;
+    c.beginPath();
+    c.moveTo(x - 26 * s, y - 30 * s);
+    c.quadraticCurveTo(x, y - 20 * s, x + 26 * s, y - 30 * s);
+    c.stroke();
+    var cols = ['#ef8fae', '#ffd45c', '#8fd0ff', '#a8e88a', '#c39bff'];
+    for (var i = 0; i < 5; i++) {
+      var p = i / 4;
+      var px = x + (-26 + p * 52) * s;
+      var py = y - 30 * s + Math.sin(Math.PI * p) * 10 * s;
+      c.fillStyle = cols[i];
+      c.beginPath();
+      c.moveTo(px - 4 * s, py); c.lineTo(px + 4 * s, py); c.lineTo(px, py + 9 * s);
+      c.closePath(); c.fill();
+    }
+    c.strokeStyle = '#b8a888'; c.lineWidth = 2 * s;
+    c.beginPath(); c.moveTo(x - 26 * s, y - 30 * s); c.lineTo(x - 26 * s, y); c.stroke();
+    c.beginPath(); c.moveTo(x + 26 * s, y - 30 * s); c.lineTo(x + 26 * s, y); c.stroke();
+  };
+
+
   GG.DecorArt = D;
 
+  /* `for` says which tanks a piece belongs in:
+     land = terrariums, water = fish tanks, any = all three.
+     A hybrid tank has both a bank and a pool, so it takes everything. */
   GG.DECOR = [
-    { id: 'leaf', name: 'Big Leaf', price: 0 },
-    { id: 'pebble', name: 'Smooth Pebble', price: 0 },
-    { id: 'twig', name: 'Little Twig', price: 0 },
-    { id: 'mushroom', name: 'Red Mushroom', price: 0 },
-    { id: 'flower', name: 'Pink Flower', price: 40 },
-    { id: 'bluebell', name: 'Bluebell', price: 60 },
-    { id: 'fern', name: 'Curly Fern', price: 80 },
-    { id: 'moss', name: 'Soft Moss', price: 90 },
-    { id: 'log', name: 'Mossy Log', price: 120 },
-    { id: 'rock', name: 'Grey Rock', price: 120 },
-    { id: 'acorn', name: 'Acorn', price: 150 },
-    { id: 'berries', name: 'Red Berries', price: 180 },
-    { id: 'shell', name: 'Sea Shell', price: 220 },
-    { id: 'waterdish', name: 'Water Dish', price: 260 },
-    { id: 'signplate', name: 'Name Plate', price: 300 },
-    { id: 'lantern', name: 'Tiny Lantern', price: 420 },
-    { id: 'crystal', name: 'Glow Crystal', price: 600 }
+    // --- for a terrarium (and the bank of a hybrid) ---
+    { id: 'leaf', name: 'Big Leaf', price: 0, for: 'land' },
+    { id: 'pebble', name: 'Smooth Pebble', price: 0, for: 'any' },
+    { id: 'twig', name: 'Little Twig', price: 0, for: 'land' },
+    { id: 'mushroom', name: 'Red Mushroom', price: 0, for: 'land' },
+    { id: 'flower', name: 'Pink Flower', price: 40, for: 'land' },
+    { id: 'bluebell', name: 'Bluebell', price: 60, for: 'land' },
+    { id: 'fern', name: 'Curly Fern', price: 80, for: 'land' },
+    { id: 'moss', name: 'Soft Moss', price: 90, for: 'land' },
+    { id: 'toadstool', name: 'Purple Toadstool', price: 110, for: 'land' },
+    { id: 'log', name: 'Mossy Log', price: 120, for: 'land' },
+    { id: 'rock', name: 'Grey Rock', price: 120, for: 'any' },
+    { id: 'pinecone', name: 'Pine Cone', price: 140, for: 'land' },
+    { id: 'acorn', name: 'Acorn', price: 150, for: 'land' },
+    { id: 'berries', name: 'Red Berries', price: 180, for: 'land' },
+    { id: 'cattail', name: 'Cattails', price: 190, for: 'any' },
+    { id: 'waterdish', name: 'Water Dish', price: 260, for: 'land' },
+    { id: 'tinypond', name: 'Tiny Pond', price: 340, for: 'land' },
+    { id: 'fairyhouse', name: 'Fairy House', price: 480, for: 'land' },
+
+    // --- for a fish tank (and the pool of a hybrid) ---
+    { id: 'seagrass', name: 'Sea Grass', price: 50, for: 'water' },
+    { id: 'shell', name: 'Sea Shell', price: 70, for: 'water' },
+    { id: 'driftbranch', name: 'Driftwood Branch', price: 130, for: 'water' },
+    { id: 'seastardeco', name: 'Sea Star', price: 160, for: 'water' },
+    { id: 'coral', name: 'Coral Fan', price: 210, for: 'water' },
+    { id: 'lilypaddeco', name: 'Water Lily', price: 240, for: 'water' },
+    { id: 'anemonedeco', name: 'Anemone', price: 300, for: 'water' },
+    { id: 'bubbler', name: 'Bubbler', price: 360, for: 'water' },
+    { id: 'sandcastle', name: 'Sand Castle', price: 420, for: 'water' },
+    { id: 'treasure', name: 'Treasure Chest', price: 650, for: 'water' },
+
+    // --- for anywhere ---
+    { id: 'signplate', name: 'Name Plate', price: 300, for: 'any' },
+    { id: 'bunting', name: 'Party Bunting', price: 380, for: 'any' },
+    { id: 'rockpool', name: 'Rock Pool', price: 460, for: 'land' },
+    { id: 'lantern', name: 'Tiny Lantern', price: 520, for: 'any' },
+    { id: 'crystal', name: 'Glow Crystal', price: 700, for: 'any' }
   ];
+
+  /* Can this decoration go in that kind of tank? */
+  GG.decorFits = function (dec, tankType) {
+    if (!dec) return false;
+    var f = dec.for || 'any';
+    if (f === 'any' || tankType === 'hybrid') return true;
+    if (tankType === 'aquarium') return f === 'water';
+    return f === 'land';
+  };
+  GG.decorFor = function (tankType) {
+    return GG.DECOR.filter(function (d) { return GG.decorFits(d, tankType); });
+  };
+
   GG.DECOR_BY_ID = {};
   GG.DECOR.forEach(function (d) { GG.DECOR_BY_ID[d.id] = d; });
 
@@ -5195,15 +6260,24 @@ ul.tips li{margin-bottom:3px}
     { id: 'night', kind: 'land', name: 'Moonlit', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2f4a2e', price: 150 },
     { id: 'sunset', kind: 'land', name: 'Sunset', sky: '#ffc9a0', ground: '#9fbf63', ground2: '#87a852', price: 200 },
     { id: 'desert', kind: 'land', name: 'Sandy', sky: '#ffe9c4', ground: '#e3cf9a', ground2: '#d3bd85', price: 250 },
+    { id: 'seashore', kind: 'land', name: 'Seashore', sky: '#bfe8ff', ground: '#efe0b4', ground2: '#e0cf9c', price: 280 },
+    { id: 'hillside', kind: 'land', name: 'Hillside', sky: '#d8eeff', ground: '#c9c49a', ground2: '#b5b088', price: 300 },
+    { id: 'blossom', kind: 'land', name: 'Blossom', sky: '#ffe4ef', ground: '#9fd06a', ground2: '#8abd57', price: 340 },
     // water scenes - fish tanks
     { id: 'clear', kind: 'water', name: 'Clear Water', sky: '#8fd3ea', deep: '#3f93b8', ground: '#e3d6a8', ground2: '#d2c28f', price: 0 },
     { id: 'planted', kind: 'water', name: 'Planted', sky: '#9fdcc8', deep: '#2f8a76', ground: '#d8cfa0', ground2: '#c2b98c', price: 90 },
     { id: 'rocky', kind: 'water', name: 'Rocky', sky: '#a8c8d8', deep: '#4a6b80', ground: '#b8b2a4', ground2: '#a09a8c', price: 140 },
     { id: 'deep', kind: 'water', name: 'Deep Blue', sky: '#4f7fc0', deep: '#1f3a6b', ground: '#8a8f9a', ground2: '#74798a', price: 200 },
+    { id: 'reef', kind: 'water', name: 'Coral Reef', sky: '#9fe4ee', deep: '#2f7fa8', ground: '#f0dcbc', ground2: '#dfc79f', price: 260 },
+    { id: 'tidepool', kind: 'water', name: 'Rock Pool', sky: '#b4e4e0', deep: '#4f938c', ground: '#b9b3a4', ground2: '#a29c8c', price: 300 },
+    { id: 'stream', kind: 'water', name: 'Cold Stream', sky: '#c8f0f4', deep: '#5aa8c0', ground: '#c4bda8', ground2: '#aea792', price: 240 },
     // hybrid scenes
     { id: 'riverbank', kind: 'hybrid', name: 'Riverbank', sky: '#cfeeff', ground: '#8ecf63', ground2: '#6b8f4a', deep: '#3f93b8', water: '#8fd3ea', price: 0 },
     { id: 'woodpool', kind: 'hybrid', name: 'Woodland Pool', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3a6b3c', deep: '#2f7a8a', water: '#7fc4d2', price: 120 },
-    { id: 'nightpool', kind: 'hybrid', name: 'Moonlit Pool', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2a3f28', deep: '#1f3a5b', water: '#4a6f9a', price: 200 }
+    { id: 'nightpool', kind: 'hybrid', name: 'Moonlit Pool', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2a3f28', deep: '#1f3a5b', water: '#4a6f9a', price: 200 },
+    { id: 'shoreline', kind: 'hybrid', name: 'Shoreline', sky: '#bfe8ff', ground: '#efe0b4', ground2: '#d8c79a', deep: '#2f7fb4', water: '#8fd6e4', price: 240 },
+    { id: 'rockyshelf', kind: 'hybrid', name: 'Rocky Shelf', sky: '#cfe4ee', ground: '#b9b3a4', ground2: '#a09a8a', deep: '#4f938c', water: '#a8dedb', price: 280 },
+    { id: 'sunsetpool', kind: 'hybrid', name: 'Sunset Pool', sky: '#ffc9a0', ground: '#9fbf63', ground2: '#84a24f', deep: '#3f6f9a', water: '#8fb8d8', price: 320 }
   ];
   GG.TANK_BY_ID = {};
   GG.TANK_BGS.forEach(function (b) { GG.TANK_BY_ID[b.id] = b; });
@@ -7436,7 +8510,13 @@ ul.tips li{margin-bottom:3px}
           tile(def, false, function () { self.addItem('bug', id); });
         });
       } else {
-        GG.DECOR.forEach(function (dec) {
+        /* only the pieces that suit this kind of tank */
+        var fits = GG.decorFor(this.tank().type || 'terrarium');
+        if (!fits.length) {
+          tray.innerHTML = '<div class="note" style="grid-column:1/-1">No decorations for this tank yet.</div>';
+          return;
+        }
+        fits.forEach(function (dec) {
           var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
           var item = GG.el('div', 'trayitem' + (owned ? '' : ' locked'));
           var cv = GG.el('canvas'); cv.width = 132; cv.height = 84; cv.style.height = '42px';
@@ -7971,13 +9051,20 @@ ul.tips li{margin-bottom:3px}
       $('shop-sparkles').innerHTML = '&#10022; ' + d.sparkles;
 
       var grid = $('shop-grid'); grid.innerHTML = '';
-      GG.DECOR.forEach(function (dec) {
+      var groupsD = [
+        ['land', 'For terrariums (and the bank of a hybrid)'],
+        ['water', 'For fish tanks (and the pool of a hybrid)'],
+        ['any', 'For any tank']
+      ];
+      groupsD.forEach(function (g) {
+        grid.appendChild(GG.el('div', 'shop-group', g[1]));
+        GG.DECOR.filter(function (x) { return (x.for || 'any') === g[0]; }).forEach(function (dec) {
         var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
         var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
         var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
         var c = cv.getContext('2d'); c.scale(2, 2);
         var fn = GG.DecorArt[dec.id];
-        if (fn) fn(c, 44, 50, 1, 1);
+        if (fn) fn(c, 44, 50, 0.9, 1);
         el.appendChild(cv);
         el.appendChild(GG.el('div', 'nm', dec.name));
         el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + dec.price));
@@ -7990,6 +9077,7 @@ ul.tips li{margin-bottom:3px}
           GG.UI.toast('Bought ' + dec.name + '!');
         });
         grid.appendChild(el);
+        });
       });
 
       var bgs = $('shop-bgs'); bgs.innerHTML = '';
@@ -8484,7 +9572,15 @@ ul.tips li{margin-bottom:3px}
     $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
       (GG.Time.rain ? ' ☔' : '');
     $('chip-place').textContent = scene === 'house' ? 'Home' : GG.World.placeName(GG.Player.x, GG.Player.y);
+
+    /* the sound of the place she is in */
+    if (GG.Audio.ready()) {
+      GG.Music.setMood(GG.Music.moodForNow(scene));
+      GG.Ambience.update(dt, scene, GG.Player.x, GG.Player.y);
+      if (paused !== _wasPaused) { _wasPaused = paused; GG.Audio.duck(paused); }
+    }
   }
+  var _wasPaused = false;
 
   /* ---------- "update ready" on the title screen ---------- */
   var swReg = null, updateAsked = false, updateReady = false, updateRaf = 0;
@@ -8575,10 +9671,11 @@ ul.tips li{margin-bottom:3px}
       GG.UI.close('screen-title');
       return;
     }
-    GG.Sfx.unlock();
+    startSound();
     started = true;
     GG.UI.close('screen-title');
     setScene('world');
+    checkNews();
     if (!GG.Save.data.seenIntro) {
       GG.Save.data.seenIntro = true; GG.Save.save();
       setTimeout(function () { GG.UI.toast('Slide your thumb on the left to walk', 2800); }, 600);
@@ -8586,9 +9683,242 @@ ul.tips li{margin-bottom:3px}
     }
   }
 
+
+  /* ---------- settings ---------- */
+  var SLIDERS = [['set-music', 'music'], ['set-amb', 'ambience'], ['set-sfx', 'sfx']];
+
+  function refreshSettings() {
+    var st = GG.Save.data.settings || (GG.Save.data.settings = GG.Save.readSettings());
+    SLIDERS.forEach(function (p) {
+      var pct = Math.round((st[p[1]] || 0) * 100);
+      $(p[0]).value = pct;
+      $(p[0] + '-val').textContent = GG.Save.data.muted ? 'off' : pct + '%';
+      $(p[0]).disabled = !!GG.Save.data.muted;
+    });
+    $('set-mute').textContent = GG.Save.data.muted ? 'Turn sound back on' : 'Turn all sound off';
+    $('set-version').textContent = 'Guin\u2019s Garden version ' + (GG.VERSION || '1.0');
+    var guest = GG.Save.isGuest();
+    $('guest-banner').hidden = !guest;
+    $('danger-note').textContent = guest
+      ? 'This clears the guest garden only. Guin\u2019s garden is in a different place and is not touched.'
+      : 'Starting again forgets every bug and fish, every tank and all your sparkles. There is no way to get them back.';
+    hideResetStep2();
+  }
+
+  function hideResetStep2() {
+    $('reset-step2').hidden = true;
+    $('set-reset').hidden = false;
+    $('reset-yes').classList.remove('arming');
+    clearTimeout(_holdTimer);
+  }
+
+  var _holdTimer = null;
+
+  function openSettings() {
+    refreshSettings();
+    GG.UI.open('screen-settings');
+  }
+
+  function wireSettings() {
+    SLIDERS.forEach(function (p) {
+      $(p[0]).addEventListener('input', function () {
+        var v = GG.clamp(parseInt(this.value, 10) / 100, 0, 1);
+        GG.Save.data.settings[p[1]] = v;
+        $(p[0] + '-val').textContent = Math.round(v * 100) + '%';
+        GG.Save.writeSettings();
+        GG.Audio.applyVolumes();
+      });
+      /* a little taste of the level when she lets go */
+      $(p[0]).addEventListener('change', function () {
+        if (p[1] === 'sfx') GG.Sfx.coin();
+      });
+    });
+
+    $('set-mute').addEventListener('click', function () {
+      GG.Save.data.muted = !GG.Save.data.muted;
+      GG.Save.save();
+      GG.Audio.applyVolumes();
+      if (!GG.Save.data.muted) { GG.Sfx.unlock(); GG.Sfx.click(); startSound(); }
+      refreshSettings();
+    });
+
+    $('set-whatsnew').addEventListener('click', function () {
+      GG.Sfx.click();
+      showNews(GG.CHANGELOG.slice(0, 1), true);
+    });
+
+    /* Starting over is deliberately awkward: a button, then a question,
+       then three seconds of holding the pink one down. */
+    $('set-reset').addEventListener('click', function () {
+      GG.Sfx.click();
+      $('reset-count').textContent = String(GG.Save.totalSpecies() + GG.Save.totalFish());
+      $('reset-q').innerHTML = GG.Save.isGuest()
+        ? 'Clear this guest garden?'
+        : 'Are you sure? There are <span id="reset-count">' +
+          (GG.Save.totalSpecies() + GG.Save.totalFish()) + '</span> bugs and fish in the books.';
+      $('reset-step2').hidden = false;
+      $('set-reset').hidden = true;
+    });
+    $('reset-no').addEventListener('click', function () { GG.Sfx.click(); hideResetStep2(); });
+
+    var yes = $('reset-yes');
+    function armStart(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      yes.classList.add('arming');
+      clearTimeout(_holdTimer);
+      _holdTimer = setTimeout(function () {
+        yes.classList.remove('arming');
+        GG.Save.reset();
+        location.reload();
+      }, 3000);
+    }
+    function armStop() {
+      yes.classList.remove('arming');
+      clearTimeout(_holdTimer);
+    }
+    yes.addEventListener('mousedown', armStart);
+    yes.addEventListener('touchstart', armStart, { passive: false });
+    ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(function (ev) {
+      yes.addEventListener(ev, armStop);
+    });
+    /* a plain click does nothing on its own - it has to be held */
+    yes.addEventListener('click', function (e) { e.preventDefault(); });
+  }
+
+  /* ---------- what's new ---------- */
+  function showNews(entries, manual) {
+    if (!entries || !entries.length) {
+      if (manual) GG.UI.toast('You are on the newest version');
+      return;
+    }
+    $('news-title').textContent = manual ? 'What\u2019s new' : 'The garden has grown!';
+    var body = $('news-body');
+    body.innerHTML = '';
+    entries.forEach(function (e) {
+      var h = GG.el('div', 'newsver', 'Version ' + e.v + ' \u00b7 ' + e.title);
+      body.appendChild(h);
+      e.lines.forEach(function (l) {
+        var d = GG.el('div', 'newsline');
+        d.innerHTML = '<b>&#10022;</b> ' + l;
+        body.appendChild(d);
+      });
+    });
+    GG.UI.open('screen-news');
+    newsAnim();
+  }
+
+  function newsAnim() {
+    var cv = $('news-art'); if (!cv) return;
+    var c = cv.getContext('2d');
+    var start = performance.now();
+    var picks = ['monarch', 'firefly', 'dragonfly', 'ladybug', 'hermit_crab', 'sea_star']
+      .map(function (id) { return GG.BUG_BY_ID[id]; }).filter(Boolean);
+    cancelAnimationFrame(newsAnim._raf);
+    function frame(now) {
+      if ($('screen-news').classList.contains('hidden')) return;
+      var t = (now - start) / 1000;
+      var g = c.createLinearGradient(0, 0, 0, cv.height);
+      g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a');
+      c.fillStyle = g; c.fillRect(0, 0, cv.width, cv.height);
+      c.fillStyle = '#8ac462';
+      c.beginPath();
+      c.moveTo(0, 132); c.quadraticCurveTo(cv.width / 2, 112, cv.width, 132);
+      c.lineTo(cv.width, cv.height); c.lineTo(0, cv.height); c.closePath(); c.fill();
+      picks.forEach(function (def, i) {
+        var x = 60 + i * ((cv.width - 120) / Math.max(1, picks.length - 1));
+        var y = 82 + Math.sin(t * 1.6 + i * 1.1) * 22;
+        GG.BugArt.draw(c, def, x, y, 2.4, -Math.PI / 2, t + i);
+      });
+      newsAnim._raf = requestAnimationFrame(frame);
+    }
+    newsAnim._raf = requestAnimationFrame(frame);
+  }
+
+  /* Show the card once, the first time a newer build is opened. */
+  function checkNews() {
+    var seen = GG.Save.data.version;
+    GG.Save.data.version = GG.VERSION;
+    GG.Save.save();
+    if (!seen) return;                                  // a brand new garden
+    if (GG.cmpVersion(seen, GG.VERSION) >= 0) return;   // already up to date
+    var list = GG.changesSince(seen);
+    if (list.length) setTimeout(function () { showNews(list, false); }, 700);
+  }
+
+  /* ---------- letting a friend play ---------- */
+  function refreshGuestChrome() {
+    var guest = GG.Save.isGuest();
+    $('chip-guest').hidden = !guest;
+    $('chip-guest').textContent = guest
+      ? (GG.Save.data.guestName || 'Guest') + '\u2019s visit'
+      : '';
+    $('menu-endguest').hidden = !guest;
+    $('btn-guest').textContent = guest ? 'Back to Guin\u2019s garden' : 'Let a friend play';
+    $('title-sub').textContent = guest
+      ? 'a friend is visiting'
+      : 'a gentle bug catching adventure';
+  }
+
+  function wireGuest() {
+    $('btn-guest').addEventListener('click', function () {
+      GG.Sfx.click();
+      if (GG.Save.isGuest()) { endGuest(); return; }
+      $('guest-name').value = '';
+      GG.UI.open('screen-guest');
+    });
+    $('guest-start').addEventListener('click', function () {
+      GG.Sfx.click();
+      var name = ($('guest-name').value || '').trim().slice(0, 14) || 'Friend';
+      GG.Save.startGuest(name);
+      GG.UI.close('screen-guest');
+      restartInto();
+      GG.UI.toast('Welcome, ' + name + '! This garden is all yours.', 3200);
+    });
+    $('menu-endguest').addEventListener('click', function () {
+      GG.Sfx.click();
+      if (window.confirm('Finish the visit? The guest garden is cleared, and Guin\u2019s comes back exactly as she left it.')) {
+        endGuest();
+      }
+    });
+  }
+
+  function endGuest() {
+    GG.Save.endGuest();
+    restartInto();
+    GG.UI.toast('Welcome back, Guin!', 2600);
+  }
+
+  /* Reload the world for whichever save slot is now loaded. */
+  function restartInto() {
+    GG.Time.minutes = GG.Save.data.clock;
+    GG.Time.day = GG.Save.data.day;
+    GG.Critters.clear();
+    GG.Fishing.reset();
+    GG.Fishing.swimmers.length = 0;
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    GG.UI.refreshHud();
+    refreshGuestChrome();
+    ['screen-menu', 'screen-settings', 'screen-book', 'screen-terrarium', 'screen-shop'].forEach(function (id) {
+      GG.UI.close(id);
+    });
+    if (!started) { started = true; GG.UI.close('screen-title'); }
+    setScene('world');
+  }
+
+  /* ---------- starting the sound ---------- */
+  function startSound() {
+    GG.Sfx.unlock();
+    GG.Audio.applyVolumes();
+    GG.Music.start();
+    GG.Ambience.start();
+  }
+
   function boot() {
     canvas = $('game');
     ctx = canvas.getContext('2d');
+    /* A guest visit survives a reload, so nobody is dumped into Guin's
+       garden halfway through their turn. */
+    GG.Save.setSlot(GG.Save.rememberedSlot());
     GG.Save.load();
     GG.Time.minutes = GG.Save.data.clock;
     GG.Time.day = GG.Save.data.day;
@@ -8607,29 +9937,22 @@ ul.tips li{margin-bottom:3px}
 
     $('btn-play').addEventListener('click', function () { GG.Sfx.click(); startGame(); });
     $('btn-howto').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
+    $('btn-settings').addEventListener('click', function () { GG.Sfx.click(); startSound(); openSettings(); });
+    $('menu-settings').addEventListener('click', function () { GG.Sfx.click(); openSettings(); });
+    wireSettings();
+    wireGuest();
+    refreshGuestChrome();
     $('btn-menu').addEventListener('click', function () {
       GG.Sfx.click();
       $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs, ' +
         GG.Save.totalFish() + ' of ' + GG.FISH.length + ' fish';
       $('menu-place').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.phaseName() +
         ' · ✦ ' + GG.Save.data.sparkles;
-      $('menu-mute').textContent = 'Sound: ' + (GG.Save.data.muted ? 'off' : 'on');
       GG.UI.open('screen-menu');
       drawMinimap();
     });
     $('menu-book').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.Book.open(); });
     $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
-    $('menu-mute').addEventListener('click', function () {
-      GG.Save.data.muted = !GG.Save.data.muted; GG.Save.save();
-      $('menu-mute').textContent = 'Sound: ' + (GG.Save.data.muted ? 'off' : 'on');
-      if (!GG.Save.data.muted) GG.Sfx.click();
-    });
-    $('menu-reset').addEventListener('click', function () {
-      if (window.confirm('Start a brand new garden? Everything Guin has caught will be forgotten.')) {
-        GG.Save.reset();
-        location.reload();
-      }
-    });
 
     GG.UI.onCatchClosed = function () { swingChecked = true; };
 
