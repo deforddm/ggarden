@@ -2591,13 +2591,35 @@ ul.tips li{margin-bottom:3px}
       }
 
       // head
-      c.fillStyle = '#3a2a1e';
-      c.beginPath(); c.ellipse(0, -26.5, 10.4, 9.6, 0, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#fadcc0';
-      c.beginPath(); c.ellipse(0, -25.5, 8.6, 8.2, 0, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#3a2a1e';
-      c.beginPath(); c.ellipse(0, -30.6, 8.8, 5.6, 0, Math.PI, 0); c.fill();
-      if (d === 'down' || d === 'left' || d === 'right') {
+      var HAIR = '#3a2a1e';
+      if (d === 'up') {
+        // Seen from behind it is hair all the way round - no face, no bald patch.
+        c.fillStyle = HAIR;
+        c.beginPath(); c.ellipse(0, -26.5, 10.4, 9.8, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(-9.4, -25, 3.3, 6.4, 0.12, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(9.4, -25, 3.3, 6.4, -0.12, 0, Math.PI * 2); c.fill();
+        // a soft shine and a parting so it reads as the back of her head
+        c.fillStyle = 'rgba(255,255,255,0.13)';
+        c.beginPath(); c.ellipse(-0.6, -30.4, 7.4, 4.4, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 0.9; c.lineCap = 'round';
+        for (var hs = -1; hs <= 1; hs++) {
+          c.beginPath();
+          c.moveTo(hs * 3.4, -33.4);
+          c.quadraticCurveTo(hs * 5.2, -28, hs * 4.6, -20.6);
+          c.stroke();
+        }
+        // little bun
+        c.fillStyle = HAIR;
+        c.beginPath(); c.ellipse(0, -34.6, 4.6, 3.6, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ff8fb0';
+        c.beginPath(); c.ellipse(0, -34.6, 5.2, 1.5, 0, 0, Math.PI * 2); c.fill();
+      } else {
+        c.fillStyle = HAIR;
+        c.beginPath(); c.ellipse(0, -26.5, 10.4, 9.6, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#fadcc0';
+        c.beginPath(); c.ellipse(0, -25.5, 8.6, 8.2, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = HAIR;
+        c.beginPath(); c.ellipse(0, -30.6, 8.8, 5.6, 0, Math.PI, 0); c.fill();
         c.beginPath(); c.ellipse(-9.4, -25, 3.1, 6.2, 0.12, 0, Math.PI * 2); c.fill();
         c.beginPath(); c.ellipse(9.4, -25, 3.1, 6.2, -0.12, 0, Math.PI * 2); c.fill();
       }
@@ -3061,27 +3083,32 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/game/house.js ==== */
-/* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed. */
+/* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed.
+   The room is drawn at the same scale as the world outside, so Guin is the same size indoors. */
 (function (GG) {
   'use strict';
 
-  var W = 660, H = 470;
+  var W = 840, H = 640;
+  var FLOOR = 214;          // where the wall stops and the floorboards start
 
   var House = GG.House = {
-    W: W, H: H,
+    W: W, H: H, FLOOR: FLOOR,
+    START: { x: 415, y: 580 },
+
     spots: [
-      { id: 'book', x: 130, y: 168, w: 96, h: 70, label: 'Bug Book' },
-      { id: 'terrarium', x: 330, y: 150, w: 150, h: 70, label: 'Terrariums' },
-      { id: 'shop', x: 545, y: 170, w: 88, h: 66, label: 'Decoration Box' },
-      { id: 'bed', x: 570, y: 340, w: 110, h: 130, label: 'Bed' },
-      { id: 'door', x: 330, y: 452, w: 92, h: 30, label: 'Go Outside' }
+      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Bug Book' },
+      { id: 'terrarium', x: 410, y: 186, w: 186, h: 84, label: 'Terrariums' },
+      { id: 'shop', x: 675, y: 200, w: 116, h: 84, label: 'Decoration Box' },
+      { id: 'bed', x: 730, y: 430, w: 150, h: 250, label: 'Bed' },
+      { id: 'door', x: 415, y: 624, w: 116, h: 36, label: 'Go Outside' }
     ],
 
     blocked: function (x, y, rad) {
-      if (x < 44 + rad || x > W - 44 - rad) return true;
-      if (y < 150 + rad) return true;
-      if (y > H - 12 - rad) return true;
-      if (x > 510 - rad && x < W - 44 && y > 280 - rad && y < 450) return true; // bed
+      if (x < 52 + rad || x > W - 52 - rad) return true;
+      if (y < FLOOR + rad) return true;
+      if (y > H - 16 - rad) return true;
+      if (x > 644 - rad && y > 326 - rad && y < 604) return true;   // the bed
+      if (x < 132 + rad && y > 372 - rad && y < 430) return true;   // the potted plant
       return false;
     },
 
@@ -3092,124 +3119,126 @@ ul.tips li{margin-bottom:3px}
         var dx = Math.max(0, Math.abs(px - s.x) - s.w / 2);
         var dy = Math.max(0, Math.abs(py - s.y) - s.h / 2);
         var d = Math.sqrt(dx * dx + dy * dy);
-        if (d < 44 && d < bd) { bd = d; best = s; }
+        if (d < 64 && d < bd) { bd = d; best = s; }
       }
       return best;
     },
 
     draw: function (c, cam, t) {
-      var ox = -cam.x, oy = -cam.y;
       c.save();
-      c.translate(ox, oy);
+      c.translate(-cam.x, -cam.y);
 
-      // wall
+      /* ---- wall ---- */
       c.fillStyle = '#e9d3b4';
-      c.fillRect(0, 0, W, 168);
+      c.fillRect(0, 0, W, FLOOR);
       c.fillStyle = '#dcc19c';
-      for (var i = 0; i < W; i += 44) c.fillRect(i, 0, 2, 168);
+      for (var i = 0; i < W; i += 52) c.fillRect(i, 0, 2, FLOOR);
       c.fillStyle = '#c9a97f';
-      c.fillRect(0, 160, W, 12);
+      c.fillRect(0, FLOOR - 14, W, 14);
 
-      // floor
+      /* ---- floor ---- */
       c.fillStyle = '#c69a6b';
-      c.fillRect(0, 172, W, H - 172);
+      c.fillRect(0, FLOOR, W, H - FLOOR);
       c.fillStyle = '#b98c5f';
-      for (var y = 172; y < H; y += 34) c.fillRect(0, y, W, 3);
-      for (var x = 0; x < W; x += 90) c.fillRect(x, 172, 2, H - 172);
+      for (var y = FLOOR + 6; y < H; y += 40) c.fillRect(0, y, W, 3);
+      for (var x = 0; x < W; x += 106) c.fillRect(x, FLOOR, 2, H - FLOOR);
 
-      // rug
+      /* ---- rug ---- */
       c.fillStyle = '#8fc7d8';
-      c.beginPath(); c.ellipse(300, 330, 140, 80, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(380, 432, 178, 104, 0, 0, Math.PI * 2); c.fill();
       c.fillStyle = '#a9d9e6';
-      c.beginPath(); c.ellipse(300, 330, 108, 60, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(380, 432, 138, 78, 0, 0, Math.PI * 2); c.fill();
       c.fillStyle = '#8fc7d8';
-      c.beginPath(); c.ellipse(300, 330, 70, 38, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(380, 432, 90, 48, 0, 0, Math.PI * 2); c.fill();
 
-      // window with the outside world showing through
+      /* ---- window, with the real time of day showing through ---- */
       var night = GG.Time.isDark();
       c.fillStyle = '#8a6a45';
-      GG.roundRect(c, 208, 24, 116, 84, 6); c.fill();
+      GG.roundRect(c, 330, 30, 142, 104, 7); c.fill();
       c.fillStyle = night ? '#20306a' : '#a7dcf4';
-      c.fillRect(214, 30, 104, 72);
+      c.fillRect(337, 37, 128, 90);
       if (night) {
         c.fillStyle = '#fff6c4';
-        c.beginPath(); c.arc(296, 48, 9, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(434, 62, 11, 0, Math.PI * 2); c.fill();
         c.fillStyle = '#dfe8ff';
-        for (var s = 0; s < 9; s++) {
-          c.fillRect(220 + (s * 37) % 92, 34 + (s * 23) % 56, 2, 2);
-        }
+        for (var s = 0; s < 11; s++) c.fillRect(342 + (s * 41) % 116, 42 + (s * 27) % 74, 2, 2);
       } else {
-        c.fillStyle = '#7fc46a'; c.fillRect(214, 78, 104, 24);
-        c.fillStyle = '#ffe98a'; c.beginPath(); c.arc(300, 46, 10, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#7fc46a'; c.fillRect(337, 98, 128, 29);
+        c.fillStyle = '#ffe98a';
+        c.beginPath(); c.arc(438, 58, 12, 0, Math.PI * 2); c.fill();
         c.fillStyle = '#ffffff';
-        c.beginPath(); c.ellipse(246, 50, 18, 8, 0, 0, Math.PI * 2); c.fill();
-        c.beginPath(); c.ellipse(262, 46, 12, 6, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(372, 62, 21, 9, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(392, 57, 14, 7, 0, 0, Math.PI * 2); c.fill();
       }
-      c.strokeStyle = '#8a6a45'; c.lineWidth = 5;
-      c.beginPath(); c.moveTo(266, 30); c.lineTo(266, 102);
-      c.moveTo(214, 66); c.lineTo(318, 66); c.stroke();
+      c.strokeStyle = '#8a6a45'; c.lineWidth = 6;
+      c.beginPath();
+      c.moveTo(401, 37); c.lineTo(401, 127);
+      c.moveTo(337, 82); c.lineTo(465, 82);
+      c.stroke();
 
-      // bookshelf (the Bug Book)
+      /* ---- bookshelf (the Bug Book) ---- */
       c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 86, 96, 92, 78, 4); c.fill();
-      c.fillStyle = '#7d5733'; c.fillRect(90, 132, 84, 5);
+      GG.roundRect(c, 92, 112, 108, 96, 5); c.fill();
+      c.fillStyle = '#7d5733'; c.fillRect(97, 156, 98, 6);
       var bookCols = ['#d2584f', '#e0a34a', '#5f9ed6', '#78bb63', '#b57fd1'];
       for (var b = 0; b < 5; b++) {
         c.fillStyle = bookCols[b];
-        c.fillRect(94 + b * 16, 104, 12, 28);
+        c.fillRect(102 + b * 19, 121, 14, 35);
       }
       c.fillStyle = '#f2e6cf';
-      GG.roundRect(c, 96, 140, 70, 28, 3); c.fill();
+      GG.roundRect(c, 104, 166, 84, 34, 4); c.fill();
       c.fillStyle = '#4b6b3a';
-      c.font = 'bold 13px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
-      c.fillText('BUGS', 131, 159);
+      c.font = 'bold 16px "Trebuchet MS", sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+      c.fillText('BUGS', 146, 190);
 
-      // terrarium table
+      /* ---- terrarium table ---- */
       c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 256, 124, 150, 46, 5); c.fill();
-      c.fillStyle = '#8a5f36'; c.fillRect(268, 168, 10, 14); c.fillRect(384, 168, 10, 14);
+      GG.roundRect(c, 320, 152, 180, 54, 6); c.fill();
+      c.fillStyle = '#8a5f36'; c.fillRect(334, 204, 12, 18); c.fillRect(474, 204, 12, 18);
       var tanks = GG.Save.data.terrariums.length;
       for (var k = 0; k < Math.min(3, tanks); k++) {
-        var tx = 278 + k * 48;
+        var tx = 336 + k * 58;
         c.fillStyle = 'rgba(180,230,255,0.55)';
-        GG.roundRect(c, tx, 92, 38, 34, 4); c.fill();
+        GG.roundRect(c, tx, 112, 46, 42, 5); c.fill();
         c.strokeStyle = '#cfe9f5'; c.lineWidth = 2; c.stroke();
-        c.fillStyle = '#7fc46a'; c.fillRect(tx + 2, 114, 34, 10);
+        c.fillStyle = '#7fc46a'; c.fillRect(tx + 3, 139, 40, 13);
       }
 
-      // decoration box
+      /* ---- decoration box ---- */
       c.fillStyle = '#c98f56';
-      GG.roundRect(c, 504, 130, 82, 46, 5); c.fill();
+      GG.roundRect(c, 622, 160, 100, 56, 6); c.fill();
       c.fillStyle = '#e0a86c';
-      GG.roundRect(c, 500, 118, 90, 20, 5); c.fill();
-      c.fillStyle = '#8a5f36'; c.fillRect(540, 138, 10, 14);
+      GG.roundRect(c, 617, 146, 110, 24, 6); c.fill();
+      c.fillStyle = '#8a5f36'; c.fillRect(665, 170, 12, 18);
       c.fillStyle = '#ffd45c';
-      c.beginPath(); c.arc(545, 150, 5, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(671, 185, 6, 0, Math.PI * 2); c.fill();
 
-      // bed
+      /* ---- bed ---- */
       c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 516, 276, 106, 172, 10); c.fill();
+      GG.roundRect(c, 656, 326, 136, 278, 12); c.fill();
       c.fillStyle = '#f6eadf';
-      GG.roundRect(c, 522, 282, 94, 52, 8); c.fill();
+      GG.roundRect(c, 664, 334, 120, 68, 9); c.fill();
       c.fillStyle = '#e07f9c';
-      GG.roundRect(c, 522, 320, 94, 122, 8); c.fill();
+      GG.roundRect(c, 664, 382, 120, 214, 9); c.fill();
       c.fillStyle = '#f09cb4';
-      GG.roundRect(c, 522, 356, 94, 20, 4); c.fill();
+      GG.roundRect(c, 664, 430, 120, 26, 5); c.fill();
 
-      // potted plant + door
+      /* ---- potted plant ---- */
       c.fillStyle = '#c4703f';
-      GG.roundRect(c, 62, 300, 44, 40, 6); c.fill();
-      GG.Props.bush(c, 84, 302, 34, t, 0.4);
+      GG.roundRect(c, 68, 380, 56, 50, 7); c.fill();
+      GG.Props.bush(c, 96, 382, 42, t, 0.4);
 
+      /* ---- door ---- */
       c.fillStyle = '#8a5f36';
-      GG.roundRect(c, 284, 436, 92, 34, 6); c.fill();
+      GG.roundRect(c, 358, 600, 116, 40, 7); c.fill();
       c.fillStyle = '#a9743f';
-      GG.roundRect(c, 290, 442, 80, 28, 5); c.fill();
+      GG.roundRect(c, 365, 607, 102, 33, 6); c.fill();
       c.fillStyle = '#ffd45c';
-      c.beginPath(); c.arc(360, 456, 4, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(452, 623, 5, 0, Math.PI * 2); c.fill();
       c.fillStyle = '#5b432a';
-      c.font = 'bold 12px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
-      c.fillText('outside', 330, 461);
+      c.font = 'bold 14px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
+      c.fillText('outside', 415, 629);
 
       c.restore();
     }
@@ -3447,6 +3476,7 @@ ul.tips li{margin-bottom:3px}
   var $ = GG.$;
   var CW = 640, CH = 420, GROUND = 300;
   var MAX_BUGS = 8, MAX_DECOR = 12;
+  var AIR = { flutter: 1, hover: 1, dart: 1, drift: 1, glow: 1 };
 
   var T = GG.Terrarium = {
     index: 0,
@@ -3541,6 +3571,86 @@ ul.tips li{margin-bottom:3px}
       this.refresh();
     },
 
+    /* Each bug in a tank wanders about near the spot it was put down. */
+    motionFor: function (it) {
+      if (!this._motion) this._motion = new WeakMap();
+      var m = this._motion.get(it);
+      if (!m) {
+        m = { ox: 0, oy: 0, ang: Math.random() * Math.PI * 2, timer: GG.rand(0.2, 1.5),
+          hop: 0, dash: 0, lift: 0, lx: it.x, ly: it.y, face: -Math.PI / 2 };
+        this._motion.set(it, m);
+      }
+      return m;
+    },
+
+    stepBugs: function (dt) {
+      var tank = this.tank();
+      for (var i = 0; i < tank.bugs.length; i++) {
+        var it = tank.bugs[i];
+        var def = GG.BUG_BY_ID[it.id];
+        if (!def) continue;
+        var m = this.motionFor(it);
+
+        // While she is dragging one, it sits still under her finger.
+        if (this.drag && this.drag.e.it === it) {
+          m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y;
+          continue;
+        }
+
+        var b = def.behavior;
+        var air = !!AIR[b];
+        var radius = air ? 108 : 76;
+        var speed = (air ? def.speed * 0.44 : Math.max(def.speed, 16) * 0.5);
+
+        m.timer -= dt;
+        if (m.timer <= 0) {
+          m.ang += GG.rand(-1.7, 1.7);
+          m.timer = GG.rand(0.5, 1.8);
+          if (b === 'hop') { m.hop = 0.5; m.timer = GG.rand(1.2, 2.6); }
+          if (b === 'dart') m.dash = 0.45;
+        }
+
+        var move = 1;
+        if (b === 'hover') move = (Math.sin(m.timer * 4) > 0.55) ? 0.15 : 1;
+        if (b === 'dart') { m.dash = Math.max(0, m.dash - dt); move = m.dash > 0 ? 2.3 : 0.12; }
+        if (b === 'glow' || b === 'drift') move = 0.75;
+        if (b === 'hop') { if (m.hop > 0) { m.hop -= dt; move = 2.3; } else move = 0; }
+
+        var vx = Math.cos(m.ang) * speed * move;
+        var vy = Math.sin(m.ang) * speed * move * (air ? 0.7 : 0.4);
+        m.ox += vx * dt;
+        m.oy += vy * dt;
+
+        var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
+        if (away > radius) {
+          m.ox = m.ox / away * radius;
+          m.oy = m.oy / away * radius;
+          m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.6, 0.6);
+        }
+
+        var wantX = it.x + m.ox, wantY = it.y + m.oy;
+        var lx = GG.clamp(wantX, 40, CW - 40);
+        var ly = GG.clamp(wantY, air ? 50 : GROUND - 6, air ? GROUND + 16 : CH - 46);
+        if (lx !== wantX) { m.ox = lx - it.x; m.ang = Math.PI - m.ang; }
+        if (ly !== wantY) { m.oy = ly - it.y; m.ang = -m.ang; }
+
+        if (b === 'hop' && m.hop > 0) {
+          m.lift = Math.sin((1 - m.hop / 0.5) * Math.PI) * 24;
+        } else {
+          m.lift *= 0.86;
+        }
+
+        m.lx = lx; m.ly = ly;
+        if (move > 0.25) m.face = GG.angLerp(m.face, Math.atan2(vy, vx), Math.min(1, dt * 6));
+      }
+    },
+
+    livePos: function (e) {
+      if (e.kind !== 'bug') return { x: e.it.x, y: e.it.y - 18 };
+      var m = this.motionFor(e.it);
+      return { x: m.lx, y: m.ly - m.lift };
+    },
+
     items: function () {
       var t = this.tank(), out = [];
       t.decor.forEach(function (d) { out.push({ kind: 'decor', it: d }); });
@@ -3551,10 +3661,9 @@ ul.tips li{margin-bottom:3px}
     pick: function (x, y) {
       var all = this.items();
       for (var i = all.length - 1; i >= 0; i--) {
-        var e = all[i], it = e.it;
-        var r = e.kind === 'bug' ? 30 : 32;
-        var dy = e.kind === 'bug' ? 0 : -18;
-        if (GG.dist(x, y, it.x, it.y + dy) < r) return e;
+        var e = all[i];
+        var pos = this.livePos(e);
+        if (GG.dist(x, y, pos.x, pos.y) < (e.kind === 'bug' ? 32 : 32)) return e;
       }
       return null;
     },
@@ -3607,24 +3716,30 @@ ul.tips li{margin-bottom:3px}
       c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
 
       // items, back to front
-      var all = this.items().sort(function (a, b) { return a.it.y - b.it.y; });
+      var self = this;
+      var all = this.items();
+      all.forEach(function (e) { e.pos = self.livePos(e); });
+      all.sort(function (a, b) { return (a.kind === 'bug' ? a.pos.y : a.it.y) - (b.kind === 'bug' ? b.pos.y : b.it.y); });
       for (var i = 0; i < all.length; i++) {
-        var e = all[i], it = e.it;
+        var e = all[i], it = e.it, pos = e.pos;
         if (e.kind === 'decor') {
           var fn = GG.DecorArt[it.id];
           if (fn) fn(c, it.x, it.y, 1.75, t + it.seed * 10);
         } else {
           var def = GG.BUG_BY_ID[it.id];
           if (!def) continue;
-          var bob = Math.sin(t * 1.6 + it.seed * 9) * (def.behavior === 'flutter' || def.behavior === 'hover' || def.behavior === 'glow' ? 7 : 1.2);
-          var tilt = Math.sin(t * 0.8 + it.seed * 4) * 0.18;
-          if (it.y < GROUND - 10) GG.BugArt.shadow(c, it.x, GROUND + 40, 14, 0.1);
-          GG.BugArt.draw(c, def, it.x, it.y + bob, 3.5, -Math.PI / 2 + tilt, t + it.seed * 6);
+          var m = this.motionFor(it);
+          var flyer = !!AIR[def.behavior];
+          var bob = Math.sin(t * 1.8 + it.seed * 9) * (flyer ? 3.4 : 0.8);
+          if (flyer || m.lift > 1) {
+            GG.BugArt.shadow(c, m.lx, GROUND + 42, 13, 0.1);
+          }
+          GG.BugArt.draw(c, def, pos.x, pos.y + bob, 3.5, m.face, t + it.seed * 6);
         }
         if (this.sel === it) {
           c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 3;
           c.setLineDash([6, 6]); c.lineDashOffset = -t * 16;
-          c.beginPath(); c.arc(it.x, it.y + (e.kind === 'bug' ? 0 : -18), 34, 0, Math.PI * 2); c.stroke();
+          c.beginPath(); c.arc(pos.x, pos.y, 34, 0, Math.PI * 2); c.stroke();
           c.setLineDash([]);
         }
       }
@@ -3648,9 +3763,12 @@ ul.tips li{margin-bottom:3px}
     loop: function () {
       var self = this;
       cancelAnimationFrame(this._raf);
-      var start = performance.now();
+      var start = performance.now(), last = start;
       function frame(now) {
         if ($('screen-terrarium').classList.contains('hidden')) return;
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        self.stepBugs(dt);
         self.draw((now - start) / 1000);
         self._raf = requestAnimationFrame(frame);
       }
@@ -3670,6 +3788,12 @@ ul.tips li{margin-bottom:3px}
         ev.preventDefault();
         var p = self.toCanvas(ev);
         var hit = self.pick(p.x, p.y);
+        if (hit && hit.kind === 'bug') {
+          // grab it where it has flown to, not where it was first put down
+          var m = self.motionFor(hit.it);
+          hit.it.x = m.lx; hit.it.y = m.ly - m.lift;
+          m.ox = 0; m.oy = 0; m.lift = 0;
+        }
         self.sel = hit ? hit.it : null;
         self.drag = hit ? { e: hit, dx: p.x - hit.it.x, dy: p.y - hit.it.y } : null;
         $('tank-remove').style.display = self.sel ? '' : 'none';
@@ -3847,12 +3971,8 @@ ul.tips li{margin-bottom:3px}
 
   function applyZoom() {
     var w = GG.view.cssW, h = GG.view.cssH;
-    var z;
-    if (scene === 'house') {
-      z = GG.clamp(Math.min(w / 700, h / 560), 0.7, 2.4);
-    } else {
-      z = GG.clamp(Math.max(h / 560, w / 780), 1, 2.8);
-    }
+    // One zoom for everywhere, so Guin is exactly the same size indoors and out.
+    var z = GG.clamp(Math.max(h / 560, w / 780), 1, 2.8);
     GG.view.zoom = z;
     GG.view.w = w / z; GG.view.h = h / z;
     ctx.setTransform(dpr * z, 0, 0, dpr * z, 0, 0);
@@ -3995,8 +4115,10 @@ ul.tips li{margin-bottom:3px}
       if (spot.id === 'bed') sleep();
     }
 
-    cam.x = (H.W - GG.view.w) / 2;
-    cam.y = (H.H - GG.view.h) / 2;
+    cam.x = GG.clamp(P.x - GG.view.w / 2, 0, H.W - GG.view.w);
+    cam.y = GG.clamp(P.y - GG.view.h / 2 - 10, 0, H.H - GG.view.h);
+    if (H.W < GG.view.w) cam.x = (H.W - GG.view.w) / 2;
+    if (H.H < GG.view.h) cam.y = (H.H - GG.view.h) / 2;
   }
 
   function drawHouse(t) {
@@ -4016,7 +4138,7 @@ ul.tips li{margin-bottom:3px}
     GG.Sfx.door();
     GG.Critters.calmAll();
     setScene('house');
-    GG.Player.reset(GG.House.W / 2, GG.House.H - 60);
+    GG.Player.reset(GG.House.START.x, GG.House.START.y);
     GG.UI.prompt(null);
     if (!GG.Save.data.seenHouseTip) {
       GG.Save.data.seenHouseTip = true; GG.Save.save();

@@ -1,5 +1,5 @@
 /* Guin's Garden service worker */
-const CACHE = 'guins-garden-v3';
+const CACHE = 'guins-garden-v4';
 const ASSETS = ['./', './index.html', './manifest.json',
   './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 self.addEventListener('install', e => {
