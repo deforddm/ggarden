@@ -1,0 +1,4093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#5fa855">
+<meta name="description" content="Guin's Garden - a gentle bug catching adventure.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Guin's Garden</title>
+<style>
+:root{
+  --cream:#fdf6e6; --cream2:#f6ead2; --ink:#3f3527; --ink2:#6b5c44;
+  --green:#5fa855; --green-d:#3f7d3a; --pink:#ef8fae; --sky:#7fc6e8;
+  --gold:#f2b93c; --shadow:0 4px 0 rgba(0,0,0,.16), 0 8px 20px rgba(0,0,0,.18);
+  --font:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#1d2a17;
+  font-family:var(--font);color:var(--ink);user-select:none;-webkit-user-select:none;
+  touch-action:none;overscroll-behavior:none}
+#app{position:fixed;inset:0;overflow:hidden}
+canvas#game{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;inset:0;pointer-events:none}
+#hud-top{position:absolute;top:calc(8px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));
+  right:calc(8px + env(safe-area-inset-right));display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap}
+.chip{background:rgba(253,246,230,.92);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:bold;
+  color:var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.12);white-space:nowrap}
+.chip.gold{color:#8a6212}
+#btn-menu{pointer-events:auto;margin-left:auto;background:rgba(253,246,230,.92);border:none;border-radius:999px;
+  width:38px;height:32px;font-size:17px;font-weight:bold;color:var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));
+  background:rgba(63,53,39,.86);color:#fff;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:bold;
+  opacity:0;transition:opacity .18s;white-space:nowrap}
+#prompt.show{opacity:1}
+#toast{position:absolute;left:50%;transform:translateX(-50%);top:58px;background:rgba(63,53,39,.9);color:#fff;
+  padding:8px 16px;border-radius:999px;font-size:14px;font-weight:bold;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ---------- touch controls ---------- */
+#touch{position:absolute;inset:0;pointer-events:none}
+#stick{position:absolute;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;
+  background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.30);opacity:0;transition:opacity .15s}
+#stick.on{opacity:1}
+#knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;
+  background:rgba(255,255,255,.55);border:2px solid rgba(255,255,255,.75)}
+#btn-a{pointer-events:auto;position:absolute;right:calc(20px + env(safe-area-inset-right));
+  bottom:calc(28px + env(safe-area-inset-bottom));width:92px;height:92px;border-radius:50%;border:none;
+  background:linear-gradient(#ffe9a8,#f2b93c);color:#5b4310;font-family:var(--font);font-weight:bold;font-size:15px;
+  box-shadow:0 5px 0 #b8871f,0 10px 18px rgba(0,0,0,.3);transition:transform .06s,box-shadow .06s}
+#btn-a.down{transform:translateY(4px);box-shadow:0 1px 0 #b8871f}
+#btn-a small{display:block;font-size:11px;opacity:.7;font-weight:normal}
+
+/* ---------- panels ---------- */
+.panel{position:absolute;inset:0;background:rgba(35,52,30,.72);display:flex;align-items:center;
+  justify-content:center;padding:12px;z-index:20;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.panel.hidden{display:none}
+.sheet{background:var(--cream);border-radius:22px;box-shadow:var(--shadow);width:100%;max-width:560px;
+  max-height:100%;display:flex;flex-direction:column;overflow:hidden;border:3px solid #e5d5b4}
+.sheet header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--green);color:#fff}
+.sheet header h2{margin:0;font-size:18px;flex:1}
+.sheet .body{padding:12px 14px;overflow:auto;-webkit-overflow-scrolling:touch;flex:1}
+.sheet footer{padding:10px 14px;border-top:2px solid #ece0c6;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.x{background:rgba(0,0,0,.18);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:19px;
+  font-weight:bold;font-family:var(--font)}
+button{font-family:var(--font);cursor:pointer}
+.btn{background:var(--cream2);border:2px solid #e0cfa8;border-radius:14px;padding:9px 14px;font-weight:bold;
+  font-size:14px;color:var(--ink);box-shadow:0 3px 0 #e0cfa8}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #e0cfa8}
+.btn.primary{background:var(--green);border-color:var(--green-d);color:#fff;box-shadow:0 3px 0 var(--green-d)}
+.btn.pink{background:var(--pink);border-color:#cf6f8f;color:#fff;box-shadow:0 3px 0 #cf6f8f}
+.btn.small{padding:6px 10px;font-size:13px;border-radius:11px}
+.btn[disabled]{opacity:.45}
+
+/* ---------- title ---------- */
+#screen-title{background:linear-gradient(#bfe8ff,#9ed98a 58%,#79c46a)}
+#title-card{text-align:center;padding:18px;max-width:460px;width:100%}
+#title-logo{font-size:clamp(34px,10vw,56px);font-weight:bold;color:#fff;line-height:1;
+  text-shadow:0 4px 0 #4f9147,0 8px 18px rgba(0,0,0,.25);margin:0 0 2px}
+#title-sub{color:#3f6b34;font-weight:bold;font-size:15px;margin:0 0 18px}
+#title-canvas{width:100%;max-width:340px;height:150px;display:block;margin:0 auto 14px}
+#title-card .btn{display:block;width:100%;max-width:280px;margin:0 auto 10px;padding:14px;font-size:17px}
+
+/* ---------- bug book ---------- */
+#book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.bugcell{background:var(--cream2);border:2px solid #eaddc0;border-radius:14px;padding:6px 4px 4px;text-align:center;
+  position:relative;overflow:hidden}
+.bugcell canvas{width:100%;height:54px;display:block}
+.bugcell .nm{font-size:10.5px;font-weight:bold;line-height:1.15;margin-top:2px;color:var(--ink2);min-height:25px}
+.bugcell.got{background:#fff;border-color:var(--green)}
+.bugcell .cnt{position:absolute;top:3px;right:5px;font-size:10px;font-weight:bold;color:var(--green-d)}
+.bugcell .rar{position:absolute;top:4px;left:5px;width:8px;height:8px;border-radius:50%}
+#book-detail{display:none}
+#detail-art{width:100%;height:150px;display:block;background:linear-gradient(#eaf6e4,#d9eed2);border-radius:16px}
+.factline{background:var(--cream2);border-radius:14px;padding:10px 12px;margin:8px 0;font-size:14.5px;line-height:1.45}
+.factline b{color:var(--green-d)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 2px}
+.tag{background:#eef3e6;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:bold;color:var(--ink2)}
+#progress{font-size:13px;font-weight:bold;color:var(--ink2)}
+
+/* ---------- catch popup ---------- */
+#catch-pop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:30;
+  background:rgba(35,52,30,.55);padding:14px}
+#catch-pop.hidden{display:none}
+#catch-card{background:var(--cream);border-radius:22px;border:3px solid #e5d5b4;box-shadow:var(--shadow);
+  width:100%;max-width:340px;text-align:center;padding:16px;animation:pop .34s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+#catch-art{width:100%;height:130px;display:block}
+#catch-name{font-size:21px;font-weight:bold;margin:2px 0 2px}
+#catch-new{display:inline-block;background:var(--gold);color:#5b4310;font-weight:bold;font-size:12px;
+  border-radius:999px;padding:3px 12px;margin-bottom:6px}
+#catch-fact{font-size:14px;line-height:1.45;background:var(--cream2);border-radius:14px;padding:10px;margin:8px 0}
+#catch-reward{font-weight:bold;color:#8a6212;margin-bottom:10px}
+
+/* ---------- terrarium ---------- */
+#tank-wrap{position:relative}
+#tank-canvas{width:100%;display:block;border-radius:16px;background:#cfe9f5;touch-action:none}
+#tank-name{font-size:16px;font-weight:bold;text-align:center;margin:6px 0 4px}
+.tabs{display:flex;gap:6px;margin:8px 0 6px}
+.tab{flex:1;background:var(--cream2);border:2px solid #eaddc0;border-radius:12px;padding:7px;font-weight:bold;
+  font-size:13px;text-align:center}
+.tab.on{background:var(--green);border-color:var(--green-d);color:#fff}
+#tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:150px;overflow:auto}
+.trayitem{background:var(--cream2);border:2px solid #eaddc0;border-radius:12px;padding:3px;text-align:center}
+.trayitem canvas{width:100%;height:42px;display:block}
+.trayitem .nm{font-size:9.5px;font-weight:bold;color:var(--ink2);line-height:1.1;min-height:22px}
+.trayitem.locked{opacity:.55}
+.price{font-size:10px;color:#8a6212;font-weight:bold}
+
+/* ---------- shop ---------- */
+#shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.shopitem{background:var(--cream2);border:2px solid #eaddc0;border-radius:14px;padding:6px;text-align:center}
+.shopitem canvas{width:100%;height:56px;display:block}
+.shopitem .nm{font-size:11px;font-weight:bold;min-height:26px;line-height:1.15}
+.shopitem.owned{border-color:var(--green);background:#fff}
+
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.note{font-size:13px;color:var(--ink2);line-height:1.45}
+input[type=text]{font-family:var(--font);font-size:15px;padding:8px 10px;border:2px solid #e0cfa8;border-radius:12px;
+  width:100%;background:#fff;color:var(--ink)}
+.hidden{display:none!important}
+ul.tips{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.6}
+ul.tips li{margin-bottom:3px}
+
+#btn-update{pointer-events:auto;background:var(--gold);border:none;border-radius:999px;padding:6px 12px;
+  font-family:var(--font);font-weight:bold;font-size:12px;color:#5b4310;box-shadow:0 2px 0 #b8871f}
+#minimap{width:100%;display:block;border-radius:16px;border:3px solid #e5d5b4;background:#8ecf63}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <div id="hud">
+    <div id="hud-top">
+      <div class="chip" id="chip-place">Flower Garden</div>
+      <div class="chip" id="chip-time">Day 1 &middot; 8:00am</div>
+      <div class="chip gold" id="chip-sparkles">&#10022; 0</div>
+      <button id="btn-menu" aria-label="Menu">&#9776;</button>
+      <button id="btn-update" class="hidden">New version &mdash; tap to update</button>
+    </div>
+    <div id="prompt"></div>
+    <div id="toast"></div>
+  </div>
+
+  <div id="touch">
+    <div id="stick"><div id="knob"></div></div>
+    <button id="btn-a">NET<small>tap</small></button>
+  </div>
+
+  <!-- title -->
+  <div class="panel" id="screen-title">
+    <div id="title-card">
+      <h1 id="title-logo">Guin's Garden</h1>
+      <p id="title-sub">a gentle bug catching adventure</p>
+      <canvas id="title-canvas" width="680" height="300"></canvas>
+      <button class="btn primary" id="btn-play">Play</button>
+      <button class="btn" id="btn-howto">How to play</button>
+    </div>
+  </div>
+
+  <!-- how to play -->
+  <div class="panel hidden" id="screen-help">
+    <div class="sheet">
+      <header><h2>How to play</h2><button class="x" data-close="screen-help">&times;</button></header>
+      <div class="body">
+        <ul class="tips">
+          <li><b>Walk</b> by holding your thumb anywhere on the left side of the screen and sliding it.</li>
+          <li><b>Swing your net</b> with the big yellow button.</li>
+          <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
+          <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths!</li>
+          <li>Go <b>home</b> (the little cottage) to read about every bug you have caught and to build terrariums.</li>
+          <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them on decorations in the box by your bed.</li>
+        </ul>
+        <p class="note">On a computer you can use the arrow keys (or WASD) to walk, hold <b>shift</b> to tiptoe, and press <b>space</b> to swing.</p>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-help">Got it</button></footer>
+    </div>
+  </div>
+
+  <!-- pause / menu -->
+  <div class="panel hidden" id="screen-menu">
+    <div class="sheet">
+      <header><h2>Garden Menu</h2><button class="x" data-close="screen-menu">&times;</button></header>
+      <div class="body">
+        <div class="row" style="margin-bottom:10px">
+          <div class="grow"><b id="menu-progress">0 of 31 bugs found</b><div class="note" id="menu-place"></div></div>
+        </div>
+        <canvas id="minimap" width="640" height="480"></canvas>
+        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house.</div>
+        <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Bug Book</button>
+        <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
+        <button class="btn grow" id="menu-mute" style="width:100%;margin-bottom:8px">Sound: on</button>
+        <button class="btn grow" id="menu-reset" style="width:100%">Start a brand new garden</button>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-menu">Back to the garden</button></footer>
+    </div>
+  </div>
+
+  <!-- bug book -->
+  <div class="panel hidden" id="screen-book">
+    <div class="sheet">
+      <header><h2>Bug Book</h2><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
+      <div class="body">
+        <div id="book-grid"></div>
+        <div id="book-detail"></div>
+      </div>
+      <footer><button class="btn grow" id="book-back" style="display:none">All bugs</button>
+        <button class="btn primary grow" data-close="screen-book">Close</button></footer>
+    </div>
+  </div>
+
+  <!-- terrarium -->
+  <div class="panel hidden" id="screen-terrarium">
+    <div class="sheet">
+      <header><h2>Terrariums</h2><button class="x" data-close="screen-terrarium">&times;</button></header>
+      <div class="body">
+        <div id="tank-name"></div>
+        <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn small" id="tank-prev">&#8592;</button>
+          <span class="grow" style="text-align:center;font-size:13px;font-weight:bold" id="tank-count"></span>
+          <button class="btn small" id="tank-next">&#8594;</button>
+          <button class="btn small" id="tank-rename">Name</button>
+          <button class="btn small" id="tank-bg">Scene</button>
+          <button class="btn small pink" id="tank-remove">Remove</button>
+        </div>
+        <div class="tabs">
+          <div class="tab on" data-tab="bugs">My bugs</div>
+          <div class="tab" data-tab="decor">Decorations</div>
+        </div>
+        <div id="tray"></div>
+      </div>
+      <footer>
+        <button class="btn small" id="tank-new">New terrarium</button>
+        <button class="btn small" id="tank-clear">Empty it</button>
+        <button class="btn primary grow" data-close="screen-terrarium">Done</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- shop -->
+  <div class="panel hidden" id="screen-shop">
+    <div class="sheet">
+      <header><h2>Decoration Box</h2><span class="chip gold" id="shop-sparkles"></span><button class="x" data-close="screen-shop">&times;</button></header>
+      <div class="body">
+        <p class="note">Catch bugs to earn &#10022; sparkles, then buy pretty things for your terrariums.</p>
+        <div id="shop-grid"></div>
+        <h3 style="font-size:15px;margin:14px 0 6px">Terrarium scenes</h3>
+        <div id="shop-bgs" class="shopitem-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px"></div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-shop">Close</button></footer>
+    </div>
+  </div>
+
+  <!-- catch popup -->
+  <div id="catch-pop" class="hidden">
+    <div id="catch-card">
+      <canvas id="catch-art" width="640" height="260"></canvas>
+      <div id="catch-new">NEW!</div>
+      <div id="catch-name"></div>
+      <div id="catch-fact"></div>
+      <div id="catch-reward"></div>
+      <button class="btn primary" id="catch-ok" style="width:100%;padding:12px;font-size:16px">Nice!</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ==== src/core/util.js ==== */
+/* Small helpers shared by everything. */
+(function (GG) {
+  'use strict';
+
+  GG.clamp = function (v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); };
+  GG.lerp = function (a, b, t) { return a + (b - a) * t; };
+  GG.dist2 = function (ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; };
+  GG.dist = function (ax, ay, bx, by) { return Math.sqrt(GG.dist2(ax, ay, bx, by)); };
+  GG.rand = function (a, b) { return a + Math.random() * (b - a); };
+  GG.randInt = function (a, b) { return Math.floor(a + Math.random() * (b - a + 1)); };
+  GG.pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+  GG.angLerp = function (a, b, t) {
+    var d = ((b - a + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    return a + d * t;
+  };
+
+  // Deterministic pseudo-random, so the world looks the same every visit.
+  GG.hash2 = function (x, y, seed) {
+    var h = x * 374761393 + y * 668265263 + (seed || 0) * 2246822519;
+    h = (h ^ (h >> 13)) * 1274126177;
+    h = h ^ (h >> 16);
+    return ((h >>> 0) % 100000) / 100000;
+  };
+  GG.noise2 = function (x, y, seed) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a = GG.hash2(xi, yi, seed), b = GG.hash2(xi + 1, yi, seed);
+    var c = GG.hash2(xi, yi + 1, seed), d = GG.hash2(xi + 1, yi + 1, seed);
+    return GG.lerp(GG.lerp(a, b, u), GG.lerp(c, d, u), v);
+  };
+  GG.mulberry32 = function (a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+
+  GG.roundRect = function (ctx, x, y, w, h, r) {
+    var rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  };
+
+  GG.shade = function (hex, amt) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    if (amt > 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
+    else { r *= (1 + amt); g *= (1 + amt); b *= (1 + amt); }
+    return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
+  };
+
+  GG.el = function (tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  GG.$ = function (id) { return document.getElementById(id); };
+})(window.GG = window.GG || {});
+
+/* ==== src/core/save.js ==== */
+/* Saving and loading the player's garden. */
+(function (GG) {
+  'use strict';
+  var KEY = 'guins-garden-save-v1';
+
+  function fresh() {
+    return {
+      v: 1,
+      name: 'Guin',
+      sparkles: 0,
+      caught: {},          // bugId -> { count, first(ms), bestSize }
+      terrariums: [
+        { name: 'My First Terrarium', bg: 'meadow', decor: [], bugs: [] }
+      ],
+      unlockedDecor: ['leaf', 'pebble', 'twig', 'mushroom'],
+      unlockedTanks: 1,
+      clock: 8 * 60,       // in-game minutes past midnight
+      day: 1,
+      totalCatches: 0,
+      seenIntro: false,
+      seenHouseTip: false,
+      muted: false
+    };
+  }
+
+  GG.Save = {
+    data: fresh(),
+    fresh: fresh,
+    load: function () {
+      try {
+        var raw = localStorage.getItem(KEY);
+        if (raw) {
+          var d = JSON.parse(raw);
+          var base = fresh();
+          for (var k in base) if (!(k in d)) d[k] = base[k];
+          if (!d.terrariums || !d.terrariums.length) d.terrariums = base.terrariums;
+          this.data = d;
+        }
+      } catch (e) { this.data = fresh(); }
+      return this.data;
+    },
+    save: function () {
+      try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {}
+    },
+    reset: function () { this.data = fresh(); this.save(); },
+    has: function (id) { return !!this.data.caught[id]; },
+    countOf: function (id) { var c = this.data.caught[id]; return c ? c.count : 0; },
+    totalSpecies: function () { return Object.keys(this.data.caught).length; },
+    addCatch: function (id) {
+      var c = this.data.caught[id];
+      var isNew = !c;
+      if (!c) c = this.data.caught[id] = { count: 0, first: Date.now() };
+      c.count++;
+      this.data.totalCatches++;
+      this.save();
+      return isNew;
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/core/input.js ==== */
+/* Touch joystick + keyboard. Works on a phone or a laptop. */
+(function (GG) {
+  'use strict';
+
+  var Input = GG.Input = {
+    x: 0, y: 0,          // stick direction, -1..1
+    mag: 0,              // 0..1 how far the stick is pushed
+    actionPressed: false,// edge trigger for the A button
+    keys: {},
+    stick: { active: false, id: null, ox: 0, oy: 0, cx: 0, cy: 0 },
+    _actionQueued: false,
+
+    init: function (rootEl, stickEl, knobEl, actionEl) {
+      var self = this;
+      this.stickEl = stickEl; this.knobEl = knobEl;
+
+      function startStick(id, px, py) {
+        self.stick.active = true; self.stick.id = id;
+        self.stick.ox = px; self.stick.oy = py;
+        self.stick.cx = px; self.stick.cy = py;
+        stickEl.style.left = px + 'px'; stickEl.style.top = py + 'px';
+        stickEl.classList.add('on');
+      }
+      function moveStick(px, py) {
+        var dx = px - self.stick.ox, dy = py - self.stick.oy;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var max = 52;
+        if (len > max) { dx = dx / len * max; dy = dy / len * max; len = max; }
+        self.stick.cx = self.stick.ox + dx; self.stick.cy = self.stick.oy + dy;
+        knobEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        self.mag = GG.clamp(len / max, 0, 1);
+        if (len > 0.01) { self.x = dx / (len || 1); self.y = dy / (len || 1); }
+        else { self.x = 0; self.y = 0; }
+      }
+      function endStick() {
+        self.stick.active = false; self.stick.id = null;
+        self.x = 0; self.y = 0; self.mag = 0;
+        knobEl.style.transform = 'translate(0,0)';
+        stickEl.classList.remove('on');
+      }
+
+      rootEl.addEventListener('touchstart', function (e) {
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          var t = e.changedTouches[i];
+          if (t.target === actionEl || actionEl.contains(t.target)) continue;
+          if (!self.stick.active && t.clientX < window.innerWidth * 0.62) {
+            startStick(t.identifier, t.clientX, t.clientY);
+          }
+        }
+        e.preventDefault();
+      }, { passive: false });
+
+      rootEl.addEventListener('touchmove', function (e) {
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          var t = e.changedTouches[i];
+          if (self.stick.active && t.identifier === self.stick.id) moveStick(t.clientX, t.clientY);
+        }
+        e.preventDefault();
+      }, { passive: false });
+
+      function touchEnd(e) {
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          if (self.stick.active && e.changedTouches[i].identifier === self.stick.id) endStick();
+        }
+      }
+      rootEl.addEventListener('touchend', touchEnd);
+      rootEl.addEventListener('touchcancel', touchEnd);
+
+      // Mouse, for playing on a computer.
+      rootEl.addEventListener('mousedown', function (e) {
+        if (e.target === actionEl || actionEl.contains(e.target)) return;
+        startStick('mouse', e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (self.stick.active && self.stick.id === 'mouse') moveStick(e.clientX, e.clientY);
+      });
+      window.addEventListener('mouseup', function () {
+        if (self.stick.active && self.stick.id === 'mouse') endStick();
+      });
+
+      function press(e) { e.preventDefault(); self._actionQueued = true; actionEl.classList.add('down'); }
+      function release() { actionEl.classList.remove('down'); }
+      actionEl.addEventListener('touchstart', press, { passive: false });
+      actionEl.addEventListener('touchend', release);
+      actionEl.addEventListener('mousedown', press);
+      actionEl.addEventListener('mouseup', release);
+      actionEl.addEventListener('mouseleave', release);
+
+      window.addEventListener('keydown', function (e) {
+        self.keys[e.key.toLowerCase()] = true;
+        if (e.key === ' ' || e.key === 'Enter') { self._actionQueued = true; e.preventDefault(); }
+        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
+      });
+      window.addEventListener('keyup', function (e) { self.keys[e.key.toLowerCase()] = false; });
+      window.addEventListener('blur', function () { self.keys = {}; endStick(); });
+    },
+
+    // Called once per frame, after the stick values are read.
+    beginFrame: function () {
+      var k = this.keys;
+      var kx = 0, ky = 0;
+      if (k['arrowleft'] || k['a']) kx -= 1;
+      if (k['arrowright'] || k['d']) kx += 1;
+      if (k['arrowup'] || k['w']) ky -= 1;
+      if (k['arrowdown'] || k['s']) ky += 1;
+      if (kx || ky) {
+        var l = Math.sqrt(kx * kx + ky * ky);
+        this.x = kx / l; this.y = ky / l;
+        this.mag = (k['shift']) ? 0.42 : 1;   // hold shift to tiptoe
+      } else if (!this.stick.active) {
+        this.x = 0; this.y = 0; this.mag = 0;
+      }
+      this.actionPressed = this._actionQueued;
+      this._actionQueued = false;
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/core/audio.js ==== */
+/* Tiny synthesised sounds - no audio files, so the game stays small and works offline. */
+(function (GG) {
+  'use strict';
+  var ctx = null;
+
+  function ac() {
+    if (!ctx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function tone(freq, dur, type, vol, slideTo, delay) {
+    if (GG.Save.data.muted) return;
+    var a = ac(); if (!a) return;
+    var t0 = a.currentTime + (delay || 0);
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t0);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol == null ? 0.12 : vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+
+  function noise(dur, vol, freq) {
+    if (GG.Save.data.muted) return;
+    var a = ac(); if (!a) return;
+    var n = Math.floor(a.sampleRate * dur);
+    var buf = a.createBuffer(1, n, a.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    var s = a.createBufferSource(); s.buffer = buf;
+    var f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq || 1400;
+    var g = a.createGain(); g.gain.value = vol == null ? 0.12 : vol;
+    s.connect(f); f.connect(g); g.connect(a.destination);
+    s.start();
+  }
+
+  GG.Sfx = {
+    unlock: function () { ac(); },
+    swing: function () { noise(0.14, 0.07, 2200); },
+    step: function () { noise(0.05, 0.02, 700); },
+    catchSmall: function () { tone(660, 0.10, 'triangle', 0.13); tone(880, 0.14, 'triangle', 0.11, null, 0.08); },
+    catchNew: function () {
+      [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.20, 'triangle', 0.12, null, i * 0.075); });
+    },
+    escape: function () { tone(520, 0.18, 'sine', 0.08, 260); },
+    click: function () { tone(760, 0.05, 'square', 0.05); },
+    door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
+    place: function () { tone(880, 0.07, 'triangle', 0.08); },
+    coin: function () { tone(1046, 0.06, 'square', 0.05); tone(1318, 0.09, 'square', 0.05, null, 0.05); },
+    night: function () { tone(392, 0.6, 'sine', 0.05, 330); }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/data/bugs.js ==== */
+/* Guin's Garden — bug roster.
+   Each species: where it lives, when it comes out, how it moves,
+   how to draw it, and true facts for the Bug Book. */
+(function (GG) {
+  'use strict';
+
+  // habitats: meadow, garden, forest, pond, hill, anywhere
+  // times:    morning, day, evening, night, any
+  // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift
+  // rarity:   1 common .. 5 legendary
+
+  GG.BUGS = [
+    {
+      id: 'blue_butterfly', name: 'Little Blue Butterfly',
+      habitats: ['meadow', 'garden'], times: ['morning', 'day'], rarity: 1, value: 10,
+      behavior: 'flutter', speed: 34, shy: 46, size: 1.0,
+      measure: '1 inch across',
+      art: { shape: 'butterfly', body: '#4a4356', wing: '#8fd0ff', wing2: '#d9f1ff', accent: '#ffffff', pattern: 'edge' },
+      facts: [
+        'Blue butterflies taste with their feet. They step on a leaf to find out if it is good food for their babies.',
+        'Many little blue butterflies are friends with ants. The ants protect the caterpillars, and the caterpillars give the ants a sweet drink.'
+      ]
+    },
+    {
+      id: 'cabbage_white', name: 'Cabbage White',
+      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 8,
+      behavior: 'flutter', speed: 32, shy: 40, size: 1.05,
+      measure: '2 inches across',
+      art: { shape: 'butterfly', body: '#5a5348', wing: '#fbfbf3', wing2: '#ffffff', accent: '#3c3a33', pattern: 'spots' },
+      facts: [
+        'Cabbage whites are one of the most common butterflies in the world, and they love vegetable gardens.',
+        'A butterfly wing is covered in tiny scales, like the shingles on a roof. If you touch one, some of the scales rub off like powder.'
+      ]
+    },
+    {
+      id: 'monarch', name: 'Monarch Butterfly',
+      habitats: ['meadow', 'garden'], times: ['morning', 'day'], rarity: 3, value: 60,
+      behavior: 'flutter', speed: 38, shy: 64, size: 1.25,
+      measure: '4 inches across',
+      art: { shape: 'butterfly', body: '#2b2b2b', wing: '#ff8c1a', wing2: '#ffb454', accent: '#1d1d1d', pattern: 'veins' },
+      facts: [
+        'Monarchs fly thousands of miles to spend the winter somewhere warm. That is one of the longest trips any insect makes.',
+        'Monarch caterpillars only eat milkweed. The milkweed makes them taste terrible, so birds learn to leave them alone.',
+        'No single monarch makes the whole round trip. It takes several generations to finish the journey.'
+      ]
+    },
+    {
+      id: 'swallowtail', name: 'Swallowtail Butterfly',
+      habitats: ['garden', 'meadow'], times: ['day'], rarity: 2, value: 30,
+      behavior: 'flutter', speed: 40, shy: 60, size: 1.2,
+      measure: '4 inches across',
+      art: { shape: 'swallowtail', body: '#2f2a22', wing: '#ffdf5c', wing2: '#ffeea1', accent: '#20252e', pattern: 'stripes' },
+      facts: [
+        'Swallowtails get their name from the long tails on their back wings, like the tail of a swallow bird.',
+        'A swallowtail caterpillar can pop out an orange, smelly fork from its head to scare away birds.'
+      ]
+    },
+    {
+      id: 'blue_morpho', name: 'Blue Morpho',
+      habitats: ['forest'], times: ['day'], rarity: 5, value: 300,
+      behavior: 'flutter', speed: 46, shy: 96, size: 1.5,
+      measure: '6 inches across',
+      art: { shape: 'butterfly', body: '#20202a', wing: '#2f7bff', wing2: '#7fc5ff', accent: '#0d1730', pattern: 'edge' },
+      facts: [
+        'A blue morpho is not actually painted blue. Its wings are covered in tiny ridges that bend light, so we see a shiny blue.',
+        'When it closes its wings, the brown underside with big eye spots makes it almost disappear against a tree.'
+      ]
+    },
+    {
+      id: 'luna_moth', name: 'Luna Moth',
+      habitats: ['forest'], times: ['night'], rarity: 4, value: 140,
+      behavior: 'flutter', speed: 30, shy: 70, size: 1.32,
+      measure: '4 inches across',
+      art: { shape: 'lunamoth', body: '#e8f3d2', wing: '#a7e08a', wing2: '#d6f5bd', accent: '#c8556b', pattern: 'eyespots' },
+      facts: [
+        'A grown-up luna moth has no mouth at all. It never eats. It lives about a week, just long enough to find a mate.',
+        'Its long twisty tails confuse bats. The bat aims at the spinning tail and the moth gets away.'
+      ]
+    },
+    {
+      id: 'rosy_maple', name: 'Rosy Maple Moth',
+      habitats: ['forest', 'orchard'], times: ['night'], rarity: 3, value: 70,
+      behavior: 'flutter', speed: 28, shy: 56, size: 1.0,
+      measure: '2 inches across',
+      art: { shape: 'moth', body: '#ffe08a', wing: '#ff9ecb', wing2: '#ffe97a', accent: '#ffd2e6', pattern: 'bands' },
+      facts: [
+        'Rosy maple moths are fuzzy like a tiny stuffed animal, and pink and yellow like strawberry lemonade.',
+        'Their caterpillars eat maple leaves, which is how the moth got its name.'
+      ]
+    },
+    {
+      id: 'atlas_moth', name: 'Atlas Moth',
+      habitats: ['forest'], times: ['night'], rarity: 5, value: 350,
+      behavior: 'flutter', speed: 24, shy: 92, size: 1.7,
+      measure: '10 inches across',
+      art: { shape: 'atlas', body: '#6b3a22', wing: '#c1652f', wing2: '#e7a663', accent: '#f3e2c4', pattern: 'window' },
+      facts: [
+        'Atlas moths have some of the biggest wings of any moth in the world, almost as wide as a dinner plate.',
+        'The tips of their front wings look a lot like snake heads. Many scientists think that is a trick to make hungry birds think twice.',
+        'Like the luna moth, an adult atlas moth cannot eat. It lives on the energy it stored as a caterpillar.'
+      ]
+    },
+    {
+      id: 'ladybug', name: 'Ladybug',
+      habitats: ['garden', 'meadow'], times: ['morning', 'day', 'evening'], rarity: 1, value: 10,
+      behavior: 'crawl', speed: 20, shy: 30, size: 0.8,
+      measure: 'as big as a pea',
+      art: { shape: 'ladybug', body: '#e02f2f', wing: '#e02f2f', accent: '#1a1a1a', pattern: 'spots' },
+      facts: [
+        'One ladybug can eat 50 aphids in a day, so gardeners love them.',
+        'The bright red colour is a warning. It tells birds "I taste awful, do not eat me."',
+        'Ladybugs are really beetles. Their red shells are hard covers that fold over their real flying wings.'
+      ]
+    },
+    {
+      id: 'firefly', name: 'Firefly',
+      habitats: ['meadow', 'pond'], times: ['evening', 'night'], rarity: 2, value: 35,
+      behavior: 'glow', speed: 26, shy: 44, size: 0.85,
+      measure: 'half an inch',
+      art: { shape: 'firefly', body: '#3b3326', wing: '#6b5b3e', accent: '#b6ff6a', pattern: 'glow' },
+      facts: [
+        'A firefly makes light inside its own body, and the light is cold. It does not get hot like a light bulb.',
+        'Fireflies blink in patterns to talk to each other. Each kind has its own secret blinking code.',
+        'Fireflies are beetles too, even though people call them lightning bugs.'
+      ]
+    },
+    {
+      id: 'jewel_beetle', name: 'Jewel Beetle',
+      habitats: ['forest', 'orchard'], times: ['day'], rarity: 4, value: 150,
+      behavior: 'cling', speed: 18, shy: 72, size: 0.95,
+      measure: '1 inch long',
+      art: { shape: 'beetle', body: '#12a67a', wing: '#1fd39a', accent: '#0b6b4f', pattern: 'stripes' },
+      facts: [
+        'Jewel beetles shine like metal and rainbows. People have used their shells to decorate jewellery and clothes.',
+        'Some jewel beetles can feel the heat of a forest fire from miles away and fly toward it to lay their eggs in the burnt wood.'
+      ]
+    },
+    {
+      id: 'stag_beetle', name: 'Stag Beetle',
+      habitats: ['forest'], times: ['evening', 'night'], rarity: 4, value: 160,
+      behavior: 'cling', speed: 16, shy: 74, size: 1.2,
+      measure: '2.5 inches long',
+      art: { shape: 'stagbeetle', body: '#4a2a17', wing: '#6b3d20', accent: '#2a1a10', pattern: 'plain' },
+      facts: [
+        'The big jaws on a male stag beetle look like deer antlers. He uses them to wrestle other males, not to bite people.',
+        'A stag beetle spends years as a grub in rotting wood before it becomes a beetle for just one summer.'
+      ]
+    },
+    {
+      id: 'rhino_beetle', name: 'Rhinoceros Beetle',
+      habitats: ['forest'], times: ['night'], rarity: 5, value: 320,
+      behavior: 'cling', speed: 18, shy: 88, size: 1.4,
+      measure: '2.5 inches long',
+      art: { shape: 'rhinobeetle', body: '#3b2413', wing: '#5a3a1e', accent: '#26170c', pattern: 'plain' },
+      facts: [
+        'Rhinoceros beetles are some of the strongest animals for their size. They can push objects many, many times their own weight.',
+        'The horn is only on the males, and they use it to flip each other off tree branches.',
+        'Even though they look scary, they eat fruit and tree sap and cannot hurt you.'
+      ]
+    },
+    {
+      id: 'dung_beetle', name: 'Dung Beetle',
+      habitats: ['hill', 'meadow'], times: ['day', 'evening', 'night'], rarity: 3, value: 65,
+      behavior: 'crawl', speed: 22, shy: 48, size: 0.9,
+      measure: '1 inch long',
+      art: { shape: 'beetle', body: '#2b2b30', wing: '#3d3d46', accent: '#15151a', pattern: 'plain' },
+      facts: [
+        'Some dung beetles roll animal poop into a ball and push it away, to eat and to raise their babies in. They are nature’s clean-up crew.',
+        'Some dung beetles look up at the Milky Way to keep their ball rolling in a straight line. They were the first animals we ever caught using the night sky as a map.'
+      ]
+    },
+    {
+      id: 'honeybee', name: 'Honeybee',
+      habitats: ['garden', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 25,
+      behavior: 'hover', speed: 44, shy: 56, size: 0.85,
+      measure: 'half an inch',
+      art: { shape: 'bee', body: '#e8a020', wing: '#fff0c4', accent: '#2d2216', pattern: 'stripes' },
+      facts: [
+        'When a honeybee finds flowers, she flies home and dances. The shape of her dance tells the other bees which way to go.',
+        'One worker bee makes about a twelfth of a teaspoon of honey in her whole life, so a jar of honey is the work of a lot of bees.',
+        'Bees can see a colour we cannot: ultraviolet. Many flowers have secret ultraviolet landing stripes just for bees.'
+      ]
+    },
+    {
+      id: 'bumblebee', name: 'Bumblebee',
+      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 15,
+      behavior: 'hover', speed: 38, shy: 44, size: 1.0,
+      measure: '1 inch long',
+      art: { shape: 'bee', body: '#f2c53d', wing: '#fff6dc', accent: '#241f1a', pattern: 'bands' },
+      facts: [
+        'Bumblebees grab a flower and shiver until the pollen shakes loose. It is called buzz pollination, and honeybees cannot do it.',
+        'A bumblebee can warm herself up by shivering her flight muscles, so she can fly on cold mornings when other bees stay home.'
+      ]
+    },
+    {
+      id: 'dragonfly', name: 'Blue Dasher Dragonfly',
+      habitats: ['pond', 'meadow'], times: ['morning', 'day'], rarity: 2, value: 40,
+      behavior: 'dart', speed: 78, shy: 78, size: 1.1,
+      measure: '1.5 inches long',
+      art: { shape: 'dragonfly', body: '#3aa0d8', wing: '#e7f6ff', accent: '#1c5f87', pattern: 'plain' },
+      facts: [
+        'Dragonflies are amazing hunters. In tests they caught almost every bug they went after, way more often than a lion or a shark does.',
+        'A dragonfly can fly up, down, backwards and sideways, and hover in one spot like a helicopter.',
+        'Its huge eyes are made of thousands of tiny lenses and can see almost all the way around its head.'
+      ]
+    },
+    {
+      id: 'emperor_dragonfly', name: 'Emperor Dragonfly',
+      habitats: ['pond'], times: ['day'], rarity: 4, value: 180,
+      behavior: 'dart', speed: 92, shy: 90, size: 1.4,
+      measure: '3 inches long',
+      art: { shape: 'dragonfly', body: '#2fd08a', wing: '#eafff5', accent: '#146b47', pattern: 'stripes' },
+      facts: [
+        'Emperor dragonflies often eat small bugs right in mid-air without stopping. Only a big catch makes them land.',
+        'A young dragonfly lives underwater for a year or more before it climbs out and its back splits open to let the adult out.'
+      ]
+    },
+    {
+      id: 'damselfly', name: 'Damselfly',
+      habitats: ['pond'], times: ['morning', 'day', 'evening'], rarity: 2, value: 28,
+      behavior: 'drift', speed: 40, shy: 52, size: 0.9,
+      measure: '1.5 inches long',
+      art: { shape: 'damselfly', body: '#5ad2ff', wing: '#f2fbff', accent: '#1b7fae', pattern: 'plain' },
+      facts: [
+        'Damselflies look like skinny dragonflies. The easy way to tell: a damselfly folds its wings up when it lands, a dragonfly keeps them out flat.',
+        'Damselflies are much slower and flutterier fliers than dragonflies, so they are easier to catch.'
+      ]
+    },
+    {
+      id: 'water_strider', name: 'Water Strider',
+      habitats: ['pond'], times: ['any'], rarity: 2, value: 26,
+      behavior: 'skim', speed: 56, shy: 50, size: 0.85,
+      measure: 'half an inch',
+      art: { shape: 'strider', body: '#4a4f3a', wing: '#6b7150', accent: '#2b2f22', pattern: 'plain' },
+      facts: [
+        'Water striders walk on top of the water. Their feet are covered in thousands of tiny hairs that trap air and never get wet.',
+        'They feel tiny ripples with their legs to find out where a bug fell in, then skate over to it.'
+      ]
+    },
+    {
+      id: 'grasshopper', name: 'Grasshopper',
+      habitats: ['meadow', 'hill'], times: ['morning', 'day', 'evening'], rarity: 1, value: 12,
+      behavior: 'hop', speed: 30, shy: 50, size: 1.0,
+      measure: '1.5 inches long',
+      art: { shape: 'grasshopper', body: '#7fbf3f', wing: '#a6d95f', accent: '#3f6b1f', pattern: 'plain' },
+      facts: [
+        'A grasshopper can jump about twenty times its own body length. If you could do that, you would jump over a house.',
+        'Grasshoppers have ears on their bellies, not their heads.',
+        'They sing by rubbing a rough leg against a wing, like running a stick along a fence.'
+      ]
+    },
+    {
+      id: 'cricket', name: 'Cricket',
+      habitats: ['meadow', 'garden'], times: ['evening', 'night'], rarity: 2, value: 22,
+      behavior: 'hop', speed: 28, shy: 46, size: 0.9,
+      measure: '1 inch long',
+      art: { shape: 'cricket', body: '#3a2f26', wing: '#544434', accent: '#1f1a14', pattern: 'plain' },
+      facts: [
+        'Crickets chirp faster when it is warm and slower when it is cool. You can guess the temperature by counting their chirps.',
+        'Only the boys chirp, and they do it by rubbing their wings together, not their legs.'
+      ]
+    },
+    {
+      id: 'katydid', name: 'Katydid',
+      habitats: ['forest', 'orchard'], times: ['night'], rarity: 3, value: 60,
+      behavior: 'cling', speed: 24, shy: 62, size: 1.15,
+      measure: '2 inches long',
+      art: { shape: 'katydid', body: '#6fbf4e', wing: '#8fd96a', accent: '#3d7a2c', pattern: 'veins' },
+      facts: [
+        'A katydid looks exactly like a green leaf, right down to the little veins, so predators fly right past it.',
+        'Their name comes from their song. People thought it sounded like someone saying "katy did, katy didn’t."'
+      ]
+    },
+    {
+      id: 'mantis', name: 'Praying Mantis',
+      habitats: ['garden', 'meadow'], times: ['day', 'evening'], rarity: 4, value: 150,
+      behavior: 'cling', speed: 20, shy: 70, size: 1.3,
+      measure: '3 inches long',
+      art: { shape: 'mantis', body: '#7fd06a', wing: '#9be385', accent: '#3f7a33', pattern: 'plain' },
+      facts: [
+        'A praying mantis can swivel its head halfway around to peek right over its own shoulder. Almost no other insect can do that.',
+        'It sits perfectly still with its spiky front legs folded up, then grabs a bug faster than you can blink.',
+        'A mantis is the only insect we know of that sees in 3D. It does it a different way than we do: it watches for tiny movements to work out exactly how far away a bug is.'
+      ]
+    },
+    {
+      id: 'walking_stick', name: 'Walking Stick',
+      habitats: ['forest'], times: ['any'], rarity: 4, value: 130,
+      behavior: 'cling', speed: 12, shy: 66, size: 1.35,
+      measure: '4 inches long',
+      art: { shape: 'stickbug', body: '#8a6a3c', wing: '#a9884f', accent: '#5c4426', pattern: 'plain' },
+      facts: [
+        'A walking stick looks just like a twig. It even sways back and forth as if the wind were blowing it.',
+        'If a bird grabs one by the leg, a walking stick can let the leg pop off and escape. A young one can grow the leg back the next time it sheds its skin.'
+      ]
+    },
+    {
+      id: 'cicada', name: 'Cicada',
+      habitats: ['forest', 'orchard'], times: ['day'], rarity: 3, value: 70,
+      behavior: 'cling', speed: 30, shy: 64, size: 1.15,
+      measure: '2 inches long',
+      art: { shape: 'cicada', body: '#2f4a3a', wing: '#dff2ea', accent: '#c58b2a', pattern: 'veins' },
+      facts: [
+        'Cicadas are some of the loudest insects on Earth. A big group singing can be as loud as a lawn mower.',
+        'Some cicadas live underground for 13 or 17 years, then all climb out in the same summer together.',
+        'The crunchy empty shells you find stuck on trees are the skins they crawled out of.'
+      ]
+    },
+    {
+      id: 'ant', name: 'Carpenter Ant',
+      habitats: ['anywhere'], times: ['any'], rarity: 1, value: 6,
+      behavior: 'crawl', speed: 34, shy: 24, size: 0.6,
+      measure: 'a quarter to half an inch',
+      art: { shape: 'ant', body: '#2a1d16', wing: '#3d2b20', accent: '#120c09', pattern: 'plain' },
+      facts: [
+        'An ant can lift many times its own weight, because small bodies are strong for their size.',
+        'Ants leave a smell trail for each other. That is why they all march in a line to the same crumb.',
+        'An ant colony works like one big family, and every ant has a job.'
+      ]
+    },
+    {
+      id: 'caterpillar', name: 'Caterpillar',
+      habitats: ['garden', 'orchard'], times: ['any'], rarity: 1, value: 10,
+      behavior: 'slow', speed: 10, shy: 20, size: 0.9,
+      measure: '2 inches long',
+      art: { shape: 'caterpillar', body: '#8fd14f', wing: '#b6e77a', accent: '#2f2f2f', pattern: 'bands' },
+      facts: [
+        'A caterpillar has way more muscles than you do, and it only has to worry about eating and growing.',
+        'Inside its chrysalis, most of the caterpillar melts into mush. But little patches of special cells stay put, and they build the butterfly from the mush.',
+        'Caterpillars have six real legs up front. The stubby back ones are called prolegs and help them hold on.'
+      ]
+    },
+    {
+      id: 'garden_spider', name: 'Garden Spider',
+      habitats: ['garden', 'forest'], times: ['any'], rarity: 2, value: 30,
+      behavior: 'cling', speed: 22, shy: 56, size: 1.0,
+      measure: '1 inch across',
+      art: { shape: 'spider', body: '#f0d24a', wing: '#2a2a2a', accent: '#1a1a1a', pattern: 'spots' },
+      facts: [
+        'Spider silk is amazingly tough. A silk thread is stronger than a steel thread of the same weight, and it stretches too.',
+        'Spiders are not insects. Insects have six legs and three body parts, spiders have eight legs and two.',
+        'A garden spider often eats its old web and spins a fresh one, sometimes every single day.'
+      ]
+    },
+    {
+      id: 'pillbug', name: 'Pill Bug',
+      habitats: ['forest', 'garden'], times: ['any'], rarity: 1, value: 8,
+      behavior: 'slow', speed: 14, shy: 22, size: 0.7,
+      measure: 'half an inch',
+      art: { shape: 'pillbug', body: '#6b6b78', wing: '#8a8a99', accent: '#42424d', pattern: 'bands' },
+      facts: [
+        'Pill bugs roll into a perfect ball when something scares them. That is why some people call them roly-polies.',
+        'They are not insects at all. They are crustaceans, so they are closer cousins to crabs and shrimp.',
+        'Pill bugs breathe with gills, so they have to stay somewhere damp, like under a log.'
+      ]
+    },
+    {
+      id: 'snail', name: 'Garden Snail',
+      habitats: ['garden', 'forest'], times: ['any'], rarity: 1, value: 12,
+      behavior: 'slow', speed: 8, shy: 16, size: 0.95,
+      measure: '1 inch shell',
+      art: { shape: 'snail', body: '#d8c7a8', wing: '#b4864a', accent: '#7a5730', pattern: 'spiral' },
+      facts: [
+        'A snail has thousands of tiny teeth on a tongue like a ribbon, and it uses them to scrape food off leaves.',
+        'Snails glide on a trail of slime. It works like a cushion, so a snail can slide over rough, scratchy things without hurting its soft foot.',
+        'A snail carries its house on its back and can pull all the way inside when it is scared.'
+      ]
+    }
+  ];
+
+  GG.BUG_BY_ID = {};
+  GG.BUGS.forEach(function (b, i) { b.index = i; GG.BUG_BY_ID[b.id] = b; });
+
+  GG.RARITY_NAMES = ['', 'Common', 'Often seen', 'Uncommon', 'Rare', 'Legendary'];
+  GG.RARITY_COLORS = ['', '#8fb98f', '#7fb3d6', '#b58fd6', '#e0a13c', '#ff6fae'];
+
+  GG.HABITAT_NAMES = {
+    meadow: 'the Sunny Meadow', garden: 'the Flower Garden', forest: 'the Whispering Woods',
+    pond: 'the Lily Pond', hill: 'the Pebble Hills', orchard: 'the Apple Orchard',
+    anywhere: 'all over the garden'
+  };
+  GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
+})(window.GG = window.GG || {});
+
+/* ==== src/render/bugart.js ==== */
+/* Every bug is drawn with code - no picture files.
+   All shapes are drawn facing UP (head toward -y), centred on (0,0),
+   about 26 pixels long at scale 1. */
+(function (GG) {
+  'use strict';
+
+  function ell(c, x, y, rx, ry, rot) {
+    c.beginPath();
+    c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, Math.PI * 2);
+    c.fill();
+  }
+  function line(c, x1, y1, x2, y2, w, col) {
+    c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+  }
+  function curve(c, x1, y1, cx, cy, x2, y2, w, col) {
+    c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x1, y1); c.quadraticCurveTo(cx, cy, x2, y2); c.stroke();
+  }
+
+  function legs(c, col, n, len, spread, wig, w) {
+    c.strokeStyle = col; c.lineWidth = w || 1.4; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < n; i++) {
+        var y = -3 + i * 3.4;
+        var k = Math.sin(wig + i * 1.6 + (s > 0 ? 0 : 1.9)) * 1.5;
+        c.beginPath();
+        c.moveTo(s * 1.8, y);
+        c.quadraticCurveTo(s * spread * 0.7, y + 1 + k, s * spread, y + len + k);
+        c.stroke();
+      }
+    }
+  }
+
+  function pattern(c, a, rx, ry, cy) {
+    if (a.pattern === 'spots') {
+      c.fillStyle = a.accent;
+      [[-0.45, -0.25], [0.45, -0.25], [-0.5, 0.28], [0.5, 0.28], [0, 0.55]].forEach(function (p) {
+        ell(c, p[0] * rx, cy + p[1] * ry, rx * 0.18, ry * 0.15);
+      });
+    } else if (a.pattern === 'stripes') {
+      c.fillStyle = a.accent;
+      for (var i = -1; i <= 1; i++) ell(c, 0, cy + i * ry * 0.42, rx * 0.92, ry * 0.10);
+    } else if (a.pattern === 'bands') {
+      c.fillStyle = a.accent;
+      for (var j = -1; j <= 1; j++) ell(c, 0, cy + j * ry * 0.45, rx * 0.85, ry * 0.13);
+    }
+  }
+
+  /* ---------- wing helpers ---------- */
+  function foreWing(c, s, flap, col, edge) {
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = col;
+    c.beginPath();
+    c.moveTo(s * 1.2, -3.5);
+    c.bezierCurveTo(s * 12, -12, s * 15, -3, s * 8.5, 1.5);
+    c.bezierCurveTo(s * 5, 2.5, s * 2, 1.5, s * 1.2, -0.5);
+    c.closePath(); c.fill();
+    if (edge) { c.strokeStyle = edge; c.lineWidth = 0.9; c.stroke(); }
+    c.restore();
+  }
+  function hindWing(c, s, flap, col, edge) {
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = col;
+    c.beginPath();
+    c.moveTo(s * 1.2, 0);
+    c.bezierCurveTo(s * 10, 1, s * 11, 9, s * 4, 9.5);
+    c.bezierCurveTo(s * 1.8, 9, s * 1, 5, s * 1.2, 1);
+    c.closePath(); c.fill();
+    if (edge) { c.strokeStyle = edge; c.lineWidth = 0.9; c.stroke(); }
+    c.restore();
+  }
+
+  /* ---------- the shapes ---------- */
+  var S = {};
+
+  S.butterfly = function (c, a, t) {
+    var flap = 0.45 + 0.55 * Math.abs(Math.cos(t * 7));
+    for (var s = -1; s <= 1; s += 2) {
+      hindWing(c, s, flap, a.wing2 || a.wing, a.accent);
+      foreWing(c, s, flap, a.wing, a.accent);
+      if (a.pattern === 'veins') {
+        c.save(); c.scale(flap, 1);
+        c.strokeStyle = a.accent; c.lineWidth = 0.7;
+        for (var i = 0; i < 4; i++) {
+          c.beginPath(); c.moveTo(s * 2, -2.5);
+          c.lineTo(s * (5 + i * 2.6), -8 + i * 3.2); c.stroke();
+        }
+        c.restore();
+      } else if (a.pattern === 'edge') {
+        c.save(); c.scale(flap, 1);
+        c.fillStyle = a.accent;
+        c.globalAlpha = 0.75;
+        c.beginPath();
+        c.moveTo(s * 11.5, -6.6); c.quadraticCurveTo(s * 15, -3, s * 8.5, 1.5);
+        c.quadraticCurveTo(s * 12, -2, s * 11.5, -6.6); c.fill();
+        c.globalAlpha = 1; c.restore();
+      } else if (a.pattern === 'spots') {
+        c.save(); c.scale(flap, 1); c.fillStyle = a.accent;
+        ell(c, s * 8, -4.5, 1.2, 1.5); ell(c, s * 5.5, 6, 1, 1.2); c.restore();
+      }
+    }
+    c.fillStyle = a.body; ell(c, 0, 0, 1.7, 6);
+    c.fillStyle = GG.shade(a.body, 0.25); ell(c, 0, -5.5, 1.7, 2);
+    line(c, -0.8, -7, -3.5, -11.5, 0.8, a.body);
+    line(c, 0.8, -7, 3.5, -11.5, 0.8, a.body);
+    c.fillStyle = a.body; ell(c, -3.6, -11.8, 0.8, 0.8); ell(c, 3.6, -11.8, 0.8, 0.8);
+  };
+
+  S.swallowtail = function (c, a, t) {
+    var flap = 0.5 + 0.5 * Math.abs(Math.cos(t * 6.4));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.scale(flap, 1);
+      c.fillStyle = a.wing2 || a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, 0);
+      c.bezierCurveTo(s * 10, 1, s * 10, 8, s * 5, 9);
+      c.lineTo(s * 3.4, 14.5); c.lineTo(s * 2.6, 8.5);
+      c.closePath(); c.fill();
+      c.strokeStyle = a.accent; c.lineWidth = 0.8; c.stroke();
+      c.restore();
+      foreWing(c, s, flap, a.wing, a.accent);
+      c.save(); c.scale(flap, 1);
+      c.strokeStyle = a.accent; c.lineWidth = 1.1;
+      for (var i = 0; i < 3; i++) {
+        c.beginPath(); c.moveTo(s * (3 + i * 3), -2.2); c.lineTo(s * (4.5 + i * 3.2), -8.5); c.stroke();
+      }
+      c.restore();
+    }
+    c.fillStyle = a.body; ell(c, 0, 0, 1.8, 6.2);
+    line(c, -0.8, -7, -3.8, -12, 0.8, a.body);
+    line(c, 0.8, -7, 3.8, -12, 0.8, a.body);
+  };
+
+  S.lunamoth = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 5));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.scale(flap, 1);
+      c.fillStyle = a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, 0.5);
+      c.bezierCurveTo(s * 10.5, 2, s * 8.5, 8, s * 5.2, 8.8);
+      c.bezierCurveTo(s * 5.4, 11.5, s * 3.4, 13.5, s * 1.6, 14.2);
+      c.bezierCurveTo(s * 2.4, 11.5, s * 2.6, 9.5, s * 2, 6);
+      c.closePath(); c.fill();
+      c.strokeStyle = a.accent; c.lineWidth = 0.8; c.stroke();
+      c.fillStyle = a.wing2 || a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, -3.5);
+      c.bezierCurveTo(s * 12, -11, s * 14, -2, s * 8, 2);
+      c.bezierCurveTo(s * 4, 2.6, s * 2, 1.4, s * 1.2, -0.5);
+      c.closePath(); c.fill();
+      c.strokeStyle = a.accent; c.lineWidth = 0.9; c.stroke();
+      c.fillStyle = a.accent; ell(c, s * 7, -4.5, 1.3, 1.9);
+      c.fillStyle = '#ffffff'; ell(c, s * 7, -4.8, 0.5, 0.8);
+      c.restore();
+    }
+    c.fillStyle = a.body; ell(c, 0, -1, 2.1, 6);
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -6, 2.2, 2.4);
+    curve(c, -1, -7.5, -3, -11, -5, -12.5, 1.1, a.body);
+    curve(c, 1, -7.5, 3, -11, 5, -12.5, 1.1, a.body);
+  };
+
+  S.moth = function (c, a, t) {
+    var flap = 0.5 + 0.5 * Math.abs(Math.cos(t * 8));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.scale(flap, 1);
+      c.fillStyle = a.wing2 || a.wing;
+      c.beginPath(); c.moveTo(s * 1, 1); c.bezierCurveTo(s * 9, 3, s * 8, 9, s * 3, 9);
+      c.closePath(); c.fill();
+      c.fillStyle = a.wing;
+      c.beginPath(); c.moveTo(s * 1, -3.5); c.bezierCurveTo(s * 12, -8, s * 12, 1, s * 3, 2.5);
+      c.closePath(); c.fill();
+      if (a.pattern === 'bands') {
+        c.strokeStyle = a.accent; c.lineWidth = 1.2;
+        c.beginPath(); c.moveTo(s * 3, -4.2); c.lineTo(s * 9.5, -2.4); c.stroke();
+      }
+      c.restore();
+    }
+    c.fillStyle = a.body; ell(c, 0, -0.5, 2.4, 5.6);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -5, 2.5, 2.4);
+    curve(c, -1, -6.5, -2.6, -9, -4.6, -10.5, 1.4, a.body);
+    curve(c, 1, -6.5, 2.6, -9, 4.6, -10.5, 1.4, a.body);
+  };
+
+  S.atlas = function (c, a, t) {
+    var flap = 0.6 + 0.4 * Math.abs(Math.cos(t * 4));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.scale(flap, 1);
+      c.fillStyle = a.wing2 || a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, 0.5); c.lineTo(s * 12, 4); c.lineTo(s * 9, 11); c.lineTo(s * 2.5, 9);
+      c.closePath(); c.fill();
+      c.strokeStyle = a.accent; c.lineWidth = 1; c.stroke();
+      c.fillStyle = a.wing;
+      c.beginPath();
+      c.moveTo(s * 1.2, -4); c.lineTo(s * 9, -12); c.lineTo(s * 15, -9.5);
+      c.lineTo(s * 13.5, -4); c.lineTo(s * 12, 0.5); c.lineTo(s * 2.5, 1.5);
+      c.closePath(); c.fill();
+      c.strokeStyle = a.accent; c.lineWidth = 1; c.stroke();
+      c.fillStyle = a.accent;
+      c.globalAlpha = 0.85;
+      c.beginPath(); c.moveTo(s * 5, -4.5); c.lineTo(s * 9, -6.5); c.lineTo(s * 8, -1.5); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(s * 5.5, 5); c.lineTo(s * 9, 4.5); c.lineTo(s * 7.5, 8.5); c.closePath(); c.fill();
+      c.globalAlpha = 1;
+      c.fillStyle = GG.shade(a.wing, -0.35);
+      c.beginPath(); c.moveTo(s * 11, -11); c.lineTo(s * 15, -9.5); c.lineTo(s * 12.8, -6.5); c.closePath(); c.fill();
+      c.restore();
+    }
+    c.fillStyle = a.body; ell(c, 0, -1, 2.6, 6.2);
+    curve(c, -1, -7, -3, -10, -5.4, -11.5, 1.5, a.body);
+    curve(c, 1, -7, 3, -10, 5.4, -11.5, 1.5, a.body);
+  };
+
+  S.ladybug = function (c, a, t) {
+    var w = Math.sin(t * 9) * 0.6;
+    legs(c, '#181818', 3, 3.4, 6.5, t * 9, 1.3);
+    c.fillStyle = '#1c1c1c'; ell(c, 0, -6.2, 4.2, 3.2);
+    c.fillStyle = '#f4f4f4'; ell(c, -2.4, -7.2, 1.1, 0.9); ell(c, 2.4, -7.2, 1.1, 0.9);
+    c.fillStyle = a.body; ell(c, 0, 0.6, 6.2, 7);
+    c.fillStyle = a.accent;
+    ell(c, 0, 0.6, 0.55, 7);
+    [[-0.5, -0.35], [0.5, -0.35], [-0.55, 0.3], [0.55, 0.3], [0, 0.68]].forEach(function (p) {
+      ell(c, p[0] * 6.2, 0.6 + p[1] * 7, 1.5, 1.5);
+    });
+    c.fillStyle = 'rgba(255,255,255,0.30)';
+    ell(c, -2.4 + w * 0.4, -2.2, 2, 2.6, -0.4);
+  };
+
+  S.beetle = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.35), 3, 3.6, 6.6, t * 8, 1.3);
+    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -6, 3.4, 2.6);
+    line(c, -1.6, -8, -3.6, -11, 0.9, a.accent);
+    line(c, 1.6, -8, 3.6, -11, 0.9, a.accent);
+    c.fillStyle = a.body; ell(c, 0, 0.4, 5.4, 7.2);
+    c.fillStyle = a.wing; ell(c, 0, 0.8, 4.9, 6.6);
+    c.fillStyle = a.accent; ell(c, 0, 0.8, 0.5, 6.6);
+    if (a.pattern === 'stripes') {
+      c.fillStyle = a.accent;
+      ell(c, -2.6, 0.8, 0.7, 5.4); ell(c, 2.6, 0.8, 0.7, 5.4);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -2.2, -2.4, 1.7, 2.6, -0.35);
+  };
+
+  S.stagbeetle = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.35), 3, 3.8, 7, t * 7, 1.5);
+    c.strokeStyle = a.body; c.lineWidth = 1.9; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath();
+      c.moveTo(s * 2, -7); c.quadraticCurveTo(s * 6, -12, s * 2.4, -15.5);
+      c.stroke();
+      c.beginPath(); c.moveTo(s * 3.6, -12.4); c.lineTo(s * 5.6, -12.9); c.stroke();
+    }
+    c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -6, 3.2, 2.6);
+    c.fillStyle = a.wing; ell(c, 0, 0.6, 5.2, 7.4);
+    c.fillStyle = GG.shade(a.wing, -0.3); ell(c, 0, 0.6, 0.5, 7);
+    c.fillStyle = 'rgba(255,255,255,0.22)'; ell(c, -2.2, -2.2, 1.6, 2.8, -0.3);
+  };
+
+  S.rhinobeetle = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.35), 3, 4.2, 7.6, t * 6.5, 1.7);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-1.9, -6.2); c.quadraticCurveTo(-2.6, -12, -6.2, -15.2);
+    c.quadraticCurveTo(-2.9, -14.6, -1.0, -16.4);
+    c.quadraticCurveTo(1.6, -11.6, 1.9, -6.2);
+    c.closePath(); c.fill();
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -5.4, 3.8, 3);
+    c.fillStyle = a.wing; ell(c, 0, 1.2, 5.8, 8);
+    c.fillStyle = GG.shade(a.wing, -0.3); ell(c, 0, 1.2, 0.55, 7.6);
+    c.fillStyle = 'rgba(255,255,255,0.2)'; ell(c, -2.6, -2, 1.8, 3, -0.3);
+  };
+
+  S.firefly = function (c, a, t) {
+    var glow = 0.5 + 0.5 * Math.sin(t * 2.4);
+    var pulse = Math.pow(glow, 3);
+    if (pulse > 0.02) {
+      var g = c.createRadialGradient(0, 5, 0, 0, 5, 17);
+      g.addColorStop(0, 'rgba(210,255,150,' + (0.62 * pulse) + ')');
+      g.addColorStop(1, 'rgba(210,255,150,0)');
+      c.fillStyle = g; ell(c, 0, 5, 17, 17);
+    }
+    var flap = 0.4 + 0.6 * Math.abs(Math.cos(t * 18));
+    c.save(); c.globalAlpha = 0.45; c.scale(flap, 1);
+    c.fillStyle = '#f2efe0';
+    ell(c, -4.2, -0.5, 3.2, 5.4, 0.3); ell(c, 4.2, -0.5, 3.2, 5.4, -0.3);
+    c.restore(); c.globalAlpha = 1;
+    legs(c, '#241d12', 3, 2.6, 4.6, t * 9, 1);
+    c.fillStyle = '#f0663f'; ell(c, 0, -4.6, 3.1, 2.9);
+    c.fillStyle = '#241d12'; ell(c, 0, -6.4, 2.1, 1.9);
+    c.fillStyle = a.body; ell(c, 0, 1.2, 3.2, 6.6);
+    c.fillStyle = GG.shade(a.body, 0.18); ell(c, -1.4, 0.4, 1.1, 5.2);
+    c.fillStyle = '#1b1610'; ell(c, 0, 1.2, 0.5, 6.2);
+    c.fillStyle = 'rgba(196,255,120,' + (0.45 + 0.55 * pulse) + ')';
+    ell(c, 0, 6.4, 2.4, 2.2);
+  };
+
+  S.bee = function (c, a, t) {
+    var flap = 0.3 + 0.7 * Math.abs(Math.cos(t * 24));
+    c.save(); c.globalAlpha = 0.55; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -4.4, -2, 4, 2.4, -0.5); ell(c, 4.4, -2, 4, 2.4, 0.5);
+    c.restore(); c.globalAlpha = 1;
+    c.fillStyle = a.accent; ell(c, 0, -6, 2.6, 2.4);
+    c.fillStyle = '#fff'; ell(c, -1.1, -6.6, 0.6, 0.7); ell(c, 1.1, -6.6, 0.6, 0.7);
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.6, 3.4, 3);
+    c.fillStyle = a.body; ell(c, 0, 2.4, 3.8, 5.2);
+    c.fillStyle = a.accent;
+    ell(c, 0, 0.6, 3.5, 0.9); ell(c, 0, 3.4, 3.3, 0.9); ell(c, 0, 5.8, 2.4, 0.8);
+    line(c, -1, -7.6, -2.6, -10, 0.8, a.accent);
+    line(c, 1, -7.6, 2.6, -10, 0.8, a.accent);
+  };
+
+  S.dragonfly = function (c, a, t) {
+    var flap = 0.45 + 0.55 * Math.abs(Math.cos(t * 20));
+    c.save(); c.globalAlpha = 0.55; c.scale(1, flap);
+    c.fillStyle = a.wing;
+    ell(c, -8, -3.4, 8.4, 2, -0.12); ell(c, 8, -3.4, 8.4, 2, 0.12);
+    ell(c, -7.4, 0.4, 7.8, 1.9, 0.1); ell(c, 7.4, 0.4, 7.8, 1.9, -0.1);
+    c.restore(); c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(255,255,255,0.45)'; c.lineWidth = 0.5;
+    c.fillStyle = a.accent; ell(c, 0, -8.2, 3, 2.6);
+    c.fillStyle = '#2b2b33'; ell(c, -1.7, -9, 1.7, 1.7); ell(c, 1.7, -9, 1.7, 1.7);
+    c.fillStyle = 'rgba(255,255,255,0.5)'; ell(c, -2.1, -9.5, 0.6, 0.6); ell(c, 2.1, -9.5, 0.6, 0.6);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -3.6, 2.6, 3.4);
+    c.fillStyle = a.body;
+    for (var i = 0; i < 6; i++) {
+      ell(c, 0, 0.4 + i * 2.2, 1.9 - i * 0.17, 1.35);
+    }
+    if (a.pattern === 'stripes') {
+      c.fillStyle = a.accent;
+      for (var j = 0; j < 5; j++) ell(c, 0, 1.6 + j * 2.2, 1.7 - j * 0.16, 0.4);
+    }
+  };
+
+  S.damselfly = function (c, a, t) {
+    var flap = 0.5 + 0.5 * Math.abs(Math.cos(t * 14));
+    c.save(); c.globalAlpha = 0.5; c.scale(1, flap);
+    c.fillStyle = a.wing;
+    ell(c, -4.5, 2, 3, 7.4, 0.45); ell(c, 4.5, 2, 3, 7.4, -0.45);
+    c.restore(); c.globalAlpha = 1;
+    c.fillStyle = a.accent; ell(c, 0, -7.6, 2.6, 2);
+    c.fillStyle = '#2b2b33'; ell(c, -1.7, -8.1, 1.4, 1.4); ell(c, 1.7, -8.1, 1.4, 1.4);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -3.8, 2, 3);
+    c.fillStyle = a.body;
+    for (var i = 0; i < 7; i++) ell(c, 0, 0 + i * 2, 1.2 - i * 0.09, 1.15);
+    c.fillStyle = a.accent; ell(c, 0, 13.2, 1.2, 1.2);
+  };
+
+  S.strider = function (c, a, t) {
+    var k = Math.sin(t * 6) * 1.8;
+    c.strokeStyle = a.body; c.lineWidth = 1.1; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 1, -2.5); c.quadraticCurveTo(s * 6, -7, s * 9, -9); c.stroke();
+      c.beginPath(); c.moveTo(s * 1, 0); c.quadraticCurveTo(s * 10, 1 + k, s * 14, 4 + k); c.stroke();
+      c.beginPath(); c.moveTo(s * 1, 2); c.quadraticCurveTo(s * 9, 7 - k, s * 12, 11 - k); c.stroke();
+    }
+    c.fillStyle = a.body; ell(c, 0, 0, 1.7, 6);
+    c.fillStyle = a.accent; ell(c, 0, -5, 1.7, 1.8);
+  };
+
+  S.grasshopper = function (c, a, t) {
+    var k = Math.sin(t * 5) * 0.6;
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 1.6, -3); c.quadraticCurveTo(s * 5, -1, s * 6, 2); c.stroke();
+      c.beginPath(); c.moveTo(s * 1.6, -1); c.quadraticCurveTo(s * 5.5, 1.5, s * 6.5, 5); c.stroke();
+      c.beginPath();
+      c.moveTo(s * 2, 2); c.lineTo(s * 6.5, 7 + k); c.lineTo(s * 3.4, 13 + k); c.stroke();
+      c.lineWidth = 2.6; c.strokeStyle = a.wing;
+      c.beginPath(); c.moveTo(s * 2, 2); c.lineTo(s * 6.2, 6.6 + k); c.stroke();
+      c.lineWidth = 1.3; c.strokeStyle = GG.shade(a.body, -0.3);
+    }
+    c.fillStyle = a.wing; ell(c, 0, 2.5, 3.2, 9);
+    c.fillStyle = GG.shade(a.wing, -0.15); ell(c, 1.4, 2.5, 1.5, 8.2);
+    c.fillStyle = a.body; ell(c, 0, -5.2, 2.7, 3.6);
+    c.fillStyle = '#20202a'; ell(c, -1.4, -6.6, 0.9, 1.1); ell(c, 1.4, -6.6, 0.9, 1.1);
+    curve(c, -1, -8, -2.5, -12, -3, -15, 0.9, a.accent);
+    curve(c, 1, -8, 2.5, -12, 3, -15, 0.9, a.accent);
+  };
+
+  S.cricket = function (c, a, t) {
+    S.grasshopper(c, a, t);
+    curve(c, -1, -8, -5, -13, -9, -15, 0.8, a.accent);
+    curve(c, 1, -8, 5, -13, 9, -15, 0.8, a.accent);
+  };
+
+  S.katydid = function (c, a, t) {
+    var k = Math.sin(t * 4) * 0.5;
+    c.strokeStyle = GG.shade(a.body, -0.25); c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 1.6, -3); c.quadraticCurveTo(s * 5, -2, s * 6.5, 1); c.stroke();
+      c.beginPath(); c.moveTo(s * 2, 1); c.lineTo(s * 7, 6 + k); c.lineTo(s * 4, 12 + k); c.stroke();
+    }
+    c.fillStyle = a.wing;
+    c.beginPath();
+    c.moveTo(0, -3); c.bezierCurveTo(5.6, 0, 5, 10, 0, 13.5);
+    c.bezierCurveTo(-5, 10, -5.6, 0, 0, -3);
+    c.closePath(); c.fill();
+    c.strokeStyle = GG.shade(a.wing, -0.25); c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(0, -2); c.lineTo(0, 13); c.stroke();
+    for (var i = 0; i < 5; i++) {
+      c.beginPath(); c.moveTo(0, 0 + i * 2.4); c.lineTo(3.6 - i * 0.3, 2.6 + i * 2.2); c.stroke();
+      c.beginPath(); c.moveTo(0, 0 + i * 2.4); c.lineTo(-3.6 + i * 0.3, 2.6 + i * 2.2); c.stroke();
+    }
+    c.fillStyle = a.body; ell(c, 0, -5.4, 2.6, 3.2);
+    c.fillStyle = '#20202a'; ell(c, -1.3, -6.4, 0.8, 1); ell(c, 1.3, -6.4, 0.8, 1);
+    curve(c, -1, -8, -6, -14, -10, -17, 0.8, a.accent);
+    curve(c, 1, -8, 6, -14, 10, -17, 0.8, a.accent);
+  };
+
+  S.mantis = function (c, a, t) {
+    var k = Math.sin(t * 3) * 0.8;
+    c.strokeStyle = GG.shade(a.body, -0.2); c.lineWidth = 1.4; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 1.6, 2); c.quadraticCurveTo(s * 6, 4, s * 7, 9); c.stroke();
+      c.beginPath(); c.moveTo(s * 1.6, 5); c.quadraticCurveTo(s * 6, 8, s * 6.5, 13); c.stroke();
+    }
+    c.lineWidth = 2; c.strokeStyle = a.body;
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.beginPath();
+      c.moveTo(s2 * 1.4, -4.5);
+      c.lineTo(s2 * (5 + k), -8);
+      c.lineTo(s2 * (3 + k), -12.5);
+      c.stroke();
+      c.lineWidth = 1; c.strokeStyle = GG.shade(a.body, -0.3);
+      for (var i = 0; i < 3; i++) {
+        c.beginPath();
+        c.moveTo(s2 * (4.4 + k - i * 0.5), -8.6 - i * 1.3);
+        c.lineTo(s2 * (5.6 + k - i * 0.5), -9.4 - i * 1.3);
+        c.stroke();
+      }
+      c.lineWidth = 2; c.strokeStyle = a.body;
+    }
+    c.fillStyle = a.wing; ell(c, 0, 4.5, 3, 9);
+    c.fillStyle = GG.shade(a.wing, -0.12); ell(c, 1.2, 4.5, 1.4, 8.2);
+    c.fillStyle = a.body; ell(c, 0, -4, 1.7, 4.4);
+    c.beginPath();
+    c.moveTo(-2.8, -10.5); c.lineTo(2.8, -10.5); c.lineTo(0, -6.4); c.closePath(); c.fill();
+    c.fillStyle = '#f7ffe8'; ell(c, -2, -10.4, 1.2, 1.3); ell(c, 2, -10.4, 1.2, 1.3);
+    c.fillStyle = '#20202a'; ell(c, -2, -10.4, 0.5, 0.6); ell(c, 2, -10.4, 0.5, 0.6);
+    curve(c, -1, -11.4, -3, -15, -4, -18, 0.7, a.accent);
+    curve(c, 1, -11.4, 3, -15, 4, -18, 0.7, a.accent);
+  };
+
+  S.stickbug = function (c, a, t) {
+    var k = Math.sin(t * 2) * 0.5;
+    c.strokeStyle = a.accent; c.lineWidth = 1; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath(); c.moveTo(s * 0.9, -8); c.quadraticCurveTo(s * 5, -11, s * 7, -14 + k); c.stroke();
+      c.beginPath(); c.moveTo(s * 0.9, -4); c.quadraticCurveTo(s * 6, -3, s * 8, 0 + k); c.stroke();
+      c.beginPath(); c.moveTo(s * 0.9, 0); c.quadraticCurveTo(s * 6, 3, s * 7.5, 8 - k); c.stroke();
+    }
+    c.strokeStyle = a.body; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, -12); c.lineTo(0, 14); c.stroke();
+    c.fillStyle = a.wing; ell(c, 0, -12.6, 1.3, 2);
+    c.strokeStyle = a.accent; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(-0.6, -14); c.lineTo(-2.6, -19); c.stroke();
+    c.beginPath(); c.moveTo(0.6, -14); c.lineTo(2.6, -19); c.stroke();
+  };
+
+  S.cicada = function (c, a, t) {
+    var flap = 0.55 + 0.45 * Math.abs(Math.cos(t * 12));
+    c.save(); c.globalAlpha = 0.5; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -4.4, 3, 4, 9.5, 0.22); ell(c, 4.4, 3, 4, 9.5, -0.22);
+    c.restore(); c.globalAlpha = 1;
+    c.strokeStyle = GG.shade(a.wing, -0.25); c.lineWidth = 0.5;
+    legs(c, GG.shade(a.body, -0.2), 3, 3, 5.4, t * 6, 1.2);
+    c.fillStyle = a.body; ell(c, 0, 2, 3.4, 7);
+    c.fillStyle = a.accent; ell(c, 0, -1, 3.6, 2.2);
+    c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -5.4, 3.8, 3.2);
+    c.fillStyle = '#1c1c22'; ell(c, -3, -6, 1.4, 1.5); ell(c, 3, -6, 1.4, 1.5);
+    c.fillStyle = 'rgba(255,255,255,0.4)'; ell(c, -3.3, -6.4, 0.5, 0.5); ell(c, 3.3, -6.4, 0.5, 0.5);
+  };
+
+  S.ant = function (c, a, t) {
+    legs(c, a.accent, 3, 3.2, 5.6, t * 12, 1.1);
+    c.fillStyle = a.body; ell(c, 0, 4.4, 3, 4);
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, -0.4, 1.9, 2.4);
+    c.fillStyle = a.body; ell(c, 0, -4.6, 2.4, 2.6);
+    c.fillStyle = '#0a0a0a'; ell(c, -1.1, -5.2, 0.6, 0.7); ell(c, 1.1, -5.2, 0.6, 0.7);
+    curve(c, -1, -6.4, -3, -8, -3.4, -10.6, 0.8, a.accent);
+    curve(c, 1, -6.4, 3, -8, 3.4, -10.6, 0.8, a.accent);
+  };
+
+  S.caterpillar = function (c, a, t) {
+    for (var i = 6; i >= 0; i--) {
+      var wob = Math.sin(t * 5 - i * 0.6) * 1.6;
+      var r = 3.4 - i * 0.18;
+      c.fillStyle = (i % 2) ? a.wing : a.body;
+      ell(c, wob, 7 - i * 2.5, r, r);
+    }
+    var hw = Math.sin(t * 5 - 7 * 0.6) * 1.6;
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, hw, -10, 3.5, 3.3);
+    c.fillStyle = '#1e1e1e'; ell(c, hw - 1.4, -10.6, 0.8, 0.9); ell(c, hw + 1.4, -10.6, 0.8, 0.9);
+    c.fillStyle = '#fff'; ell(c, hw - 1.6, -10.9, 0.3, 0.3); ell(c, hw + 1.2, -10.9, 0.3, 0.3);
+    curve(c, hw - 1, -12.4, hw - 2, -14, hw - 2.6, -15.6, 0.7, a.accent);
+    curve(c, hw + 1, -12.4, hw + 2, -14, hw + 2.6, -15.6, 0.7, a.accent);
+  };
+
+  S.spider = function (c, a, t) {
+    var k = Math.sin(t * 5) * 1.2;
+    c.strokeStyle = a.wing; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 4; i++) {
+        var ang = -1.15 + i * 0.62;
+        var px = s * Math.cos(ang) * 3, py = Math.sin(ang) * 3 - 1;
+        var mx = s * (7 + i * 0.5), my = py + (i - 1.5) * 2.6 + k * (i % 2 ? 1 : -1);
+        c.beginPath();
+        c.moveTo(px, py);
+        c.quadraticCurveTo(mx, my - 3, s * (9.5 + i * 0.4), my + 2);
+        c.stroke();
+      }
+    }
+    c.fillStyle = a.wing; ell(c, 0, -3.5, 2.6, 2.6);
+    c.fillStyle = a.body; ell(c, 0, 3, 4.6, 5.6);
+    c.fillStyle = a.accent;
+    ell(c, 0, 1.4, 3.6, 0.8); ell(c, 0, 4.2, 3.2, 0.8); ell(c, 0, 6.6, 2.2, 0.7);
+    c.fillStyle = '#101010';
+    ell(c, -1, -5, 0.6, 0.6); ell(c, 1, -5, 0.6, 0.6);
+    ell(c, -2, -4.4, 0.45, 0.45); ell(c, 2, -4.4, 0.45, 0.45);
+  };
+
+  S.pillbug = function (c, a, t) {
+    legs(c, GG.shade(a.body, -0.3), 3, 2.6, 4.6, t * 10, 1);
+    c.fillStyle = a.body; ell(c, 0, 0, 4.4, 6.4);
+    c.fillStyle = a.wing;
+    for (var i = -2; i <= 2; i++) {
+      c.save();
+      c.beginPath(); c.ellipse(0, 0, 4.4, 6.4, 0, 0, Math.PI * 2); c.clip();
+      c.fillStyle = (i % 2 === 0) ? a.wing : GG.shade(a.wing, -0.12);
+      c.fillRect(-5, i * 2.2 - 1.1, 10, 2.2);
+      c.restore();
+    }
+    c.fillStyle = a.accent; ell(c, 0, -5.4, 2.8, 1.8);
+    curve(c, -1.4, -6.6, -2.6, -8, -3.2, -9.2, 0.7, a.accent);
+    curve(c, 1.4, -6.6, 2.6, -8, 3.2, -9.2, 0.7, a.accent);
+  };
+
+  S.snail = function (c, a, t) {
+    var bob = Math.sin(t * 3) * 0.5;
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-4.5, 6); c.quadraticCurveTo(-5.5, -2, -1.5, -7.5);
+    c.quadraticCurveTo(1.5, -10, 3.5, -7);
+    c.quadraticCurveTo(5.5, 2, 4.5, 6.5);
+    c.quadraticCurveTo(0, 8.5, -4.5, 6); c.closePath(); c.fill();
+    c.fillStyle = a.wing;
+    ell(c, 0.4, 2.6, 6.2, 6.2);
+    c.strokeStyle = a.accent; c.lineWidth = 1.3;
+    c.beginPath();
+    for (var i = 0; i < 70; i++) {
+      var ang = i * 0.28, r = 0.5 + i * 0.085;
+      var x = 0.4 + Math.cos(ang) * r, y = 2.6 + Math.sin(ang) * r;
+      if (r > 5.6) break;
+      if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.25)'; ell(c, -1.8, 0.4, 2, 2.4, -0.4);
+    c.fillStyle = a.body; ell(c, 1, -7.4 + bob, 2.4, 2.2);
+    c.strokeStyle = a.body; c.lineWidth = 0.9;
+    c.beginPath(); c.moveTo(0, -8.6 + bob); c.lineTo(-1.4, -12 + bob); c.stroke();
+    c.beginPath(); c.moveTo(2, -8.6 + bob); c.lineTo(3.2, -12.2 + bob); c.stroke();
+    c.fillStyle = '#20202a';
+    ell(c, -1.5, -12.4 + bob, 0.9, 0.9); ell(c, 3.3, -12.6 + bob, 0.9, 0.9);
+    c.fillStyle = '#fff';
+    ell(c, -1.7, -12.7 + bob, 0.3, 0.3); ell(c, 3.1, -12.9 + bob, 0.3, 0.3);
+  };
+
+  GG.BugArt = {
+    shapes: S,
+    /* Draw a bug. (x,y) is its centre, angle is where it is heading (radians),
+       scale 1 is world size, t is a time value for the animation. */
+    draw: function (c, bug, x, y, scale, angle, t, opts) {
+      opts = opts || {};
+      var a = bug.art;
+      var fn = S[a.shape] || S.beetle;
+      c.save();
+      c.translate(x, y);
+      if (angle != null) c.rotate(angle + Math.PI / 2);
+      var s = scale * (bug.size || 1);
+      c.scale(s, s);
+      if (opts.alpha != null) c.globalAlpha = opts.alpha;
+      if (opts.silhouette) {
+        c.save();
+        c.fillStyle = '#cdd6c4'; c.strokeStyle = '#cdd6c4';
+        var old = c.fillStyle;
+        fn({
+          save: c.save.bind(c), restore: c.restore.bind(c), beginPath: c.beginPath.bind(c),
+          moveTo: c.moveTo.bind(c), lineTo: c.lineTo.bind(c), closePath: c.closePath.bind(c),
+          quadraticCurveTo: c.quadraticCurveTo.bind(c), bezierCurveTo: c.bezierCurveTo.bind(c),
+          ellipse: c.ellipse.bind(c), arc: c.arc.bind(c), stroke: c.stroke.bind(c),
+          fill: c.fill.bind(c), scale: c.scale.bind(c), translate: c.translate.bind(c),
+          rotate: c.rotate.bind(c), clip: c.clip.bind(c), fillRect: c.fillRect.bind(c),
+          createRadialGradient: c.createRadialGradient.bind(c),
+          set fillStyle(v) { c.fillStyle = '#c3ccbb'; },
+          get fillStyle() { return '#c3ccbb'; },
+          set strokeStyle(v) { c.strokeStyle = '#c3ccbb'; },
+          get strokeStyle() { return '#c3ccbb'; },
+          set lineWidth(v) { c.lineWidth = v; }, get lineWidth() { return c.lineWidth; },
+          set lineCap(v) { c.lineCap = v; }, get lineCap() { return c.lineCap; },
+          set globalAlpha(v) { c.globalAlpha = v; }, get globalAlpha() { return c.globalAlpha; }
+        }, a, t);
+        c.restore();
+      } else {
+        fn(c, a, t);
+      }
+      c.restore();
+    },
+    /* Shadow blob under a flying bug. */
+    shadow: function (c, x, y, r, alpha) {
+      c.fillStyle = 'rgba(20,40,15,' + (alpha == null ? 0.18 : alpha) + ')';
+      ell(c, x, y, r, r * 0.45);
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/render/propart.js ==== */
+/* Trees, flowers, rocks, the house - all drawn with code.
+   Props are drawn with their BASE at (x, y), growing upward. */
+(function (GG) {
+  'use strict';
+
+  function ell(c, x, y, rx, ry, rot) {
+    c.beginPath(); c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, Math.PI * 2); c.fill();
+  }
+  function shadow(c, x, y, rx) {
+    c.fillStyle = 'rgba(30,60,25,0.16)';
+    ell(c, x, y, rx, rx * 0.38);
+  }
+
+  var P = {};
+
+  P.tree = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 0.8 + seed * 6) * 2.2;
+    shadow(c, x + 2, y, r * 0.72);
+    c.fillStyle = '#6b4a2c';
+    c.beginPath();
+    c.moveTo(x - r * 0.17, y);
+    c.lineTo(x - r * 0.12 + sway * 0.4, y - r * 0.95);
+    c.lineTo(x + r * 0.12 + sway * 0.4, y - r * 0.95);
+    c.lineTo(x + r * 0.17, y);
+    c.closePath(); c.fill();
+    var cy = y - r * 1.18, cx = x + sway;
+    c.fillStyle = '#2f6b32';
+    ell(c, cx - r * 0.46, cy + r * 0.20, r * 0.62, r * 0.56);
+    ell(c, cx + r * 0.46, cy + r * 0.20, r * 0.62, r * 0.56);
+    ell(c, cx, cy - r * 0.22, r * 0.74, r * 0.66);
+    c.fillStyle = '#3d8a3e';
+    ell(c, cx - r * 0.34, cy + r * 0.06, r * 0.5, r * 0.44);
+    ell(c, cx + r * 0.40, cy + r * 0.02, r * 0.46, r * 0.42);
+    ell(c, cx - r * 0.05, cy - r * 0.34, r * 0.58, r * 0.5);
+    c.fillStyle = '#54a84c';
+    ell(c, cx - r * 0.22, cy - r * 0.30, r * 0.34, r * 0.28);
+    ell(c, cx + r * 0.26, cy - r * 0.12, r * 0.28, r * 0.24);
+  };
+
+  P.pine = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 0.7 + seed * 5) * 1.6;
+    shadow(c, x + 2, y, r * 0.55);
+    c.fillStyle = '#6b4a2c';
+    c.fillRect(x - r * 0.11, y - r * 0.5, r * 0.22, r * 0.5);
+    for (var i = 0; i < 3; i++) {
+      var w = r * (0.82 - i * 0.20), yy = y - r * (0.35 + i * 0.55), h = r * 0.82;
+      c.fillStyle = i === 2 ? '#2f6b46' : (i === 1 ? '#2a6440' : '#255a39');
+      c.beginPath();
+      c.moveTo(x + sway * (i + 1) * 0.4, yy - h);
+      c.lineTo(x - w, yy); c.lineTo(x + w, yy);
+      c.closePath(); c.fill();
+    }
+  };
+
+  P.appleTree = function (c, x, y, r, t, seed) {
+    P.tree(c, x, y, r, t, seed);
+    var cx = x + Math.sin(t * 0.8 + seed * 6) * 2.2, cy = y - r * 1.18;
+    c.fillStyle = '#e0413c';
+    var rnd = GG.mulberry32(Math.floor(seed * 9999));
+    for (var i = 0; i < 5; i++) {
+      ell(c, cx + (rnd() - 0.5) * r * 1.2, cy + (rnd() - 0.3) * r * 0.9, r * 0.11, r * 0.11);
+    }
+  };
+
+  P.bush = function (c, x, y, r, t, seed) {
+    shadow(c, x + 1, y, r * 0.85);
+    c.fillStyle = '#33783a';
+    ell(c, x - r * 0.42, y - r * 0.36, r * 0.6, r * 0.48);
+    ell(c, x + r * 0.42, y - r * 0.36, r * 0.6, r * 0.48);
+    ell(c, x, y - r * 0.6, r * 0.68, r * 0.56);
+    c.fillStyle = '#47954a';
+    ell(c, x - r * 0.2, y - r * 0.62, r * 0.42, r * 0.34);
+    ell(c, x + r * 0.28, y - r * 0.46, r * 0.34, r * 0.28);
+  };
+
+  P.berryBush = function (c, x, y, r, t, seed) {
+    P.bush(c, x, y, r, t, seed);
+    var rnd = GG.mulberry32(Math.floor(seed * 7777));
+    c.fillStyle = '#b6407e';
+    for (var i = 0; i < 6; i++) ell(c, x + (rnd() - 0.5) * r * 1.5, y - r * (0.2 + rnd() * 0.7), r * 0.1, r * 0.1);
+  };
+
+  P.rock = function (c, x, y, r, t, seed) {
+    shadow(c, x + 1, y, r * 0.9);
+    c.fillStyle = '#9a9a96';
+    c.beginPath();
+    c.moveTo(x - r, y);
+    c.lineTo(x - r * 0.72, y - r * 0.72);
+    c.lineTo(x - r * 0.1, y - r * 0.95);
+    c.lineTo(x + r * 0.62, y - r * 0.68);
+    c.lineTo(x + r, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#b6b6b0';
+    c.beginPath();
+    c.moveTo(x - r * 0.62, y - r * 0.6);
+    c.lineTo(x - r * 0.1, y - r * 0.88);
+    c.lineTo(x + r * 0.3, y - r * 0.55);
+    c.lineTo(x - r * 0.2, y - r * 0.4);
+    c.closePath(); c.fill();
+  };
+
+  P.flower = function (c, x, y, r, t, seed, col) {
+    var sway = Math.sin(t * 1.6 + seed * 8) * 1.2;
+    c.strokeStyle = '#3f8a3a'; c.lineWidth = Math.max(1, r * 0.14); c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + sway * 0.4, y - r * 0.8, x + sway, y - r * 1.3); c.stroke();
+    var cx = x + sway, cy = y - r * 1.3;
+    c.fillStyle = col;
+    for (var i = 0; i < 5; i++) {
+      var a = i * Math.PI * 2 / 5 + seed;
+      ell(c, cx + Math.cos(a) * r * 0.5, cy + Math.sin(a) * r * 0.5, r * 0.42, r * 0.42);
+    }
+    c.fillStyle = '#ffd94a'; ell(c, cx, cy, r * 0.34, r * 0.34);
+  };
+
+  P.tulip = function (c, x, y, r, t, seed, col) {
+    var sway = Math.sin(t * 1.4 + seed * 8) * 1.1;
+    c.strokeStyle = '#3f8a3a'; c.lineWidth = Math.max(1, r * 0.16);
+    c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + sway * 0.4, y - r, x + sway, y - r * 1.5); c.stroke();
+    c.fillStyle = '#4aa04a';
+    ell(c, x - r * 0.5 + sway * 0.2, y - r * 0.6, r * 0.5, r * 0.2, -0.5);
+    var cx = x + sway, cy = y - r * 1.62;
+    c.fillStyle = col;
+    c.beginPath();
+    c.moveTo(cx - r * 0.5, cy + r * 0.2);
+    c.quadraticCurveTo(cx - r * 0.55, cy - r * 0.6, cx, cy - r * 0.8);
+    c.quadraticCurveTo(cx + r * 0.55, cy - r * 0.6, cx + r * 0.5, cy + r * 0.2);
+    c.quadraticCurveTo(cx, cy + r * 0.55, cx - r * 0.5, cy + r * 0.2);
+    c.fill();
+    c.fillStyle = GG.shade(col, -0.18);
+    c.beginPath(); c.moveTo(cx, cy - r * 0.8); c.quadraticCurveTo(cx - r * 0.2, cy - r * 0.1, cx, cy + r * 0.35);
+    c.quadraticCurveTo(cx + r * 0.2, cy - r * 0.1, cx, cy - r * 0.8); c.fill();
+  };
+
+  P.grassTuft = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.9 + seed * 11) * 1.6;
+    c.strokeStyle = 'rgba(70,140,60,0.85)'; c.lineWidth = Math.max(1, r * 0.16); c.lineCap = 'round';
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.2, y);
+      c.quadraticCurveTo(x + i * r * 0.35 + sway * 0.4, y - r * 0.7, x + i * r * 0.55 + sway, y - r * 1.1);
+      c.stroke();
+    }
+  };
+
+  P.mushroom = function (c, x, y, r, t, seed) {
+    c.fillStyle = '#efe6d2';
+    c.fillRect(x - r * 0.18, y - r * 0.7, r * 0.36, r * 0.7);
+    c.fillStyle = '#d3453f';
+    c.beginPath(); c.ellipse(x, y - r * 0.7, r * 0.62, r * 0.48, 0, Math.PI, 0); c.fill();
+    c.fillStyle = '#ffe9d6';
+    ell(c, x - r * 0.26, y - r * 0.86, r * 0.12, r * 0.1);
+    ell(c, x + r * 0.22, y - r * 0.94, r * 0.1, r * 0.09);
+  };
+
+  P.log = function (c, x, y, r, t, seed) {
+    shadow(c, x, y, r * 1.1);
+    c.fillStyle = '#7a5533';
+    GG.roundRect(c, x - r, y - r * 0.62, r * 2, r * 0.68, r * 0.3); c.fill();
+    c.fillStyle = '#96683d';
+    ell(c, x - r * 0.95, y - r * 0.3, r * 0.22, r * 0.34);
+    c.fillStyle = '#b9855a';
+    ell(c, x - r * 0.95, y - r * 0.3, r * 0.12, r * 0.2);
+  };
+
+  P.stump = function (c, x, y, r, t, seed) {
+    shadow(c, x, y, r * 0.95);
+    c.fillStyle = '#7a5533';
+    GG.roundRect(c, x - r * 0.7, y - r * 0.85, r * 1.4, r * 0.9, r * 0.18); c.fill();
+    c.fillStyle = '#a9764a'; ell(c, x, y - r * 0.85, r * 0.7, r * 0.28);
+    c.strokeStyle = '#7a5533'; c.lineWidth = 1;
+    c.beginPath(); c.ellipse(x, y - r * 0.85, r * 0.4, r * 0.16, 0, 0, Math.PI * 2); c.stroke();
+  };
+
+  P.reed = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.5 + seed * 9) * 2;
+    c.strokeStyle = '#4f8a4a'; c.lineWidth = Math.max(1.2, r * 0.14); c.lineCap = 'round';
+    for (var i = -1; i <= 1; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.3, y);
+      c.quadraticCurveTo(x + i * r * 0.4 + sway * 0.5, y - r, x + i * r * 0.5 + sway, y - r * 1.7);
+      c.stroke();
+      if (i === 0) {
+        c.fillStyle = '#8a5f33';
+        ell(c, x + sway, y - r * 1.85, r * 0.13, r * 0.34);
+      }
+    }
+  };
+
+  P.lilypad = function (c, x, y, r, t, seed) {
+    var bob = Math.sin(t * 1.1 + seed * 7) * 1.2;
+    c.fillStyle = '#3f9350';
+    c.beginPath();
+    c.ellipse(x + bob * 0.4, y + bob * 0.2, r, r * 0.82, seed * 3, 0.42, Math.PI * 2 + 0.1);
+    c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(20,70,30,0.25)'; c.lineWidth = 1;
+    for (var i = 0; i < 5; i++) {
+      var a = 0.7 + i * 0.95;
+      c.beginPath(); c.moveTo(x + bob * 0.4, y + bob * 0.2);
+      c.lineTo(x + bob * 0.4 + Math.cos(a) * r * 0.85, y + bob * 0.2 + Math.sin(a) * r * 0.7);
+      c.stroke();
+    }
+    if (seed > 0.72) {
+      c.fillStyle = '#f6b8d8';
+      for (var j = 0; j < 5; j++) {
+        var b = j * 1.256 + seed;
+        ell(c, x + bob * 0.4 + Math.cos(b) * r * 0.24, y + bob * 0.2 + Math.sin(b) * r * 0.2, r * 0.2, r * 0.2);
+      }
+      c.fillStyle = '#ffe27a'; ell(c, x + bob * 0.4, y + bob * 0.2, r * 0.15, r * 0.15);
+    }
+  };
+
+  P.fence = function (c, x, y, r, t, seed) {
+    c.fillStyle = '#c9a878';
+    c.fillRect(x - r * 0.12, y - r * 1.1, r * 0.24, r * 1.1);
+    c.fillRect(x - r, y - r * 0.9, r * 2, r * 0.16);
+    c.fillRect(x - r, y - r * 0.5, r * 2, r * 0.16);
+    c.fillStyle = '#a88a5e';
+    c.beginPath();
+    c.moveTo(x - r * 0.12, y - r * 1.1); c.lineTo(x, y - r * 1.3); c.lineTo(x + r * 0.12, y - r * 1.1);
+    c.closePath(); c.fill();
+  };
+
+  P.sign = function (c, x, y, r, t, seed, label) {
+    c.fillStyle = '#9a7247';
+    c.fillRect(x - r * 0.1, y - r * 1.1, r * 0.2, r * 1.1);
+    c.fillStyle = '#d9b982';
+    GG.roundRect(c, x - r * 0.9, y - r * 1.9, r * 1.8, r * 0.9, r * 0.12); c.fill();
+    c.strokeStyle = '#9a7247'; c.lineWidth = 1.5; c.stroke();
+    if (label) {
+      c.fillStyle = '#5b432a';
+      c.font = 'bold ' + Math.round(r * 0.36) + 'px "Trebuchet MS", sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(label, x, y - r * 1.45);
+    }
+  };
+
+  P.beehive = function (c, x, y, r, t, seed) {
+    shadow(c, x, y, r * 0.7);
+    c.fillStyle = '#d9a648';
+    for (var i = 0; i < 3; i++) ell(c, x, y - r * (0.3 + i * 0.42), r * (0.72 - i * 0.1), r * 0.26);
+    c.fillStyle = '#7a5a25'; ell(c, x, y - r * 0.35, r * 0.16, r * 0.12);
+  };
+
+  /* The player's house: front door faces down (south). */
+  P.house = function (c, x, y, w, t) {
+    var h = w * 0.72;
+    c.fillStyle = 'rgba(30,60,25,0.18)';
+    ell(c, x, y, w * 0.55, w * 0.14);
+    c.fillStyle = '#f4e7cf';
+    GG.roundRect(c, x - w / 2, y - h, w, h, 6); c.fill();
+    c.strokeStyle = '#cbb794'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#c9564f';
+    c.beginPath();
+    c.moveTo(x - w * 0.60, y - h);
+    c.lineTo(x, y - h - w * 0.46);
+    c.lineTo(x + w * 0.60, y - h);
+    c.closePath(); c.fill();
+    c.fillStyle = '#a8433d';
+    c.beginPath();
+    c.moveTo(x - w * 0.60, y - h); c.lineTo(x, y - h - w * 0.46);
+    c.lineTo(x, y - h + w * 0.02); c.closePath(); c.fill();
+    c.fillStyle = '#8a6039';
+    GG.roundRect(c, x - w * 0.14, y - h * 0.66, w * 0.28, h * 0.66, 4); c.fill();
+    c.fillStyle = '#ffd88a'; ell(c, x + w * 0.08, y - h * 0.32, w * 0.022, w * 0.022);
+    c.fillStyle = '#9fd6f0';
+    GG.roundRect(c, x - w * 0.40, y - h * 0.78, w * 0.20, w * 0.18, 3); c.fill();
+    GG.roundRect(c, x + w * 0.20, y - h * 0.78, w * 0.20, w * 0.18, 3); c.fill();
+    c.strokeStyle = '#e8dcc2'; c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(x - w * 0.30, y - h * 0.78); c.lineTo(x - w * 0.30, y - h * 0.78 + w * 0.18);
+    c.moveTo(x + w * 0.30, y - h * 0.78); c.lineTo(x + w * 0.30, y - h * 0.78 + w * 0.18);
+    c.stroke();
+    c.fillStyle = '#7fb06a';
+    GG.roundRect(c, x - w * 0.24, y - 6, w * 0.48, 8, 3); c.fill();
+  };
+
+  GG.Props = P;
+})(window.GG = window.GG || {});
+
+/* ==== src/render/decorart.js ==== */
+/* Little things to put inside a terrarium. */
+(function (GG) {
+  'use strict';
+  function ell(c, x, y, rx, ry, rot) {
+    c.beginPath(); c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, Math.PI * 2); c.fill();
+  }
+
+  var D = {};
+
+  D.leaf = function (c, x, y, s) {
+    c.fillStyle = '#4f9c46';
+    c.beginPath();
+    c.moveTo(x, y); c.quadraticCurveTo(x - 14 * s, y - 12 * s, x - 2 * s, y - 26 * s);
+    c.quadraticCurveTo(x + 13 * s, y - 12 * s, x, y); c.fill();
+    c.strokeStyle = '#367a30'; c.lineWidth = 1.4 * s;
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x - 2 * s, y - 25 * s); c.stroke();
+  };
+  D.pebble = function (c, x, y, s) {
+    c.fillStyle = '#a9a9a2'; ell(c, x, y - 5 * s, 13 * s, 8 * s);
+    c.fillStyle = '#c2c2ba'; ell(c, x - 3 * s, y - 7 * s, 6 * s, 3.6 * s);
+  };
+  D.twig = function (c, x, y, s) {
+    c.strokeStyle = '#8a6238'; c.lineWidth = 3 * s; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x - 3 * s, y); c.quadraticCurveTo(x + 3 * s, y - 16 * s, x - 1 * s, y - 30 * s); c.stroke();
+    c.lineWidth = 2 * s;
+    c.beginPath(); c.moveTo(x + 1 * s, y - 14 * s); c.lineTo(x + 11 * s, y - 21 * s); c.stroke();
+    c.beginPath(); c.moveTo(x, y - 22 * s); c.lineTo(x - 9 * s, y - 30 * s); c.stroke();
+  };
+  D.mushroom = function (c, x, y, s) { GG.Props.mushroom(c, x, y, 26 * s, 0, 0.3); };
+  D.flower = function (c, x, y, s) { GG.Props.flower(c, x, y, 15 * s, 0, 0.5, '#ff8fb0'); };
+  D.bluebell = function (c, x, y, s) { GG.Props.tulip(c, x, y, 15 * s, 0, 0.2, '#9fa8ff'); };
+  D.fern = function (c, x, y, s) {
+    c.strokeStyle = '#3d8f45'; c.lineCap = 'round';
+    for (var k = -1; k <= 1; k++) {
+      var lean = k * 0.45;
+      c.lineWidth = 2.4 * s;
+      c.beginPath();
+      c.moveTo(x, y);
+      c.quadraticCurveTo(x + lean * 20 * s, y - 18 * s, x + lean * 30 * s, y - 34 * s);
+      c.stroke();
+      c.lineWidth = 1.5 * s;
+      for (var i = 1; i <= 5; i++) {
+        var tx = x + lean * 20 * s * (i / 5) * 1.2, ty = y - (34 * s) * (i / 5);
+        c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx + 8 * s, ty - 4 * s); c.stroke();
+        c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx - 8 * s, ty - 4 * s); c.stroke();
+      }
+    }
+  };
+  D.log = function (c, x, y, s) { GG.Props.log(c, x, y, 24 * s, 0, 0.5); };
+  D.rock = function (c, x, y, s) { GG.Props.rock(c, x, y, 22 * s, 0, 0.5); };
+  D.moss = function (c, x, y, s) {
+    c.fillStyle = '#5fa84e';
+    for (var i = 0; i < 9; i++) {
+      var a = i * 0.7;
+      ell(c, x + Math.cos(a) * 16 * s, y - 3 * s + Math.sin(a) * 5 * s, 7 * s, 4.5 * s);
+    }
+    c.fillStyle = '#79c064';
+    ell(c, x - 5 * s, y - 6 * s, 8 * s, 4 * s);
+  };
+  D.acorn = function (c, x, y, s) {
+    c.fillStyle = '#d8a35e'; ell(c, x, y - 8 * s, 8 * s, 9 * s);
+    c.fillStyle = '#7a5330';
+    c.beginPath(); c.ellipse(x, y - 13 * s, 9 * s, 5.5 * s, 0, Math.PI, 0); c.fill();
+    c.strokeStyle = '#7a5330'; c.lineWidth = 2 * s;
+    c.beginPath(); c.moveTo(x, y - 17 * s); c.lineTo(x + 1 * s, y - 22 * s); c.stroke();
+  };
+  D.shell = function (c, x, y, s) {
+    c.fillStyle = '#f0d9c4';
+    c.beginPath(); c.ellipse(x, y - 8 * s, 12 * s, 10 * s, 0, Math.PI, 0); c.fill();
+    c.strokeStyle = '#d9b79a'; c.lineWidth = 1.2 * s;
+    for (var i = 0; i < 5; i++) {
+      var a = Math.PI + i * (Math.PI / 5) + 0.3;
+      c.beginPath(); c.moveTo(x, y - 8 * s);
+      c.lineTo(x + Math.cos(a) * 12 * s, y - 8 * s + Math.sin(a) * 10 * s); c.stroke();
+    }
+  };
+  D.lantern = function (c, x, y, s, t) {
+    var glow = 0.6 + 0.4 * Math.sin((t || 0) * 2);
+    c.fillStyle = 'rgba(255,226,140,' + (0.20 * glow) + ')';
+    ell(c, x, y - 22 * s, 30 * s, 30 * s);
+    c.fillStyle = '#7a6a50';
+    c.fillRect(x - 9 * s, y - 4 * s, 18 * s, 4 * s);
+    c.fillStyle = 'rgba(255,222,130,' + (0.75 + 0.25 * glow) + ')';
+    GG.roundRect(c, x - 7 * s, y - 26 * s, 14 * s, 22 * s, 3 * s); c.fill();
+    c.strokeStyle = '#7a6a50'; c.lineWidth = 2 * s; c.stroke();
+    c.beginPath(); c.moveTo(x, y - 26 * s); c.quadraticCurveTo(x, y - 34 * s, x + 7 * s, y - 32 * s); c.stroke();
+  };
+  D.crystal = function (c, x, y, s, t) {
+    var g = 0.5 + 0.5 * Math.sin((t || 0) * 1.6);
+    c.fillStyle = 'rgba(160,220,255,' + (0.18 + 0.12 * g) + ')';
+    ell(c, x, y - 16 * s, 26 * s, 26 * s);
+    c.fillStyle = '#8fd6ff';
+    c.beginPath(); c.moveTo(x, y - 34 * s); c.lineTo(x + 9 * s, y - 8 * s); c.lineTo(x - 9 * s, y - 8 * s); c.closePath(); c.fill();
+    c.fillStyle = '#c8ecff';
+    c.beginPath(); c.moveTo(x, y - 34 * s); c.lineTo(x + 3 * s, y - 8 * s); c.lineTo(x - 3 * s, y - 8 * s); c.closePath(); c.fill();
+  };
+  D.waterdish = function (c, x, y, s) {
+    c.fillStyle = '#b8b0a0'; ell(c, x, y - 4 * s, 20 * s, 8 * s);
+    c.fillStyle = '#6fc3e0'; ell(c, x, y - 5 * s, 16 * s, 5.5 * s);
+    c.fillStyle = 'rgba(255,255,255,0.5)'; ell(c, x - 5 * s, y - 6 * s, 5 * s, 1.6 * s);
+  };
+  D.berries = function (c, x, y, s) {
+    c.strokeStyle = '#4f8a3a'; c.lineWidth = 2 * s;
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 16 * s); c.stroke();
+    c.fillStyle = '#c8365e';
+    ell(c, x - 6 * s, y - 18 * s, 6 * s, 6 * s);
+    ell(c, x + 6 * s, y - 16 * s, 5.5 * s, 5.5 * s);
+    ell(c, x, y - 25 * s, 5 * s, 5 * s);
+  };
+  D.signplate = function (c, x, y, s) {
+    c.fillStyle = '#e6d2a8';
+    GG.roundRect(c, x - 22 * s, y - 18 * s, 44 * s, 16 * s, 3 * s); c.fill();
+    c.strokeStyle = '#b79a6a'; c.lineWidth = 1.6 * s; c.stroke();
+    c.fillStyle = '#8a6a3a';
+    c.fillRect(x - 2 * s, y - 4 * s, 4 * s, 4 * s);
+  };
+
+  GG.DecorArt = D;
+
+  GG.DECOR = [
+    { id: 'leaf', name: 'Big Leaf', price: 0 },
+    { id: 'pebble', name: 'Smooth Pebble', price: 0 },
+    { id: 'twig', name: 'Little Twig', price: 0 },
+    { id: 'mushroom', name: 'Red Mushroom', price: 0 },
+    { id: 'flower', name: 'Pink Flower', price: 40 },
+    { id: 'bluebell', name: 'Bluebell', price: 60 },
+    { id: 'fern', name: 'Curly Fern', price: 80 },
+    { id: 'moss', name: 'Soft Moss', price: 90 },
+    { id: 'log', name: 'Mossy Log', price: 120 },
+    { id: 'rock', name: 'Grey Rock', price: 120 },
+    { id: 'acorn', name: 'Acorn', price: 150 },
+    { id: 'berries', name: 'Red Berries', price: 180 },
+    { id: 'shell', name: 'Sea Shell', price: 220 },
+    { id: 'waterdish', name: 'Water Dish', price: 260 },
+    { id: 'signplate', name: 'Name Plate', price: 300 },
+    { id: 'lantern', name: 'Tiny Lantern', price: 420 },
+    { id: 'crystal', name: 'Glow Crystal', price: 600 }
+  ];
+  GG.DECOR_BY_ID = {};
+  GG.DECOR.forEach(function (d) { GG.DECOR_BY_ID[d.id] = d; });
+
+  GG.TANK_BGS = [
+    { id: 'meadow', name: 'Meadow', sky: '#cfeeff', ground: '#8ecf63', ground2: '#7cbd53', price: 0 },
+    { id: 'forest', name: 'Forest', sky: '#cfe6cf', ground: '#4f9450', ground2: '#3f7f42', price: 0 },
+    { id: 'pond', name: 'Pond', sky: '#d6f0ff', ground: '#9dcf7e', ground2: '#7fb8c9', price: 80 },
+    { id: 'night', name: 'Night', sky: '#2a3470', ground: '#3d5a3a', ground2: '#2f4a2e', price: 150 },
+    { id: 'sunset', name: 'Sunset', sky: '#ffc9a0', ground: '#9fbf63', ground2: '#87a852', price: 200 },
+    { id: 'desert', name: 'Sandy', sky: '#ffe9c4', ground: '#e3cf9a', ground2: '#d3bd85', price: 250 }
+  ];
+  GG.TANK_BY_ID = {};
+  GG.TANK_BGS.forEach(function (b) { GG.TANK_BY_ID[b.id] = b; });
+})(window.GG = window.GG || {});
+
+/* ==== src/game/time.js ==== */
+/* The in-game clock. A whole day and night takes about twelve minutes. */
+(function (GG) {
+  'use strict';
+  var Time = GG.Time = {
+    minutes: 8 * 60,
+    day: 1,
+    RATE: 2,             // in-game minutes per real second
+    rain: false,
+    rainTimer: 260,
+
+    set: function (m, d) { this.minutes = m; if (d) this.day = d; },
+
+    update: function (dt) {
+      this.minutes += dt * this.RATE;
+      if (this.minutes >= 1440) { this.minutes -= 1440; this.day++; }
+      this.rainTimer -= dt;
+      if (this.rainTimer <= 0) {
+        this.rain = !this.rain && Math.random() < 0.45;
+        this.rainTimer = this.rain ? GG.rand(50, 95) : GG.rand(150, 320);
+      }
+    },
+
+    phase: function () {
+      var h = this.minutes / 60;
+      if (h >= 5 && h < 9) return 'morning';
+      if (h >= 9 && h < 17) return 'day';
+      if (h >= 17 && h < 20.5) return 'evening';
+      return 'night';
+    },
+
+    label: function () {
+      var h = Math.floor(this.minutes / 60), m = Math.floor(this.minutes % 60);
+      var ap = h < 12 ? 'am' : 'pm';
+      var hh = h % 12; if (hh === 0) hh = 12;
+      return hh + ':' + (m < 10 ? '0' : '') + m + ap;
+    },
+
+    phaseName: function () {
+      return { morning: 'Morning', day: 'Daytime', evening: 'Evening', night: 'Night' }[this.phase()];
+    },
+
+    /* A colour wash painted over the world. */
+    tint: function () {
+      var h = this.minutes / 60;
+      function mix(a, b, t) {
+        return [GG.lerp(a[0], b[0], t), GG.lerp(a[1], b[1], t), GG.lerp(a[2], b[2], t), GG.lerp(a[3], b[3], t)];
+      }
+      var NIGHT = [26, 38, 92, 0.52], DUSK = [255, 138, 70, 0.26],
+          DAY = [255, 255, 255, 0], MORN = [255, 226, 150, 0.16];
+      var col;
+      if (h < 4.5) col = NIGHT;
+      else if (h < 6) col = mix(NIGHT, MORN, (h - 4.5) / 1.5);
+      else if (h < 9) col = mix(MORN, DAY, (h - 6) / 3);
+      else if (h < 16.5) col = DAY;
+      else if (h < 19) col = mix(DAY, DUSK, (h - 16.5) / 2.5);
+      else if (h < 21) col = mix(DUSK, NIGHT, (h - 19) / 2);
+      else col = NIGHT;
+      if (this.rain) { col = [col[0] * 0.7 + 90 * 0.3, col[1] * 0.7 + 110 * 0.3, col[2] * 0.7 + 140 * 0.3, Math.max(col[3], 0.22)]; }
+      return 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',' + col[3].toFixed(3) + ')';
+    },
+
+    isDark: function () { var h = this.minutes / 60; return h < 5.5 || h > 19.5; }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/game/world.js ==== */
+/* The open world: six places to explore, drawn from a little map. */
+(function (GG) {
+  'use strict';
+
+  var CELL = 160, COLS = 20, ROWS = 15;
+  // M meadow  G garden  F forest  P pond  H hill  O orchard
+  var MAP = [
+    'HHHHMMMFFFFFFFFFFFFF',
+    'HHHHMMMFFFFFFFFFFFFF',
+    'HHHMMMMMFFFFFFFFFFFF',
+    'HHMMMMMMFFFFFFFFFFFF',
+    'MMMMMMMMMFFFFFFFFFFF',
+    'MMMMMMMMMMFFFFFFFFFF',
+    'MMMMMMMGGGGOOOFFFFFF',
+    'MMMMMMGGGGGOOOOFFFFF',
+    'PPMMMMGGGGGGOOOOFFFF',
+    'PPPMMMGGGGGGOOOOFFFF',
+    'PPPPMMGGGGGGGOOOOFFF',
+    'PPPPPMMGGGGGGOOOMMFF',
+    'PPPPPMMMGGGGMMMMMMMM',
+    'PPPPMMMMMMMMMMMMMMMM',
+    'PPPMMMMMMMMMMMMMMMMM'
+  ];
+  var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard' };
+
+  var GROUND = {
+    meadow: ['#8ecf63', '#83c55a', '#98d76d'],
+    garden: ['#93d munch'],
+    forest: ['#4f9450', '#478a49', '#589c58'],
+    pond: ['#9dcf7e', '#94c777', '#a7d78a'],
+    hill: ['#c3bf94', '#b8b489', '#cdc9a0'],
+    orchard: ['#a3d46a', '#99cb60', '#aeda78']
+  };
+  GROUND.garden = ['#9ad96f', '#90d065', '#a5e17b'];
+
+  var WATER = { cx: 620, cy: 2020, rx: 460, ry: 300 };
+
+  var World = GG.World = {
+    CELL: CELL, COLS: COLS, ROWS: ROWS,
+    W: COLS * CELL, H: ROWS * CELL,
+    HOUSE: { x: 1520, y: 1480, w: 150 },
+    DOOR: { x: 1520, y: 1486 },
+    props: [],
+    solids: [],
+    grid: {},
+    chunks: {},
+    CHUNK: 400,
+
+    biomeLetter: function (x, y) {
+      var cx = GG.clamp(Math.floor(x / CELL), 0, COLS - 1);
+      var cy = GG.clamp(Math.floor(y / CELL), 0, ROWS - 1);
+      return MAP[cy][cx];
+    },
+    biomeAt: function (x, y) {
+      // Wobble the lookup so the borders between places look natural.
+      var wx = x + (GG.noise2(x / 110, y / 110, 7) - 0.5) * 150 + (GG.noise2(x / 34, y / 34, 17) - 0.5) * 44;
+      var wy = y + (GG.noise2(x / 110, y / 110, 13) - 0.5) * 150 + (GG.noise2(x / 34, y / 34, 23) - 0.5) * 44;
+      return LETTER[this.biomeLetter(wx, wy)];
+    },
+    biomeRaw: function (x, y) { return LETTER[this.biomeLetter(x, y)]; },
+
+    isWater: function (x, y) {
+      var dx = (x - WATER.cx) / WATER.rx, dy = (y - WATER.cy) / WATER.ry;
+      var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
+      return dx * dx + dy * dy < wob;
+    },
+    waterDepth: function (x, y) {
+      var dx = (x - WATER.cx) / WATER.rx, dy = (y - WATER.cy) / WATER.ry;
+      return 1 - Math.sqrt(dx * dx + dy * dy);
+    },
+    water: WATER,
+
+    placeName: function (x, y) {
+      if (this.isWater(x, y)) return 'Lily Pond';
+      var b = this.biomeRaw(x, y);
+      return { meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
+        pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard' }[b];
+    },
+
+    /* ---------- building the world ---------- */
+    build: function () {
+      this.props = []; this.solids = []; this.grid = {};
+      var rnd = GG.mulberry32(20260911);
+      var self = this;
+
+      function add(type, x, y, r, solid, rad, extra) {
+        var p = { type: type, x: x, y: y, r: r, seed: rnd(), solid: !!solid, rad: rad || 0 };
+        if (extra) for (var k in extra) p[k] = extra[k];
+        self.props.push(p);
+        if (p.solid) {
+          self.solids.push(p);
+          var key = Math.floor(x / 200) + ',' + Math.floor(y / 200);
+          (self.grid[key] = self.grid[key] || []).push(p);
+        }
+        return p;
+      }
+
+      var HOUSE = this.HOUSE;
+      function nearHouse(x, y, pad) {
+        return Math.abs(x - HOUSE.x) < HOUSE.w * 0.7 + (pad || 0) &&
+               y > HOUSE.y - HOUSE.w * 1.3 - (pad || 0) && y < HOUSE.y + 60 + (pad || 0);
+      }
+
+      var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
+
+      for (var i = 0; i < 5200; i++) {
+        var x = rnd() * this.W, y = rnd() * this.H;
+        if (this.isWater(x, y)) continue;
+        if (nearHouse(x, y, 40)) continue;
+        var b = this.biomeAt(x, y);
+        var v = rnd();
+
+        if (b === 'forest') {
+          if (v < 0.125) add('tree', x, y, 34 + rnd() * 16, true, 14);
+          else if (v < 0.185) add('pine', x, y, 40 + rnd() * 18, true, 12);
+          else if (v < 0.235) add('bush', x, y, 22 + rnd() * 8, true, 13);
+          else if (v < 0.325) add('mushroom', x, y, 12 + rnd() * 5);
+          else if (v < 0.355) add('log', x, y, 22 + rnd() * 8, true, 18);
+          else if (v < 0.385) add('stump', x, y, 18 + rnd() * 5, true, 14);
+          else if (v < 0.78) add('grassTuft', x, y, 14 + rnd() * 7);
+          else if (v < 0.86) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#e9e2ff' });
+        } else if (b === 'orchard') {
+          if (v < 0.10) add('appleTree', x, y, 46 + rnd() * 14, true, 15);
+          else if (v < 0.16) add('berryBush', x, y, 22 + rnd() * 7, true, 13);
+          else if (v < 0.60) add('grassTuft', x, y, 13 + rnd() * 6);
+          else if (v < 0.72) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: GG.pick(FLOWER_COLS) });
+        } else if (b === 'garden') {
+          if (v < 0.035) add('tree', x, y, 38 + rnd() * 10, true, 14);
+          else if (v < 0.07) add('bush', x, y, 20 + rnd() * 6, true, 12);
+          else if (v < 0.42) add('tulip', x, y, 12 + rnd() * 5, false, 0, { col: GG.pick(FLOWER_COLS) });
+          else if (v < 0.72) add('flower', x, y, 12 + rnd() * 5, false, 0, { col: GG.pick(FLOWER_COLS) });
+          else if (v < 0.92) add('grassTuft', x, y, 12 + rnd() * 6);
+        } else if (b === 'meadow') {
+          if (v < 0.018) add('tree', x, y, 40 + rnd() * 16, true, 14);
+          else if (v < 0.035) add('bush', x, y, 20 + rnd() * 7, true, 12);
+          else if (v < 0.26) add('flower', x, y, 11 + rnd() * 5, false, 0, { col: GG.pick(FLOWER_COLS) });
+          else if (v < 0.80) add('grassTuft', x, y, 13 + rnd() * 8);
+        } else if (b === 'hill') {
+          if (v < 0.14) add('rock', x, y, 16 + rnd() * 18, true, 15);
+          else if (v < 0.20) add('bush', x, y, 18 + rnd() * 6, true, 11);
+          else if (v < 0.55) add('grassTuft', x, y, 10 + rnd() * 5);
+          else if (v < 0.62) add('flower', x, y, 9 + rnd() * 3, false, 0, { col: '#ffe9a8' });
+        } else if (b === 'pond') {
+          var d = this.waterDepth(x, y);
+          if (d > -0.22 && d < 0) { if (v < 0.5) add('reed', x, y, 16 + rnd() * 8); else add('grassTuft', x, y, 12 + rnd() * 5); }
+          else if (v < 0.06) add('rock', x, y, 14 + rnd() * 10, true, 13);
+          else if (v < 0.14) add('reed', x, y, 15 + rnd() * 7);
+          else if (v < 0.60) add('grassTuft', x, y, 13 + rnd() * 6);
+          else if (v < 0.70) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#c6e9ff' });
+        }
+      }
+
+      // Lily pads floating on the pond.
+      for (var j = 0; j < 34; j++) {
+        var a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * 0.85;
+        var lx = WATER.cx + Math.cos(a) * WATER.rx * rr;
+        var ly = WATER.cy + Math.sin(a) * WATER.ry * rr;
+        if (this.isWater(lx, ly)) add('lilypad', lx, ly, 20 + rnd() * 12);
+      }
+
+      // A tidy little fence and some flowers around the house.
+      for (var f = -3; f <= 3; f++) {
+        if (Math.abs(f) < 1) continue;
+        add('fence', HOUSE.x + f * 46, HOUSE.y + 66, 22, true, 16);
+      }
+      add('flower', HOUSE.x - 96, HOUSE.y - 10, 14, false, 0, { col: '#ff8fb0' });
+      add('flower', HOUSE.x + 96, HOUSE.y - 10, 14, false, 0, { col: '#ffd45c' });
+      add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
+      add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
+
+      // Signposts so the map is easy to learn.
+      add('sign', 980, 700, 26, false, 0, { label: 'Meadow' });
+      add('sign', 2200, 900, 26, false, 0, { label: 'Woods' });
+      add('sign', 1050, 1900, 26, false, 0, { label: 'Pond' });
+      add('sign', 2050, 1300, 26, false, 0, { label: 'Orchard' });
+      add('sign', 420, 560, 26, false, 0, { label: 'Hills' });
+
+      // The house itself blocks the player (except the doorway).
+      this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
+
+      this.props.sort(function (p, q) { return p.y - q.y; });
+      this.chunks = {};
+    },
+
+    /* ---------- collision ---------- */
+    blocked: function (x, y, rad) {
+      if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
+      if (this.isWater(x, y)) return true;
+      var H = this.HOUSE;
+      if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
+          y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
+      for (var gx = -1; gx <= 1; gx++) {
+        for (var gy = -1; gy <= 1; gy++) {
+          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          if (!list) continue;
+          for (var i = 0; i < list.length; i++) {
+            var p = list[i];
+            var dx = x - p.x, dy = (y - p.y) * 1.55;
+            var rr = p.rad + rad;
+            if (dx * dx + dy * dy < rr * rr) return true;
+          }
+        }
+      }
+      return false;
+    },
+
+    /* ---------- ground painting ---------- */
+    chunkCanvas: function (cx, cy) {
+      var key = cx + ',' + cy;
+      if (this.chunks[key]) return this.chunks[key];
+      var C = this.CHUNK;
+      var cv = document.createElement('canvas');
+      cv.width = C; cv.height = C;
+      var c = cv.getContext('2d');
+      var step = 10;
+      for (var y = 0; y < C; y += step) {
+        for (var x = 0; x < C; x += step) {
+          var wx = cx * C + x, wy = cy * C + y;
+          var b = this.biomeAt(wx + step / 2, wy + step / 2);
+          var pal = GROUND[b] || GROUND.meadow;
+          var n = GG.noise2(wx / 26, wy / 26, 21);
+          c.fillStyle = pal[GG.clamp((n * 3) | 0, 0, 2)];
+          c.fillRect(x, y, step + 1, step + 1);
+        }
+      }
+      // Sandy shore and pond water.
+      var rnd = GG.mulberry32(cx * 131 + cy * 977);
+      for (var yy = 0; yy < C; yy += 8) {
+        for (var xx = 0; xx < C; xx += 8) {
+          var px = cx * C + xx, py = cy * C + yy;
+          var d = this.waterDepth(px + 4, py + 4);
+          if (d > -0.12 && d < 0.02) {
+            c.fillStyle = d < -0.05 ? '#ddd0a4' : '#e8dcb4';
+            c.fillRect(xx, yy, 9, 9);
+          }
+        }
+      }
+      this.chunks[key] = cv;
+      return cv;
+    },
+
+    drawGround: function (c, cam, vw, vh) {
+      var C = this.CHUNK;
+      var x0 = Math.floor(cam.x / C), x1 = Math.floor((cam.x + vw) / C);
+      var y0 = Math.floor(cam.y / C), y1 = Math.floor((cam.y + vh) / C);
+      for (var cy = y0; cy <= y1; cy++) {
+        for (var cx = x0; cx <= x1; cx++) {
+          if (cx < 0 || cy < 0 || cx * C >= this.W || cy * C >= this.H) continue;
+          c.drawImage(this.chunkCanvas(cx, cy), cx * C - cam.x, cy * C - cam.y);
+        }
+      }
+    },
+
+    drawWater: function (c, cam, t) {
+      var W = WATER;
+      if (W.cx + W.rx < cam.x || W.cx - W.rx > cam.x + c.canvas._vw) return;
+      c.save();
+      c.translate(-cam.x, -cam.y);
+      c.fillStyle = '#4fa8c9';
+      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.fill();
+      c.save();
+      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.clip();
+      c.fillStyle = '#3d93b8';
+      c.beginPath(); c.ellipse(W.cx + 10, W.cy + 16, W.rx * 0.72, W.ry * 0.68, 0, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = 'rgba(255,255,255,0.30)'; c.lineWidth = 3; c.lineCap = 'round';
+      for (var i = 0; i < 16; i++) {
+        var sx = W.cx - W.rx + ((i * 137) % (W.rx * 2));
+        var sy = W.cy - W.ry + ((i * 211) % (W.ry * 2));
+        var w = 22 + (i % 3) * 10;
+        var off = Math.sin(t * 0.9 + i) * 8;
+        c.beginPath();
+        c.moveTo(sx + off, sy);
+        c.quadraticCurveTo(sx + w / 2 + off, sy - 4, sx + w + off, sy);
+        c.stroke();
+      }
+      c.restore();
+      c.strokeStyle = 'rgba(255,255,255,0.45)'; c.lineWidth = 2.5;
+      c.beginPath(); c.ellipse(W.cx, W.cy, W.rx, W.ry, 0, 0, Math.PI * 2); c.stroke();
+      c.restore();
+    },
+
+    drawProps: function (c, cam, vw, vh, t, layer) {
+      var P = GG.Props;
+      var pad = 140;
+      for (var i = 0; i < this.props.length; i++) {
+        var p = this.props[i];
+        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
+        if (p.y < cam.y - pad * 2.4 || p.y > cam.y + vh + pad) continue;
+        var isFlat = (p.type === 'lilypad');
+        if (layer === 'flat' && !isFlat) continue;
+        if (layer === 'sorted' && isFlat) continue;
+        var fn = P[p.type];
+        if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+      }
+    },
+
+    sortedProps: function (cam, vw, vh) {
+      var out = [], pad = 150;
+      for (var i = 0; i < this.props.length; i++) {
+        var p = this.props[i];
+        if (p.type === 'lilypad') continue;
+        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
+        if (p.y < cam.y - pad * 2.6 || p.y > cam.y + vh + pad) continue;
+        out.push(p);
+      }
+      return out;
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/game/player.js ==== */
+/* Guin herself, and her bug net. */
+(function (GG) {
+  'use strict';
+
+  var Player = GG.Player = {
+    x: 1520, y: 1620, vx: 0, vy: 0,
+    dir: 'down', angle: Math.PI / 2,
+    walk: 0, speed: 0,
+    rad: 11,
+    swing: 0,          // 0 = net down, counts down while swinging
+    SWING_TIME: 0.42,
+    caughtFlash: 0,
+    stepTimer: 0,
+
+    reset: function (x, y) {
+      this.x = x; this.y = y; this.vx = this.vy = 0; this.swing = 0;
+      this.dir = 'down'; this.angle = Math.PI / 2;
+    },
+
+    update: function (dt, bounds) {
+      var In = GG.Input;
+      var mag = In.mag;
+      var maxSpeed = 168;
+      var want = mag > 0.02;
+      var tx = want ? In.x * maxSpeed * mag : 0;
+      var ty = want ? In.y * maxSpeed * mag : 0;
+      if (this.swing > 0) { tx *= 0.35; ty *= 0.35; }
+
+      var k = 1 - Math.pow(0.0006, dt);
+      this.vx += (tx - this.vx) * k;
+      this.vy += (ty - this.vy) * k;
+      this.speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+
+      var nx = this.x + this.vx * dt, ny = this.y + this.vy * dt;
+      if (!bounds(nx, this.y, this.rad)) this.x = nx; else this.vx = 0;
+      if (!bounds(this.x, ny, this.rad)) this.y = ny; else this.vy = 0;
+
+      if (want) {
+        this.angle = Math.atan2(In.y, In.x);
+        var a = this.angle;
+        if (a > -Math.PI / 4 && a <= Math.PI / 4) this.dir = 'right';
+        else if (a > Math.PI / 4 && a <= 3 * Math.PI / 4) this.dir = 'down';
+        else if (a > -3 * Math.PI / 4 && a <= -Math.PI / 4) this.dir = 'up';
+        else this.dir = 'left';
+      }
+
+      this.walk += this.speed * dt * 0.055;
+      if (this.swing > 0) this.swing -= dt;
+      if (this.caughtFlash > 0) this.caughtFlash -= dt;
+
+      this.stepTimer -= dt;
+      if (this.speed > 40 && this.stepTimer <= 0) {
+        GG.Sfx.step(); this.stepTimer = 0.34 - Math.min(0.16, this.speed / 1400);
+      }
+    },
+
+    startSwing: function () {
+      if (this.swing > 0) return false;
+      this.swing = this.SWING_TIME;
+      GG.Sfx.swing();
+      return true;
+    },
+    swinging: function () { return this.swing > 0; },
+    swingProgress: function () { return 1 - this.swing / this.SWING_TIME; },
+
+    /* Where the net head is right now, in world coordinates. */
+    netPoint: function () {
+      var p = this.swing > 0 ? this.swingProgress() : 0;
+      var reach = this.swing > 0 ? 20 + Math.sin(Math.min(1, p * 1.6) * Math.PI) * 26 : 16;
+      var sweep = this.swing > 0 ? (p - 0.5) * 1.5 : 0.5;
+      var a = this.angle + sweep;
+      return { x: this.x + Math.cos(a) * reach, y: this.y + Math.sin(a) * reach * 0.85 - 6, r: 22 };
+    },
+
+    draw: function (c, sx, sy, t) {
+      var bob = Math.sin(this.walk * 2) * (this.speed > 20 ? 1.6 : 0);
+      var lean = Math.sin(this.walk * 2) * (this.speed > 20 ? 0.07 : 0);
+      var d = this.dir;
+
+      c.fillStyle = 'rgba(30,60,25,0.22)';
+      c.beginPath(); c.ellipse(sx, sy + 1, 11, 4.6, 0, 0, Math.PI * 2); c.fill();
+
+      var behind = (d === 'up');
+      if (behind) this._net(c, sx, sy, t);
+
+      c.save();
+      c.translate(sx, sy - bob);
+      c.rotate(lean);
+
+      // legs
+      var swingLeg = Math.sin(this.walk * 2) * (this.speed > 20 ? 3.2 : 0);
+      c.fillStyle = '#f3cfae';
+      c.fillRect(-5, -7, 3.6, 7 + swingLeg * 0.4);
+      c.fillRect(1.6, -7, 3.6, 7 - swingLeg * 0.4);
+      c.fillStyle = '#5b4a8a';
+      c.beginPath(); c.ellipse(-3.3, -0.4 + swingLeg * 0.2, 3.1, 2.1, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(3.3, -0.4 - swingLeg * 0.2, 3.1, 2.1, 0, 0, Math.PI * 2); c.fill();
+
+      // dress
+      c.fillStyle = '#57b8d8';
+      c.beginPath();
+      c.moveTo(-6.4, -7); c.lineTo(-9, -8.5);
+      c.quadraticCurveTo(0, -10.5, 9, -8.5);
+      c.lineTo(6.4, -7);
+      c.quadraticCurveTo(0, -5.4, -6.4, -7);
+      c.closePath(); c.fill();
+      c.fillStyle = '#6ccbea';
+      GG.roundRect(c, -6, -19, 12, 12, 3.5); c.fill();
+      c.fillStyle = '#ffffff';
+      c.fillRect(-6, -13.4, 12, 1.8);
+
+      // arms
+      c.strokeStyle = '#f3cfae'; c.lineWidth = 3.1; c.lineCap = 'round';
+      var armSwing = Math.sin(this.walk * 2) * (this.speed > 20 ? 2.4 : 0);
+      if (d !== 'up') {
+        c.beginPath(); c.moveTo(-5.4, -16.5); c.lineTo(-8.2, -10 + armSwing); c.stroke();
+        c.beginPath(); c.moveTo(5.4, -16.5); c.lineTo(8.2, -10 - armSwing); c.stroke();
+      }
+
+      // head
+      c.fillStyle = '#3a2a1e';
+      c.beginPath(); c.ellipse(0, -26.5, 10.4, 9.6, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#fadcc0';
+      c.beginPath(); c.ellipse(0, -25.5, 8.6, 8.2, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#3a2a1e';
+      c.beginPath(); c.ellipse(0, -30.6, 8.8, 5.6, 0, Math.PI, 0); c.fill();
+      if (d === 'down' || d === 'left' || d === 'right') {
+        c.beginPath(); c.ellipse(-9.4, -25, 3.1, 6.2, 0.12, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(9.4, -25, 3.1, 6.2, -0.12, 0, Math.PI * 2); c.fill();
+      }
+      c.fillStyle = '#ff8fb0';
+      c.beginPath(); c.ellipse(7.6, -31.4, 3.4, 2.8, -0.4, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#ffd45c';
+      c.beginPath(); c.ellipse(7.6, -31.4, 1.2, 1.2, 0, 0, Math.PI * 2); c.fill();
+
+      // face
+      if (d !== 'up') {
+        var fx = d === 'left' ? -2.4 : (d === 'right' ? 2.4 : 0);
+        c.fillStyle = '#2f2119';
+        var blink = (Math.sin(t * 0.9) > 0.985) ? 0.25 : 1;
+        c.beginPath(); c.ellipse(fx - 3.1, -25.4, 1.25, 1.5 * blink, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(fx + 3.1, -25.4, 1.25, 1.5 * blink, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ffffff';
+        c.beginPath(); c.ellipse(fx - 3.4, -25.9, 0.45, 0.5, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(fx + 2.8, -25.9, 0.45, 0.5, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = 'rgba(255,150,150,0.5)';
+        c.beginPath(); c.ellipse(fx - 5.4, -22.8, 1.7, 1.1, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(fx + 5.4, -22.8, 1.7, 1.1, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = '#2f2119'; c.lineWidth = 1;
+        c.beginPath(); c.arc(fx, -22.6, 2.1, 0.28, Math.PI - 0.28); c.stroke();
+      }
+      c.restore();
+
+      if (!behind) this._net(c, sx, sy, t);
+    },
+
+    _net: function (c, sx, sy, t) {
+      var p = this.swing > 0 ? this.swingProgress() : 0;
+      var sweep = this.swing > 0 ? (p - 0.5) * 1.5 : 0.5;
+      var a = this.angle + sweep;
+      var handX = sx + Math.cos(this.angle) * 5, handY = sy - 12;
+      var reach = this.swing > 0 ? 20 + Math.sin(Math.min(1, p * 1.6) * Math.PI) * 26 : 16;
+      var hx = sx + Math.cos(a) * reach, hy = sy + Math.sin(a) * reach * 0.85 - 6;
+
+      c.strokeStyle = '#c8a878'; c.lineWidth = 2.6; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(handX, handY); c.lineTo(hx, hy); c.stroke();
+
+      var r = 10.5;
+      c.save();
+      c.translate(hx, hy);
+      c.rotate(a);
+      c.fillStyle = 'rgba(255,255,255,0.34)';
+      c.beginPath(); c.ellipse(2, 0, r, r * 0.92, 0, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = '#e8e2d2'; c.lineWidth = 2;
+      c.beginPath(); c.ellipse(2, 0, r, r * 0.92, 0, 0, Math.PI * 2); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 0.8;
+      for (var i = -2; i <= 2; i++) {
+        c.beginPath(); c.moveTo(2 + i * 3.6, -r * 0.86); c.lineTo(2 + i * 3.6, r * 0.86); c.stroke();
+        c.beginPath(); c.moveTo(2 - r * 0.92, i * 3.6); c.lineTo(2 + r * 0.92, i * 3.6); c.stroke();
+      }
+      c.restore();
+
+      if (this.swing > 0 && p < 0.6) {
+        c.strokeStyle = 'rgba(255,255,255,0.30)'; c.lineWidth = 3;
+        c.beginPath();
+        c.arc(sx, sy - 6, reach, this.angle - 0.8, this.angle + sweep);
+        c.stroke();
+      }
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/game/critters.js ==== */
+/* Bugs living in the world: where they appear, how they move, how they get away. */
+(function (GG) {
+  'use strict';
+
+  var TARGET = 16;
+
+  var Critters = GG.Critters = {
+    list: [],
+    fx: [],
+
+    clear: function () { this.list.length = 0; this.fx.length = 0; },
+
+    eligible: function (biome, phase, rain) {
+      var out = [];
+      for (var i = 0; i < GG.BUGS.length; i++) {
+        var b = GG.BUGS[i];
+        var okPlace = b.habitats.indexOf(biome) >= 0 || b.habitats.indexOf('anywhere') >= 0;
+        if (!okPlace) continue;
+        var okTime = b.times.indexOf('any') >= 0 || b.times.indexOf(phase) >= 0;
+        if (!okTime) continue;
+        if (rain && (b.behavior === 'flutter' || b.behavior === 'hover') && b.rarity < 4) continue;
+        var w = 1 / Math.pow(b.rarity, 1.75);
+        if (rain && (b.behavior === 'slow' || b.behavior === 'crawl')) w *= 2.4;
+        out.push({ b: b, w: w });
+      }
+      return out;
+    },
+
+    pickWeighted: function (cands) {
+      var total = 0, i;
+      for (i = 0; i < cands.length; i++) total += cands[i].w;
+      var r = Math.random() * total;
+      for (i = 0; i < cands.length; i++) { r -= cands[i].w; if (r <= 0) return cands[i].b; }
+      return cands.length ? cands[cands.length - 1].b : null;
+    },
+
+    spawnNear: function (px, py, radMin, radMax) {
+      var W = GG.World, phase = GG.Time.phase(), rain = GG.Time.rain;
+      for (var attempt = 0; attempt < 14; attempt++) {
+        var a = Math.random() * Math.PI * 2;
+        var d = GG.rand(radMin, radMax);
+        var x = px + Math.cos(a) * d, y = py + Math.sin(a) * d;
+        if (x < 60 || y < 70 || x > W.W - 60 || y > W.H - 60) continue;
+        var onWater = W.isWater(x, y);
+        var biome = onWater ? 'pond' : W.biomeRaw(x, y);
+        var cands = this.eligible(biome, phase, rain);
+        if (!cands.length) continue;
+        // Water striders only on water; everyone else only on land.
+        cands = cands.filter(function (c) {
+          return (c.b.behavior === 'skim') === onWater;
+        });
+        if (!cands.length) continue;
+        var def = this.pickWeighted(cands);
+        if (!def) continue;
+        if (!onWater && W.blocked(x, y, 6)) continue;
+        this.add(def, x, y);
+        return true;
+      }
+      return false;
+    },
+
+    add: function (def, x, y) {
+      var z = { flutter: 20, hover: 15, dart: 22, drift: 13, glow: 17, skim: 1,
+        crawl: 0, hop: 0, cling: 3, slow: 0 }[def.behavior] || 0;
+      this.list.push({
+        def: def, x: x, y: y, z: z, baseZ: z,
+        vx: 0, vy: 0, angle: Math.random() * Math.PI * 2,
+        t: Math.random() * 100, state: 'wander', timer: GG.rand(0.6, 2.4),
+        alert: 0, flee: 0, hop: 0, life: 0, scale: 1
+      });
+    },
+
+    update: function (dt, player) {
+      var W = GG.World;
+      var i, b;
+
+      // keep a lively number of bugs around the player
+      var vw = GG.view.w, vh = GG.view.h;
+      var outer = Math.max(vw, vh) * 0.95 + 220;
+      for (i = this.list.length - 1; i >= 0; i--) {
+        b = this.list[i];
+        if (GG.dist(b.x, b.y, player.x, player.y) > outer * 1.35) this.list.splice(i, 1);
+      }
+      var want = TARGET + (GG.Time.phase() === 'night' ? 2 : 0);
+      var guard = 0;
+      while (this.list.length < want && guard++ < 4) {
+        this.spawnNear(player.x, player.y, Math.max(vw, vh) * 0.42 + 40, outer);
+      }
+
+      for (i = 0; i < this.list.length; i++) {
+        b = this.list[i];
+        var d = b.def;
+        b.t += dt; b.life += dt;
+
+        var toP = GG.dist(b.x, b.y, player.x, player.y);
+        var scared = player.speed > 62 ? d.shy : d.shy * 0.55;
+        if (player.swinging()) scared = d.shy * 1.15;
+
+        if (b.flee <= 0 && toP < scared) {
+          if (b.alert <= 0) { b.alert = 0.35; }
+          b.alert -= dt;
+          if (b.alert <= 0) {
+            b.flee = GG.rand(1.3, 2.6);
+            b.angle = Math.atan2(b.y - player.y, b.x - player.x) + GG.rand(-0.5, 0.5);
+          }
+        } else if (b.flee <= 0) {
+          b.alert = 0;
+        }
+        if (b.flee > 0) b.flee -= dt;
+
+        var sp = d.speed * (b.flee > 0 ? 1.95 : 1);
+        b.timer -= dt;
+
+        switch (d.behavior) {
+          case 'flutter':
+            if (b.timer <= 0 && b.flee <= 0) { b.angle += GG.rand(-1.5, 1.5); b.timer = GG.rand(0.5, 1.6); }
+            b.angle += Math.sin(b.t * 3.2) * dt * 1.6;
+            b.vx = Math.cos(b.angle) * sp; b.vy = Math.sin(b.angle) * sp;
+            b.z = b.baseZ + Math.sin(b.t * 3.6) * 4;
+            break;
+          case 'hover':
+            if (b.timer <= 0 && b.flee <= 0) { b.angle += GG.rand(-2.2, 2.2); b.timer = GG.rand(0.35, 1.1); }
+            var hoverSlow = (b.flee <= 0 && Math.sin(b.t * 0.7) > 0.6) ? 0.12 : 1;
+            b.vx = Math.cos(b.angle) * sp * hoverSlow; b.vy = Math.sin(b.angle) * sp * hoverSlow;
+            b.z = b.baseZ + Math.sin(b.t * 8) * 1.6;
+            break;
+          case 'dart':
+            if (b.timer <= 0) {
+              b.angle += GG.rand(-2.4, 2.4);
+              b.timer = b.flee > 0 ? 0.5 : GG.rand(0.35, 1.5);
+              b.dash = b.flee > 0 ? 1 : (Math.random() < 0.55 ? 1 : 0);
+            }
+            var dm = b.dash ? 1 : 0.06;
+            b.vx = Math.cos(b.angle) * sp * dm; b.vy = Math.sin(b.angle) * sp * dm;
+            b.z = b.baseZ + Math.sin(b.t * 2.2) * 3;
+            break;
+          case 'drift':
+            if (b.timer <= 0) { b.angle += GG.rand(-1.1, 1.1); b.timer = GG.rand(0.7, 2); }
+            b.vx = Math.cos(b.angle) * sp * 0.8; b.vy = Math.sin(b.angle) * sp * 0.8;
+            b.z = b.baseZ + Math.sin(b.t * 4) * 2.5;
+            break;
+          case 'glow':
+            if (b.timer <= 0) { b.angle += GG.rand(-2, 2); b.timer = GG.rand(0.8, 2.2); }
+            b.vx = Math.cos(b.angle) * sp * 0.7; b.vy = Math.sin(b.angle) * sp * 0.7;
+            b.z = b.baseZ + Math.sin(b.t * 1.4) * 7;
+            break;
+          case 'hop':
+            if (b.timer <= 0) {
+              b.timer = b.flee > 0 ? GG.rand(0.5, 0.8) : GG.rand(1.1, 2.6);
+              b.hop = 0.45;
+              if (b.flee <= 0) b.angle += GG.rand(-2, 2);
+            }
+            if (b.hop > 0) {
+              b.hop -= dt;
+              var hp = 1 - b.hop / 0.45;
+              b.z = Math.sin(hp * Math.PI) * (b.flee > 0 ? 26 : 16);
+              b.vx = Math.cos(b.angle) * sp * 2.6; b.vy = Math.sin(b.angle) * sp * 2.6;
+            } else { b.z = 0; b.vx = b.vy = 0; }
+            break;
+          case 'skim':
+            if (b.timer <= 0) { b.angle += GG.rand(-2.6, 2.6); b.timer = GG.rand(0.25, 0.9); b.dash = 1; }
+            b.dash = Math.max(0, (b.dash || 0) - dt * 4);
+            b.vx = Math.cos(b.angle) * sp * (0.12 + b.dash * 1.6);
+            b.vy = Math.sin(b.angle) * sp * (0.12 + b.dash * 1.6);
+            break;
+          case 'cling':
+            if (b.timer <= 0) { b.angle += GG.rand(-1.6, 1.6); b.timer = GG.rand(1.6, 4); }
+            var mv = b.flee > 0 ? 1 : (Math.sin(b.t * 0.5) > 0.75 ? 0.5 : 0);
+            b.vx = Math.cos(b.angle) * sp * mv; b.vy = Math.sin(b.angle) * sp * mv;
+            b.z = 3 + Math.sin(b.t * 2) * 0.6;
+            break;
+          case 'slow':
+          case 'crawl':
+          default:
+            if (b.timer <= 0) { b.angle += GG.rand(-1.4, 1.4); b.timer = GG.rand(1, 3); }
+            b.vx = Math.cos(b.angle) * sp; b.vy = Math.sin(b.angle) * sp;
+            b.z = 0;
+            break;
+        }
+
+        var nx = b.x + b.vx * dt, ny = b.y + b.vy * dt;
+        var onWater = d.behavior === 'skim';
+        var okx, oky;
+        if (onWater) {
+          okx = W.isWater(nx, b.y); oky = W.isWater(b.x, ny);
+        } else if (b.z > 8) {
+          okx = !W.isWater(nx, b.y) && nx > 40 && nx < W.W - 40;
+          oky = !W.isWater(b.x, ny) && ny > 60 && ny < W.H - 40;
+        } else {
+          okx = !W.blocked(nx, b.y, 4); oky = !W.blocked(b.x, ny, 4);
+        }
+        if (okx) b.x = nx; else b.angle = Math.PI - b.angle + GG.rand(-0.3, 0.3);
+        if (oky) b.y = ny; else b.angle = -b.angle + GG.rand(-0.3, 0.3);
+      }
+
+      for (i = this.fx.length - 1; i >= 0; i--) {
+        var f = this.fx[i];
+        f.life -= dt;
+        f.x += f.vx * dt; f.y += f.vy * dt;
+        f.vy += (f.g || 0) * dt;
+        if (f.life <= 0) this.fx.splice(i, 1);
+      }
+    },
+
+    /* Did the net land on anything? */
+    tryCatch: function (player) {
+      var n = player.netPoint();
+      var best = null, bestD = 1e9;
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        var dz = Math.max(0, b.z - 26) * 0.8;
+        var d = GG.dist(b.x, b.y - b.z * 0.5, n.x, n.y) + dz;
+        var reach = n.r + 8 * (b.def.size || 1);
+        if (d < reach && d < bestD) { bestD = d; best = b; }
+      }
+      if (!best) return null;
+      this.list.splice(this.list.indexOf(best), 1);
+      this.burst(best.x, best.y - best.z, best.def);
+      return best.def;
+    },
+
+    burst: function (x, y, def) {
+      for (var i = 0; i < 14; i++) {
+        var a = Math.random() * Math.PI * 2, s = GG.rand(30, 120);
+        this.fx.push({
+          x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 40, g: 110,
+          life: GG.rand(0.4, 0.9), max: 0.9, col: i % 3 === 0 ? '#fff6b0' : (def.art.wing || '#ffffff')
+        });
+      }
+    },
+
+    puff: function (x, y) {
+      for (var i = 0; i < 6; i++) {
+        var a = Math.random() * Math.PI * 2;
+        this.fx.push({ x: x, y: y, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26 - 12, g: 20,
+          life: 0.4, max: 0.4, col: '#ffffff' });
+      }
+    },
+
+    draw: function (c, cam, t) {
+      var A = GG.BugArt;
+      var dark = GG.Time.isDark();
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        var sx = b.x - cam.x, sy = b.y - cam.y;
+        if (sx < -60 || sy < -60 || sx > GG.view.w + 60 || sy > GG.view.h + 60) continue;
+        if (b.z > 2) A.shadow(c, sx, sy, 5 * (b.def.size || 1), 0.16);
+        var ang = Math.atan2(b.vy, b.vx);
+        if (b.def.behavior === 'cling' || b.def.behavior === 'slow') {
+          if (Math.abs(b.vx) + Math.abs(b.vy) < 1) ang = b.angle;
+        }
+        A.draw(c, b.def, sx, sy - b.z, 1.15, ang, b.t);
+        if (b.alert > 0 && b.flee <= 0) {
+          c.fillStyle = '#ffdf4a';
+          c.font = 'bold 15px "Trebuchet MS", sans-serif';
+          c.textAlign = 'center';
+          c.fillText('!', sx, sy - b.z - 20 * (b.def.size || 1));
+        }
+      }
+      for (var j = 0; j < this.fx.length; j++) {
+        var f = this.fx[j];
+        c.globalAlpha = Math.max(0, f.life / f.max);
+        c.fillStyle = f.col;
+        var r = 2.2 + 2.2 * (f.life / f.max);
+        c.beginPath(); c.arc(f.x - cam.x, f.y - cam.y, r, 0, Math.PI * 2); c.fill();
+      }
+      c.globalAlpha = 1;
+    },
+
+    /* How many kinds are out right now, for the little "nearby" hint. */
+    nearbyNames: function (player, radius) {
+      var seen = {}, out = [];
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (GG.dist(b.x, b.y, player.x, player.y) < radius && !seen[b.def.id]) {
+          seen[b.def.id] = 1; out.push(b.def);
+        }
+      }
+      return out;
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/game/house.js ==== */
+/* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed. */
+(function (GG) {
+  'use strict';
+
+  var W = 660, H = 470;
+
+  var House = GG.House = {
+    W: W, H: H,
+    spots: [
+      { id: 'book', x: 130, y: 168, w: 96, h: 70, label: 'Bug Book' },
+      { id: 'terrarium', x: 330, y: 150, w: 150, h: 70, label: 'Terrariums' },
+      { id: 'shop', x: 545, y: 170, w: 88, h: 66, label: 'Decoration Box' },
+      { id: 'bed', x: 570, y: 340, w: 110, h: 130, label: 'Bed' },
+      { id: 'door', x: 330, y: 452, w: 92, h: 30, label: 'Go Outside' }
+    ],
+
+    blocked: function (x, y, rad) {
+      if (x < 44 + rad || x > W - 44 - rad) return true;
+      if (y < 150 + rad) return true;
+      if (y > H - 12 - rad) return true;
+      if (x > 510 - rad && x < W - 44 && y > 280 - rad && y < 450) return true; // bed
+      return false;
+    },
+
+    nearest: function (px, py) {
+      var best = null, bd = 1e9;
+      for (var i = 0; i < this.spots.length; i++) {
+        var s = this.spots[i];
+        var dx = Math.max(0, Math.abs(px - s.x) - s.w / 2);
+        var dy = Math.max(0, Math.abs(py - s.y) - s.h / 2);
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 44 && d < bd) { bd = d; best = s; }
+      }
+      return best;
+    },
+
+    draw: function (c, cam, t) {
+      var ox = -cam.x, oy = -cam.y;
+      c.save();
+      c.translate(ox, oy);
+
+      // wall
+      c.fillStyle = '#e9d3b4';
+      c.fillRect(0, 0, W, 168);
+      c.fillStyle = '#dcc19c';
+      for (var i = 0; i < W; i += 44) c.fillRect(i, 0, 2, 168);
+      c.fillStyle = '#c9a97f';
+      c.fillRect(0, 160, W, 12);
+
+      // floor
+      c.fillStyle = '#c69a6b';
+      c.fillRect(0, 172, W, H - 172);
+      c.fillStyle = '#b98c5f';
+      for (var y = 172; y < H; y += 34) c.fillRect(0, y, W, 3);
+      for (var x = 0; x < W; x += 90) c.fillRect(x, 172, 2, H - 172);
+
+      // rug
+      c.fillStyle = '#8fc7d8';
+      c.beginPath(); c.ellipse(300, 330, 140, 80, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#a9d9e6';
+      c.beginPath(); c.ellipse(300, 330, 108, 60, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#8fc7d8';
+      c.beginPath(); c.ellipse(300, 330, 70, 38, 0, 0, Math.PI * 2); c.fill();
+
+      // window with the outside world showing through
+      var night = GG.Time.isDark();
+      c.fillStyle = '#8a6a45';
+      GG.roundRect(c, 208, 24, 116, 84, 6); c.fill();
+      c.fillStyle = night ? '#20306a' : '#a7dcf4';
+      c.fillRect(214, 30, 104, 72);
+      if (night) {
+        c.fillStyle = '#fff6c4';
+        c.beginPath(); c.arc(296, 48, 9, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#dfe8ff';
+        for (var s = 0; s < 9; s++) {
+          c.fillRect(220 + (s * 37) % 92, 34 + (s * 23) % 56, 2, 2);
+        }
+      } else {
+        c.fillStyle = '#7fc46a'; c.fillRect(214, 78, 104, 24);
+        c.fillStyle = '#ffe98a'; c.beginPath(); c.arc(300, 46, 10, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ffffff';
+        c.beginPath(); c.ellipse(246, 50, 18, 8, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(262, 46, 12, 6, 0, 0, Math.PI * 2); c.fill();
+      }
+      c.strokeStyle = '#8a6a45'; c.lineWidth = 5;
+      c.beginPath(); c.moveTo(266, 30); c.lineTo(266, 102);
+      c.moveTo(214, 66); c.lineTo(318, 66); c.stroke();
+
+      // bookshelf (the Bug Book)
+      c.fillStyle = '#9a6f43';
+      GG.roundRect(c, 86, 96, 92, 78, 4); c.fill();
+      c.fillStyle = '#7d5733'; c.fillRect(90, 132, 84, 5);
+      var bookCols = ['#d2584f', '#e0a34a', '#5f9ed6', '#78bb63', '#b57fd1'];
+      for (var b = 0; b < 5; b++) {
+        c.fillStyle = bookCols[b];
+        c.fillRect(94 + b * 16, 104, 12, 28);
+      }
+      c.fillStyle = '#f2e6cf';
+      GG.roundRect(c, 96, 140, 70, 28, 3); c.fill();
+      c.fillStyle = '#4b6b3a';
+      c.font = 'bold 13px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
+      c.fillText('BUGS', 131, 159);
+
+      // terrarium table
+      c.fillStyle = '#9a6f43';
+      GG.roundRect(c, 256, 124, 150, 46, 5); c.fill();
+      c.fillStyle = '#8a5f36'; c.fillRect(268, 168, 10, 14); c.fillRect(384, 168, 10, 14);
+      var tanks = GG.Save.data.terrariums.length;
+      for (var k = 0; k < Math.min(3, tanks); k++) {
+        var tx = 278 + k * 48;
+        c.fillStyle = 'rgba(180,230,255,0.55)';
+        GG.roundRect(c, tx, 92, 38, 34, 4); c.fill();
+        c.strokeStyle = '#cfe9f5'; c.lineWidth = 2; c.stroke();
+        c.fillStyle = '#7fc46a'; c.fillRect(tx + 2, 114, 34, 10);
+      }
+
+      // decoration box
+      c.fillStyle = '#c98f56';
+      GG.roundRect(c, 504, 130, 82, 46, 5); c.fill();
+      c.fillStyle = '#e0a86c';
+      GG.roundRect(c, 500, 118, 90, 20, 5); c.fill();
+      c.fillStyle = '#8a5f36'; c.fillRect(540, 138, 10, 14);
+      c.fillStyle = '#ffd45c';
+      c.beginPath(); c.arc(545, 150, 5, 0, Math.PI * 2); c.fill();
+
+      // bed
+      c.fillStyle = '#9a6f43';
+      GG.roundRect(c, 516, 276, 106, 172, 10); c.fill();
+      c.fillStyle = '#f6eadf';
+      GG.roundRect(c, 522, 282, 94, 52, 8); c.fill();
+      c.fillStyle = '#e07f9c';
+      GG.roundRect(c, 522, 320, 94, 122, 8); c.fill();
+      c.fillStyle = '#f09cb4';
+      GG.roundRect(c, 522, 356, 94, 20, 4); c.fill();
+
+      // potted plant + door
+      c.fillStyle = '#c4703f';
+      GG.roundRect(c, 62, 300, 44, 40, 6); c.fill();
+      GG.Props.bush(c, 84, 302, 34, t, 0.4);
+
+      c.fillStyle = '#8a5f36';
+      GG.roundRect(c, 284, 436, 92, 34, 6); c.fill();
+      c.fillStyle = '#a9743f';
+      GG.roundRect(c, 290, 442, 80, 28, 5); c.fill();
+      c.fillStyle = '#ffd45c';
+      c.beginPath(); c.arc(360, 456, 4, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#5b432a';
+      c.font = 'bold 12px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
+      c.fillText('outside', 330, 461);
+
+      c.restore();
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/ui/ui.js ==== */
+/* Panels, prompts, toasts and the catch popup. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+
+  var UI = GG.UI = {
+    openPanels: [],
+    pendingCatch: null,
+
+    init: function () {
+      var self = this;
+      document.querySelectorAll('[data-close]').forEach(function (b) {
+        b.addEventListener('click', function () { GG.Sfx.click(); self.close(b.getAttribute('data-close')); });
+      });
+      $('catch-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideCatch(); });
+      $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop') self.hideCatch(); });
+    },
+
+    open: function (id) {
+      var el = $(id); if (!el) return;
+      el.classList.remove('hidden');
+      if (this.openPanels.indexOf(id) < 0) this.openPanels.push(id);
+    },
+    close: function (id) {
+      var el = $(id); if (!el) return;
+      el.classList.add('hidden');
+      var i = this.openPanels.indexOf(id);
+      if (i >= 0) this.openPanels.splice(i, 1);
+    },
+    anyOpen: function () {
+      return this.openPanels.length > 0 || !$('catch-pop').classList.contains('hidden');
+    },
+
+    toast: function (msg, ms) {
+      var t = $('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(this._tt);
+      this._tt = setTimeout(function () { t.classList.remove('show'); }, ms || 1800);
+    },
+
+    prompt: function (text) {
+      var p = $('prompt');
+      if (text) { p.textContent = text; p.classList.add('show'); }
+      else p.classList.remove('show');
+    },
+
+    showCatch: function (def, isNew, reward) {
+      var c = $('catch-art').getContext('2d');
+      var cv = $('catch-art');
+      cv.width = 640; cv.height = 260;
+      this._catchDef = def;
+      this._catchT = 0;
+      $('catch-new').style.display = isNew ? 'inline-block' : 'none';
+      $('catch-name').textContent = def.name;
+      var fact = def.facts[Math.floor(Math.random() * def.facts.length)];
+      $('catch-fact').textContent = isNew ? fact : ('You have caught ' + GG.Save.countOf(def.id) + ' of these.');
+      $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles' + (isNew ? ' &nbsp;+&nbsp; new page in your Bug Book!' : '');
+      $('catch-pop').classList.remove('hidden');
+      this._animCatch();
+    },
+
+    _animCatch: function () {
+      var self = this;
+      cancelAnimationFrame(this._raf);
+      var cv = $('catch-art'), c = cv.getContext('2d');
+      var start = performance.now();
+      function frame(now) {
+        if ($('catch-pop').classList.contains('hidden')) return;
+        var t = (now - start) / 1000;
+        c.clearRect(0, 0, cv.width, cv.height);
+        var g = c.createLinearGradient(0, 0, 0, cv.height);
+        g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2');
+        c.fillStyle = g;
+        GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
+        c.save();
+        for (var i = 0; i < 10; i++) {
+          var a = t * 0.8 + i * 0.63;
+          c.fillStyle = 'rgba(255,255,255,' + (0.25 + 0.2 * Math.sin(a * 2)) + ')';
+          c.beginPath();
+          c.arc(cv.width / 2 + Math.cos(a) * (120 + i * 9), cv.height / 2 + Math.sin(a * 1.3) * 70, 3 + (i % 3), 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+        var bob = Math.sin(t * 2) * 6;
+        GG.BugArt.draw(c, self._catchDef, cv.width / 2, cv.height / 2 + bob, 7.2, -Math.PI / 2, t);
+        self._raf = requestAnimationFrame(frame);
+      }
+      this._raf = requestAnimationFrame(frame);
+    },
+
+    hideCatch: function () {
+      $('catch-pop').classList.add('hidden');
+      cancelAnimationFrame(this._raf);
+      if (this.onCatchClosed) this.onCatchClosed();
+    },
+
+    refreshHud: function () {
+      $('chip-sparkles').innerHTML = '&#10022; ' + GG.Save.data.sparkles;
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/ui/book.js ==== */
+/* The Bug Book: every bug Guin has met, with real facts. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+
+  function thumb(def, w, h, silhouette) {
+    var cv = document.createElement('canvas');
+    cv.width = w * 2; cv.height = h * 2;
+    var c = cv.getContext('2d');
+    c.scale(2, 2);
+    var scale = Math.min(w, h) / 34;
+    GG.BugArt.draw(c, def, w / 2, h / 2, scale * 1.05, -Math.PI / 2, 1.1);
+    if (silhouette) {
+      // paint the whole drawing one flat colour so it stays a mystery
+      c.save();
+      c.globalCompositeOperation = 'source-in';
+      c.fillStyle = 'rgba(120,132,112,0.55)';
+      c.fillRect(0, 0, w, h);
+      c.restore();
+    }
+    return cv;
+  }
+
+  var Book = GG.Book = {
+    open: function () {
+      GG.UI.open('screen-book');
+      this.showGrid();
+    },
+
+    showGrid: function () {
+      var grid = $('book-grid'), det = $('book-detail');
+      grid.style.display = 'grid'; det.style.display = 'none';
+      $('book-back').style.display = 'none';
+      grid.innerHTML = '';
+      var found = GG.Save.totalSpecies();
+      $('progress').textContent = found + ' / ' + GG.BUGS.length;
+      GG.BUGS.forEach(function (def) {
+        var got = GG.Save.has(def.id);
+        var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
+        var cv = thumb(def, 84, 54, !got);
+        cv.style.width = '100%'; cv.style.height = '54px';
+        cell.appendChild(cv);
+        cell.appendChild(GG.el('div', 'nm', got ? def.name : '???'));
+        if (got) {
+          var cnt = GG.el('div', 'cnt', '×' + GG.Save.countOf(def.id));
+          cell.appendChild(cnt);
+          var r = GG.el('div', 'rar');
+          r.style.background = GG.RARITY_COLORS[def.rarity];
+          cell.appendChild(r);
+        }
+        cell.addEventListener('click', function () {
+          GG.Sfx.click();
+          if (got) Book.showDetail(def); else GG.UI.toast('You have not met this one yet!');
+        });
+        grid.appendChild(cell);
+      });
+    },
+
+    showDetail: function (def) {
+      var grid = $('book-grid'), det = $('book-detail');
+      grid.style.display = 'none'; det.style.display = 'block';
+      $('book-back').style.display = 'block';
+      det.innerHTML = '';
+
+      var cv = GG.el('canvas'); cv.id = 'detail-art';
+      cv.width = 640; cv.height = 300;
+      det.appendChild(cv);
+
+      var h = GG.el('h2', null, def.name);
+      h.style.margin = '10px 0 2px'; h.style.fontSize = '21px';
+      det.appendChild(h);
+
+      var meta = GG.el('div', 'meta');
+      var places = def.habitats.map(function (x) { return GG.HABITAT_NAMES[x]; }).join(', ');
+      var times = def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
+      [['Found in', places], ['Comes out', times], ['Size', def.measure],
+       ['Rarity', GG.RARITY_NAMES[def.rarity]], ['Caught', GG.Save.countOf(def.id) + ' time' + (GG.Save.countOf(def.id) === 1 ? '' : 's')]
+      ].forEach(function (p) {
+        meta.appendChild(GG.el('span', 'tag', p[0] + ': ' + p[1]));
+      });
+      det.appendChild(meta);
+
+      def.facts.forEach(function (f) {
+        var line = GG.el('div', 'factline');
+        line.innerHTML = '<b>&#10022;</b> ' + f;
+        det.appendChild(line);
+      });
+
+      var c = cv.getContext('2d');
+      var start = performance.now();
+      cancelAnimationFrame(this._raf);
+      var self = this;
+      function frame(now) {
+        if ($('screen-book').classList.contains('hidden') || det.style.display === 'none') return;
+        var t = (now - start) / 1000;
+        c.clearRect(0, 0, cv.width, cv.height);
+        var g = c.createLinearGradient(0, 0, 0, cv.height);
+        g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb');
+        c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.35)';
+        for (var i = 0; i < 5; i++) {
+          c.beginPath();
+          c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
+        }
+        GG.BugArt.draw(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t);
+        self._raf = requestAnimationFrame(frame);
+      }
+      this._raf = requestAnimationFrame(frame);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    $('book-back').addEventListener('click', function () { GG.Sfx.click(); Book.showGrid(); });
+  });
+})(window.GG = window.GG || {});
+
+/* ==== src/ui/terrarium.js ==== */
+/* Terrariums: little glass worlds Guin builds from the bugs she has caught. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+  var CW = 640, CH = 420, GROUND = 300;
+  var MAX_BUGS = 8, MAX_DECOR = 12;
+
+  var T = GG.Terrarium = {
+    index: 0,
+    tab: 'bugs',
+    sel: null,
+    drag: null,
+    _raf: 0,
+
+    tank: function () {
+      var d = GG.Save.data;
+      if (this.index >= d.terrariums.length) this.index = 0;
+      return d.terrariums[this.index];
+    },
+
+    open: function () {
+      GG.UI.open('screen-terrarium');
+      this.sel = null;
+      this.refresh();
+      this.loop();
+    },
+    close: function () { cancelAnimationFrame(this._raf); },
+
+    refresh: function () {
+      var t = this.tank(), d = GG.Save.data;
+      $('tank-name').textContent = t.name;
+      $('tank-count').textContent = 'Terrarium ' + (this.index + 1) + ' of ' + d.terrariums.length;
+      $('tank-remove').style.display = this.sel ? '' : 'none';
+      this.buildTray();
+    },
+
+    buildTray: function () {
+      var tray = $('tray'); tray.innerHTML = '';
+      var self = this, t = this.tank(), d = GG.Save.data;
+      document.querySelectorAll('#screen-terrarium .tab').forEach(function (el) {
+        el.classList.toggle('on', el.getAttribute('data-tab') === self.tab);
+      });
+
+      if (this.tab === 'bugs') {
+        var ids = Object.keys(d.caught);
+        if (!ids.length) {
+          tray.innerHTML = '<div class="note" style="grid-column:1/-1">Catch a bug first, then you can put it in here!</div>';
+          return;
+        }
+        ids.forEach(function (id) {
+          var def = GG.BUG_BY_ID[id]; if (!def) return;
+          var item = GG.el('div', 'trayitem');
+          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
+          cv.style.height = '42px';
+          var c = cv.getContext('2d'); c.scale(2, 2);
+          GG.BugArt.draw(c, def, 33, 21, 1.4, -Math.PI / 2, 1.2);
+          item.appendChild(cv);
+          item.appendChild(GG.el('div', 'nm', def.name));
+          item.addEventListener('click', function () { self.addItem('bug', id); });
+          tray.appendChild(item);
+        });
+      } else {
+        GG.DECOR.forEach(function (dec) {
+          var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
+          var item = GG.el('div', 'trayitem' + (owned ? '' : ' locked'));
+          var cv = GG.el('canvas'); cv.width = 132; cv.height = 84;
+          cv.style.height = '42px';
+          var c = cv.getContext('2d'); c.scale(2, 2);
+          var fn = GG.DecorArt[dec.id];
+          if (fn) fn(c, 33, 38, 0.8, 1);
+          item.appendChild(cv);
+          item.appendChild(GG.el('div', 'nm', dec.name));
+          if (!owned) item.appendChild(GG.el('div', 'price', '✦ ' + dec.price));
+          item.addEventListener('click', function () {
+            if (!owned) { GG.UI.toast('Buy this in the Decoration Box first'); return; }
+            self.addItem('decor', dec.id);
+          });
+          tray.appendChild(item);
+        });
+      }
+    },
+
+    addItem: function (kind, id) {
+      var t = this.tank();
+      var arr = kind === 'bug' ? t.bugs : t.decor;
+      var max = kind === 'bug' ? MAX_BUGS : MAX_DECOR;
+      if (arr.length >= max) { GG.UI.toast('This terrarium is full!'); return; }
+      var item = {
+        id: id,
+        x: CW / 2 + GG.rand(-120, 120),
+        y: kind === 'bug' ? GG.rand(150, 330) : GG.rand(GROUND - 20, CH - 40),
+        s: 1, seed: Math.random()
+      };
+      arr.push(item);
+      this.sel = item;
+      GG.Sfx.place();
+      GG.Save.save();
+      this.refresh();
+    },
+
+    items: function () {
+      var t = this.tank(), out = [];
+      t.decor.forEach(function (d) { out.push({ kind: 'decor', it: d }); });
+      t.bugs.forEach(function (b) { out.push({ kind: 'bug', it: b }); });
+      return out;
+    },
+
+    pick: function (x, y) {
+      var all = this.items();
+      for (var i = all.length - 1; i >= 0; i--) {
+        var e = all[i], it = e.it;
+        var r = e.kind === 'bug' ? 30 : 32;
+        var dy = e.kind === 'bug' ? 0 : -18;
+        if (GG.dist(x, y, it.x, it.y + dy) < r) return e;
+      }
+      return null;
+    },
+
+    removeSelected: function () {
+      if (!this.sel) return;
+      var t = this.tank();
+      var i = t.bugs.indexOf(this.sel);
+      if (i >= 0) t.bugs.splice(i, 1);
+      else { i = t.decor.indexOf(this.sel); if (i >= 0) t.decor.splice(i, 1); }
+      this.sel = null;
+      GG.Save.save();
+      this.refresh();
+    },
+
+    draw: function (t) {
+      var cv = $('tank-canvas'), c = cv.getContext('2d');
+      var tank = this.tank();
+      var bg = GG.TANK_BY_ID[tank.bg] || GG.TANK_BGS[0];
+      c.clearRect(0, 0, CW, CH);
+
+      c.save();
+      GG.roundRect(c, 6, 6, CW - 12, CH - 12, 18); c.clip();
+      var g = c.createLinearGradient(0, 0, 0, GROUND);
+      g.addColorStop(0, bg.sky); g.addColorStop(1, GG.shade(bg.sky, 0.12));
+      c.fillStyle = g; c.fillRect(0, 0, CW, GROUND);
+      if (bg.id === 'night') {
+        c.fillStyle = '#fff';
+        for (var s = 0; s < 26; s++) {
+          var sx = (s * 97) % CW, sy = (s * 53) % (GROUND - 40);
+          c.globalAlpha = 0.3 + 0.6 * Math.abs(Math.sin(t + s));
+          c.fillRect(sx, sy, 2, 2);
+        }
+        c.globalAlpha = 1;
+        c.fillStyle = '#fff6c4';
+        c.beginPath(); c.arc(540, 70, 26, 0, Math.PI * 2); c.fill();
+      } else if (bg.id === 'sunset') {
+        c.fillStyle = 'rgba(255,160,90,0.5)';
+        c.beginPath(); c.arc(500, 210, 70, 0, Math.PI * 2); c.fill();
+      }
+      c.fillStyle = bg.ground;
+      c.beginPath();
+      c.moveTo(0, GROUND + 20);
+      c.quadraticCurveTo(CW / 2, GROUND - 26, CW, GROUND + 20);
+      c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+      c.fillStyle = bg.ground2;
+      c.beginPath();
+      c.moveTo(0, GROUND + 56);
+      c.quadraticCurveTo(CW / 2, GROUND + 22, CW, GROUND + 56);
+      c.lineTo(CW, CH); c.lineTo(0, CH); c.closePath(); c.fill();
+
+      // items, back to front
+      var all = this.items().sort(function (a, b) { return a.it.y - b.it.y; });
+      for (var i = 0; i < all.length; i++) {
+        var e = all[i], it = e.it;
+        if (e.kind === 'decor') {
+          var fn = GG.DecorArt[it.id];
+          if (fn) fn(c, it.x, it.y, 1.75, t + it.seed * 10);
+        } else {
+          var def = GG.BUG_BY_ID[it.id];
+          if (!def) continue;
+          var bob = Math.sin(t * 1.6 + it.seed * 9) * (def.behavior === 'flutter' || def.behavior === 'hover' || def.behavior === 'glow' ? 7 : 1.2);
+          var tilt = Math.sin(t * 0.8 + it.seed * 4) * 0.18;
+          if (it.y < GROUND - 10) GG.BugArt.shadow(c, it.x, GROUND + 40, 14, 0.1);
+          GG.BugArt.draw(c, def, it.x, it.y + bob, 3.5, -Math.PI / 2 + tilt, t + it.seed * 6);
+        }
+        if (this.sel === it) {
+          c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 3;
+          c.setLineDash([6, 6]); c.lineDashOffset = -t * 16;
+          c.beginPath(); c.arc(it.x, it.y + (e.kind === 'bug' ? 0 : -18), 34, 0, Math.PI * 2); c.stroke();
+          c.setLineDash([]);
+        }
+      }
+      c.restore();
+
+      // glass
+      c.strokeStyle = '#dceef6'; c.lineWidth = 8;
+      GG.roundRect(c, 6, 6, CW - 12, CH - 12, 18); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 3;
+      GG.roundRect(c, 12, 12, CW - 24, CH - 24, 14); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,0.10)';
+      c.beginPath();
+      c.moveTo(40, 14); c.lineTo(150, 14); c.lineTo(70, CH - 14); c.lineTo(14, CH - 14);
+      c.closePath(); c.fill();
+      c.fillStyle = '#b9884f';
+      GG.roundRect(c, 0, CH - 26, CW, 26, 10); c.fill();
+      c.fillStyle = '#a0703c';
+      GG.roundRect(c, 0, CH - 26, CW, 8, 4); c.fill();
+    },
+
+    loop: function () {
+      var self = this;
+      cancelAnimationFrame(this._raf);
+      var start = performance.now();
+      function frame(now) {
+        if ($('screen-terrarium').classList.contains('hidden')) return;
+        self.draw((now - start) / 1000);
+        self._raf = requestAnimationFrame(frame);
+      }
+      this._raf = requestAnimationFrame(frame);
+    },
+
+    toCanvas: function (ev) {
+      var cv = $('tank-canvas'), r = cv.getBoundingClientRect();
+      var p = ev.touches ? ev.touches[0] : ev;
+      return { x: (p.clientX - r.left) / r.width * CW, y: (p.clientY - r.top) / r.height * CH };
+    },
+
+    initEvents: function () {
+      var self = this, cv = $('tank-canvas');
+
+      function down(ev) {
+        ev.preventDefault();
+        var p = self.toCanvas(ev);
+        var hit = self.pick(p.x, p.y);
+        self.sel = hit ? hit.it : null;
+        self.drag = hit ? { e: hit, dx: p.x - hit.it.x, dy: p.y - hit.it.y } : null;
+        $('tank-remove').style.display = self.sel ? '' : 'none';
+        if (hit) GG.Sfx.click();
+      }
+      function move(ev) {
+        if (!self.drag) return;
+        ev.preventDefault();
+        var p = self.toCanvas(ev);
+        var it = self.drag.e.it;
+        it.x = GG.clamp(p.x - self.drag.dx, 34, CW - 34);
+        var lo = self.drag.e.kind === 'bug' ? 40 : GROUND - 40;
+        it.y = GG.clamp(p.y - self.drag.dy, lo, CH - 40);
+      }
+      function up() {
+        if (self.drag) { GG.Save.save(); self.drag = null; }
+      }
+      cv.addEventListener('touchstart', down, { passive: false });
+      cv.addEventListener('touchmove', move, { passive: false });
+      cv.addEventListener('touchend', up);
+      cv.addEventListener('mousedown', down);
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+
+      document.querySelectorAll('#screen-terrarium .tab').forEach(function (el) {
+        el.addEventListener('click', function () {
+          GG.Sfx.click();
+          self.tab = el.getAttribute('data-tab');
+          self.buildTray();
+        });
+      });
+
+      $('tank-prev').addEventListener('click', function () {
+        GG.Sfx.click();
+        var n = GG.Save.data.terrariums.length;
+        self.index = (self.index - 1 + n) % n; self.sel = null; self.refresh();
+      });
+      $('tank-next').addEventListener('click', function () {
+        GG.Sfx.click();
+        var n = GG.Save.data.terrariums.length;
+        self.index = (self.index + 1) % n; self.sel = null; self.refresh();
+      });
+      $('tank-remove').addEventListener('click', function () { GG.Sfx.click(); self.removeSelected(); });
+      $('tank-clear').addEventListener('click', function () {
+        GG.Sfx.click();
+        var t = self.tank(); t.bugs = []; t.decor = []; self.sel = null;
+        GG.Save.save(); self.refresh();
+      });
+      $('tank-rename').addEventListener('click', function () {
+        GG.Sfx.click();
+        var t = self.tank();
+        var v = window.prompt('What should this terrarium be called?', t.name);
+        if (v != null && v.trim()) { t.name = v.trim().slice(0, 28); GG.Save.save(); self.refresh(); }
+      });
+      $('tank-bg').addEventListener('click', function () {
+        GG.Sfx.click();
+        var t = self.tank();
+        var owned = GG.TANK_BGS.filter(function (b) {
+          return b.price === 0 || GG.Save.data.unlockedDecor.indexOf('bg_' + b.id) >= 0;
+        });
+        var i = 0;
+        owned.forEach(function (b, k) { if (b.id === t.bg) i = k; });
+        t.bg = owned[(i + 1) % owned.length].id;
+        GG.Save.save(); self.refresh();
+        GG.UI.toast('Scene: ' + GG.TANK_BY_ID[t.bg].name);
+      });
+      $('tank-new').addEventListener('click', function () {
+        GG.Sfx.click();
+        var d = GG.Save.data;
+        var cost = d.terrariums.length * 250;
+        if (d.terrariums.length >= 6) { GG.UI.toast('Six terrariums is plenty!'); return; }
+        if (d.sparkles < cost) { GG.UI.toast('A new terrarium costs ✦ ' + cost); return; }
+        d.sparkles -= cost;
+        d.terrariums.push({ name: 'Terrarium ' + (d.terrariums.length + 1), bg: 'meadow', decor: [], bugs: [] });
+        self.index = d.terrariums.length - 1;
+        GG.Save.save(); GG.UI.refreshHud(); self.refresh();
+        GG.UI.toast('A brand new terrarium!');
+      });
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/ui/shop.js ==== */
+/* The Decoration Box - spend sparkles on things for the terrariums. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+
+  var Shop = GG.Shop = {
+    open: function () { GG.UI.open('screen-shop'); this.refresh(); },
+
+    refresh: function () {
+      var d = GG.Save.data, self = this;
+      $('shop-sparkles').innerHTML = '&#10022; ' + d.sparkles;
+
+      var grid = $('shop-grid'); grid.innerHTML = '';
+      GG.DECOR.forEach(function (dec) {
+        var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
+        var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
+        var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
+        var c = cv.getContext('2d'); c.scale(2, 2);
+        var fn = GG.DecorArt[dec.id];
+        if (fn) fn(c, 44, 50, 1, 1);
+        el.appendChild(cv);
+        el.appendChild(GG.el('div', 'nm', dec.name));
+        el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + dec.price));
+        el.addEventListener('click', function () {
+          if (owned) { GG.UI.toast('You already have this one'); return; }
+          if (d.sparkles < dec.price) { GG.UI.toast('Not enough sparkles yet'); return; }
+          d.sparkles -= dec.price;
+          d.unlockedDecor.push(dec.id);
+          GG.Sfx.coin(); GG.Save.save(); GG.UI.refreshHud(); self.refresh();
+          GG.UI.toast('Bought ' + dec.name + '!');
+        });
+        grid.appendChild(el);
+      });
+
+      var bgs = $('shop-bgs'); bgs.innerHTML = '';
+      GG.TANK_BGS.forEach(function (bg) {
+        var key = 'bg_' + bg.id;
+        var owned = bg.price === 0 || d.unlockedDecor.indexOf(key) >= 0;
+        var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
+        var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
+        var c = cv.getContext('2d'); c.scale(2, 2);
+        c.fillStyle = bg.sky; c.fillRect(0, 0, 88, 56);
+        c.fillStyle = bg.ground;
+        c.beginPath(); c.moveTo(0, 40); c.quadraticCurveTo(44, 30, 88, 40);
+        c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+        c.fillStyle = bg.ground2;
+        c.beginPath(); c.moveTo(0, 49); c.quadraticCurveTo(44, 43, 88, 49);
+        c.lineTo(88, 56); c.lineTo(0, 56); c.closePath(); c.fill();
+        el.appendChild(cv);
+        el.appendChild(GG.el('div', 'nm', bg.name));
+        el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + bg.price));
+        el.addEventListener('click', function () {
+          if (owned) { GG.UI.toast('You already have this scene'); return; }
+          if (d.sparkles < bg.price) { GG.UI.toast('Not enough sparkles yet'); return; }
+          d.sparkles -= bg.price;
+          d.unlockedDecor.push(key);
+          GG.Sfx.coin(); GG.Save.save(); GG.UI.refreshHud(); Shop.refresh();
+          GG.UI.toast('Bought the ' + bg.name + ' scene!');
+        });
+        bgs.appendChild(el);
+      });
+    }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/main.js ==== */
+/* Guin's Garden - main loop and glue. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+
+  var canvas, ctx, dpr = 1;
+  var scene = 'title';
+  var cam = { x: 0, y: 0 };
+  var lastTime = 0, elapsed = 0;
+  var swingChecked = false;
+  var saveTimer = 0;
+  var rainDrops = [];
+  var started = false;
+
+  GG.view = { w: 480, h: 320, cssW: 480, cssH: 320, zoom: 1 };
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    GG.view.cssW = w; GG.view.cssH = h;
+    applyZoom();
+  }
+
+  function applyZoom() {
+    var w = GG.view.cssW, h = GG.view.cssH;
+    var z;
+    if (scene === 'house') {
+      z = GG.clamp(Math.min(w / 700, h / 560), 0.7, 2.4);
+    } else {
+      z = GG.clamp(Math.max(h / 560, w / 780), 1, 2.8);
+    }
+    GG.view.zoom = z;
+    GG.view.w = w / z; GG.view.h = h / z;
+    ctx.setTransform(dpr * z, 0, 0, dpr * z, 0, 0);
+  }
+
+  function setScene(s) {
+    scene = s;
+    applyZoom();
+    if (s === 'world') {
+      GG.Critters.clear();
+      for (var i = 0; i < 10; i++) {
+        GG.Critters.spawnNear(GG.Player.x, GG.Player.y, 120, Math.max(GG.view.w, GG.view.h) * 0.8);
+      }
+    }
+  }
+
+  var _label = '';
+  function setActionLabel(main, sub) {
+    if (_label === main + '|' + sub) return;
+    _label = main + '|' + sub;
+    $('btn-a').innerHTML = main + '<small>' + sub + '</small>';
+  }
+
+  /* ---------- rain ---------- */
+  function updateRain(dt) {
+    if (GG.Time.rain) {
+      while (rainDrops.length < 90) {
+        rainDrops.push({ x: Math.random() * (GG.view.w + 200) - 100, y: Math.random() * GG.view.h, s: GG.rand(420, 700) });
+      }
+    } else if (rainDrops.length) {
+      rainDrops.length = Math.max(0, rainDrops.length - 3);
+    }
+    for (var i = 0; i < rainDrops.length; i++) {
+      var d = rainDrops[i];
+      d.y += d.s * dt; d.x += d.s * 0.28 * dt;
+      if (d.y > GG.view.h) { d.y = -12; d.x = Math.random() * (GG.view.w + 200) - 100; }
+    }
+  }
+  function drawRain() {
+    if (!rainDrops.length) return;
+    ctx.strokeStyle = 'rgba(200,225,255,0.5)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for (var i = 0; i < rainDrops.length; i++) {
+      var d = rainDrops[i];
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 3.4, d.y - 12); ctx.stroke();
+    }
+  }
+
+  /* ---------- world scene ---------- */
+  function updateWorld(dt) {
+    var W = GG.World, P = GG.Player;
+    GG.Time.update(dt);
+
+    var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
+    var atDoor = doorD < 40;
+
+    P.update(dt, function (x, y, r) { return W.blocked(x, y, r); });
+
+    if (GG.Input.actionPressed) {
+      if (atDoor) { enterHouse(); return; }
+      if (P.startSwing()) swingChecked = false;
+    }
+    if (P.swinging() && !swingChecked) {
+      var pr = P.swingProgress();
+      if (pr > 0.16 && pr < 0.8) {
+        var got = GG.Critters.tryCatch(P);
+        if (got) { swingChecked = true; onCatch(got); }
+      }
+      if (pr >= 0.8) swingChecked = true;
+    }
+
+    GG.Critters.update(dt, P);
+    updateRain(dt);
+
+    cam.x = GG.clamp(P.x - GG.view.w / 2, 0, W.W - GG.view.w);
+    cam.y = GG.clamp(P.y - GG.view.h / 2 - 12, 0, W.H - GG.view.h);
+    if (W.W < GG.view.w) cam.x = (W.W - GG.view.w) / 2;
+    if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
+
+    GG.UI.prompt(atDoor ? 'Tap to go inside' : null);
+    setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
+  }
+
+  function drawWorld(t) {
+    var W = GG.World, P = GG.Player;
+    W.drawGround(ctx, cam, GG.view.w, GG.view.h);
+    canvas._vw = GG.view.w;
+    W.drawWater(ctx, cam, t);
+    W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
+
+    // everything that stands up gets sorted so Guin walks behind trees
+    var list = W.sortedProps(cam, GG.view.w, GG.view.h);
+    var drawables = [];
+    for (var i = 0; i < list.length; i++) drawables.push({ y: list[i].y, p: list[i] });
+    drawables.push({ y: P.y, player: true });
+    drawables.sort(function (a, b) { return a.y - b.y; });
+    for (var j = 0; j < drawables.length; j++) {
+      var d = drawables[j];
+      if (d.player) {
+        P.draw(ctx, P.x - cam.x, P.y - cam.y, t);
+      } else {
+        var p = d.p, fn = GG.Props[p.type];
+        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+      }
+    }
+    GG.Critters.draw(ctx, cam, t);
+
+    var tint = GG.Time.tint();
+    if (tint.indexOf(',0.000)') < 0) {
+      ctx.fillStyle = tint;
+      ctx.fillRect(0, 0, GG.view.w, GG.view.h);
+    }
+    drawRain();
+  }
+
+  /* ---------- house scene ---------- */
+  function updateHouse(dt) {
+    var H = GG.House, P = GG.Player;
+    GG.Time.update(dt);
+    P.update(dt, function (x, y, r) { return H.blocked(x, y, r); });
+
+    var spot = H.nearest(P.x, P.y);
+    GG.UI.prompt(spot ? spot.label : null);
+    setActionLabel(spot ? 'OPEN' : '\u2014', spot ? spot.label.toLowerCase() : 'walk around');
+
+    if (GG.Input.actionPressed && spot) {
+      GG.Sfx.click();
+      if (spot.id === 'door') { leaveHouse(); return; }
+      if (spot.id === 'book') GG.Book.open();
+      if (spot.id === 'terrarium') GG.Terrarium.open();
+      if (spot.id === 'shop') GG.Shop.open();
+      if (spot.id === 'bed') sleep();
+    }
+
+    cam.x = (H.W - GG.view.w) / 2;
+    cam.y = (H.H - GG.view.h) / 2;
+  }
+
+  function drawHouse(t) {
+    var g = ctx.createLinearGradient(0, 0, 0, GG.view.h);
+    g.addColorStop(0, '#40311f'); g.addColorStop(1, '#241a11');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GG.view.w, GG.view.h);
+    GG.House.draw(ctx, cam, t);
+    GG.Player.draw(ctx, GG.Player.x - cam.x, GG.Player.y - cam.y, t);
+    if (GG.Time.isDark()) {
+      ctx.fillStyle = 'rgba(30,34,80,0.24)';
+      ctx.fillRect(0, 0, GG.view.w, GG.view.h);
+    }
+  }
+
+  function enterHouse() {
+    GG.Sfx.door();
+    setScene('house');
+    GG.Player.reset(GG.House.W / 2, GG.House.H - 60);
+    GG.UI.prompt(null);
+    if (!GG.Save.data.seenHouseTip) {
+      GG.Save.data.seenHouseTip = true; GG.Save.save();
+      setTimeout(function () { GG.UI.toast('Walk up to something and tap NET', 2600); }, 500);
+    }
+  }
+  function leaveHouse() {
+    GG.Sfx.door();
+    setScene('world');
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 50);
+    GG.UI.prompt(null);
+  }
+  function sleep() {
+    var T = GG.Time;
+    T.minutes = 7 * 60; T.day++;
+    T.rain = false; T.rainTimer = GG.rand(160, 320);
+    GG.Save.data.clock = T.minutes; GG.Save.data.day = T.day;
+    GG.Save.save();
+    GG.UI.toast('You had a lovely nap. It is day ' + T.day + '!', 2400);
+    GG.Sfx.night();
+  }
+
+  /* ---------- catching ---------- */
+  function onCatch(def) {
+    var isNew = GG.Save.addCatch(def.id);
+    var reward = def.value + (isNew ? def.value * 2 : 0);
+    GG.Save.data.sparkles += reward;
+    GG.Save.save();
+    GG.UI.refreshHud();
+    if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
+    GG.UI.showCatch(def, isNew, reward);
+  }
+
+  /* ---------- little map ---------- */
+  function drawMinimap() {
+    var cv = $('minimap'); if (!cv) return;
+    var c = cv.getContext('2d');
+    var W = GG.World;
+    var sx = cv.width / W.W, sy = cv.height / W.H;
+    var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
+      hill: '#d8d2a4', orchard: '#bfe07a' };
+    var step = 20;
+    for (var y = 0; y < W.H; y += step) {
+      for (var x = 0; x < W.W; x += step) {
+        c.fillStyle = W.isWater(x + 10, y + 10) ? '#4fa8c9' : (COLS[W.biomeAt(x + 10, y + 10)] || '#9ad96f');
+        c.fillRect(x * sx, y * sy, step * sx + 1, step * sy + 1);
+      }
+    }
+    c.fillStyle = 'rgba(255,255,255,0.9)';
+    c.font = 'bold 17px "Trebuchet MS", sans-serif';
+    c.textAlign = 'center';
+    c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
+    [['Hills', 380, 380], ['Meadow', 760, 1000], ['Woods', 2500, 620], ['Orchard', 2140, 1500],
+     ['Pond', 620, 2020], ['Garden', 1520, 1720]].forEach(function (p) {
+      c.strokeText(p[0], p[1] * sx, p[2] * sy);
+      c.fillText(p[0], p[1] * sx, p[2] * sy);
+    });
+    // house
+    c.fillStyle = '#c9564f';
+    c.fillRect(W.HOUSE.x * sx - 7, W.HOUSE.y * sy - 10, 14, 11);
+    c.fillStyle = '#f4e7cf';
+    c.fillRect(W.HOUSE.x * sx - 5, W.HOUSE.y * sy - 5, 10, 6);
+    // guin
+    c.fillStyle = '#ff5f92';
+    c.beginPath(); c.arc(GG.Player.x * sx, GG.Player.y * sy, 7, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.stroke();
+  }
+
+  /* ---------- title animation ---------- */
+  function titleAnim() {
+    var cv = $('title-canvas');
+    if (!cv) return;
+    var c = cv.getContext('2d');
+    var bugs = [];
+    var picks = ['monarch', 'blue_butterfly', 'ladybug', 'firefly', 'bumblebee', 'swallowtail', 'dragonfly'];
+    picks.forEach(function (id, i) {
+      var def = GG.BUG_BY_ID[id];
+      if (def) bugs.push({ def: def, x: 60 + i * 92, y: 90 + (i % 3) * 40, ph: i * 1.3, sp: 0.5 + (i % 3) * 0.2 });
+    });
+    var start = performance.now();
+    function frame(now) {
+      if ($('screen-title').classList.contains('hidden')) return;
+      var t = (now - start) / 1000;
+      c.clearRect(0, 0, cv.width, cv.height);
+      c.fillStyle = '#8ed36a';
+      c.beginPath();
+      c.moveTo(0, 200); c.quadraticCurveTo(cv.width / 2, 160, cv.width, 200);
+      c.lineTo(cv.width, cv.height); c.lineTo(0, cv.height); c.closePath(); c.fill();
+      c.fillStyle = '#7bc45c';
+      c.beginPath();
+      c.moveTo(0, 250); c.quadraticCurveTo(cv.width / 2, 220, cv.width, 250);
+      c.lineTo(cv.width, cv.height); c.lineTo(0, cv.height); c.closePath(); c.fill();
+      var cols = ['#ff8fb0', '#ffd45c', '#c39bff', '#fff0a8'];
+      for (var i = 0; i < 11; i++) {
+        GG.Props.flower(c, 30 + i * 62, 250 + (i % 3) * 14, 15, t, i * 0.7, cols[i % 4]);
+      }
+      GG.Props.tree(c, 66, 230, 54, t, 0.3);
+      GG.Props.tree(c, cv.width - 60, 236, 46, t, 0.8);
+      for (var b = 0; b < bugs.length; b++) {
+        var g = bugs[b];
+        var x = g.x + Math.sin(t * g.sp + g.ph) * 46;
+        var y = g.y + Math.cos(t * g.sp * 1.4 + g.ph) * 26;
+        var ang = Math.atan2(Math.cos(t * g.sp * 1.4 + g.ph) * -26 * g.sp * 1.4,
+                             Math.cos(t * g.sp + g.ph) * 46 * g.sp);
+        GG.BugArt.draw(c, g.def, x, y, 2.6, ang, t + g.ph);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- loop ---------- */
+  function loop(now) {
+    requestAnimationFrame(loop);
+    var dt = Math.min(0.05, (now - lastTime) / 1000 || 0);
+    lastTime = now;
+    if (!started) return;
+
+    var paused = GG.UI.anyOpen();
+    GG.Input.beginFrame();
+    if (paused) { GG.Input.x = GG.Input.y = 0; GG.Input.mag = 0; GG.Input.actionPressed = false; }
+    else elapsed += dt;
+
+    if (!paused) {
+      if (scene === 'world') updateWorld(dt);
+      else if (scene === 'house') updateHouse(dt);
+
+      saveTimer -= dt;
+      if (saveTimer <= 0) {
+        saveTimer = 8;
+        GG.Save.data.clock = GG.Time.minutes;
+        GG.Save.data.day = GG.Time.day;
+        GG.Save.save();
+      }
+    }
+
+    ctx.save();
+    ctx.clearRect(0, 0, GG.view.w, GG.view.h);
+    if (scene === 'world') drawWorld(elapsed);
+    else if (scene === 'house') drawHouse(elapsed);
+    ctx.restore();
+
+    $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
+      (GG.Time.rain ? ' ☔' : '');
+    $('chip-place').textContent = scene === 'house' ? 'Home' : GG.World.placeName(GG.Player.x, GG.Player.y);
+  }
+
+  /* ---------- start ---------- */
+  function startGame() {
+    if (started) {
+      GG.UI.close('screen-title');
+      return;
+    }
+    GG.Sfx.unlock();
+    started = true;
+    GG.UI.close('screen-title');
+    setScene('world');
+    if (!GG.Save.data.seenIntro) {
+      GG.Save.data.seenIntro = true; GG.Save.save();
+      setTimeout(function () { GG.UI.toast('Slide your thumb on the left to walk', 2800); }, 600);
+      setTimeout(function () { GG.UI.toast('Tap NET to swing at a bug', 2800); }, 3800);
+    }
+  }
+
+  function boot() {
+    canvas = $('game');
+    ctx = canvas.getContext('2d');
+    GG.Save.load();
+    GG.Time.minutes = GG.Save.data.clock;
+    GG.Time.day = GG.Save.data.day;
+    GG.World.build();
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', function () { setTimeout(resize, 250); });
+
+    GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'));
+    GG.UI.init();
+    GG.UI.refreshHud();
+    GG.Terrarium.initEvents();
+    titleAnim();
+
+    $('btn-play').addEventListener('click', function () { GG.Sfx.click(); startGame(); });
+    $('btn-howto').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
+    $('btn-menu').addEventListener('click', function () {
+      GG.Sfx.click();
+      $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs found';
+      $('menu-place').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.phaseName() +
+        ' · ✦ ' + GG.Save.data.sparkles;
+      $('menu-mute').textContent = 'Sound: ' + (GG.Save.data.muted ? 'off' : 'on');
+      GG.UI.open('screen-menu');
+      drawMinimap();
+    });
+    $('menu-book').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.Book.open(); });
+    $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
+    $('menu-mute').addEventListener('click', function () {
+      GG.Save.data.muted = !GG.Save.data.muted; GG.Save.save();
+      $('menu-mute').textContent = 'Sound: ' + (GG.Save.data.muted ? 'off' : 'on');
+      if (!GG.Save.data.muted) GG.Sfx.click();
+    });
+    $('menu-reset').addEventListener('click', function () {
+      if (window.confirm('Start a brand new garden? Everything Guin has caught will be forgotten.')) {
+        GG.Save.reset();
+        location.reload();
+      }
+    });
+
+    GG.UI.onCatchClosed = function () { swingChecked = true; };
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        GG.Save.data.clock = GG.Time.minutes;
+        GG.Save.data.day = GG.Time.day;
+        GG.Save.save();
+      } else { lastTime = performance.now(); }
+    });
+
+    requestAnimationFrame(function (t) { lastTime = t; loop(t); });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (reg) {
+          function offer(worker) {
+            if (!worker) return;
+            var btn = $('btn-update');
+            btn.classList.remove('hidden');
+            btn.onclick = function () {
+              btn.textContent = 'Updating\u2026';
+              worker.postMessage({ type: 'SKIP_WAITING' });
+              setTimeout(function () { location.reload(); }, 500);
+            };
+          }
+          if (reg.waiting) offer(reg.waiting);
+          reg.addEventListener('updatefound', function () {
+            var w = reg.installing;
+            if (!w) return;
+            w.addEventListener('statechange', function () {
+              if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w);
+            });
+          });
+          setInterval(function () { reg.update().catch(function () {}); }, 60000);
+        }).catch(function () {});
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})(window.GG = window.GG || {});
+
+</script>
+</body>
+</html>
