@@ -1,0 +1,28 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 412, height: 860 }, hasTouch: true, deviceScaleFactor: 2 });
+  p.on('pageerror', e => console.log('PAGEERROR: ' + e.message));
+  await p.goto('http://localhost:8899/index.html');
+  await p.waitForTimeout(800);
+  await p.screenshot({ path: __dirname + '/shots/s-title.png' });
+  await p.tap('#btn-settings'); await p.waitForTimeout(500);
+  await p.screenshot({ path: __dirname + '/shots/s-settings.png' });
+  await p.tap('#set-reset'); await p.waitForTimeout(350);
+  await p.screenshot({ path: __dirname + '/shots/s-reset.png' });
+  await p.evaluate(() => GG.UI.close('screen-settings'));
+  await p.tap('#btn-guest'); await p.waitForTimeout(400);
+  await p.screenshot({ path: __dirname + '/shots/s-guest.png' });
+  await p.evaluate(() => GG.UI.close('screen-guest'));
+  await p.evaluate(() => { GG.Save.data.version = '1.7.0'; GG.Save.save(); });
+  await p.tap('#btn-play'); await p.waitForTimeout(1800);
+  await p.screenshot({ path: __dirname + '/shots/s-news.png' });
+  await p.evaluate(() => GG.UI.close('screen-news'));
+  await p.evaluate(() => { GG.Save.data.sparkles = 99999; GG.Save.save(); GG.Shop.open(); });
+  await p.waitForTimeout(700);
+  await p.screenshot({ path: __dirname + '/shots/s-shop.png' });
+  await p.evaluate(() => { document.querySelector('#screen-shop .body').scrollTop = 900; });
+  await p.waitForTimeout(400);
+  await p.screenshot({ path: __dirname + '/shots/s-shop2.png' });
+  await b.close();
+})();

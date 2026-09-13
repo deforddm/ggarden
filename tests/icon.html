@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0}canvas{display:block}</style></head><body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../src/core/util.js"></script>
+<script src="../src/data/bugs.js"></script>
+<script src="../src/render/bugart.js"></script>
+<script>
+window.render=function(size,maskable){
+  var cv=document.getElementById('c');cv.width=size;cv.height=size;
+  var c=cv.getContext('2d');var s=size/512;
+  var g=c.createLinearGradient(0,0,0,size);
+  g.addColorStop(0,'#bfe8ff');g.addColorStop(0.55,'#9ed98a');g.addColorStop(1,'#6fb85f');
+  c.fillStyle=g;c.fillRect(0,0,size,size);
+  c.fillStyle='#7bc45c';
+  c.beginPath();c.moveTo(0,360*s);c.quadraticCurveTo(size/2,310*s,size,360*s);
+  c.lineTo(size,size);c.lineTo(0,size);c.closePath();c.fill();
+  var cols=['#ff8fb0','#ffd45c','#c39bff'];
+  for(var i=0;i<5;i++){GG.Props?0:0;}
+  // simple flowers
+  for(var i=0;i<5;i++){
+    var fx=(60+i*100)*s, fy=(430+((i%2)*18))*s, r=26*s;
+    c.strokeStyle='#3f8a3a';c.lineWidth=5*s;c.beginPath();c.moveTo(fx,fy+40*s);c.lineTo(fx,fy);c.stroke();
+    c.fillStyle=cols[i%3];
+    for(var k=0;k<5;k++){var a=k*Math.PI*2/5;
+      c.beginPath();c.ellipse(fx+Math.cos(a)*r*0.5,fy+Math.sin(a)*r*0.5,r*0.42,r*0.42,0,0,Math.PI*2);c.fill();}
+    c.fillStyle='#ffd94a';c.beginPath();c.arc(fx,fy,r*0.32,0,Math.PI*2);c.fill();
+  }
+  var scale = maskable? 9.5*s : 12*s;
+  GG.BugArt.draw(c,GG.BUG_BY_ID['monarch'],size*0.5,size*0.42,scale,-Math.PI/2,1.15);
+};
+window.render(512,false);
+</script></body></html>

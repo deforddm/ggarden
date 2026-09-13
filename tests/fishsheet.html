@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#4fa8c9}canvas{display:block}</style></head><body>
+<canvas id="c" width="1080" height="820"></canvas>
+<script src="../src/core/util.js"></script>
+<script src="../src/data/fish.js"></script>
+<script src="../src/render/fishart.js"></script>
+<script>
+var c=document.getElementById('c').getContext('2d');
+c.fillStyle='#4fa8c9';c.fillRect(0,0,1080,820);
+var all=GG.FISH.concat(GG.JUNK);
+all.forEach(function(f,i){
+  var col=i%4,row=(i/4)|0;
+  var x=135+col*270, y=80+row*160;
+  c.fillStyle='rgba(255,255,255,0.16)';c.fillRect(x-125,y-66,250,140);
+  GG.FishArt.draw(c,f,x,y,2.0,false,1.2);
+  c.fillStyle='#08303f';c.font='14px sans-serif';c.textAlign='center';
+  c.fillText(f.name,x,y+62);
+});
+</script></body></html>

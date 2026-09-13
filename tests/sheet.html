@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#8fc76a;font-family:sans-serif}
+canvas{display:block}
+</style></head><body>
+<canvas id="c" width="1200" height="1700"></canvas>
+<script src="../src/core/util.js"></script>
+<script src="../src/data/bugs.js"></script>
+<script src="../src/render/bugart.js"></script>
+<script>
+var c=document.getElementById('c').getContext('2d');
+c.fillStyle='#8fc76a';c.fillRect(0,0,1200,1700);
+var t=1.2;
+GG.BUGS.forEach(function(b,i){
+  var col=i%6, row=(i/6)|0;
+  var x=100+col*200, y=95+row*150;
+  c.fillStyle='rgba(255,255,255,0.25)';c.beginPath();c.roundRect?0:0;
+  c.fillRect(x-92,y-66,184,132);
+  GG.BugArt.draw(c,b,x,y,2.7,-Math.PI/2,t);
+  c.fillStyle='#1d3a12';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText(b.name,x,y+58);
+});
+</script></body></html>
