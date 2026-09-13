@@ -218,7 +218,7 @@
           <button class="btn small" id="tank-next">&#8594;</button>
           <button class="btn small" id="tank-rename">Name</button>
           <button class="btn small" id="tank-bg">Scene</button>
-          <button class="btn small pink" id="tank-remove">Remove</button>
+          <button class="btn small pink" id="tank-remove">Take out</button>
         </div>
         <div class="tabs">
           <div class="tab on" data-tab="bugs">Bugs</div>
@@ -231,7 +231,30 @@
       <footer>
         <button class="btn small" id="tank-new">New tank</button>
         <button class="btn small" id="tank-clear">Empty it</button>
+        <button class="btn small" id="tank-delete">Get rid of it&hellip;</button>
         <button class="btn primary grow" data-close="screen-terrarium">Done</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- get rid of a tank -->
+  <div class="panel hidden" id="screen-deltank">
+    <div class="sheet">
+      <header><h2>Get rid of this tank?</h2><button class="x" data-close="screen-deltank">&times;</button></header>
+      <div class="body">
+        <canvas id="deltank-art" width="640" height="420"></canvas>
+        <div id="deltank-name"></div>
+        <div class="note" id="deltank-what"></div>
+        <div class="keepsafe">
+          <b>Nothing is lost.</b>
+          <div class="note">Everything living in it goes straight back to your books, and every
+            decoration you bought stays bought. Only the tank itself goes away, and you cannot
+            get it back.</div>
+        </div>
+      </div>
+      <footer>
+        <button class="btn primary grow" data-close="screen-deltank">No, keep it</button>
+        <button class="btn small pink" id="deltank-yes">Yes, get rid of it</button>
       </footer>
     </div>
   </div>
