@@ -149,6 +149,14 @@ ul.tips li{margin-bottom:3px}
 @keyframes bitepulse{from{transform:scale(1)}to{transform:scale(1.09)}}
 #book-tabs{margin-top:0}
 
+#deltank-art{width:100%;display:block;border-radius:16px;background:#cfe9f5}
+#deltank-name{font-size:17px;font-weight:bold;text-align:center;margin:8px 0 2px}
+#screen-deltank .note{text-align:center}
+.keepsafe{background:#eef7ea;border:2px solid #cfe6c4;border-radius:14px;padding:10px;margin-top:10px}
+.keepsafe b{color:var(--green-d)}
+.keepsafe .note{text-align:left;margin-top:2px}
+#tank-delete{color:#a33;border-color:#e8b8b8;box-shadow:0 3px 0 #e8b8b8}
+
 #tank-kind{text-align:center;font-size:12.5px;font-weight:bold;color:var(--ink2);margin:0 0 6px}
 #newtank-list{display:grid;gap:10px}
 .newtank{background:var(--cream2);border:2px solid #eaddc0;border-radius:16px;padding:8px;text-align:center;
