@@ -264,6 +264,85 @@ const { chromium } = require('playwright');
     return t[t.length - 1].type === 'hybrid' && GG.TANK_BY_ID[t[t.length - 1].bg].kind === 'hybrid';
   }));
 
+  /* ---------- getting rid of a tank ---------- */
+  await p.evaluate(() => {
+    const d = GG.Save.data;
+    d.terrariums.push({ name: 'Doomed', type: 'terrarium', bg: 'meadow',
+      decor: [], bugs: [], fish: [], friends: [] });
+    GG.Terrarium.index = d.terrariums.length - 1;
+    GG.Terrarium.refresh();
+    GG.Terrarium.addItem('bug', 'monarch');
+    GG.Terrarium.addItem('decor', 'leaf');
+  });
+  await p.waitForTimeout(400);
+
+  ok('the Get rid of it button is there when you have more than one tank',
+    !(await p.$eval('#tank-delete', e => e.hidden)));
+
+  await p.click('#tank-delete');
+  await p.waitForTimeout(500);
+  const del = await p.evaluate(() => ({
+    open: !document.getElementById('screen-deltank').classList.contains('hidden'),
+    name: document.getElementById('deltank-name').textContent,
+    what: document.getElementById('deltank-what').textContent,
+    safe: document.querySelector('.keepsafe').textContent.indexOf('Nothing is lost') >= 0,
+    painted: (() => {
+      const cv = document.getElementById('deltank-art');
+      const dd = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+      let n = 0; for (let i = 3; i < dd.length; i += 4) if (dd[i] > 12) n++;
+      return n;
+    })()
+  }));
+  ok('it asks first, naming the tank (' + del.name + ')', del.open && del.name === 'Doomed');
+  ok('it says what is inside (' + del.what + ')', /1 creature/.test(del.what) && /1 decoration/.test(del.what));
+  ok('it promises nothing is lost', del.safe);
+  ok('it shows a picture of that tank (' + del.painted + ' px)', del.painted > 50000);
+
+  /* backing out must change nothing */
+  const nBefore = await p.evaluate(() => GG.Save.data.terrariums.length);
+  await p.evaluate(() => GG.UI.close('screen-deltank'));
+  await p.waitForTimeout(300);
+  ok('saying no keeps the tank',
+    (await p.evaluate(() => GG.Save.data.terrariums.length)) === nBefore);
+
+  await p.click('#tank-delete');
+  await p.waitForTimeout(400);
+  await p.click('#deltank-yes');
+  await p.waitForTimeout(600);
+  const gone = await p.evaluate(() => ({
+    n: GG.Save.data.terrariums.length,
+    names: GG.Save.data.terrariums.map(t => t.name),
+    idx: GG.Terrarium.index,
+    closed: document.getElementById('screen-deltank').classList.contains('hidden'),
+    bugStillInBook: GG.Save.has('monarch'),
+    decorStillOwned: GG.Save.data.unlockedDecor.indexOf('leaf') >= 0
+  }));
+  ok('saying yes gets rid of it', gone.n === nBefore - 1 && gone.names.indexOf('Doomed') < 0);
+  ok('the card closes and a real tank is showing', gone.closed && gone.idx < gone.n);
+  ok('the creature that was in it is still in the book', gone.bugStillInBook);
+  ok('the decorations stay bought', gone.decorStillOwned);
+
+  /* the last tank can never be thrown away */
+  const last = await p.evaluate(() => {
+    while (GG.Save.data.terrariums.length > 1) GG.Terrarium.doDelete();
+    GG.Terrarium.refresh();
+    return { n: GG.Save.data.terrariums.length,
+      hidden: document.getElementById('tank-delete').hidden,
+      askRefused: GG.Terrarium.askDelete() === false,
+      doRefused: GG.Terrarium.doDelete() === false,
+      after: GG.Save.data.terrariums.length };
+  });
+  ok('your only tank cannot be thrown away', last.n === 1 && last.after === 1 &&
+    last.askRefused && last.doRefused);
+  ok('and the button is hidden when there is only one', last.hidden);
+
+  /* it sticks after a reload */
+  await p.evaluate(() => GG.Save.save());
+  await p.reload();
+  await p.waitForTimeout(900);
+  ok('the deletions survive a reload',
+    (await p.evaluate(() => GG.Save.data.terrariums.length)) === 1);
+
   console.log(r.join('\n'));
   console.log(errs.length ? 'ERRORS:\n' + errs.join('\n') : 'no console errors');
   console.log(r.some(x => x.startsWith('FAIL')) ? '>>> SOME CHECKS FAILED' : '>>> ALL CHECKS PASSED');
