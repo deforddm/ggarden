@@ -6,9 +6,17 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.10.0';
+  GG.VERSION = '1.10.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.10.1', title: 'Getting rid of a tank',
+      lines: [
+        'You can throw a tank away now. Open it, tap "Get rid of it", and it shows you a picture of that very tank and what is inside before it asks you if you are sure.',
+        'Nothing is ever lost: everything living in the tank goes straight back to your books, and every decoration you bought stays bought.',
+        'Your last tank cannot be thrown away, so you always have somewhere to keep things.'
+      ]
+    },
     {
       v: '1.10.0', title: 'Garden Friends',
       lines: [
