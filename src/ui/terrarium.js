@@ -98,6 +98,8 @@
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
       $('tank-count').textContent = 'Tank ' + (this.index + 1) + ' of ' + d.terrariums.length;
+      /* your only tank cannot be thrown away */
+      $('tank-delete').hidden = d.terrariums.length <= 1;
       $('tank-remove').style.display = this.sel ? '' : 'none';
       // only show the tabs this tank can use
       var self0 = this;
@@ -734,6 +736,93 @@
       return bandFor(GG.BUG_BY_ID[e.it.id], b);
     },
 
+    /* A still picture of one particular tank, for the "get rid of it" card. */
+    previewInto: function (cv, tk) {
+      var c = cv.getContext('2d');
+      c.save();
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.clearRect(0, 0, cv.width, cv.height);
+      c.scale(cv.width / CW, cv.height / CH);
+      var b = this.bands(tk);
+      var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
+      this.drawScene(c, tk, bg, b, 1.4);
+
+      var all = [];
+      tk.decor.forEach(function (d) { all.push({ kind: 'decor', it: d, y: d.y }); });
+      (tk.fish || []).forEach(function (f) { all.push({ kind: 'fish', it: f, y: f.y }); });
+      tk.bugs.forEach(function (x) { all.push({ kind: 'bug', it: x, y: x.y }); });
+      (tk.friends || []).forEach(function (f) { all.push({ kind: 'friend', it: f, y: f.y }); });
+      all.sort(function (a, q) { return a.y - q.y; });
+
+      for (var i = 0; i < all.length; i++) {
+        var e = all[i], it = e.it, def;
+        if (e.kind === 'decor') {
+          var fn = GG.DecorArt[it.id];
+          if (fn) fn(c, it.x, it.y, 1.75, 1.4 + it.seed * 10);
+        } else if (e.kind === 'fish') {
+          def = GG.FISH_BY_ID[it.id];
+          if (def) GG.FishArt.draw(c, def, it.x, it.y, 1.5, false, 1.4);
+        } else if (e.kind === 'friend') {
+          def = GG.ANIMAL_BY_ID[it.id];
+          if (def) {
+            GG.AnimalArt.draw(c, def, it.x, it.y,
+              GG.animalFit(def, 40 + 90 * GG.clamp(def.size || 1, 0.2, 1)), false, 1.4);
+          }
+        } else {
+          def = GG.BUG_BY_ID[it.id];
+          if (def) GG.BugArt.draw(c, def, it.x, it.y, 3.5, -Math.PI / 2, 1.4);
+        }
+      }
+      c.restore();
+    },
+
+    /* What is in a tank, in words Guin can read. */
+    contentsLine: function (tk) {
+      var bits = [], total = 0;
+      function say(n, one, many) {
+        if (!n) return;
+        total += n;
+        bits.push(n + ' ' + (n === 1 ? one : many));
+      }
+      say(tk.bugs.length, 'creature', 'creatures');
+      say((tk.fish || []).length, 'fish', 'fish');
+      say((tk.friends || []).length, 'friend', 'friends');
+      say(tk.decor.length, 'decoration', 'decorations');
+      if (!bits.length) return 'It is completely empty.';
+      var last = bits.pop();
+      var list = bits.length ? bits.join(', ') + ' and ' + last : last;
+      return (total === 1 ? 'There is ' : 'There are ') + list + ' in it.';
+    },
+
+    /* Getting rid of a tank: never the last one, and always asked twice. */
+    askDelete: function () {
+      var d = GG.Save.data;
+      if (d.terrariums.length <= 1) {
+        GG.UI.toast('This is your only tank, so it has to stay. Make another one first.', 3200);
+        return false;
+      }
+      var tk = this.tank();
+      $('deltank-name').textContent = tk.name;
+      $('deltank-what').textContent = this.contentsLine(tk);
+      GG.UI.open('screen-deltank');
+      this.previewInto($('deltank-art'), tk);
+      return true;
+    },
+
+    doDelete: function () {
+      var d = GG.Save.data;
+      if (d.terrariums.length <= 1) return false;
+      var gone = d.terrariums.splice(this.index, 1)[0];
+      if (this.index >= d.terrariums.length) this.index = d.terrariums.length - 1;
+      this.sel = null;
+      this.drag = null;
+      GG.Save.save();
+      GG.UI.close('screen-deltank');
+      this.refresh();
+      GG.UI.toast(gone.name + ' is gone. Everything that was in it is safe in your books.', 3400);
+      return true;
+    },
+
     /* Little pictures of each kind of tank on the chooser. */
     drawChooser: function () {
       var self = this;
@@ -845,6 +934,15 @@
         tk.bg = owned[(i + 1) % owned.length].id;
         GG.Save.save(); self.refresh();
         GG.UI.toast('Scene: ' + GG.TANK_BY_ID[tk.bg].name);
+      });
+
+      $('tank-delete').addEventListener('click', function () {
+        GG.Sfx.click();
+        self.askDelete();
+      });
+      $('deltank-yes').addEventListener('click', function () {
+        GG.Sfx.click();
+        self.doDelete();
       });
 
       $('tank-new').addEventListener('click', function () {
