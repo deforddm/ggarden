@@ -38,6 +38,8 @@
     velvet_ant: ['sweat_bee'],
     robber_fly: ['bumblebee', 'grasshopper', 'honeybee', 'housefly', 'hoverfly',
       'sweat_bee', 'mason_bee', 'damselfly', 'yellowjacket'],
+    black_widow: ['ant', 'harvester_ant', 'cricket', 'grasshopper', 'pinacate_beetle',
+      'pillbug', 'cockroach', 'silverfish'],
 
     /* --- garden and woodland --- */
     ladybug: ['aphid'],

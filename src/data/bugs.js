@@ -1274,6 +1274,26 @@
         'Its caterpillars eat only bitterbrush and mountain mahogany, the grey shrubs of the dry hills. No bitterbrush, no butterfly — so never pull those bushes up.',
         'It flies for just a few weeks in June and July, once a year, and the males sit on top of a shrub and wait for a female to pass by.'
       ]
+    },
+    {
+      /* The one creature in the whole garden that is never caught.
+         `lookOnly` means the net refuses her, meeting her is what opens her
+         Bug Book page, and her `danger` line is shown every time. */
+      id: 'black_widow', name: 'Western Black Widow',
+      habitats: ['hill'], times: ['evening', 'night'], rarity: 4, value: 0,
+      behavior: 'cling', speed: 14, shy: 30, size: 1.0,
+      lookOnly: true,
+      measure: 'her body is about half an inch',
+      danger: 'Never put your hand anywhere you cannot see \u2014 not under a rock, not into a woodpile, not into a dark corner. Lift the far edge of a rock, have a look, and put it back exactly how it was.',
+      art: { shape: 'widow', body: '#141419', mark: '#d8322a', web: 'rgba(240,244,248,0.42)' },
+      facts: [
+        'This is the one creature in the garden you never catch. You look at her, you leave her alone, and you both go on with your day.',
+        'She hangs upside down in her web, which is why the red hourglass on her tummy is the part you can see.',
+        'Her web is not a neat round one. It is a messy tangle close to the ground, in a woodpile or under a rock or in the gap behind a plant pot.',
+        'She is common in eastern Washington, and she really would rather you went away. Widow spiders almost never bite unless they are squashed inside their own web.',
+        'The little brown one a quarter of her size is the male, and he cannot bite people at all.',
+        'Washington has no brown recluse spiders. Not one. That is a story people tell each other.'
+      ]
     }
 
   ];

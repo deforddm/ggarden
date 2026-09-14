@@ -6,9 +6,17 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.12.0';
+  GG.VERSION = '1.12.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.12.1', title: 'One you look at and leave alone',
+      lines: [
+        'There is a black widow spider out on the Pebble Hills after dark, and she is the one creature in the whole garden you never catch. Your net will not take her, however hard you swing.',
+        'Walk up to her and the button says LOOK instead of NET. Tap it and she gets a card of her own with the real reason: never put your hand anywhere you cannot see. Lift the far edge of a rock, have a look, and put it back exactly how it was.',
+        'Meeting her is what opens her page in the Bug Book — it says Met instead of Caught — and the page tells you the true things about her, including that Washington has no brown recluse spiders at all.'
+      ]
+    },
     {
       v: '1.12.0', title: 'Fruit to pick, a footbridge, and twenty new bugs',
       lines: [
