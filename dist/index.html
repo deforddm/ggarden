@@ -274,6 +274,17 @@ ul.tips li{margin-bottom:3px}
 #companion-row canvas{width:52px;height:44px;flex:none}
 #companion-row .grow{text-align:left;font-size:13px;line-height:1.3}
 
+/* ---------- fruit (v1.12) ---------- */
+#fruit-care,#catch-care{font-size:13.5px;line-height:1.45;border-radius:14px;
+  padding:10px;margin:8px 0;text-align:left;border:2px solid}
+#fruit-care b,#catch-care b{display:block;margin-bottom:3px}
+.eat-yes{background:#eaf6e4;border-color:#bcdcae}
+.eat-yes b{color:#3f7a3a}
+.eat-careful{background:#fdf4e4;border-color:#efd8a8}
+.eat-careful b{color:#9a6a12}
+.eat-never{background:#fdeaea;border-color:#f0c0c0}
+.eat-never b{color:#b22b2b}
+
 </style>
 </head>
 <body>
@@ -457,6 +468,7 @@ ul.tips li{margin-bottom:3px}
           <div class="tab on" data-book="bugs">Bugs</div>
           <div class="tab" data-book="fish">Fish</div>
           <div class="tab" data-book="friends">Friends</div>
+          <div class="tab" data-book="fruit">Fruit</div>
         </div>
         <div id="book-grid"></div>
         <div id="book-detail"></div>
@@ -596,6 +608,7 @@ ul.tips li{margin-bottom:3px}
       <div id="catch-new">NEW!</div>
       <div id="catch-name"></div>
       <div id="catch-fact"></div>
+      <div id="catch-care" style="display:none"></div>
       <div id="catch-reward"></div>
       <button class="btn primary" id="catch-ok" style="width:100%;padding:12px;font-size:16px">Nice!</button>
     </div>
@@ -695,6 +708,7 @@ ul.tips li{margin-bottom:3px}
       companion: null,     // the friend tagging along today
       hats: {},            // animalId -> hatId  (silly hats for your friends)
       homeFriends: [],     // friends waiting for her indoors
+      fruit: {},           // fruitId -> { count, first(ms) }  (picked in the orchard and the hills)
       terrariums: [
         { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [], friends: [] }
       ],
@@ -821,6 +835,7 @@ ul.tips li{margin-bottom:3px}
       this.data.settings = this.readSettings();
       if (!this.data.friends) this.data.friends = {};
       if (!this.data.hats) this.data.hats = {};
+      if (!this.data.fruit) this.data.fruit = {};
       if (!this.data.homeFriends) this.data.homeFriends = [];
       /* only friends she has actually made can be waiting at the house, and
          the one walking with her is not also sitting indoors */
@@ -835,6 +850,14 @@ ul.tips li{margin-bottom:3px}
       });
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
+      }
+      /* fruit arrived in v1.12, so drop any fruit id this build does not know */
+      if (GG.FRUIT_BY_ID) {
+        var keepFruit = {};
+        for (var fk in this.data.fruit) {
+          if (GG.FRUIT_BY_ID[fk]) keepFruit[fk] = this.data.fruit[fk];
+        }
+        this.data.fruit = keepFruit;
       }
       return this.data;
     },
@@ -862,6 +885,20 @@ ul.tips li{margin-bottom:3px}
       return c ? c.count : 0;
     },
     totalFriends: function () { return Object.keys(this.data.friends || {}).length; },
+    hasFruit: function (id) { return !!(this.data.fruit && this.data.fruit[id]); },
+    countOfFruit: function (id) {
+      var c = this.data.fruit && this.data.fruit[id];
+      return c ? c.count : 0;
+    },
+    totalFruit: function () { return Object.keys(this.data.fruit || {}).length; },
+    addFruit: function (id) {
+      if (!this.data.fruit) this.data.fruit = {};
+      var c = this.data.fruit[id];
+      var isNew = !c;
+      if (!c) c = this.data.fruit[id] = { count: 0, first: Date.now() };
+      c.count++;
+      return isNew;
+    },
     hatOf: function (id) { return (this.data.hats || {})[id] || null; },
     setHat: function (id, hatId) {
       if (!this.data.hats) this.data.hats = {};
@@ -1201,6 +1238,17 @@ ul.tips li{margin-bottom:3px}
     click: function () { tone(760, 0.05, 'square', 0.05); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
+    pick: function () {
+      /* a little woody snap, then the fruit dropping into her hand */
+      noise(0.06, 0.05, 1800);
+      tone(660, 0.07, 'triangle', 0.07);
+      tone(990, 0.11, 'triangle', 0.06, null, 0.06);
+    },
+    unlocked: function () {
+      [659, 880, 1047, 1319].forEach(function (f, i) {
+        tone(f, 0.22, 'triangle', 0.09, null, i * 0.08);
+      });
+    },
     coin: function () { tone(1046, 0.06, 'square', 0.05); tone(1318, 0.09, 'square', 0.05, null, 0.05); },
     night: function () { tone(392, 0.6, 'sine', 0.05, 330); },
     angryBuzz: function () {
@@ -1656,9 +1704,20 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.11.1';
+  GG.VERSION = '1.12.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.12.0', title: 'Fruit to pick, a footbridge, and twenty new bugs',
+      lines: [
+        'You can pick fruit now! Walk up to a tree in the Apple Orchard or a bush in the Pebble Hills and the button turns into PICK. There are ten kinds — apples, cherries, pears, and five wild ones from the hills.',
+        'Every new kind of fruit you pick unlocks a decoration for your tanks. They are in the shop under "Picked, not bought", and you cannot buy them with sparkles — you have to go and find them.',
+        'There is a new Fruit tab in your book. Every fruit says whether it is good to eat, and two of them are not, so have a read before you nibble anything.',
+        'A wooden footbridge has been built near Shell Beach, where the river opens out into Gull Inlet. You can walk right across it instead of going all the way round, and you can fish off the side.',
+        'Twenty new bugs. Ten for the orchard, including a bee fly like a tiny flying teddy bear and a snakefly that rears its head up like a snake.',
+        'Ten more for the Pebble Hills, which were rather empty before — a Jerusalem cricket, a real Washington scorpion that glows under ultraviolet light, a windscorpion, and a beetle that stands on its head when it is frightened.'
+      ]
+    },
     {
       v: '1.11.1', title: 'Your friend really comes with you',
       lines: [
@@ -2770,6 +2829,269 @@ ul.tips li{margin-bottom:3px}
         'Some sea slugs eat stinging anemones and then store the stingers in their own fingertips to use for themselves.',
         'Their bright colours are a warning sign that says, quite clearly, do not eat me.'
       ]
+    },
+
+    /* ---------- v1.12: the Apple Orchard ---------- */
+    {
+      id: 'mason_bee', name: 'Blue Orchard Mason Bee',
+      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 2, value: 55,
+      behavior: 'hover', speed: 46, shy: 52, size: 0.85, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'bee', body: '#2a3a6e', wing: '#dfe9f6', accent: '#1a2242', pattern: 'plain' },
+      facts: [
+        'A mason bee is shiny blue-black all over, with no stripes at all. She is not a honeybee and she makes no honey.',
+        'Just two or three hundred mason bees will pollinate a whole acre of apple trees. Honeybees need two or three entire hives to do the same job.',
+        'She carries pollen on her tummy instead of in baskets on her legs, so she dusts every flower she lands on.',
+        'She works on cold cloudy days when honeybees stay at home, and she walls each baby into its own little room with a plug of mud.'
+      ]
+    },
+    {
+      id: 'yellowjacket', name: 'Western Yellowjacket',
+      habitats: ['orchard', 'meadow'], times: ['morning', 'day', 'evening'], rarity: 1, value: 26,
+      behavior: 'dart', speed: 66, shy: 58, size: 0.9, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'wasp', body: '#f2cc2a', wing: '#efeadc', accent: '#171410', pattern: 'stripes' },
+      facts: [
+        'A yellowjacket is a wasp, not a bee. She is smooth and shiny where a bee is furry, and she makes no honey at all.',
+        'The whole nest dies every autumn. Only the new queens live through the winter, so every nest you ever find was built from nothing that same year.',
+        'She usually nests underground, very often in an old mouse burrow, so the way to stay friends is to walk around any hole with wasps going in and out.',
+        'Early in the summer she hunts caterpillars and flies for her grubs. Only late on does she come looking for sweet fallen apples.'
+      ]
+    },
+    {
+      id: 'baldfaced_hornet', name: 'Bald-faced Hornet',
+      habitats: ['orchard', 'forest'], times: ['morning', 'day'], rarity: 3, value: 95,
+      behavior: 'hover', speed: 60, shy: 70, size: 1.1, sting: true,
+      measure: 'three quarters of an inch long',
+      art: { shape: 'wasp', body: '#22242a', wing: '#e6e6df', accent: '#3a3c44', face: '#f2f0e6', band: '#f2f0e6', tipOnly: true, pattern: 'stripes' },
+      facts: [
+        'She is not really a hornet. She is a big yellowjacket that lost her yellow, so she is black with an ivory-white face.',
+        'Her grey football-shaped nest is real paper. The hornets scrape wood off a fence, chew it into pulp, and spread it out to dry.',
+        'Unlike a honeybee she can sting again and again, and she will defend her nest, so a hornet nest is for looking at from a very long way off.',
+        'She is a fierce hunter of caterpillars and flies, which makes her genuinely good for an orchard.'
+      ]
+    },
+    {
+      id: 'sap_beetle', name: 'Four-spotted Sap Beetle',
+      habitats: ['orchard', 'garden'], times: ['day', 'evening'], rarity: 2, value: 24,
+      behavior: 'crawl', speed: 26, shy: 34, size: 0.65,
+      measure: 'a quarter of an inch',
+      art: { shape: 'beetle', body: '#1c1a18', wing: '#242220', accent: '#e08a2c', pattern: 'fourspot', club: true },
+      facts: [
+        'People call this one the picnic beetle, because it turns up wherever there is sweet fruit going soft.',
+        'It finds its food entirely by smell. The scent of a bruised, fermenting apple will bring it in from right across the orchard.',
+        'The giveaway is its antennae: each one ends in a tiny knob, like a pin. No other little black beetle in the orchard has that.'
+      ]
+    },
+    {
+      id: 'apple_maggot_fly', name: 'Apple Maggot Fly',
+      habitats: ['orchard'], times: ['morning', 'day'], rarity: 3, value: 34,
+      behavior: 'dart', speed: 58, shy: 50, size: 0.75,
+      measure: 'a fifth of an inch',
+      art: { shape: 'fly', body: '#1a1a1e', wing: '#eef4f8', accent: '#f4f2ea', wingBands: '#20242a', pattern: 'bands' },
+      facts: [
+        'Each wing carries four black bands that make the shape of a letter F.',
+        'Long ago this fly laid its eggs only in wild hawthorn fruit. In the 1800s some began using apples instead, and those two groups are slowly turning into two different kinds of fly.',
+        'It is not from the Pacific Northwest at all. That is why, in real life, there are rules about carrying backyard apples from one county to another.',
+        'The mother pushes her egg right under the apple skin, leaving nothing behind but a pinprick and a little dimple.'
+      ]
+    },
+    {
+      id: 'snakefly', name: 'Snakefly',
+      habitats: ['orchard', 'forest'], times: ['morning', 'day'], rarity: 4, value: 130,
+      behavior: 'cling', speed: 24, shy: 58, size: 0.95,
+      measure: 'half an inch, with a long neck',
+      art: { shape: 'snakefly', body: '#2a2420', neck: '#3a322a', head: '#1e1a16', wing: '#eef3f6', accent: '#c9b98f' },
+      facts: [
+        'A snakefly rears its little flat head up on a long neck, exactly like a snake about to strike. That is where the name comes from.',
+        'Snakeflies live only in the west of North America and nowhere else on the whole continent.',
+        'The long needle trailing behind her is not a sting. It is a tool for pushing her eggs deep into a crack in the bark.',
+        'Most snakeflies take two or three years to grow up, and they spend that time eating aphids and other little pests in the trees.'
+      ]
+    },
+    {
+      id: 'bee_fly', name: 'Greater Bee Fly',
+      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 3, value: 70,
+      behavior: 'hover', speed: 50, shy: 56, size: 0.9,
+      measure: 'three quarters of an inch across',
+      art: { shape: 'beefly', body: '#c8975a', wing: '#f2eee4', accent: '#3a2c1e' },
+      facts: [
+        'A bee fly looks like a tiny flying teddy bear with a long needle out in front. That needle is a drinking straw, not a sting, and a bee fly cannot sting or bite at all.',
+        'It drinks nectar while hovering in front of a flower without ever landing on it.',
+        'The mother builds no nest. She hovers over a mining bee’s burrow and flicks her eggs at the hole with the tip of her tummy.',
+        'It is one of the very first things flying in spring, when the fruit blossom opens.'
+      ]
+    },
+    {
+      id: 'cross_orbweaver', name: 'Cross Orbweaver',
+      habitats: ['orchard', 'garden'], times: ['evening', 'night'], rarity: 2, value: 40,
+      behavior: 'cling', speed: 20, shy: 50, size: 1.0,
+      measure: 'three quarters of an inch across',
+      art: { shape: 'spider', body: '#b98a5e', wing: '#6a4c32', accent: '#f4ece0', pattern: 'spots' },
+      facts: [
+        'She is named for the little cross of white dots on her fat round back.',
+        'She is not from here. She arrived from Europe and was first noticed in western Washington in the 1920s.',
+        'People say spiders suddenly appear in September. They do not — she has been there all year, quietly growing, and has only just become big enough to notice.',
+        'Two cross orbweavers called Arabella and Anita flew on the Skylab space station in 1973 and learned to spin webs with no gravity. Arabella’s web is in a museum.',
+        'No orb weaver anywhere is dangerous to people. Walk around her web instead of through it — it took her all night.'
+      ]
+    },
+    {
+      id: 'tenlined_beetle', name: 'Ten-lined June Beetle',
+      habitats: ['orchard', 'forest'], times: ['night'], rarity: 3, value: 110,
+      behavior: 'drift', speed: 34, shy: 44, size: 1.25,
+      measure: 'an inch long',
+      art: { shape: 'beetle', body: '#5a3a22', wing: '#6b4728', accent: '#f0ead8', fan: '#e08a2c', pattern: 'tenline', antennae: 'fan' },
+      facts: [
+        'Ten chalk-white stripes run down its brown back, which is exactly how it got its name.',
+        'The male has huge orange antennae that open out like a hand of cards. They are not for hearing — they are for smelling, so he can find a female in the dark.',
+        'Pick one up and it hisses and squeaks at you. It is frightened, so the kind thing is to put it down gently, away from the light.',
+        'Its grubs live underground for years, eating tree roots, which is why every orchardist knows this beetle.'
+      ]
+    },
+    {
+      id: 'ground_beetle', name: 'European Ground Beetle',
+      habitats: ['orchard', 'garden'], times: ['night'], rarity: 3, value: 78,
+      behavior: 'crawl', speed: 42, shy: 52, size: 1.05,
+      measure: 'an inch long',
+      art: { shape: 'beetle', body: '#1e2028', wing: '#2a2c36', rim: '#6a4a8a', accent: '#101018' },
+      facts: [
+        'Its black back is edged with a thin rim that shines purple or bronze when the light catches it.',
+        'It hunts at night along the ground, and slugs and caterpillars are its favourite supper — which makes it a gardener’s friend.',
+        'It came over from Europe a long time ago and now lives right down the west side of North America.'
+      ]
+    },
+
+    /* ---------- v1.12: the Pebble Hills ---------- */
+    {
+      id: 'jerusalem_cricket', name: 'Jerusalem Cricket',
+      habitats: ['hill'], times: ['night'], rarity: 4, value: 140,
+      behavior: 'slow', speed: 20, shy: 38, size: 1.35,
+      measure: 'up to two inches long',
+      art: { shape: 'jerusalem', body: '#e0a054', accent: '#3a2a1c', band: '#f3e2bd' },
+      facts: [
+        'It has no wings at all, and a big shiny amber head that is wider than the rest of it.',
+        'It cannot chirp. Instead it drums its fat tummy against the ground, and the drumming travels through the soil to another Jerusalem cricket.',
+        'It spends nearly its whole life underground eating roots, and comes up at night — especially after rain.',
+        'It can nip if you pick it up, and it hurts for a little while, but it is not poisonous. The kind thing is to look and not lift.',
+        'It is not a cricket, it is not from Jerusalem, and nobody actually knows where the name came from.'
+      ]
+    },
+    {
+      id: 'northern_scorpion', name: 'Northern Scorpion',
+      habitats: ['hill'], times: ['night'], rarity: 4, value: 160,
+      behavior: 'crawl', speed: 30, shy: 56, size: 1.15, sting: true,
+      measure: 'two inches, tail and all',
+      art: { shape: 'scorpion', body: '#c9a468', claw: '#d8b478', tailCol: '#e0c07e', accent: '#7a5a2a' },
+      facts: [
+        'Washington really does have a scorpion. It lives on dry ground east of the mountains, under flat rocks.',
+        'It glows blue-green under ultraviolet light. Scientists all agree that it glows — they still do not agree about why.',
+        'Its sting is strong enough to make you say ouch, but it hurts less than a bee sting and it does not last long.',
+        'It hides under a rock all day and hunts beetles and grasshoppers at night. Lift the far edge of a rock, have a look, and always put the rock back exactly where it was — that rock is somebody’s house.'
+      ]
+    },
+    {
+      id: 'windscorpion', name: 'Windscorpion',
+      habitats: ['hill'], times: ['night'], rarity: 5, value: 260,
+      behavior: 'dart', speed: 92, shy: 78, size: 1.2,
+      measure: 'an inch and a half across',
+      art: { shape: 'windscorpion', body: '#b5763c', accent: '#e0cfae', jaw: '#7a4a20' },
+      facts: [
+        'It is neither a spider nor a scorpion. It belongs to a group all of its own.',
+        'It has enormous jaws, nearly a third of its whole body — and no poison at all. It cannot hurt you.',
+        'It hunts by touch. The two long feelers waving out in front are not legs, and it walks on the eight behind them.',
+        'It is one of the fastest runners on the hillside, in quick stop-start dashes. If you meet one, just let it run.'
+      ]
+    },
+    {
+      id: 'pinacate_beetle', name: 'Pinacate Beetle',
+      habitats: ['hill', 'meadow'], times: ['evening', 'night'], rarity: 2, value: 44,
+      behavior: 'crawl', speed: 24, shy: 32, size: 1.1,
+      measure: 'an inch long',
+      art: { shape: 'darkling', body: '#1a1a1e' },
+      facts: [
+        'When something frightens it, it stands on its head — nose down, bottom in the air — and that is its whole plan.',
+        'If the headstand does not work it can squirt a smelly chemical, which is horrid in a fox’s nose and mouth but cannot really hurt anybody. The smell is very hard to wash off, so admire the headstand and leave the beetle alone.',
+        'Its wing cases are fused shut, so it can never, ever fly.',
+        'One animal has worked out the answer. The grasshopper mouse grabs the beetle, jams its bottom into the dirt so the spray goes into the soil, and eats it head first.'
+      ]
+    },
+    {
+      id: 'harvester_ant', name: 'Western Harvester Ant',
+      habitats: ['hill'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
+      behavior: 'crawl', speed: 38, shy: 26, size: 0.7, sting: true,
+      measure: 'a third of an inch',
+      art: { shape: 'ant', body: '#a33a24', wing: '#c25038', accent: '#5e1c10', pattern: 'plain' },
+      facts: [
+        'You can spot a harvester ant nest from a long way off. They clear a bare circle of gravel around the door and pile a little cone of pebbles on top.',
+        'They are farmers. They carry seeds home to store, and the ones they drop along the way help plants spread across the whole hillside.',
+        'This is the eastern Washington harvester ant, and it lives from here down through Oregon, Idaho, Montana and Nevada.',
+        'They do sting, and they come out together, so the polite thing is to keep off the bare gravel circle — that patch is their doormat.'
+      ]
+    },
+    {
+      id: 'velvet_ant', name: 'Velvet Ant',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 120,
+      behavior: 'dart', speed: 56, shy: 46, size: 0.85, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'velvetant', body: '#e2562a', accent: '#171310' },
+      facts: [
+        'It is not an ant at all. It is a wasp, and the fuzzy scarlet one running about on the ground is the female, who simply has no wings.',
+        'Pick one up and she squeaks out loud, rubbing parts of her tummy together to warn you off.',
+        'Her bright orange coat is not camouflage. It is a sign, and the sign says do not touch me. Her sting really hurts, so this one is for watching only.',
+        'People call her a cow killer, which is only a story. She has never killed a cow.'
+      ]
+    },
+    {
+      id: 'robber_fly', name: 'Robber Fly',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 2, value: 52,
+      behavior: 'dart', speed: 74, shy: 62, size: 1.0,
+      measure: 'an inch long',
+      art: { shape: 'robberfly', body: '#7a6a52', wing: '#eceadf', accent: '#3a3226', eyes: '#6a3a2a', beard: '#e8dcc0', tailTip: '#d8cdb4' },
+      facts: [
+        'A robber fly sits perfectly still on a warm stone, and then launches out and catches another insect in mid-air.',
+        'It will take on bees, wasps and grasshoppers bigger than itself, and carry them back to its perch.',
+        'The bristly beard over its face is a shield, so a struggling meal cannot damage those enormous eyes.',
+        'If one lands on you, brush it off gently rather than slapping it — trapped in a hand it can give you a jab.'
+      ]
+    },
+    {
+      id: 'blister_beetle', name: 'Black Blister Beetle',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 66,
+      behavior: 'slow', speed: 22, shy: 36, size: 0.85,
+      measure: 'half an inch long',
+      art: { shape: 'beetle', body: '#171820', wing: '#23242e', accent: '#0d0e14', slim: true },
+      facts: [
+        'This one is eyes only. It does not bite and it does not sting, but it makes a chemical that can raise a blister on your skin if you handle it.',
+        'It is long and narrow and soft, with a little head on a thin neck, so it looks quite different from a hard shiny beetle.',
+        'Its grubs hunt down grasshopper eggs under the ground and eat them, so it is a nuisance grown up and a helper as a baby.',
+        'Farmers watch out for them at haymaking, because a blister beetle caught in the hay can make a horse very ill.'
+      ]
+    },
+    {
+      id: 'sweat_bee', name: 'Green Sweat Bee',
+      habitats: ['hill', 'meadow', 'garden'], times: ['morning', 'day'], rarity: 2, value: 48,
+      behavior: 'hover', speed: 50, shy: 50, size: 0.7, sting: true,
+      measure: 'a third of an inch',
+      art: { shape: 'bee', body: '#e8cc3e', wing: '#eef4f6', accent: '#1d1a14', head: '#1f9a5a', thorax: '#1f9a5a', pattern: 'stripes' },
+      facts: [
+        'Her head and back are brilliant metallic green, like enamel paint.',
+        'She digs a deep tunnel straight down into bare sun-baked soil, which is why thin, stony hillsides are full of them.',
+        'In some kinds, a dozen or more females share one front door but each digs her own private rooms off the main shaft.',
+        'Despite the name, this green sort is not interested in your sweat at all. That is a different, much duller group of bees.'
+      ]
+    },
+    {
+      id: 'behrs_hairstreak', name: 'Behr’s Hairstreak',
+      habitats: ['hill'], times: ['morning', 'day'], rarity: 4, value: 150,
+      behavior: 'flutter', speed: 48, shy: 66, size: 0.8,
+      measure: 'an inch across',
+      art: { shape: 'butterfly', body: '#4a3a28', wing: '#e08a2c', wing2: '#c9b89a', accent: '#4a3520', pattern: 'edge' },
+      facts: [
+        'It is a hairstreak with no hairstreak tails, which is the quickest way to know it.',
+        'Its caterpillars eat only bitterbrush and mountain mahogany, the grey shrubs of the dry hills. No bitterbrush, no butterfly — so never pull those bushes up.',
+        'It flies for just a few weeks in June and July, once a year, and the males sit on top of a shrub and wait for a female to pass by.'
+      ]
     }
 
   ];
@@ -3570,6 +3892,21 @@ ul.tips li{margin-bottom:3px}
 
   /* predator id -> everything it hunts */
   var EATS = {
+    /* --- the orchard and the hills (v1.12) --- */
+    yellowjacket: ['caterpillar', 'housefly', 'crane_fly', 'apple_maggot_fly', 'sap_beetle'],
+    baldfaced_hornet: ['caterpillar', 'housefly', 'hoverfly', 'crane_fly', 'yellowjacket'],
+    snakefly: ['aphid', 'caterpillar', 'leafhopper'],
+    bee_fly: ['mason_bee'],
+    cross_orbweaver: ['aphid', 'apple_maggot_fly', 'housefly', 'crane_fly', 'hoverfly',
+      'mason_bee', 'sap_beetle', 'leafhopper'],
+    ground_beetle: ['caterpillar', 'snail', 'earthworm'],
+    jerusalem_cricket: ['earthworm', 'pillbug'],
+    northern_scorpion: ['pinacate_beetle', 'grasshopper', 'stink_bug', 'cricket', 'ant'],
+    windscorpion: ['ant', 'cricket', 'grasshopper', 'harvester_ant', 'silverfish'],
+    velvet_ant: ['sweat_bee'],
+    robber_fly: ['bumblebee', 'grasshopper', 'honeybee', 'housefly', 'hoverfly',
+      'sweat_bee', 'mason_bee', 'damselfly', 'yellowjacket'],
+
     /* --- garden and woodland --- */
     ladybug: ['aphid'],
     lacewing: ['aphid'],
@@ -3679,6 +4016,173 @@ ul.tips li{margin-bottom:3px}
     if (names.length === 1) return names[0];
     var last = names.pop();
     return names.join(', ') + ' and ' + last;
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/data/fruit.js ==== */
+/* Guin's Garden - the fruit she can pick.
+
+   Guin asked for "pluckable fruits that unlock a new decoration", so every
+   fruit here unlocks one decoration the first time she picks it.
+
+   Everything below was checked against WSU Tree Fruit and WSU Extension, the
+   USDA Forest Service fire-effects database, the USDA Poisonous Plant Research
+   Laboratory, NC State Extension and OSU Extension. Some of these are real
+   food and some of them are genuinely not, so every fruit carries an `eat`
+   rating and a `care` line, and the book shows it every single time:
+
+     yes     - the ripe fruit is food
+     careful - the fruit is food but part of the plant is not
+     never   - do not eat this one at all
+
+   Picking is always fine. Eating is the part that needs the truth. */
+(function (GG) {
+  'use strict';
+
+  GG.FRUIT_EAT = {
+    yes: { label: 'Good to eat', cls: 'eat-yes' },
+    careful: { label: 'Careful', cls: 'eat-careful' },
+    never: { label: 'Never eat this one', cls: 'eat-never' }
+  };
+
+  GG.FRUITS = [
+    /* ---------- the Apple Orchard ---------- */
+    {
+      id: 'gala', name: 'Gala Apple', where: 'orchard', on: 'tree',
+      shape: 'apple', skin: '#e8913a', skin2: '#d8452e', leaf: '#4f9450',
+      measure: 'a small round apple', ripens: 'the end of August',
+      eat: 'yes', unlock: 'appleplate',
+      care: 'Give it a wash and eat the whole thing. The pips are the only bit to leave.',
+      facts: [
+        'Gala is the first really good eating apple of the year, and it is golden orange with red stripes running down it.',
+        'Gala is Washington’s second biggest apple crop, after Red Delicious.',
+        'An apple tree cannot make apples from its own pollen. It needs a different kind of apple tree nearby, and a bee to carry the pollen across.'
+      ]
+    },
+    {
+      id: 'red_delicious', name: 'Red Delicious Apple', where: 'orchard', on: 'tree',
+      shape: 'apple', skin: '#b5241f', skin2: '#7d1412', leaf: '#4f9450',
+      measure: 'a tall dark red apple', ripens: 'the middle of September',
+      eat: 'yes', unlock: 'applecrate',
+      care: 'Wash it first. Apple pips are best left in the core, not chewed.',
+      facts: [
+        'You can tell a Red Delicious upside down: it has five little points around the bottom, like a crown.',
+        'It is still the apple Washington grows most of — about a third of the whole state’s crop — even though newer apples get more attention.',
+        'Every Red Delicious in the world comes from one single tree that grew by accident on a farm in Iowa in the 1870s. All the rest are cuttings of it.'
+      ]
+    },
+    {
+      id: 'cosmic_crisp', name: 'Cosmic Crisp Apple', where: 'orchard', on: 'tree',
+      shape: 'apple', skin: '#8e1f2a', skin2: '#5e1018', speck: true, leaf: '#4f9450',
+      measure: 'a big dark red apple with pale freckles', ripens: 'late September',
+      eat: 'yes', unlock: 'blossomspray',
+      care: 'Wash it, then eat it. It keeps crisp in the fridge for a very long time.',
+      facts: [
+        'Cosmic Crisp was invented at Washington State University. Its other name is simply WA 38.',
+        'It took more than twenty years of growing and tasting before anyone was allowed to buy one.',
+        'The pale freckles all over its dark red skin are called lenticels, and they are how the apple breathes.'
+      ]
+    },
+    {
+      id: 'bing_cherry', name: 'Bing Cherry', where: 'orchard', on: 'tree',
+      shape: 'cherry', skin: '#7d1224', skin2: '#4a0a16', leaf: '#4f9450',
+      measure: 'two on one long stem', ripens: 'June and July',
+      eat: 'careful', unlock: 'cherrybough',
+      care: 'The red part is lovely. The stone in the middle is not food — eat around it and spit it out.',
+      facts: [
+        'Cherries hang in pairs off one long stem, which is why you so often pick two at a time.',
+        'Washington grows about a hundred and forty-five thousand tonnes of sweet cherries a year, more than anywhere else in the country.',
+        'The pale yellow and pink ones, called Rainier cherries, were bred at a research station in Prosser, Washington.'
+      ]
+    },
+    {
+      id: 'bartlett_pear', name: 'Bartlett Pear', where: 'orchard', on: 'tree',
+      shape: 'pear', skin: '#b8cc52', skin2: '#8fa63a', leaf: '#4f9450',
+      measure: 'a bell-shaped green pear', ripens: 'early August',
+      eat: 'careful', unlock: 'pearbasket',
+      care: 'A pear straight off the tree is rock hard. Take it home, let it soften for a few days, and then eat it.',
+      facts: [
+        'A pear is the one orchard fruit you must pick while it is still hard. Left to ripen on the tree it goes soft and mealy inside.',
+        'Pears need a spell in the cold before they will ripen properly, which is why they go in the fridge first and the fruit bowl after.',
+        'A Bartlett starts grass green and turns clear yellow when it is finally ready to eat.'
+      ]
+    },
+
+    /* ---------- the Pebble Hills ---------- */
+    {
+      id: 'serviceberry', name: 'Saskatoon Serviceberry', where: 'hill', on: 'shrub',
+      shape: 'berry', skin: '#4a3f7a', skin2: '#2e2752', crown: true, leaf: '#6a8f5a',
+      measure: 'pea-sized, in little drooping bunches', ripens: 'July to September',
+      eat: 'yes', unlock: 'berrybowl',
+      care: 'Ripe ones are sweet and good. Pick only what you will eat and leave plenty for the birds.',
+      facts: [
+        'Look at the bottom of each berry and you will find a tiny five-pointed crown.',
+        'It is in the same family as apples and pears, so a saskatoon berry is really a very small apple.',
+        'It is usually the very first shrub on the whole hillside to flower in spring, and the white blossom lasts only about two weeks.'
+      ]
+    },
+    {
+      id: 'chokecherry', name: 'Chokecherry', where: 'hill', on: 'shrub',
+      shape: 'spike', skin: '#3a1020', skin2: '#20080f', leaf: '#6a8f5a',
+      measure: 'twenty or thirty on one hanging spike', ripens: 'late summer',
+      eat: 'careful', unlock: 'chokespray',
+      care: 'The soft outside is food and people have eaten it for thousands of years. Never crunch the stone and never chew the leaves — those parts are poisonous.',
+      facts: [
+        'Chokecherries hang in long dangling spikes of twenty or thirty, going green, then red, then almost black.',
+        'They are called chokecherries because a ripe one still dries your mouth right out. Cooked with sugar they turn into wonderful jelly.',
+        'The stones, the leaves and the stems all contain cyanide, and wilted leaves are the most dangerous of all. This is a real danger to horses and cattle, not a story.'
+      ]
+    },
+    {
+      id: 'rosehip', name: 'Wild Rose Hip', where: 'hill', on: 'shrub',
+      shape: 'hip', skin: '#d84a2a', skin2: '#a32f18', leaf: '#6a8f5a',
+      measure: 'a round orange-red hip', ripens: 'late summer, sweeter after a frost',
+      eat: 'careful', unlock: 'hipring',
+      care: 'The outside is good and full of vitamin C. Scrape the seeds out first — they are wrapped in fine stiff hairs that itch.',
+      facts: [
+        'A rose hip is what is left after a wild rose flower drops its petals. It is the fruit of the rose.',
+        'Woods’ rose likes sunny slopes and rocky ravines, right up to six thousand feet in Washington.',
+        'The hips often stay on the bare bush right through winter, long after every leaf has gone, which makes them easy to spot in the snow.'
+      ]
+    },
+    {
+      id: 'wax_currant', name: 'Wax Currant', where: 'hill', on: 'shrub',
+      shape: 'berry', skin: '#e05a4a', skin2: '#b03828', glossy: true, leaf: '#7a9a68',
+      measure: 'small round see-through red berries', ripens: 'August',
+      eat: 'yes', unlock: 'currantsprig',
+      care: 'Safe to eat, though rather bland on its own. It makes very good jam.',
+      facts: [
+        'Wax currant grows exactly where nothing else wants to: dry open slopes, ridges and bare rock outcrops in full sun.',
+        'The berries are so thin-skinned you can almost see through them.',
+        'Chickadees and other little birds strip the bushes, so the hillside currants rarely last long once they ripen.'
+      ]
+    },
+    {
+      id: 'snowberry', name: 'Snowberry', where: 'hill', on: 'shrub',
+      shape: 'berry', skin: '#f4f2ee', skin2: '#d8d4cc', waxy: true, leaf: '#7a9a68',
+      measure: 'waxy white berries in little bunches', ripens: 'autumn, and it stays all winter',
+      eat: 'never', unlock: 'snowsprig',
+      care: 'Pick it, look at it, put it in a tank — but do not eat it, not even one. Snowberries will make you sick.',
+      facts: [
+        'Snowberry breaks the rule that people think they know. Pretty white berries are not safe, and these ones are the poisonous part of the plant.',
+        'They sit on the bare grey twigs all winter long after every leaf has gone, so the hillside gets little white dots in the snow.',
+        'They will not kill you, but they will give you a very bad tummy ache, so the answer is always look and never taste.',
+        'Birds eat them quite happily in late winter when nothing else is left, because birds are not people.'
+      ]
+    }
+  ];
+
+  GG.FRUIT_BY_ID = {};
+  GG.FRUITS.forEach(function (f, i) { f.index = i; f.isFruit = true; GG.FRUIT_BY_ID[f.id] = f; });
+
+  GG.FRUITS_WHERE = { orchard: 'the Apple Orchard', hill: 'the Pebble Hills' };
+
+  /* every fruit unlocks exactly one decoration */
+  GG.fruitForDecor = function (decorId) {
+    for (var i = 0; i < GG.FRUITS.length; i++) {
+      if (GG.FRUITS[i].unlock === decorId) return GG.FRUITS[i];
+    }
+    return null;
   };
 })(window.GG = window.GG || {});
 
@@ -3920,18 +4424,53 @@ ul.tips li{margin-bottom:3px}
   };
 
   S.beetle = function (c, a, t) {
-    legs(c, GG.shade(a.body, -0.35), 3, 3.6, 6.6, t * 8, 1.3);
-    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -6, 3.4, 2.6);
-    line(c, -1.6, -8, -3.6, -11, 0.9, a.accent);
-    line(c, 1.6, -8, 3.6, -11, 0.9, a.accent);
-    c.fillStyle = a.body; ell(c, 0, 0.4, 5.4, 7.2);
-    c.fillStyle = a.wing; ell(c, 0, 0.8, 4.9, 6.6);
+    var w = a.slim ? 0.62 : 1;        // blister beetles are narrow and soft
+    legs(c, GG.shade(a.body, -0.35), 3, 3.6, 6.6 * (a.slim ? 1.1 : 1), t * 8, 1.3);
+    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -6, 3.4 * w, 2.6);
+    if (a.antennae === 'fan') {
+      /* the male ten-lined june beetle opens his antennae like a hand of cards */
+      var open = 0.5 + 0.5 * Math.abs(Math.sin(t * 1.4));
+      c.fillStyle = a.fan || '#e08a2c';
+      for (var s2 = -1; s2 <= 1; s2 += 2) {
+        for (var bl = 0; bl < 5; bl++) {
+          c.save();
+          c.translate(s2 * 2, -8.2);
+          c.rotate(s2 * (0.25 + bl * 0.13 * open));
+          ell(c, s2 * 1.4, -2.6, 0.55, 2.6);
+          c.restore();
+        }
+      }
+    } else {
+      line(c, -1.6, -8, -3.6, -11, 0.9, a.accent);
+      line(c, 1.6, -8, 3.6, -11, 0.9, a.accent);
+    }
+    c.fillStyle = a.body; ell(c, 0, 0.4, 5.4 * w, 7.2);
+    if (a.rim) { c.fillStyle = a.rim; ell(c, 0, 0.6, 5.1 * w, 6.9); }
+    c.fillStyle = a.wing; ell(c, 0, 0.8, 4.9 * w, 6.6);
     c.fillStyle = a.accent; ell(c, 0, 0.8, 0.5, 6.6);
     if (a.pattern === 'stripes') {
       c.fillStyle = a.accent;
-      ell(c, -2.6, 0.8, 0.7, 5.4); ell(c, 2.6, 0.8, 0.7, 5.4);
+      ell(c, -2.6 * w, 0.8, 0.7, 5.4); ell(c, 2.6 * w, 0.8, 0.7, 5.4);
+    } else if (a.pattern === 'tenline') {
+      c.fillStyle = a.accent;
+      for (var ln = 1; ln <= 4; ln++) {
+        var lx = ln * 1.0 * w;
+        var lh = 6.2 - ln * 0.9;
+        ell(c, -lx, 0.8, 0.34, lh); ell(c, lx, 0.8, 0.34, lh);
+      }
+    } else if (a.pattern === 'fourspot') {
+      c.fillStyle = a.accent;
+      ell(c, -2.5 * w, -2.4, 1.6, 1.5, -0.3); ell(c, 2.5 * w, -2.4, 1.6, 1.5, 0.3);
+      ell(c, -2.6 * w, 3.4, 1.5, 1.4, 0.3); ell(c, 2.6 * w, 3.4, 1.5, 1.4, -0.3);
+      /* short wing cases leave the tip of the abdomen bare */
+      c.fillStyle = GG.shade(a.body, -0.3); ell(c, 0, 6.6, 3 * w, 1.6);
     }
-    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -2.2, -2.4, 1.7, 2.6, -0.35);
+    if (a.club) {
+      /* a sap beetle's antennae end in a little knob */
+      c.fillStyle = a.accent;
+      ell(c, -3.7, -11.1, 1, 0.95); ell(c, 3.7, -11.1, 1, 0.95);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -2.2 * w, -2.4, 1.7 * w, 2.6, -0.35);
   };
 
   S.stagbeetle = function (c, a, t) {
@@ -3993,9 +4532,12 @@ ul.tips li{margin-bottom:3px}
     c.fillStyle = a.wing;
     ell(c, -4.4, -2, 4, 2.4, -0.5); ell(c, 4.4, -2, 4, 2.4, 0.5);
     c.restore(); c.globalAlpha = 1;
-    c.fillStyle = a.accent; ell(c, 0, -6, 2.6, 2.4);
+    c.fillStyle = a.head || a.accent; ell(c, 0, -6, 2.6, 2.4);
     c.fillStyle = '#fff'; ell(c, -1.1, -6.6, 0.6, 0.7); ell(c, 1.1, -6.6, 0.6, 0.7);
-    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.6, 3.4, 3);
+    c.fillStyle = a.thorax || GG.shade(a.body, -0.12); ell(c, 0, -2.6, 3.4, 3);
+    if (a.thorax) {
+      c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -1.2, -3.6, 1.3, 1.4, -0.4);
+    }
     c.fillStyle = a.body; ell(c, 0, 2.4, 3.8, 5.2);
     c.fillStyle = a.accent;
     ell(c, 0, 0.6, 3.5, 0.9); ell(c, 0, 3.4, 3.3, 0.9); ell(c, 0, 5.8, 2.4, 0.8);
@@ -4391,9 +4933,22 @@ ul.tips li{margin-bottom:3px}
 
   S.fly = function (c, a, t) {
     var flap = 0.35 + 0.65 * Math.abs(Math.cos(t * 22));
-    c.save(); c.globalAlpha = 0.55; c.scale(flap, 1);
+    c.save(); c.globalAlpha = a.wingBands ? 0.9 : 0.55; c.scale(flap, 1);
     c.fillStyle = a.wing;
     ell(c, -4.6, 0.6, 3.4, 6, 0.32); ell(c, 4.6, 0.6, 3.4, 6, -0.32);
+    if (a.wingBands) {
+      /* the four dark bands that make an F on each wing */
+      c.fillStyle = a.wingBands;
+      for (var sgn = -1; sgn <= 1; sgn += 2) {
+        c.save();
+        c.translate(sgn * 4.6, 0.6); c.rotate(sgn * -0.32);
+        c.beginPath(); c.ellipse(0, 0, 3.4, 6, 0, 0, Math.PI * 2); c.clip();
+        [-4.2, -1.4, 1.4, 4.2].forEach(function (by, i) {
+          c.fillRect(-3.6 + (i % 2 ? 1.6 : 0), by - 0.75, 5.4, 1.5);
+        });
+        c.restore();
+      }
+    }
     c.restore();
     legs(c, a.accent, 3, 3, 5, t * 10, 1);
     c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
@@ -4893,8 +5448,9 @@ ul.tips li{margin-bottom:3px}
     c.fillStyle = a.wing;
     ell(c, -4.6, -1, 3.4, 6.4, -0.36); ell(c, 4.6, -1, 3.4, 6.4, 0.36);
     c.restore(); c.globalAlpha = 1;
-    c.fillStyle = a.accent; ell(c, 0, -6.4, 2.4, 2.2);
-    c.fillStyle = '#f6efd8'; ell(c, -1.1, -6.8, 0.5, 0.6); ell(c, 1.1, -6.8, 0.5, 0.6);
+    c.fillStyle = a.face || a.accent; ell(c, 0, -6.4, 2.4, 2.2);
+    c.fillStyle = a.face ? '#2a2620' : '#f6efd8';
+    ell(c, -1.1, -6.8, 0.5, 0.6); ell(c, 1.1, -6.8, 0.5, 0.6);
     c.fillStyle = a.body; ell(c, 0, -3, 3, 2.8);
     // the pinched waist
     c.strokeStyle = a.accent; c.lineWidth = 1.1;
@@ -4905,8 +5461,13 @@ ul.tips li{margin-bottom:3px}
     c.quadraticCurveTo(0, 10.4, -2.4, 7.4);
     c.quadraticCurveTo(-3.8, 3, 0, 1);
     c.closePath(); c.fill();
-    c.fillStyle = a.accent;
-    ell(c, 0, 3.2, 3, 0.9); ell(c, 0, 5.6, 2.4, 0.9);
+    c.fillStyle = a.band || a.accent;
+    if (a.tipOnly) {
+      /* a bald-faced hornet is black, with white only right at the tip */
+      ell(c, 0, 7.2, 2.3, 0.8); ell(c, 0, 8.8, 1.9, 0.8);
+    } else {
+      ell(c, 0, 3.2, 3, 0.9); ell(c, 0, 5.6, 2.4, 0.9);
+    }
     c.strokeStyle = a.accent; c.lineWidth = 0.9; c.lineCap = 'round';
     c.beginPath(); c.moveTo(0, 9.6); c.lineTo(0, 12); c.stroke();
     line(c, -1, -7.8, -3, -10.8, 0.8, a.accent);
@@ -5425,6 +5986,353 @@ ul.tips li{margin-bottom:3px}
     c.beginPath(); c.moveTo(3.2, -8.2); c.lineTo(3.6, 2.6); c.stroke();
     c.fillStyle = a.eyes || '#3a2c1c';
     ell(c, -4.6, -4.4, 1, 0.75, -0.3); ell(c, 4.6, -4.4, 1, 0.75, 0.3);
+  };
+
+
+  /* ---------- v1.12 orchard and hillside shapes ---------- */
+
+  /* A snakefly rears its little flat head up on a long neck. The female
+     trails a needle-thin egg-layer, which is NOT a sting. */
+  S.snakefly = function (c, a, t) {
+    var sway = Math.sin(t * 2.2) * 0.5;
+    /* four clear wings, held roof-like over the back */
+    c.save(); c.globalAlpha = 0.78;
+    c.fillStyle = a.wing;
+    ell(c, -4.2, 2.8, 3.4, 7.6, -0.2); ell(c, 4.2, 2.8, 3.4, 7.6, 0.2);
+    c.fillStyle = GG.shade(a.wing, -0.08);
+    ell(c, -2.6, 3.6, 2.6, 6.4, -0.12); ell(c, 2.6, 3.6, 2.6, 6.4, 0.12);
+    c.restore(); c.globalAlpha = 1;
+    c.strokeStyle = a.accent; c.lineWidth = 0.45;
+    for (var s = -1; s <= 1; s += 2) {
+      for (var v = 0; v < 4; v++) {
+        c.beginPath();
+        c.moveTo(s * 1.4, -1.6);
+        c.lineTo(s * (2.6 + v * 1.7), 8.4 - v * 1.4);
+        c.stroke();
+      }
+    }
+    legs(c, a.accent, 3, 3, 4.6, t * 7, 0.9);
+    /* abdomen */
+    c.fillStyle = a.body; ell(c, 0, 4.4, 2.2, 6);
+    c.fillStyle = GG.shade(a.body, 0.16);
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.4 + b * 2.2, 2.05, 0.4);
+    /* the egg-layer, long and fine */
+    if (a.tail !== false) {
+      curve(c, 0, 10.2, 0.6, 13, 0.2, 16.4, 0.6, a.accent);
+    }
+    /* thorax */
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -1.4, 2.4, 3.2);
+    /* the long neck, tipped up */
+    c.save();
+    c.translate(0, -4);
+    c.rotate(sway * 0.12);
+    c.fillStyle = a.neck || GG.shade(a.body, 0.1);
+    ell(c, 0, -1.6, 1.25, 3.4);
+    /* the flat head */
+    c.fillStyle = a.head || a.body;
+    ell(c, 0, -6, 2.1, 2.1);
+    c.fillStyle = '#f4efe0';
+    ell(c, -1.15, -6.5, 0.62, 0.66); ell(c, 1.15, -6.5, 0.62, 0.66);
+    c.fillStyle = '#16110c';
+    ell(c, -1.15, -6.6, 0.34, 0.36); ell(c, 1.15, -6.6, 0.34, 0.36);
+    line(c, -0.9, -7.6, -2.4, -10.2, 0.55, a.accent);
+    line(c, 0.9, -7.6, 2.4, -10.2, 0.55, a.accent);
+    c.restore();
+  };
+
+  /* A bee fly: a round furry ball that hovers with a long straight drinking
+     straw out in front. Two wings, dark along the front edge. */
+  S.beefly = function (c, a, t) {
+    var flap = 0.28 + 0.72 * Math.abs(Math.cos(t * 26));
+    c.save(); c.globalAlpha = 0.5; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -5.6, -0.6, 5, 2.6, -0.42); ell(c, 5.6, -0.6, 5, 2.6, 0.42);
+    c.fillStyle = a.accent; c.globalAlpha = 0.55;
+    ell(c, -6.2, -2, 4.4, 0.75, -0.42); ell(c, 6.2, -2, 4.4, 0.75, 0.42);
+    c.restore(); c.globalAlpha = 1;
+    /* dangling legs */
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        c.beginPath();
+        c.moveTo(s * 1.6, 1 + i);
+        c.quadraticCurveTo(s * (3 + i), 6 + i * 1.4, s * (2.4 + i * 1.6), 10 + i * 1.6);
+        c.stroke();
+      }
+    }
+    /* the fat furry ball */
+    c.fillStyle = GG.shade(a.body, -0.16); ell(c, 0, 0.6, 5.4, 5.6);
+    c.fillStyle = a.body; ell(c, 0, 0.2, 4.9, 5.1);
+    /* fur */
+    c.strokeStyle = GG.shade(a.body, 0.28); c.lineWidth = 0.6;
+    for (var f = 0; f < 14; f++) {
+      var ang = f / 14 * Math.PI * 2;
+      var rx = Math.cos(ang) * 4.6, ry = 0.2 + Math.sin(ang) * 4.8;
+      c.beginPath(); c.moveTo(rx * 0.8, ry * 0.8);
+      c.lineTo(rx * 1.16, ry * 1.16); c.stroke();
+    }
+    c.fillStyle = a.accent; ell(c, 0, -4.4, 2.1, 1.9);
+    c.fillStyle = '#101010'; ell(c, -1.3, -4.8, 0.85, 0.95); ell(c, 1.3, -4.8, 0.85, 0.95);
+    /* the straw - straight out in front, never a sting */
+    line(c, 0, -5.4, 0, -13, 0.75, a.accent);
+  };
+
+  /* A Jerusalem cricket: no wings at all, a big amber head wider than the
+     body, and a fat banded abdomen. */
+  S.jerusalem = function (c, a, t) {
+    var dig = Math.sin(t * 4) * 0.8;
+    /* stout digging legs */
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 1.9; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -2.4 + i * 3.8;
+        var k = Math.sin(t * 6 + i * 1.7 + (s > 0 ? 0 : 2)) * 1.2;
+        c.beginPath();
+        c.moveTo(s * 2.4, y);
+        c.quadraticCurveTo(s * 6.4, y + 1.4 + k, s * 6.8, y + 4.6 + k);
+        c.stroke();
+      }
+      /* little spines on the back legs */
+      c.lineWidth = 0.8;
+      for (var sp = 0; sp < 3; sp++) {
+        c.beginPath();
+        c.moveTo(s * (5.4 + sp * 0.4), 6 + sp * 1.3);
+        c.lineTo(s * (7.6 + sp * 0.4), 5.4 + sp * 1.3);
+        c.stroke();
+      }
+      c.lineWidth = 1.9;
+    }
+    /* the striped abdomen */
+    c.fillStyle = a.accent; ell(c, 0, 5, 4.6, 6.6);
+    c.fillStyle = a.band || '#f3e2bd';
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.2 + b * 2.5, 4.4 - b * 0.35, 0.95);
+    c.fillStyle = 'rgba(0,0,0,0.16)'; ell(c, 0, 10.6, 2.4, 1.2);
+    /* thorax */
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.4, 4, 3.2);
+    /* the great round head */
+    c.save(); c.translate(0, dig * 0.25);
+    c.fillStyle = a.body; ell(c, 0, -7.4, 5.2, 4.6);
+    c.fillStyle = GG.shade(a.body, 0.2); ell(c, 0, -8.6, 4.2, 2.4);
+    c.fillStyle = '#1c1008';
+    ell(c, -2.9, -8.4, 0.85, 0.95); ell(c, 2.9, -8.4, 0.85, 0.95);
+    /* the wide-set jaws */
+    c.strokeStyle = GG.shade(a.body, -0.42); c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(-1.8, -10.6); c.quadraticCurveTo(-2.8, -12.4, -1, -13.2); c.stroke();
+    c.beginPath(); c.moveTo(1.8, -10.6); c.quadraticCurveTo(2.8, -12.4, 1, -13.2); c.stroke();
+    curve(c, -2.4, -10.2, -4.6, -12.4, -5.2, -14.6, 0.75, GG.shade(a.body, -0.3));
+    curve(c, 2.4, -10.2, 4.6, -12.4, 5.2, -14.6, 0.75, GG.shade(a.body, -0.3));
+    c.restore();
+  };
+
+  /* A little northern scorpion. Seen from above the tail curls up over its
+     back, so the sting ends up pointing forward over the body. */
+  S.scorpion = function (c, a, t) {
+    var curl = Math.sin(t * 2.2) * 0.7;
+    legs(c, GG.shade(a.body, -0.28), 4, 3.4, 6.4, t * 8, 1.1);
+    /* body */
+    c.fillStyle = a.body; ell(c, 0, 3.2, 3.2, 5.6);
+    c.fillStyle = GG.shade(a.body, 0.16);
+    for (var k = 0; k < 4; k++) ell(c, 0, 0.4 + k * 2.1, 3 - k * 0.2, 0.55);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -3.4, 2.8, 3);
+    c.fillStyle = '#1a1208'; ell(c, -0.75, -4.4, 0.42, 0.46); ell(c, 0.75, -4.4, 0.42, 0.46);
+    /* the pincers, reaching forward */
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      var wig = Math.sin(t * 3 + (s2 > 0 ? 0 : 1.4)) * 0.5;
+      c.strokeStyle = a.body; c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(s2 * 2, -4.6);
+      c.quadraticCurveTo(s2 * 4.6, -7, s2 * (4 + wig * 0.3), -9.6);
+      c.stroke();
+      c.fillStyle = a.claw || GG.shade(a.body, 0.1);
+      ell(c, s2 * (4 + wig * 0.3), -10.8, 1.5, 2.3, s2 * 0.25);
+      c.strokeStyle = GG.shade(a.body, -0.34); c.lineWidth = 0.7;
+      c.beginPath();
+      c.moveTo(s2 * (3.4 + wig * 0.3), -12);
+      c.lineTo(s2 * (4.8 + wig * 0.3), -12.6 + wig * 0.5);
+      c.stroke();
+    }
+    /* the tail, arcing up over the back with the sting over her head */
+    var seg = [[0.4, 8.6], [2.4, 8.2], [3.6, 5.6], [3.4, 2.4], [2.4, -0.6], [0.9, -2.8]];
+    c.strokeStyle = GG.shade(a.tailCol || a.body, -0.22); c.lineWidth = 2.6; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(seg[0][0], seg[0][1]);
+    for (var i = 1; i < seg.length; i++) c.lineTo(seg[i][0] + curl * 0.35, seg[i][1] + curl * 0.25);
+    c.stroke();
+    c.fillStyle = a.tailCol || GG.shade(a.body, 0.12);
+    for (var j = 0; j < seg.length; j++) {
+      ell(c, seg[j][0] + curl * 0.35, seg[j][1] + curl * 0.25, 1.25 - j * 0.06, 1.25 - j * 0.06);
+    }
+    /* the bulb and the sting */
+    c.fillStyle = GG.shade(a.tailCol || a.body, 0.16);
+    ell(c, 0.9 + curl * 0.35, -2.8 + curl * 0.25, 1.5, 1.7, -0.4);
+    c.fillStyle = GG.shade(a.body, -0.4);
+    c.beginPath();
+    c.moveTo(0.2 + curl * 0.35, -4.2);
+    c.lineTo(-0.6 + curl * 0.35, -6.6);
+    c.lineTo(1.8 + curl * 0.35, -4.6);
+    c.closePath(); c.fill();
+  };
+
+  /* A windscorpion: neither spider nor scorpion. Enormous jaws, and two long
+     feelers waved out in front that look like an extra pair of legs. */
+  S.windscorpion = function (c, a, t) {
+    var rush = Math.sin(t * 11) * 1.4;
+    legs(c, GG.shade(a.body, -0.24), 4, 4.4, 7.4, t * 16, 1.1);
+    /* the waving pedipalps */
+    c.strokeStyle = GG.shade(a.body, -0.1); c.lineWidth = 1.2; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      var w = Math.sin(t * 6 + (s > 0 ? 0 : 1.8)) * 1.8;
+      c.beginPath();
+      c.moveTo(s * 2, -5);
+      c.quadraticCurveTo(s * 5.4, -9, s * (4 + w * 0.4), -13.4);
+      c.stroke();
+    }
+    /* pale abdomen */
+    c.fillStyle = a.accent; ell(c, 0, 4.6, 3.8, 6);
+    c.fillStyle = GG.shade(a.accent, -0.1);
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.4 + b * 2.2, 3.6 - b * 0.3, 0.5);
+    /* thorax */
+    c.fillStyle = a.body; ell(c, 0, -2.2, 3.2, 3.4);
+    /* head */
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, -6, 2.8, 2.8);
+    c.fillStyle = '#141010'; ell(c, -0.85, -7.4, 0.55, 0.6); ell(c, 0.85, -7.4, 0.55, 0.6);
+    /* the huge jaws, opening and closing */
+    var gap = 0.9 + Math.abs(Math.sin(t * 7)) * 0.9;
+    c.fillStyle = a.jaw || GG.shade(a.body, -0.2);
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.save();
+      c.translate(s2 * gap, -8.4);
+      c.rotate(s2 * 0.12 + rush * 0.01);
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(s2 * 2.4, -2.4, s2 * 1, -5.6);
+      c.quadraticCurveTo(s2 * -0.6, -2.8, 0, 0);
+      c.closePath(); c.fill();
+      c.restore();
+    }
+  };
+
+  /* A pinacate beetle: matte black, held high on long legs, and when it is
+     startled it stands on its head. */
+  S.darkling = function (c, a, t) {
+    var stand = a.headstand ? 1 : Math.max(0, Math.sin(t * 0.9) - 0.86) * 7;
+    c.save();
+    c.translate(0, stand * 1.6);
+    c.rotate(stand * 0.34);
+    /* long stilt legs */
+    c.strokeStyle = GG.shade(a.body, 0.18); c.lineWidth = 1.2; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -3 + i * 3.6;
+        var k = Math.sin(t * 5 + i * 1.6 + (s > 0 ? 0 : 2.1)) * 1.1;
+        c.beginPath();
+        c.moveTo(s * 2, y);
+        c.quadraticCurveTo(s * 6.4, y - 1.6 + k, s * 7.6, y + 3.4 + k);
+        c.stroke();
+      }
+    }
+    c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -6.4, 2.8, 2.2);
+    line(c, -1.4, -8, -3.2, -11, 0.85, GG.shade(a.body, 0.2));
+    line(c, 1.4, -8, 3.2, -11, 0.85, GG.shade(a.body, 0.2));
+    c.fillStyle = GG.shade(a.body, 0.06); ell(c, 0, -3.2, 3.4, 2.6);
+    /* the fused, unopenable wing cases */
+    c.fillStyle = a.body; ell(c, 0, 2.4, 5.2, 7.4);
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, 2.4, 4.6, 6.8);
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.45;
+    for (var r = -2; r <= 2; r++) {
+      c.beginPath();
+      c.moveTo(r * 1.5, -3.4); c.lineTo(r * 1.9, 8.6); c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.14)'; ell(c, -2, -0.6, 1.5, 3, -0.3);
+    c.restore();
+  };
+
+  /* A velvet ant - really a wingless wasp - in plush orange and black. */
+  S.velvetant = function (c, a, t) {
+    legs(c, a.accent, 3, 3.6, 6, t * 15, 1.2);
+    /* the fuzzy abdomen */
+    c.fillStyle = a.body; ell(c, 0, 5, 4, 5.6);
+    c.fillStyle = a.accent;
+    ell(c, 0, 2.2, 3.5, 0.8); ell(c, 0, 8.2, 2.6, 1.1);
+    /* plush */
+    c.strokeStyle = GG.shade(a.body, 0.3); c.lineWidth = 0.55;
+    for (var f = 0; f < 16; f++) {
+      var ang = f / 16 * Math.PI * 2;
+      var rx = Math.cos(ang) * 3.8, ry = 5 + Math.sin(ang) * 5.4;
+      c.beginPath();
+      c.moveTo(rx * 0.84, 5 + (ry - 5) * 0.84);
+      c.lineTo(rx * 1.2, 5 + (ry - 5) * 1.2); c.stroke();
+    }
+    /* waist and thorax */
+    c.strokeStyle = a.accent; c.lineWidth = 1.1;
+    c.beginPath(); c.moveTo(0, 0.2); c.lineTo(0, -1); c.stroke();
+    c.fillStyle = a.body; ell(c, 0, -3.2, 3, 3);
+    c.strokeStyle = GG.shade(a.body, 0.3); c.lineWidth = 0.55;
+    for (var g = 0; g < 9; g++) {
+      var a2 = g / 9 * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(Math.cos(a2) * 2.5, -3.2 + Math.sin(a2) * 2.5);
+      c.lineTo(Math.cos(a2) * 3.7, -3.2 + Math.sin(a2) * 3.7); c.stroke();
+    }
+    /* head */
+    c.fillStyle = a.accent; ell(c, 0, -6.8, 2.4, 2.2);
+    c.fillStyle = '#f2e8d8'; ell(c, -1, -7.2, 0.5, 0.55); ell(c, 1, -7.2, 0.5, 0.55);
+    curve(c, -1, -8.2, -2.6, -9.6, -2.2, -11.8, 0.75, a.accent);
+    curve(c, 1, -8.2, 2.6, -9.6, 2.2, -11.8, 0.75, a.accent);
+  };
+
+  /* A robber fly: sits dead still on a stone, then launches. Tapered
+     abdomen, humped back, huge eyes and a bristly beard. */
+  S.robberfly = function (c, a, t) {
+    var flap = 0.3 + 0.7 * Math.abs(Math.cos(t * 20));
+    c.save(); c.globalAlpha = 0.45; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -3.6, 3.4, 2.6, 7.4, -0.14); ell(c, 3.6, 3.4, 2.6, 7.4, 0.14);
+    c.restore(); c.globalAlpha = 1;
+    /* spiny grabbing legs */
+    c.strokeStyle = a.accent; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -3 + i * 2.6;
+        var k = Math.sin(t * 6 + i * 1.5 + (s > 0 ? 0 : 2)) * 0.9;
+        c.beginPath();
+        c.moveTo(s * 1.8, y);
+        c.quadraticCurveTo(s * 5.4, y + 1 + k, s * 4.6, y + 5 + k);
+        c.stroke();
+      }
+      c.lineWidth = 0.55;
+      for (var sp = 0; sp < 3; sp++) {
+        c.beginPath();
+        c.moveTo(s * (4.8 - sp * 0.2), 0.6 + sp * 1.8);
+        c.lineTo(s * (6.2 - sp * 0.2), 0 + sp * 1.8); c.stroke();
+      }
+      c.lineWidth = 1.3;
+    }
+    /* the long tapered abdomen */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-2.6, 0.4);
+    c.quadraticCurveTo(-2.2, 7, -0.4, 11.6);
+    c.quadraticCurveTo(0.4, 11.6, 0.4, 11.6);
+    c.quadraticCurveTo(2.2, 7, 2.6, 0.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.accent;
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.6 + b * 2.4, 2.3 - b * 0.42, 0.42);
+    if (a.tailTip) { c.fillStyle = a.tailTip; ell(c, 0, 10.4, 1, 1.5); }
+    /* humped thorax */
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.4, 3.4, 3.6);
+    c.fillStyle = 'rgba(255,255,255,0.16)'; ell(c, -1.4, -3.6, 1.5, 1.6, -0.4);
+    /* the big eyes with a dip between them */
+    c.fillStyle = a.eyes || '#6a3a2a';
+    ell(c, -2.1, -6.4, 2.1, 2.4); ell(c, 2.1, -6.4, 2.1, 2.4);
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    ell(c, -2.5, -7.2, 0.6, 0.6); ell(c, 2.5, -7.2, 0.6, 0.6);
+    /* beard and beak */
+    c.strokeStyle = a.beard || '#e8dcc0'; c.lineWidth = 0.5;
+    for (var w = -2; w <= 2; w++) {
+      c.beginPath(); c.moveTo(w * 0.55, -7.6); c.lineTo(w * 1.25, -10.2); c.stroke();
+    }
+    line(c, 0, -8, 0, -11.4, 0.9, GG.shade(a.body, -0.3));
   };
 
 
@@ -6125,7 +7033,8 @@ ul.tips li{margin-bottom:3px}
 
 
   GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft, gait) {
-    if (def.isAnimal) {
+    if (def.isFruit) GG.FruitArt.draw(c, def, x, y, scale, t);
+    else if (def.isAnimal) {
       /* animals are normalised to fill their frame, so a hummingbird on a
          book page is not a speck next to a labrador */
       var as = GG.animalFit(def, 26 * scale);
@@ -7272,13 +8181,50 @@ ul.tips li{margin-bottom:3px}
     }
   };
 
-  P.appleTree = function (c, x, y, r, t, seed) {
+  P.appleTree = function (c, x, y, r, t, seed, col, p) {
     P.tree(c, x, y, r, t, seed);
     var cx = x + Math.sin(t * 0.8 + seed * 6) * 2.2, cy = y - r * 1.18;
+    /* Since v1.12 each orchard tree carries a real fruit, and it grows back
+       after she picks it. A tree with no fruit assigned keeps its old apples. */
+    var def = p && p.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[p.fruit] : null;
+    if (def) {
+      var ripe = (p.ripe == null) ? 1 : p.ripe;
+      GG.FruitArt.onPlant(c, def, cx, cy, r, 6, seed, t, ripe);
+      return;
+    }
     c.fillStyle = '#e0413c';
     var rnd = GG.mulberry32(Math.floor(seed * 9999));
     for (var i = 0; i < 5; i++) {
       ell(c, cx + (rnd() - 0.5) * r * 1.2, cy + (rnd() - 0.3) * r * 0.9, r * 0.11, r * 0.11);
+    }
+  };
+
+  /* A low, tough, grey-green hillside shrub: serviceberry, currant,
+     chokecherry, wild rose or snowberry, depending on what it carries. */
+  P.wildBush = function (c, x, y, r, t, seed, col, p) {
+    var def = p && p.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[p.fruit] : null;
+    var leaf = (def && def.leaf) || '#6a8f5a';
+    shadow(c, x + 1, y, r * 0.8);
+    /* woody stems */
+    c.strokeStyle = '#7a6a52'; c.lineWidth = Math.max(1, r * 0.07); c.lineCap = 'round';
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.08, y);
+      c.quadraticCurveTo(x + i * r * 0.3, y - r * 0.5, x + i * r * 0.42, y - r * 0.78);
+      c.stroke();
+    }
+    c.fillStyle = GG.shade(leaf, -0.14);
+    ell(c, x - r * 0.4, y - r * 0.34, r * 0.52, r * 0.4);
+    ell(c, x + r * 0.4, y - r * 0.34, r * 0.52, r * 0.4);
+    ell(c, x, y - r * 0.58, r * 0.6, r * 0.48);
+    c.fillStyle = leaf;
+    ell(c, x - r * 0.18, y - r * 0.6, r * 0.38, r * 0.3);
+    ell(c, x + r * 0.26, y - r * 0.44, r * 0.32, r * 0.26);
+    c.fillStyle = GG.shade(leaf, 0.16);
+    ell(c, x - r * 0.32, y - r * 0.72, r * 0.2, r * 0.16);
+    if (def) {
+      var ripe = (p.ripe == null) ? 1 : p.ripe;
+      GG.FruitArt.onPlant(c, def, x, y - r * 0.52, r * 0.98, 5, seed, t, ripe);
     }
   };
 
@@ -8346,6 +9292,227 @@ ul.tips li{margin-bottom:3px}
   /* `for` says which tanks a piece belongs in:
      land = terrariums, water = fish tanks, any = all three.
      A hybrid tank has both a bank and a pool, so it takes everything. */
+
+
+  /* ---------- v1.12: brought back from the orchard and the hills ----------
+     Each of these is unlocked by picking the fruit it is made of, never
+     bought. Drawn like every other decoration: (x, y) is where it sits on the
+     ground, and s is the scale. */
+
+  D.appleplate = function (c, x, y, s, t) {
+    c.fillStyle = '#d8cdb4'; ell(c, x, y - 2 * s, 15 * s, 5 * s);
+    c.fillStyle = '#f0e4cf'; ell(c, x, y - 4 * s, 14 * s, 4.4 * s);
+    [[-6, -8, 5], [6, -7, 4.6], [0, -13, 5.2]].forEach(function (p, i) {
+      c.fillStyle = i === 2 ? '#d8452e' : '#e8913a';
+      ell(c, x + p[0] * s, y + p[1] * s, p[2] * s, p[2] * s);
+      c.fillStyle = 'rgba(255,255,255,0.4)';
+      ell(c, x + (p[0] - 1.8) * s, y + (p[1] - 1.8) * s, p[2] * 0.28 * s, p[2] * 0.34 * s, -0.5);
+    });
+    c.strokeStyle = '#6a4a2a'; c.lineWidth = 1 * s;
+    c.beginPath(); c.moveTo(x, y - 18 * s); c.lineTo(x + 1.6 * s, y - 22 * s); c.stroke();
+    c.fillStyle = '#4f9450';
+    ell(c, x + 5 * s, y - 22.5 * s, 3.6 * s, 1.9 * s, -0.4);
+  };
+
+  D.applecrate = function (c, x, y, s, t) {
+    c.fillStyle = '#8a6438';
+    GG.roundRect(c, x - 13 * s, y - 13 * s, 26 * s, 13 * s, 1.6 * s); c.fill();
+    c.fillStyle = '#a07a4c';
+    for (var i = 0; i < 3; i++) c.fillRect(x - 12 * s, y - 12 * s + i * 4 * s, 24 * s, 2.4 * s);
+    c.fillStyle = '#6b4a2c';
+    c.fillRect(x - 13 * s, y - 13.5 * s, 2.2 * s, 13.5 * s);
+    c.fillRect(x + 10.8 * s, y - 13.5 * s, 2.2 * s, 13.5 * s);
+    [[-7, -16.5], [0, -18.5], [7, -16.5]].forEach(function (p, k) {
+      c.fillStyle = k === 1 ? '#7d1412' : '#b5241f';
+      ell(c, x + p[0] * s, y + p[1] * s, 4.6 * s, 4.6 * s);
+      c.fillStyle = 'rgba(255,255,255,0.32)';
+      ell(c, x + (p[0] - 1.6) * s, y + (p[1] - 1.8) * s, 1.5 * s, 1.8 * s, -0.5);
+    });
+  };
+
+  D.blossomspray = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.1) * 1.4;
+    c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.6 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y); c.quadraticCurveTo(x + 3 * s, y - 10 * s, x + (6 + sway) * s, y - 21 * s);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x + 1.4 * s, y - 6 * s);
+    c.quadraticCurveTo(x - 5 * s, y - 13 * s, x - (9 - sway) * s, y - 18 * s);
+    c.stroke();
+    [[6, -22], [-9, -19], [1, -13], [-2, -24], [10, -11]].forEach(function (p, i) {
+      var px = x + (p[0] + sway * (i % 2 ? 0.4 : -0.4)) * s, py = y + p[1] * s, pr = 3.1 * s;
+      c.fillStyle = i % 2 ? '#ffe6ee' : '#ffffff';
+      for (var k = 0; k < 5; k++) {
+        var a = k / 5 * Math.PI * 2 + i;
+        ell(c, px + Math.cos(a) * pr, py + Math.sin(a) * pr, pr * 0.74, pr * 0.62, a);
+      }
+      c.fillStyle = '#f7c948'; ell(c, px, py, pr * 0.36, pr * 0.36);
+    });
+  };
+
+  D.cherrybough = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.4) * 1.1;
+    c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.8 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 13 * s, y - 24 * s);
+    c.quadraticCurveTo(x, y - 20 * s, x + 13 * s, y - 25 * s);
+    c.stroke();
+    [[-8, 1], [0.5, -1], [8, 0.6]].forEach(function (p) {
+      var bx = x + (p[0] + sway * p[1]) * s;
+      c.strokeStyle = '#7a9a4a'; c.lineWidth = 1 * s;
+      c.beginPath(); c.moveTo(x + p[0] * s, y - 22 * s); c.lineTo(bx, y - 8 * s); c.stroke();
+      c.fillStyle = '#4a0a16'; ell(c, bx, y - 4.6 * s, 4.4 * s, 4.4 * s);
+      c.fillStyle = '#7d1224'; ell(c, bx - 0.5 * s, y - 5.2 * s, 3.7 * s, 3.6 * s);
+      c.fillStyle = 'rgba(255,255,255,0.45)';
+      ell(c, bx - 1.5 * s, y - 6.4 * s, 1.2 * s, 1.5 * s, -0.5);
+    });
+    c.fillStyle = '#4f9450';
+    ell(c, x - 5 * s, y - 27 * s, 4.4 * s, 2 * s, -0.5);
+    ell(c, x + 6 * s, y - 28 * s, 4 * s, 1.9 * s, 0.4);
+  };
+
+  D.pearbasket = function (c, x, y, s, t) {
+    c.fillStyle = '#c49a5e';
+    c.beginPath();
+    c.moveTo(x - 12 * s, y - 13 * s);
+    c.quadraticCurveTo(x - 10 * s, y, x, y);
+    c.quadraticCurveTo(x + 10 * s, y, x + 12 * s, y - 13 * s);
+    c.closePath(); c.fill();
+    c.strokeStyle = '#9a7442'; c.lineWidth = 0.8 * s;
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * 4.4 * s, y - 13 * s);
+      c.lineTo(x + i * 3.4 * s, y - 1 * s);
+      c.stroke();
+    }
+    c.lineWidth = 1.4 * s;
+    c.beginPath();
+    c.moveTo(x - 11 * s, y - 13 * s);
+    c.quadraticCurveTo(x, y - 27 * s, x + 11 * s, y - 13 * s);
+    c.stroke();
+    [[-5, -17], [5, -18]].forEach(function (p) {
+      c.fillStyle = '#8fa63a';
+      ell(c, x + p[0] * s, y + (p[1] + 2) * s, 3.8 * s, 4.8 * s);
+      ell(c, x + p[0] * s, y + (p[1] - 2.6) * s, 2.4 * s, 2.8 * s);
+      c.fillStyle = '#b8cc52';
+      ell(c, x + (p[0] - 0.6) * s, y + (p[1] + 1.6) * s, 3 * s, 4 * s);
+    });
+  };
+
+  D.berrybowl = function (c, x, y, s, t) {
+    c.fillStyle = '#7a8fa8';
+    c.beginPath();
+    c.moveTo(x - 11 * s, y - 10 * s);
+    c.quadraticCurveTo(x - 9 * s, y, x, y);
+    c.quadraticCurveTo(x + 9 * s, y, x + 11 * s, y - 10 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#93a8c0'; ell(c, x, y - 10 * s, 11 * s, 3 * s);
+    var rnd = GG.mulberry32(4242);
+    for (var i = 0; i < 11; i++) {
+      var bx = x + (rnd() - 0.5) * 17 * s, by = y - (11 + rnd() * 3.4) * s;
+      c.fillStyle = '#2e2752'; ell(c, bx, by, 2.4 * s, 2.4 * s);
+      c.fillStyle = '#4a3f7a'; ell(c, bx - 0.3 * s, by - 0.4 * s, 1.9 * s, 1.9 * s);
+      c.fillStyle = 'rgba(255,255,255,0.3)';
+      ell(c, bx - 0.8 * s, by - 0.9 * s, 0.7 * s, 0.8 * s, -0.5);
+    }
+  };
+
+  D.chokespray = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.2) * 0.9;
+    for (var b = -1; b <= 1; b += 2) {
+      c.strokeStyle = '#6a7a3a'; c.lineWidth = 1.2 * s; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(x + b * 3 * s, y - 25 * s);
+      c.quadraticCurveTo(x + b * (5 + sway) * s, y - 12 * s, x + b * (6 + sway) * s, y - 1 * s);
+      c.stroke();
+      for (var i = 0; i < 7; i++) {
+        var f = i / 6;
+        var yy = y - (23 - f * 21) * s;
+        var xx = x + b * (3.4 + f * 2.6 + sway * f) * s + (i % 2 ? 1.8 * s : -1.8 * s);
+        var rr = (2.3 - f * 0.6) * s;
+        c.fillStyle = '#20080f'; ell(c, xx, yy, rr, rr);
+        c.fillStyle = '#3a1020'; ell(c, xx - rr * 0.18, yy - rr * 0.22, rr * 0.78, rr * 0.78);
+      }
+    }
+    c.fillStyle = '#6a8f5a';
+    ell(c, x - 7 * s, y - 26 * s, 4.4 * s, 2 * s, -0.5);
+    ell(c, x + 7 * s, y - 27 * s, 4.4 * s, 2 * s, 0.5);
+  };
+
+  D.hipring = function (c, x, y, s, t) {
+    var cy = y - 13 * s, R = 9.5 * s;
+    c.strokeStyle = '#8a7a4a'; c.lineWidth = 1.8 * s;
+    c.beginPath(); c.arc(x, cy, R, 0, Math.PI * 2); c.stroke();
+    c.strokeStyle = '#6a8f5a'; c.lineWidth = 0.9 * s;
+    for (var k = 0; k < 10; k++) {
+      var a = k / 10 * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(x + Math.cos(a) * R, cy + Math.sin(a) * R);
+      c.lineTo(x + Math.cos(a) * R * 1.38, cy + Math.sin(a) * R * 1.38);
+      c.stroke();
+    }
+    for (var i = 0; i < 6; i++) {
+      var ang = i / 6 * Math.PI * 2 + 0.3;
+      var hx = x + Math.cos(ang) * R, hy = cy + Math.sin(ang) * R;
+      c.fillStyle = '#a32f18'; ell(c, hx, hy, 3.2 * s, 3.4 * s);
+      c.fillStyle = '#d84a2a'; ell(c, hx - 0.4 * s, hy - 0.5 * s, 2.6 * s, 2.7 * s);
+      c.fillStyle = 'rgba(255,255,255,0.35)';
+      ell(c, hx - 1 * s, hy - 1.2 * s, 0.85 * s, 1 * s, -0.5);
+    }
+  };
+
+  D.currantsprig = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.5) * 0.9;
+    c.strokeStyle = '#7a6a52'; c.lineWidth = 1.4 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y);
+    c.quadraticCurveTo(x + 1.4 * s, y - 12 * s, x + (0.8 + sway) * s, y - 24 * s);
+    c.stroke();
+    c.fillStyle = '#7a9a68';
+    [[-7, -13, -0.6], [7, -10, 0.5], [-6, -4, -0.3]].forEach(function (p) {
+      c.save(); c.translate(x + p[0] * s, y + p[1] * s); c.rotate(p[2]); c.scale(s, s);
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(3, -3.4, 6.8, 0);
+      c.quadraticCurveTo(3, 3.4, 0, 0);
+      c.closePath(); c.fill();
+      c.restore();
+    });
+    for (var i = 0; i < 5; i++) {
+      var ang = i / 5 * Math.PI * 2;
+      var bx = x + (0.8 + sway) * s + Math.cos(ang) * 4.2 * s;
+      var by = y - 21 * s + Math.sin(ang) * 3.8 * s;
+      c.fillStyle = '#b03828'; ell(c, bx, by, 2.7 * s, 2.7 * s);
+      c.fillStyle = '#e05a4a'; ell(c, bx - 0.4 * s, by - 0.45 * s, 2.2 * s, 2.2 * s);
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+      ell(c, bx - 0.9 * s, by - 1 * s, 0.8 * s, 0.9 * s, -0.5);
+    }
+  };
+
+  D.snowsprig = function (c, x, y, s, t) {
+    c.strokeStyle = '#9a8f7a'; c.lineWidth = 1.4 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 1.4 * s, y);
+    c.quadraticCurveTo(x + 0.8 * s, y - 12 * s, x + 2.4 * s, y - 22 * s);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x, y - 8 * s);
+    c.quadraticCurveTo(x - 5 * s, y - 13 * s, x - 9 * s, y - 18 * s);
+    c.stroke();
+    [[2.4, -23], [-9, -19], [6, -13], [-3, -13]].forEach(function (p, i) {
+      var px = x + p[0] * s, py = y + p[1] * s, pr = (3.1 - (i % 2) * 0.5) * s;
+      for (var k = 0; k < 3; k++) {
+        var a = k / 3 * Math.PI * 2 + i;
+        var qx = px + Math.cos(a) * pr * 0.6, qy = py + Math.sin(a) * pr * 0.6;
+        c.fillStyle = '#d8d4cc'; ell(c, qx, qy, pr * 0.74, pr * 0.74);
+        c.fillStyle = '#f4f2ee'; ell(c, qx - pr * 0.14, qy - pr * 0.16, pr * 0.6, pr * 0.6);
+      }
+    });
+    c.fillStyle = '#7a9a68';
+    ell(c, x - 1 * s, y - 4 * s, 3.8 * s, 1.7 * s, -0.4);
+  };
+
   GG.DECOR = [
     // --- for a terrarium (and the bank of a hybrid) ---
     { id: 'leaf', name: 'Big Leaf', price: 0, for: 'land' },
@@ -8391,6 +9558,18 @@ ul.tips li{margin-bottom:3px}
     { id: 'scratchpost', name: 'Scratching Post', price: 360, for: 'habitat' },
     { id: 'kennel', name: 'Dog Kennel', price: 420, for: 'habitat' },
     { id: 'vine', name: 'Jungle Vine', price: 460, for: 'habitat' },
+
+    // --- brought back from the orchard and the hills (picked, never bought) ---
+    { id: 'appleplate', name: 'Plate of Apples', price: 0, for: 'land', fruit: 'gala' },
+    { id: 'applecrate', name: 'Apple Crate', price: 0, for: 'land', fruit: 'red_delicious' },
+    { id: 'blossomspray', name: 'Apple Blossom', price: 0, for: 'land', fruit: 'cosmic_crisp' },
+    { id: 'cherrybough', name: 'Cherry Bough', price: 0, for: 'land', fruit: 'bing_cherry' },
+    { id: 'pearbasket', name: 'Basket of Pears', price: 0, for: 'land', fruit: 'bartlett_pear' },
+    { id: 'berrybowl', name: 'Bowl of Berries', price: 0, for: 'land', fruit: 'serviceberry' },
+    { id: 'chokespray', name: 'Chokecherry Spray', price: 0, for: 'land', fruit: 'chokecherry' },
+    { id: 'hipring', name: 'Rose Hip Ring', price: 0, for: 'land', fruit: 'rosehip' },
+    { id: 'currantsprig', name: 'Currant Sprig', price: 0, for: 'land', fruit: 'wax_currant' },
+    { id: 'snowsprig', name: 'Snowberry Sprig', price: 0, for: 'land', fruit: 'snowberry' },
 
     // --- for anywhere ---
     { id: 'signplate', name: 'Name Plate', price: 300, for: 'any' },
@@ -8495,6 +9674,244 @@ ul.tips li{margin-bottom:3px}
     return GG.TANK_BGS.filter(function (b) { return b.kind === kind; });
   };
   GG.defaultSceneFor = function (typeId) { return GG.scenesFor(typeId)[0].id; };
+})(window.GG = window.GG || {});
+
+/* ==== src/render/fruitart.js ==== */
+/* Fruit, drawn with code like everything else.
+   `draw` puts one piece of fruit on a page or a card, hanging from its stem,
+   about 26 pixels tall at scale 1. `onPlant` hangs a whole crop of it in a
+   tree or a bush out in the garden. */
+(function (GG) {
+  'use strict';
+
+  function ell(c, x, y, rx, ry, rot) {
+    c.beginPath();
+    c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, Math.PI * 2);
+    c.fill();
+  }
+  function stem(c, x, y, len, col, lean) {
+    c.strokeStyle = col; c.lineWidth = 1.2; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, y);
+    c.quadraticCurveTo(x + (lean || 0), y - len * 0.6, x + (lean || 0) * 1.4, y - len);
+    c.stroke();
+  }
+  function leafAt(c, x, y, r, col, rot) {
+    c.save(); c.translate(x, y); c.rotate(rot || 0);
+    c.fillStyle = col;
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.quadraticCurveTo(r * 0.9, -r * 0.7, r * 2, 0);
+    c.quadraticCurveTo(r * 0.9, r * 0.7, 0, 0);
+    c.closePath(); c.fill();
+    c.strokeStyle = GG.shade(col, -0.25); c.lineWidth = 0.5;
+    c.beginPath(); c.moveTo(0.2, 0); c.lineTo(r * 1.8, 0); c.stroke();
+    c.restore();
+  }
+
+  var F = {};
+
+  F.apple = function (c, a, t) {
+    stem(c, 0, -7, 5, '#6a4a2a', 0.6);
+    leafAt(c, 0.8, -10.4, 2.6, a.leaf, -0.5);
+    c.fillStyle = a.skin2;
+    c.beginPath();
+    c.moveTo(0, -7.4);
+    c.bezierCurveTo(-9, -8.6, -9.6, 5, -0.2, 8.6);
+    c.bezierCurveTo(9.4, 5, 8.8, -8.6, 0, -7.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.skin;
+    ell(c, -0.8, -0.4, 7.2, 7.4);
+    if (a.speck) {
+      c.fillStyle = 'rgba(255,240,220,0.55)';
+      for (var i = 0; i < 12; i++) {
+        var ang = i * 2.4, rr = 2 + (i % 4) * 1.5;
+        ell(c, -0.8 + Math.cos(ang) * rr, -0.4 + Math.sin(ang) * rr * 1.05, 0.45, 0.45);
+      }
+    }
+    c.fillStyle = 'rgba(255,255,255,0.42)';
+    ell(c, -3.4, -3.4, 2, 2.8, -0.5);
+    c.fillStyle = GG.shade(a.skin2, -0.3);
+    ell(c, 0, -7, 1, 0.8);
+  };
+
+  F.pear = function (c, a, t) {
+    stem(c, 0.4, -9, 5, '#6a4a2a', 0.3);
+    leafAt(c, 1, -12.4, 2.4, a.leaf, -0.45);
+    c.fillStyle = a.skin2;
+    c.beginPath();
+    c.moveTo(0, -9.4);
+    c.bezierCurveTo(-4.4, -8.4, -4, -1.4, -6.4, 2.4);
+    c.bezierCurveTo(-8.4, 7.4, -4, 10.4, 0, 10.4);
+    c.bezierCurveTo(4, 10.4, 8.4, 7.4, 6.4, 2.4);
+    c.bezierCurveTo(4, -1.4, 4.4, -8.4, 0, -9.4);
+    c.closePath(); c.fill();
+    c.save();
+    c.beginPath();
+    c.moveTo(0, -9.4);
+    c.bezierCurveTo(-4.4, -8.4, -4, -1.4, -6.4, 2.4);
+    c.bezierCurveTo(-8.4, 7.4, -4, 10.4, 0, 10.4);
+    c.bezierCurveTo(4, 10.4, 8.4, 7.4, 6.4, 2.4);
+    c.bezierCurveTo(4, -1.4, 4.4, -8.4, 0, -9.4);
+    c.closePath(); c.clip();
+    c.fillStyle = a.skin;
+    ell(c, -1, 2, 6.4, 8);
+    c.fillStyle = 'rgba(160,120,60,0.30)';
+    for (var i = 0; i < 9; i++) ell(c, -5 + (i * 1.7) % 10, -4 + (i * 3.1) % 13, 0.5, 0.5);
+    c.restore();
+    c.fillStyle = 'rgba(255,255,255,0.38)';
+    ell(c, -3, 3.4, 1.7, 3, -0.25);
+  };
+
+  F.cherry = function (c, a, t) {
+    var sway = Math.sin(t * 1.6) * 0.6;
+    c.strokeStyle = '#7a9a4a'; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, -12); c.quadraticCurveTo(-3, -6, -4.4 + sway, -0.6); c.stroke();
+    c.beginPath(); c.moveTo(0, -12); c.quadraticCurveTo(3.4, -5, 4.8 - sway, 2.4); c.stroke();
+    leafAt(c, 0.4, -12.6, 2.6, a.leaf, -0.7);
+    [[-4.4 + sway, 2.6, 4.2], [4.8 - sway, 5.6, 4.6]].forEach(function (p) {
+      c.fillStyle = a.skin2; ell(c, p[0], p[1], p[2], p[2] * 0.98);
+      c.fillStyle = a.skin; ell(c, p[0] - 0.4, p[1] - 0.4, p[2] * 0.82, p[2] * 0.8);
+      c.fillStyle = 'rgba(255,255,255,0.45)';
+      ell(c, p[0] - p[2] * 0.36, p[1] - p[2] * 0.42, p[2] * 0.24, p[2] * 0.3, -0.5);
+    });
+  };
+
+  /* a little drooping bunch of round berries */
+  F.berry = function (c, a, t) {
+    c.strokeStyle = '#7a6a4a'; c.lineWidth = 1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, -12); c.lineTo(0, -5); c.stroke();
+    leafAt(c, 0.4, -11.6, 2.6, a.leaf, -0.6);
+    leafAt(c, -0.4, -9.4, 2.2, a.leaf, Math.PI + 0.6);
+    var spots = [[-4.4, -1.4, 3.4], [4.2, -0.4, 3.2], [-1.4, 4.6, 3.6], [3, 6.4, 2.9], [-5, 5.4, 2.6]];
+    spots.forEach(function (p, i) {
+      c.strokeStyle = '#7a6a4a'; c.lineWidth = 0.8;
+      c.beginPath(); c.moveTo(0, -5); c.lineTo(p[0], p[1] - p[2]); c.stroke();
+      c.fillStyle = a.skin2; ell(c, p[0], p[1], p[2], p[2]);
+      c.fillStyle = a.skin; ell(c, p[0] - 0.3, p[1] - 0.4, p[2] * 0.82, p[2] * 0.8);
+      if (a.crown) {
+        c.fillStyle = GG.shade(a.skin2, -0.3);
+        for (var k = 0; k < 5; k++) {
+          var ang = k / 5 * Math.PI * 2;
+          ell(c, p[0] + Math.cos(ang) * p[2] * 0.34, p[1] + p[2] * 0.5 + Math.sin(ang) * p[2] * 0.2, 0.32, 0.32);
+        }
+      }
+      if (a.waxy) {
+        c.fillStyle = 'rgba(255,255,255,0.7)';
+        ell(c, p[0] - p[2] * 0.3, p[1] - p[2] * 0.36, p[2] * 0.3, p[2] * 0.34, -0.5);
+      } else if (a.glossy) {
+        c.fillStyle = 'rgba(255,255,255,0.55)';
+        ell(c, p[0] - p[2] * 0.32, p[1] - p[2] * 0.38, p[2] * 0.26, p[2] * 0.3, -0.5);
+      } else {
+        c.fillStyle = 'rgba(255,255,255,0.3)';
+        ell(c, p[0] - p[2] * 0.32, p[1] - p[2] * 0.38, p[2] * 0.24, p[2] * 0.28, -0.5);
+      }
+    });
+  };
+
+  /* a long hanging spike, the way chokecherries really grow */
+  F.spike = function (c, a, t) {
+    var sway = Math.sin(t * 1.4) * 0.8;
+    c.strokeStyle = '#6a7a3a'; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(0, -12);
+    c.quadraticCurveTo(sway, -2, sway * 1.6, 10.4);
+    c.stroke();
+    leafAt(c, 0.6, -12.2, 2.8, a.leaf, -0.5);
+    for (var i = 0; i < 9; i++) {
+      var f = i / 8;
+      var y = -8.6 + f * 18;
+      var x = sway * f * 1.6 + (i % 2 ? 2.6 : -2.6) * (1 - f * 0.45);
+      var r = 2.5 - f * 0.9;
+      c.strokeStyle = '#6a7a3a'; c.lineWidth = 0.7;
+      c.beginPath(); c.moveTo(sway * f * 1.4, y - 1); c.lineTo(x, y); c.stroke();
+      c.fillStyle = a.skin2; ell(c, x, y, r, r);
+      c.fillStyle = a.skin; ell(c, x - 0.25, y - 0.3, r * 0.8, r * 0.78);
+      c.fillStyle = 'rgba(255,255,255,0.28)';
+      ell(c, x - r * 0.32, y - r * 0.38, r * 0.24, r * 0.28, -0.5);
+    }
+  };
+
+  /* a rose hip: round, with the dried sepals still standing on the bottom */
+  F.hip = function (c, a, t) {
+    stem(c, 0, -6.6, 5.4, '#6a7a3a', -0.5);
+    leafAt(c, -1, -10.6, 2.4, a.leaf, Math.PI + 0.4);
+    c.fillStyle = a.skin2; ell(c, 0, 0.4, 6.6, 7);
+    c.fillStyle = a.skin; ell(c, -0.6, -0.2, 5.6, 6);
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    ell(c, -2.8, -3, 1.7, 2.4, -0.5);
+    /* the little crown of dried sepals */
+    c.strokeStyle = '#7a6a4a'; c.lineWidth = 0.85; c.lineCap = 'round';
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(i * 0.9, 6.6);
+      c.lineTo(i * 2.4, 10.4);
+      c.stroke();
+    }
+  };
+
+  var FruitArt = GG.FruitArt = {
+    shapes: F,
+
+    /* one piece of fruit, centred on (x, y) */
+    draw: function (c, def, x, y, scale, t) {
+      var fn = F[def.shape] || F.apple;
+      c.save();
+      c.translate(x, y);
+      c.scale(scale, scale);
+      fn(c, def, t || 0);
+      c.restore();
+    },
+
+    /* the crop hanging in a tree or a bush out in the garden.
+       `n` is how many, `r` is the plant's radius, `ripe` 0..1 fades it in. */
+    onPlant: function (c, def, cx, cy, r, n, seed, t, ripe) {
+      if (ripe <= 0) return;
+      var rnd = GG.mulberry32(Math.floor((seed || 0.5) * 9973) + 7);
+      c.save();
+      c.globalAlpha = Math.min(1, ripe);
+      for (var i = 0; i < n; i++) {
+        var ox = (rnd() - 0.5) * r * 1.5;
+        var oy = (rnd() - 0.25) * r * 0.9;
+        var s = (0.20 + rnd() * 0.07) * r * 0.55 * (ripe * 0.4 + 0.6);
+        var bob = Math.sin(t * 1.1 + i * 1.7 + (seed || 0) * 9) * r * 0.02;
+        FruitArt.blob(c, def, cx + ox, cy + oy + bob, s);
+      }
+      c.restore();
+    },
+
+    /* a fast simplified fruit for the world, where it is only a few pixels */
+    blob: function (c, def, x, y, s) {
+      c.save();
+      c.translate(x, y);
+      if (def.shape === 'spike') {
+        for (var i = 0; i < 5; i++) {
+          c.fillStyle = i % 2 ? def.skin2 : def.skin;
+          ell(c, (i % 2 ? 1 : -1) * s * 0.5, -s + i * s * 0.9, s * 0.55, s * 0.55);
+        }
+      } else if (def.shape === 'berry') {
+        [[-s * 0.8, 0], [s * 0.8, s * 0.2], [0, s]].forEach(function (p) {
+          c.fillStyle = def.skin2; ell(c, p[0], p[1], s * 0.62, s * 0.62);
+          c.fillStyle = def.skin; ell(c, p[0] - s * 0.1, p[1] - s * 0.12, s * 0.5, s * 0.5);
+        });
+      } else if (def.shape === 'cherry') {
+        c.strokeStyle = '#7a9a4a'; c.lineWidth = Math.max(0.6, s * 0.14);
+        c.beginPath(); c.moveTo(0, -s * 1.6); c.lineTo(-s * 0.6, 0); c.stroke();
+        c.beginPath(); c.moveTo(0, -s * 1.6); c.lineTo(s * 0.7, s * 0.3); c.stroke();
+        c.fillStyle = def.skin; ell(c, -s * 0.6, s * 0.5, s * 0.58, s * 0.58);
+        c.fillStyle = def.skin; ell(c, s * 0.7, s * 0.8, s * 0.6, s * 0.6);
+      } else if (def.shape === 'pear') {
+        c.fillStyle = def.skin;
+        ell(c, 0, s * 0.4, s * 0.66, s * 0.9);
+        ell(c, 0, -s * 0.5, s * 0.42, s * 0.5);
+      } else {
+        c.fillStyle = def.skin;
+        ell(c, 0, 0, s * 0.92, s * 0.92);
+        c.fillStyle = GG.shade(def.skin, -0.22);
+        ell(c, s * 0.3, s * 0.28, s * 0.42, s * 0.46);
+      }
+      c.restore();
+    }
+  };
 })(window.GG = window.GG || {});
 
 /* ==== src/game/time.js ==== */
@@ -8653,6 +10070,22 @@ ul.tips li{margin-bottom:3px}
 
   var SHELF = { x0: 3620, x1: 4800, pad: 210 };
 
+  /* The footbridge near Shell Beach. It crosses the water where the river
+     opens out into Gull Inlet, so she can walk over instead of all the way
+     round - and she can fish off the side of it. Everything about it is
+     worked out from these five numbers. */
+  var BRIDGE = {
+    x: 2857, y: 2383,        // mid-channel, where the river meets the beach
+    ang: 2.167,              // square across the current, in radians
+    len: 258,                // end to end, with a landing on the sand each side
+    w: 34                    // how wide the deck is
+  };
+  BRIDGE.dx = Math.cos(BRIDGE.ang); BRIDGE.dy = Math.sin(BRIDGE.ang);
+  BRIDGE.ax = BRIDGE.x - BRIDGE.dx * BRIDGE.len / 2;
+  BRIDGE.ay = BRIDGE.y - BRIDGE.dy * BRIDGE.len / 2;
+  BRIDGE.bx = BRIDGE.x + BRIDGE.dx * BRIDGE.len / 2;
+  BRIDGE.by = BRIDGE.y + BRIDGE.dy * BRIDGE.len / 2;
+
   var MS = 8;   // water mask resolution, in pixels
 
   var World = GG.World = {
@@ -8666,6 +10099,18 @@ ul.tips li{margin-bottom:3px}
     pond: POND_E,
     flow: FLOW,
     tidepools: TIDEPOOLS,
+    bridge: BRIDGE,
+
+    /* Is this point on the footbridge deck? Walking on it is the whole
+       point, so it beats the deep water underneath. */
+    onBridge: function (x, y, pad) {
+      var B = BRIDGE;
+      var ox = x - B.x, oy = y - B.y;
+      var along = ox * B.dx + oy * B.dy;
+      var across = -ox * B.dy + oy * B.dx;
+      var p = pad || 0;
+      return Math.abs(along) <= B.len / 2 + p && Math.abs(across) <= B.w / 2 + p;
+    },
 
     /* ---------- water ---------- */
     _kindAtRaw: function (x, y) {
@@ -8841,6 +10286,7 @@ ul.tips li{margin-bottom:3px}
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
         if (nearHouse(x, y, 40)) continue;
+        if (this.onBridge(x, y, 26)) continue;
         var b = this.biomeAt(x, y);
         var v = rnd();
 
@@ -8870,8 +10316,10 @@ ul.tips li{margin-bottom:3px}
           else if (v < 0.26) add('flower', x, y, 11 + rnd() * 5, false, 0, { col: GG.pick(FLOWER_COLS) });
           else if (v < 0.80) add('grassTuft', x, y, 13 + rnd() * 8);
         } else if (b === 'hill') {
-          if (v < 0.14) add('rock', x, y, 16 + rnd() * 18, true, 15);
-          else if (v < 0.20) add('bush', x, y, 18 + rnd() * 6, true, 11);
+          if (v < 0.12) add('rock', x, y, 16 + rnd() * 18, true, 15);
+          /* the hills are where the wild fruit grows, so there is plenty of it */
+          else if (v < 0.25) add('wildBush', x, y, 19 + rnd() * 6, true, 11);
+          else if (v < 0.265) add('bush', x, y, 18 + rnd() * 6, true, 11);
           else if (v < 0.55) add('grassTuft', x, y, 10 + rnd() * 5);
           else if (v < 0.62) add('flower', x, y, 9 + rnd() * 3, false, 0, { col: '#ffe9a8' });
         } else if (b === 'pond') {
@@ -8934,6 +10382,7 @@ ul.tips li{margin-bottom:3px}
       add('sign', 2300, 2000, 26, false, 0, { label: 'River' });
       add('sign', 3150, 2400, 26, false, 0, { label: 'Inlet' });
       add('sign', 2660, 2510, 26, false, 0, { label: 'Beach' });
+      add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
       add('sign', 4000, 2200, 26, false, 0, { label: 'Tidepools' });
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
@@ -8944,7 +10393,7 @@ ul.tips li{margin-bottom:3px}
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
-      if (this.isDeepWater(x, y)) return true;   // the stream and the pools are waded, not blocked
+      if (this.isDeepWater(x, y) && !this.onBridge(x, y)) return true;   // the stream and the pools are waded, not blocked
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
           y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
@@ -9136,6 +10585,58 @@ ul.tips li{margin-bottom:3px}
       c.restore();
     },
 
+    /* The footbridge. Drawn after the water and before anything that walks,
+       so Guin and her friends cross on top of it. */
+    drawBridge: function (c, cam, t) {
+      var B = BRIDGE;
+      var mx = B.x - cam.x, my = B.y - cam.y;
+      if (mx < -B.len || my < -B.len || mx > GG.view.w + B.len || my > GG.view.h + B.len) return;
+      c.save();
+      c.translate(mx, my);
+      c.rotate(B.ang);
+      var L = B.len, W = B.w;
+
+      /* the shadow it casts on the water */
+      c.fillStyle = 'rgba(20,40,60,0.22)';
+      c.fillRect(-L / 2 + 3, -W / 2 + 5, L, W);
+
+      /* the two stringers under the planks */
+      c.fillStyle = '#6b4a2c';
+      c.fillRect(-L / 2, -W / 2 - 1, L, W + 2);
+
+      /* the planks, laid across */
+      var planks = Math.round(L / 9);
+      for (var i = 0; i < planks; i++) {
+        var px = -L / 2 + (i + 0.06) * (L / planks);
+        var shade = (i % 3 === 0) ? '#a07a4c' : (i % 3 === 1 ? '#b08a58' : '#97713f');
+        c.fillStyle = shade;
+        c.fillRect(px, -W / 2 + 1, L / planks - 1.4, W - 2);
+      }
+      /* the worn line down the middle where everybody walks */
+      c.fillStyle = 'rgba(255,240,210,0.10)';
+      c.fillRect(-L / 2, -3.5, L, 7);
+
+      /* the rails, one each side, with posts */
+      [-1, 1].forEach(function (side) {
+        var ry = side * (W / 2 + 1);
+        c.fillStyle = '#5c3f26';
+        c.fillRect(-L / 2, ry - 2, L, 4);
+        c.fillStyle = '#8a6438';
+        c.fillRect(-L / 2, ry - 8.5, L, 3.2);
+        for (var k = 0; k <= 7; k++) {
+          var qx = -L / 2 + k * (L / 7);
+          c.fillStyle = '#6b4a2c';
+          c.fillRect(qx - 2, ry - 9.5, 4, 11);
+        }
+      });
+
+      /* a plank or two missing a nail, for character */
+      c.strokeStyle = 'rgba(70,45,25,0.5)'; c.lineWidth = 0.8;
+      c.beginPath(); c.moveTo(-L * 0.18, -W / 2 + 2); c.lineTo(-L * 0.18, W / 2 - 2); c.stroke();
+      c.beginPath(); c.moveTo(L * 0.27, -W / 2 + 2); c.lineTo(L * 0.27, W / 2 - 2); c.stroke();
+      c.restore();
+    },
+
     drawProps: function (c, cam, vw, vh, t, layer) {
       var P = GG.Props;
       var pad = 140;
@@ -9147,7 +10648,7 @@ ul.tips li{margin-bottom:3px}
         if (layer === 'flat' && !isFlat) continue;
         if (layer === 'sorted' && isFlat) continue;
         var fn = P[p.type];
-        if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+        if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     },
 
@@ -10817,6 +12318,126 @@ ul.tips li{margin-bottom:3px}
   };
 })(window.GG = window.GG || {});
 
+/* ==== src/game/orchard.js ==== */
+/* Picking fruit.
+
+   Guin asked for "pluckable fruits that unlock a new decoration", so:
+   every fruit-bearing tree and shrub in the garden carries one real species,
+   she walks up to it and the main button turns into PICK, and the first time
+   she picks each kind it unlocks one decoration for her tanks.
+
+   Nothing is ever used up. A picked plant grows its fruit back. */
+(function (GG) {
+  'use strict';
+
+  var REGROW = 95;       // seconds before the fruit comes back
+  var REACH = 62;        // how close she has to be
+
+  var Orchard = GG.Orchard = {
+    REGROW: REGROW,
+    REACH: REACH,
+    plants: [],
+
+    /* Hand out the fruit once the world has been built. Which plant carries
+       which fruit never changes, so her orchard stays her orchard. */
+    assign: function () {
+      this.plants = [];
+      var W = GG.World;
+      var orchard = [], hill = [];
+      GG.FRUITS.forEach(function (f) {
+        (f.where === 'hill' ? hill : orchard).push(f);
+      });
+      if (!orchard.length && !hill.length) return;
+      var oi = 0, hi = 0;
+      for (var i = 0; i < W.props.length; i++) {
+        var p = W.props[i];
+        var def = null;
+        if (p.type === 'appleTree' && orchard.length) {
+          def = orchard[oi++ % orchard.length];
+        } else if (p.type === 'wildBush' && hill.length) {
+          def = hill[hi++ % hill.length];
+        }
+        if (!def) continue;
+        p.fruit = def.id;
+        p.ripe = 1;
+        p.regrow = 0;
+        this.plants.push(p);
+      }
+    },
+
+    /* fruit grows back on its own */
+    update: function (dt) {
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        if (p.ripe >= 1) continue;
+        p.regrow -= dt;
+        if (p.regrow <= 0) p.ripe = 1;
+        else p.ripe = Math.max(0, 1 - p.regrow / REGROW);
+      }
+    },
+
+    /* The nearest plant with fruit on it, if she is close enough. */
+    nearest: function (player) {
+      var best = null, bestD = REACH * REACH;
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        if (p.ripe < 1) continue;
+        var dx = player.x - p.x, dy = (player.y - p.y) * 1.15;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      return best;
+    },
+
+    /* Pick it. Returns what happened, so the game can show a card. */
+    pick: function (plant) {
+      if (!plant || plant.ripe < 1) return null;
+      var def = GG.FRUIT_BY_ID[plant.fruit];
+      if (!def) return null;
+      plant.ripe = 0;
+      plant.regrow = REGROW;
+      var first = !GG.Save.hasFruit(def.id);
+      GG.Save.addFruit(def.id);
+      var unlocked = null;
+      if (first && def.unlock && GG.Save.data.unlockedDecor.indexOf(def.unlock) < 0) {
+        GG.Save.data.unlockedDecor.push(def.unlock);
+        unlocked = GG.DECOR_BY_ID[def.unlock] || null;
+      }
+      GG.Save.save();
+      return { def: def, first: first, unlocked: unlocked, x: plant.x, y: plant.y };
+    },
+
+    /* little fruit that pops up out of the plant when she picks it */
+    pops: [],
+    pop: function (def, x, y) {
+      this.pops.push({ def: def, x: x, y: y, t: 0 });
+    },
+    stepPops: function (dt) {
+      for (var i = this.pops.length - 1; i >= 0; i--) {
+        this.pops[i].t += dt;
+        if (this.pops[i].t > 1.1) this.pops.splice(i, 1);
+      }
+    },
+    drawPops: function (c, cam) {
+      for (var i = 0; i < this.pops.length; i++) {
+        var p = this.pops[i];
+        var k = p.t / 1.1;
+        c.save();
+        c.globalAlpha = 1 - k * k;
+        GG.FruitArt.draw(c, p.def, p.x - cam.x, p.y - cam.y - 34 - k * 34, 0.85, p.t);
+        c.restore();
+      }
+    },
+
+    /* how many kinds she has picked */
+    kinds: function () {
+      var n = 0;
+      GG.FRUITS.forEach(function (f) { if (GG.Save.hasFruit(f.id)) n++; });
+      return n;
+    }
+  };
+})(window.GG = window.GG || {});
+
 /* ==== src/game/house.js ==== */
 /* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed.
    The room is drawn at the same scale as the world outside, so Guin is the same size indoors. */
@@ -11071,11 +12692,36 @@ ul.tips li{margin-bottom:3px}
         $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles' +
           (isNew ? ' &nbsp;+&nbsp; new page in your ' + (def.isFish ? 'Fish Book' : 'Bug Book') + '!' : '');
       }
+      $('catch-care').style.display = 'none';
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
     },
 
-    _animCatch: function () {
+    /* ---------- a piece of fruit ---------- */
+    showFruit: function (res) {
+      var def = res.def;
+      var cv = $('catch-art');
+      cv.width = 640; cv.height = 260;
+      this._catchDef = def;
+      $('catch-new').style.display = res.first ? 'inline-block' : 'none';
+      $('catch-name').textContent = def.name;
+      var n = GG.Save.countOfFruit(def.id);
+      $('catch-fact').textContent = res.first
+        ? def.facts[0]
+        : ('You have picked ' + n + ' of these.');
+      var care = $('catch-care');
+      var eat = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
+      care.className = eat.cls;
+      care.innerHTML = '<b>' + eat.label + '</b><span>' + def.care + '</span>';
+      care.style.display = 'block';
+      $('catch-reward').innerHTML = res.unlocked
+        ? 'New decoration for your tanks: <b>' + res.unlocked.name + '</b>'
+        : (res.first ? 'New page in your Fruit Book!' : '&#10022; one for the basket');
+      $('catch-pop').classList.remove('hidden');
+      this._animCatch(true);
+    },
+
+    _animCatch: function (isFruit) {
       var self = this;
       cancelAnimationFrame(this._raf);
       var cv = $('catch-art'), c = cv.getContext('2d');
@@ -11085,7 +12731,8 @@ ul.tips li{margin-bottom:3px}
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2');
+        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#f2ddb4'); }
+        else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2'); }
         c.fillStyle = g;
         GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
         c.save();
@@ -11098,7 +12745,8 @@ ul.tips li{margin-bottom:3px}
         }
         c.restore();
         var bob = Math.sin(t * 2) * 6;
-        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob, 7.2, -Math.PI / 2, t);
+        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob,
+          isFruit ? 8.6 : 7.2, -Math.PI / 2, t);
         self._raf = requestAnimationFrame(frame);
       }
       this._raf = requestAnimationFrame(frame);
@@ -11214,43 +12862,72 @@ ul.tips li{margin-bottom:3px}
     showGrid: function () {
       var grid = $('book-grid'), det = $('book-detail');
       var tab = this.tab;
-      var fish = tab === 'fish', friends = tab === 'friends';
+      var fish = tab === 'fish', friends = tab === 'friends', fruit = tab === 'fruit';
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
       $('book-tabs').style.display = '';
-      $('book-title').textContent = friends ? 'Friends Book' : (fish ? 'Fish Book' : 'Bug Book');
+      $('book-title').textContent = fruit ? 'Fruit Book'
+        : (friends ? 'Friends Book' : (fish ? 'Fish Book' : 'Bug Book'));
       document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
         el.classList.toggle('on', el.getAttribute('data-book') === tab);
       });
       grid.innerHTML = '';
-      var list = friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS);
-      var found = friends ? GG.Save.totalFriends() : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies());
+      var list = fruit ? GG.FRUITS : (friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS));
+      var found = fruit ? GG.Save.totalFruit()
+        : (friends ? GG.Save.totalFriends() : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies()));
       $('progress').textContent = found + ' / ' + list.length;
       if (friends) this.companionRow(grid);
+      if (fruit) this.fruitRow(grid);
       list.forEach(function (def) {
-        var got = friends ? GG.Save.hasFriend(def.id)
-          : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id));
+        var got = fruit ? GG.Save.hasFruit(def.id)
+          : (friends ? GG.Save.hasFriend(def.id)
+            : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id)));
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
         cv.style.width = '100%'; cv.style.height = '54px';
         cell.appendChild(cv);
         cell.appendChild(GG.el('div', 'nm', got ? def.name : '???'));
         if (got) {
-          var n0 = friends ? GG.Save.countOfFriend(def.id)
-            : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id));
+          var n0 = fruit ? GG.Save.countOfFruit(def.id)
+            : (friends ? GG.Save.countOfFriend(def.id)
+              : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
           cell.appendChild(GG.el('div', 'cnt', '×' + n0));
-          var r = GG.el('div', 'rar');
-          r.style.background = GG.RARITY_COLORS[def.rarity];
-          cell.appendChild(r);
+          if (!fruit) {
+            var r = GG.el('div', 'rar');
+            r.style.background = GG.RARITY_COLORS[def.rarity];
+            cell.appendChild(r);
+          } else {
+            var e = GG.el('div', 'rar');
+            e.style.background = def.eat === 'never' ? '#d84a4a'
+              : (def.eat === 'careful' ? '#e0a13c' : '#8fb98f');
+            cell.appendChild(e);
+          }
         }
         cell.addEventListener('click', function () {
           GG.Sfx.click();
           if (got) Book.showDetail(def);
-          else GG.UI.toast(friends ? 'You have not made friends with this one yet!'
-            : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!'));
+          else GG.UI.toast(fruit ? 'You have not picked this one yet!'
+            : (friends ? 'You have not made friends with this one yet!'
+              : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
         });
         grid.appendChild(cell);
       });
+    },
+
+    /* a little basket at the top of the Fruit tab, saying what picking is for */
+    fruitRow: function (grid) {
+      var row = GG.el('div', '', null);
+      row.id = 'companion-row';
+      row.style.gridColumn = '1/-1';
+      var kinds = GG.Orchard ? GG.Orchard.kinds() : GG.Save.totalFruit();
+      var txt = GG.el('div', 'grow');
+      txt.innerHTML = kinds
+        ? '<b>' + kinds + ' of ' + GG.FRUITS.length + ' kinds picked.</b> Every new kind '
+          + 'unlocks a decoration for your tanks.'
+        : 'Walk up to a tree in the <b>Apple Orchard</b> or a bush in the <b>Pebble Hills</b> '
+          + 'and tap <b>PICK</b>. Every new kind unlocks a decoration.';
+      row.appendChild(txt);
+      grid.appendChild(row);
     },
 
     /* who is tagging along today, right at the top of the Friends tab */
@@ -11290,12 +12967,14 @@ ul.tips li{margin-bottom:3px}
       var grid = $('book-grid'), det = $('book-detail');
       grid.style.display = 'none'; det.style.display = 'block';
       $('book-back').style.display = 'block';
-      $('book-back').textContent = def.isAnimal ? 'All friends'
-        : (def.isFish ? 'All fish' : 'All bugs');
+      $('book-back').textContent = def.isFruit ? 'All fruit'
+        : (def.isAnimal ? 'All friends'
+          : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
       det.innerHTML = '';
       var isFish = !!def.isFish;
       var isAnimal = !!def.isAnimal;
+      var isFruit = !!def.isFruit;
 
       var cv = GG.el('canvas'); cv.id = 'detail-art';
       cv.width = 640; cv.height = 300;
@@ -11306,11 +12985,19 @@ ul.tips li{margin-bottom:3px}
       det.appendChild(h);
 
       var meta = GG.el('div', 'meta');
-      var times = def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
-      var n = isAnimal ? GG.Save.countOfFriend(def.id)
-        : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id));
+      var times = isFruit ? '' : def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
+      var n = isFruit ? GG.Save.countOfFruit(def.id)
+        : (isAnimal ? GG.Save.countOfFriend(def.id)
+          : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
       var rows;
-      if (isAnimal) {
+      if (isFruit) {
+        var un = GG.DECOR_BY_ID[def.unlock];
+        rows = [['Grows in', GG.FRUITS_WHERE[def.where] || def.where],
+          ['On', def.on === 'tree' ? 'a tree' : 'a bush'],
+          ['Ripe in', def.ripens], ['Size', def.measure],
+          ['Picked', n + ' time' + (n === 1 ? '' : 's')]];
+        if (un) rows.push(['Unlocked', un.name]);
+      } else if (isAnimal) {
         rows = [['Found in', GG.animalPlaces(def)], ['Out and about', times],
           ['Size', def.measure], ['Rarity', GG.RARITY_NAMES[def.rarity]],
           ['Said hello', n + ' time' + (n === 1 ? '' : 's')]];
@@ -11339,6 +13026,15 @@ ul.tips li{margin-bottom:3px}
         if (way) meta.appendChild(GG.el('span', 'tag way', 'How to say hello: ' + way.blurb));
       }
       det.appendChild(meta);
+
+      if (isFruit) {
+        var eatInfo = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
+        var box = GG.el('div');
+        box.id = 'fruit-care';
+        box.className = eatInfo.cls;
+        box.innerHTML = '<b>' + eatInfo.label + '</b><span>' + def.care + '</span>';
+        det.appendChild(box);
+      }
 
       /* who eats whom */
       var eats = GG.eatsList ? GG.eatsList(def.id) : [];
@@ -11426,7 +13122,8 @@ ul.tips li{margin-bottom:3px}
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
+        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
+        else if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
         else if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
         else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
@@ -12618,22 +14315,46 @@ ul.tips li{margin-bottom:3px}
         ['land', 'For terrariums (and the bank of a hybrid)'],
         ['water', 'For fish tanks (and the pool of a hybrid)'],
         ['habitat', 'For a garden habitat'],
-        ['any', 'For any tank']
+        ['any', 'For any tank'],
+        ['picked', 'Picked, not bought — from the orchard and the hills']
       ];
       groupsD.forEach(function (g) {
         grid.appendChild(GG.el('div', 'shop-group', g[1]));
-        GG.DECOR.filter(function (x) { return (x.for || 'any') === g[0]; }).forEach(function (dec) {
+        GG.DECOR.filter(function (x) {
+          /* the fruit ones live in their own group, however they are tagged */
+          if (g[0] === 'picked') return !!x.fruit;
+          return !x.fruit && (x.for || 'any') === g[0];
+        }).forEach(function (dec) {
         var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
+        var fruitDef = dec.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[dec.fruit] : null;
         var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
         var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
         var c = cv.getContext('2d'); c.scale(2, 2);
         var fn = GG.DecorArt[dec.id];
-        if (fn) fn(c, 44, 50, 0.9, 1);
+        if (fn) {
+          if (!owned && fruitDef) {
+            /* a shadow of the thing she has not found yet */
+            c.save();
+            fn(c, 44, 50, 0.9, 1);
+            c.globalCompositeOperation = 'source-in';
+            c.fillStyle = 'rgba(120,132,112,0.5)';
+            c.fillRect(0, 0, 88, 56);
+            c.restore();
+          } else {
+            fn(c, 44, 50, 0.9, 1);
+          }
+        }
         el.appendChild(cv);
-        el.appendChild(GG.el('div', 'nm', dec.name));
-        el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + dec.price));
+        el.appendChild(GG.el('div', 'nm', (!owned && fruitDef) ? '???' : dec.name));
+        el.appendChild(GG.el('div', 'price', owned ? 'owned'
+          : (fruitDef ? 'pick one' : '✦ ' + dec.price)));
         el.addEventListener('click', function () {
           if (owned) { GG.UI.toast('You already have this one'); return; }
+          if (fruitDef) {
+            GG.UI.toast('Pick a ' + fruitDef.name + ' in '
+              + (GG.FRUITS_WHERE[fruitDef.where] || 'the garden') + ' and this is yours.', 3000);
+            return;
+          }
           if (d.sparkles < dec.price) { GG.UI.toast('Not enough sparkles yet'); return; }
           d.sparkles -= dec.price;
           d.unlockedDecor.push(dec.id);
@@ -12838,7 +14559,10 @@ ul.tips li{margin-bottom:3px}
     GG.Friends.update(dt, P, 'world');
     GG.Friends.stepCompanion(dt, P);
 
+    GG.Orchard.update(dt);
+    GG.Orchard.stepPops(dt);
     var fishing = Fi.active();
+    var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
@@ -12851,6 +14575,7 @@ ul.tips li{margin-bottom:3px}
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
+      if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (P.startSwing()) swingChecked = false;
     }
@@ -12878,11 +14603,16 @@ ul.tips li{margin-bottom:3px}
     if (W.W < GG.view.w) cam.x = (W.W - GG.view.w) / 2;
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
-    GG.UI.prompt(atDoor ? 'Tap to go inside' : null);
+    GG.UI.prompt(atDoor ? 'Tap to go inside'
+      : (pickable ? 'Tap to pick the fruit' : null));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
-    else setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
+    else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (pickable) {
+      var pf = GG.FRUIT_BY_ID[pickable.fruit];
+      setActionLabel('PICK', pf ? pf.name.toLowerCase() : 'fruit');
+    } else setActionLabel('NET', 'tap');
   }
 
   function drawWorld(t) {
@@ -12891,6 +14621,7 @@ ul.tips li{margin-bottom:3px}
     canvas._vw = GG.view.w;
     W.drawWater(ctx, cam, t);
     GG.Fishing.drawShadows(ctx, cam, t);
+    W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
 
     // everything that stands up gets sorted so Guin walks behind trees
@@ -12908,10 +14639,11 @@ ul.tips li{margin-bottom:3px}
         GG.Friends.drawEntry(ctx, d, cam, t);
       } else {
         var p = d.p, fn = GG.Props[p.type];
-        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     }
     GG.Friends.drawHearts(ctx, cam);
+    GG.Orchard.drawPops(ctx, cam);
     GG.Critters.draw(ctx, cam, t);
     GG.Fishing.draw(ctx, cam, t, P);
 
@@ -13070,6 +14802,16 @@ ul.tips li{margin-bottom:3px}
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+  }
+
+  /* ---------- picking fruit ---------- */
+  function pickFruit(plant) {
+    var res = GG.Orchard.pick(plant);
+    if (!res) return;
+    GG.Orchard.pop(res.def, plant.x, plant.y - 10);
+    if (res.unlocked) GG.Sfx.unlocked(); else GG.Sfx.pick();
+    GG.UI.refreshHud();
+    GG.UI.showFruit(res);
   }
 
   /* ---------- catching ---------- */
@@ -13555,6 +15297,7 @@ ul.tips li{margin-bottom:3px}
     GG.Time.minutes = GG.Save.data.clock;
     GG.Time.day = GG.Save.data.day;
     GG.World.build();
+    GG.Orchard.assign();
     GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
     GG.Friends.loadCompanion();
     resize();
