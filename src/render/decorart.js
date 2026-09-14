@@ -765,6 +765,9 @@
   /* `creatures` says which bugs a tank will take:
      land = the dry-land ones, water = the rock-pool ones (they need water to
      live in), any = both. A hybrid has a bank AND a pool, so it takes both. */
+  /* How many tanks Guin may keep at once. */
+  GG.MAX_TANKS = 10;
+
   GG.TANK_TYPES = [
     { id: 'terrarium', name: 'Terrarium', short: 'Terrarium', blurb: 'Dry land for bugs.',
       maxBugs: 8, maxFish: 0, maxDecor: 12, creatures: 'land' },

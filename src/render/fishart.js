@@ -645,12 +645,12 @@
   };
 
 
-  GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft) {
+  GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft, gait) {
     if (def.isAnimal) {
       /* animals are normalised to fill their frame, so a hummingbird on a
          book page is not a speck next to a labrador */
       var as = GG.animalFit(def, 26 * scale);
-      GG.AnimalArt.draw(c, def, x, y + 4.5 * as * (def.size || 1), as, !!faceLeft, t);
+      GG.AnimalArt.draw(c, def, x, y + 4.5 * as * (def.size || 1), as, !!faceLeft, t, gait);
     }
     else if (def.isFish || def.isJunk) GG.FishArt.draw(c, def, x, y, scale * 0.5, !!faceLeft, t);
     else GG.BugArt.draw(c, def, x, y, scale, angle, t);
