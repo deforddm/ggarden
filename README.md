@@ -17,7 +17,7 @@ tools needed, installable to a phone home screen, works offline).
   Flower Garden (home), Whispering Woods, Apple Orchard, Pebble Hills, the Lily
   Pond, Pebble Stream, the Winding River and its riverbank, Gull Inlet, Shell
   Beach, the rocky shore and The Tidepools.
-* 83 real insects and mini-beasts, each with its own habitat, time of day
+* 103 real insects and mini-beasts, each with its own habitat, time of day
   and behaviour. Bugs get nervous when you charge at them - a `!` appears,
   and then they bolt. Creep closer instead (tiptoe = hold shift on a keyboard,
   or push the joystick gently).
@@ -44,6 +44,20 @@ tools needed, installable to a phone home screen, works offline).
   exactly where you found it.
 * The little stream is shallow enough to paddle straight across. The river and
   the sea are not, so you have to find a way round.
+* **Pluckable fruit.** Ten real fruits grow in the garden - Gala, Red
+  Delicious and Cosmic Crisp apples, Bing cherries and Bartlett pears on the
+  orchard trees, and saskatoon serviceberry, chokecherry, wild rose hips, wax
+  currant and snowberry on the hillside shrubs. Walk up to a plant and the main
+  button turns into **PICK**. Every new kind unlocks one decoration for your
+  tanks, and those ten are the only things in the game sparkles cannot buy.
+  Each fruit says plainly whether you can eat it: green for yes, amber for
+  careful (spit the cherry stone out, let the pear soften, never crunch a
+  chokecherry stone) and red for the snowberry, which is genuinely poisonous
+  and is in the game precisely so that "pretty white berries are safe" gets
+  broken. A picked plant grows its fruit back after a minute and a half.
+* **A footbridge** crosses the river mouth by Shell Beach, where the Winding
+  River opens into Gull Inlet. You can walk right over it instead of going all
+  the way round, and you can fish off the side of it.
 * **Bees can sting.** Swing at a honeybee or bumblebee and miss, or swing at
   the beehive by the house, and she turns angry (a red cross appears over her)
   and chases you. If she catches you, Guin sees stars for a couple of seconds,
@@ -65,16 +79,20 @@ tools needed, installable to a phone home screen, works offline).
   (`guins-garden-guest-v1`). Guin's save is never read or written during a
   visit, the visit survives a reload, and finishing it clears the guest garden
   and restores hers exactly as she left it.
-* **Garden Friends.** 22 animals across six families - hummingbirds, frogs,
+* **Garden Friends.** 23 animals across six families - hummingbirds, frogs,
   bats, dogs, cats and parrots - that you befriend rather than catch. See
   "Garden Friends" below.
-* 44 purchasable decorations, each tagged for the tanks it suits: ferns,
+* 54 decorations - 44 purchasable, each tagged for the tanks it suits: ferns,
   toadstools, pine cones, a tiny pond and a fairy house for terrariums; sea
   grass, coral, an anemone, a bubbler, a sand castle and a treasure chest for
   fish tanks; a nectar feeder, bird bath, bat house, kennel, cat basket,
   scratching post, parrot perch and jungle vine for garden habitats; a rock
-  pool, bunting, a name plate and a glow crystal for anywhere. A hybrid tank
-  takes everything except the outdoor pieces. 27 scenes across the four kinds.
+  pool, bunting, a name plate and a glow crystal for anywhere - plus ten more
+  that cannot be bought at all, only picked: a plate of apples, an apple crate,
+  apple blossom, a cherry bough, a basket of pears, a bowl of berries, a
+  chokecherry spray, a rose hip ring, a currant sprig and a snowberry sprig. A
+  hybrid tank takes everything except the outdoor pieces. 27 scenes across the
+  four kinds.
 * Four kinds of tank, kept separate: a **Terrarium** (dry land, land bugs
   only), a **Fish Tank** (all water: fish, plus the rock-pool creatures, which
   potter about on the sand at the bottom), a **Hybrid Tank** (a grassy bank
@@ -152,6 +170,46 @@ call it and then `c.clip()` - that clips to the ellipse but has already painted
 it in whatever `fillStyle` was left over. Build the path with
 `c.beginPath(); c.ellipse(...)` and clip that.
 
+## Fruit
+
+`src/data/fruit.js`, `src/render/fruitart.js`, `src/game/orchard.js`.
+
+Every orchard tree and every hillside shrub carries one real fruit. Stand next
+to one and the main action button becomes **PICK** - the same trick the cottage
+door uses, so no extra button was needed on a phone. Picking shows a card, adds
+it to the basket, and the plant regrows after 95 seconds. Nothing is used up.
+
+Each fruit has an `eat` rating - `yes`, `careful` or `never` - and a `care` line
+of real advice, and both are shown on the card **every single time** and again
+on the fruit's page in the new **Fruit** tab of the book. That is the point of
+the feature, not a footnote to it:
+
+* the **snowberry** is included *because* it is not food. NC State Extension
+  lists the fruit as the poisonous part, it is unmistakable, and it breaks the
+  dangerous idea that pretty white berries are safe;
+* the **chokecherry** needs both halves of the truth or it teaches something
+  harmful either way - the ripe flesh really is food, and the stones, leaves and
+  stems really do contain cyanide;
+* **thimbleberry** was cut after the research: the USDA Forest Service is
+  explicit that it avoids dry ground and belongs by a stream.
+
+The first time she picks each kind, one decoration unlocks. Those ten sit on
+their own shelf in the Decoration Box - *"Picked, not bought"* - as grey
+silhouettes called **???** until she finds them.
+
+## The footbridge
+
+`GG.World.bridge` is five numbers and everything else is derived from them. It
+crosses at (2857, 2383), square across the current where the river opens into
+Gull Inlet, with both ends landing on the sand at Shell Beach.
+
+`World.onBridge(x, y)` projects a point onto the deck, and `blocked()` now reads
+`isDeepWater(x, y) && !onBridge(x, y)` - so the deck beats the water underneath
+and nothing else about collision changes. Step off the side and it is deep water
+again. `drawBridge()` runs after the water and before anything that walks, so
+Guin and her friends cross on top of it. Fishing from it came free: the water
+mask underneath is still water, so `Fishing.castTarget` finds it.
+
 ## Files
 
 ```
@@ -160,15 +218,19 @@ css/style.css         all styling
 src/core/             util, save file (two slots), touch + keyboard input,
                       audio buses, music.js (the music box), ambience.js
 src/data/changelog.js the version number and what changed, for "What's new"
-src/data/bugs.js      the 83 species: habitat, time, rarity, art, facts
+src/data/bugs.js      the 103 species: habitat, time, rarity, art, facts
 src/data/fish.js      the 29 fish: which waters, when they bite, art, facts
-src/data/animals.js   the 22 Garden Friends and the seven ways to befriend them
+src/data/animals.js   the 23 Garden Friends and the seven ways to befriend them
+src/data/foodchain.js who hunts whom (nothing is ever actually eaten)
+src/data/fruit.js     the 10 fruits, what unlocks, and whether you can eat it
 src/render/           bugart.js (every bug drawn in code), propart.js
                       (trees, flowers, the house), decorart.js (tank + habitat
-                      items), animalart.js (the six animal shapes)
-src/game/             time.js, world.js (map + terrain), player.js,
-                      critters.js (spawning, bug AI, catching), house.js,
-                      friends.js (animal AI, befriending, the companion)
+                      items), animalart.js (the six animal shapes),
+                      fruitart.js (the six fruit shapes)
+src/game/             time.js, world.js (map + terrain + the footbridge),
+                      player.js, critters.js (spawning, bug AI, catching),
+                      house.js, friends.js (animal AI, befriending, the
+                      companion), orchard.js (fruit, picking, regrowing)
 src/ui/               ui.js, book.js, terrarium.js, shop.js
 src/main.js           game loop, camera, scenes, minimap, PWA update button
 sw.js, manifest.json  offline support + install-to-home-screen
@@ -177,7 +239,8 @@ dist/                 single-file builds (see below)
 ```
 
 There are **no image or sound files**. Every bug, tree, flower and sound
-effect is generated in code, which is why the whole game is about 170 KB.
+effect is generated in code, which is why the whole game is about 664 KB as a
+single self-contained file.
 
 ## The swell bug (worth knowing before touching `ambience.js`)
 
@@ -231,8 +294,20 @@ Tests (Playwright, with a local server on port 8899):
   "What's new" card, the music and ambience actually running and responding to
   place and time, the decorations for each tank kind, and the whole guest
   visit - including that Guin's save is byte-for-byte unchanged throughout.
+* `tests/orchard.js` - the fruit roster and its safety lines, picking and
+  regrowing, the unlocks, the Fruit Book, the shop's picked-not-bought shelf,
+  and the footbridge: both ends on dry land, nothing blocking the way, most of
+  it really over water, stepping off the side is deep water again, Guin walks
+  right across it and can cast a line off it.
+* `tests/friends.js` - the Garden Friends, the companion, the silly hats, the
+  water habits, the butterfly chase and the food chain.
 * `tests/distcheck.js` - also asserts the service-worker cache name matches
   `GG.VERSION`.
+
+**Anything a test times must close the popups first.** The game loop pauses
+whenever `GG.UI.anyOpen()` is true, and that includes the catch card and the
+friend card, so a card left open by an earlier step makes a timing test fail
+with "nothing moved at all".
 
 (from a copy of the project that still has the `tests/` folder; the build
 script inlines the CSS and all the JavaScript into `dist/index.html` and
