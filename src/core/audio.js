@@ -112,6 +112,17 @@
     click: function () { tone(760, 0.05, 'square', 0.05); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
+    pick: function () {
+      /* a little woody snap, then the fruit dropping into her hand */
+      noise(0.06, 0.05, 1800);
+      tone(660, 0.07, 'triangle', 0.07);
+      tone(990, 0.11, 'triangle', 0.06, null, 0.06);
+    },
+    unlocked: function () {
+      [659, 880, 1047, 1319].forEach(function (f, i) {
+        tone(f, 0.22, 'triangle', 0.09, null, i * 0.08);
+      });
+    },
     coin: function () { tone(1046, 0.06, 'square', 0.05); tone(1318, 0.09, 'square', 0.05, null, 0.05); },
     night: function () { tone(392, 0.6, 'sine', 0.05, 330); },
     angryBuzz: function () {

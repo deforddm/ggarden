@@ -22,6 +22,7 @@
       companion: null,     // the friend tagging along today
       hats: {},            // animalId -> hatId  (silly hats for your friends)
       homeFriends: [],     // friends waiting for her indoors
+      fruit: {},           // fruitId -> { count, first(ms) }  (picked in the orchard and the hills)
       terrariums: [
         { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [], friends: [] }
       ],
@@ -148,6 +149,7 @@
       this.data.settings = this.readSettings();
       if (!this.data.friends) this.data.friends = {};
       if (!this.data.hats) this.data.hats = {};
+      if (!this.data.fruit) this.data.fruit = {};
       if (!this.data.homeFriends) this.data.homeFriends = [];
       /* only friends she has actually made can be waiting at the house, and
          the one walking with her is not also sitting indoors */
@@ -162,6 +164,14 @@
       });
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
+      }
+      /* fruit arrived in v1.12, so drop any fruit id this build does not know */
+      if (GG.FRUIT_BY_ID) {
+        var keepFruit = {};
+        for (var fk in this.data.fruit) {
+          if (GG.FRUIT_BY_ID[fk]) keepFruit[fk] = this.data.fruit[fk];
+        }
+        this.data.fruit = keepFruit;
       }
       return this.data;
     },
@@ -189,6 +199,20 @@
       return c ? c.count : 0;
     },
     totalFriends: function () { return Object.keys(this.data.friends || {}).length; },
+    hasFruit: function (id) { return !!(this.data.fruit && this.data.fruit[id]); },
+    countOfFruit: function (id) {
+      var c = this.data.fruit && this.data.fruit[id];
+      return c ? c.count : 0;
+    },
+    totalFruit: function () { return Object.keys(this.data.fruit || {}).length; },
+    addFruit: function (id) {
+      if (!this.data.fruit) this.data.fruit = {};
+      var c = this.data.fruit[id];
+      var isNew = !c;
+      if (!c) c = this.data.fruit[id] = { count: 0, first: Date.now() };
+      c.count++;
+      return isNew;
+    },
     hatOf: function (id) { return (this.data.hats || {})[id] || null; },
     setHat: function (id, hatId) {
       if (!this.data.hats) this.data.hats = {};
