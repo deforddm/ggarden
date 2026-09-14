@@ -23,6 +23,7 @@
     drag: null,
     _raf: 0,
     _ft: 0,
+    chooserMode: 'new',
     _motion: null,
 
     tank: function () {
@@ -330,6 +331,7 @@
 
         var vx = Math.cos(m.ang) * speed * move;
         var vy = Math.sin(m.ang) * speed * move * (flying ? 0.6 : 0.3);
+        m.gait = GG.clamp(Math.sqrt(vx * vx + vy * vy) / 28, 0, 1.4);
         m.ox += vx * dt; m.oy += vy * dt;
         var radius = flying ? 120 : 92;
         var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
@@ -365,6 +367,15 @@
         if (this.drag && this.drag.e.it === it) { m.ox = 0; m.oy = 0; m.lift = 0; m.lx = it.x; m.ly = it.y; continue; }
         m.timer -= dt;
         if (m.timer <= 0) { m.ang += GG.rand(-1.1, 1.1); m.timer = GG.rand(1, 2.6); }
+        m.hunt = (m.hunt || 0) - dt;
+        if (m.hunt <= 0) {
+          m.hunt = GG.rand(0.4, 0.9);
+          var pr = this.huntTarget(tk, it.id, m.lx, m.ly, 150);
+          if (pr) {
+            m.ang = GG.angLerp(m.ang, Math.atan2(pr.m.ly - m.ly, pr.m.lx - m.lx), 0.7);
+            if (pr.d < 40) { this.spookPrey(pr.m, m.lx, m.ly); m.hunt = GG.rand(3, 6); }
+          }
+        }
         var speed = 20 + (6 - def.shadow) * 5;
         var vx = Math.cos(m.ang) * speed, vy = Math.sin(m.ang) * speed * 0.28;
         m.ox += vx * dt; m.oy += vy * dt;
@@ -407,6 +418,15 @@
           if (bh === 'hop') { m.hop = 0.5; m.timer = GG.rand(1.2, 2.6); }
           if (bh === 'dart') m.dash = 0.45;
         }
+        m.hunt = (m.hunt || 0) - dt;
+        if (m.hunt <= 0) {
+          m.hunt = GG.rand(0.4, 0.9);
+          var bp = this.huntTarget(tk, it.id, m.lx, m.ly, 120);
+          if (bp) {
+            m.ang = GG.angLerp(m.ang, Math.atan2(bp.m.ly - m.ly, bp.m.lx - m.lx), 0.6);
+            if (bp.d < 30) { this.spookPrey(bp.m, m.lx, m.ly); m.hunt = GG.rand(3, 6); }
+          }
+        }
         var move = 1;
         if (bh === 'hover') move = (Math.sin(m.timer * 4) > 0.55) ? 0.15 : 1;
         if (bh === 'dart') { m.dash = Math.max(0, m.dash - dt); move = m.dash > 0 ? 2.3 : 0.12; }
@@ -438,6 +458,29 @@
         m.lx = lx; m.ly = ly;
         if (move > 0.25) m.face = GG.angLerp(m.face, Math.atan2(vy, vx), Math.min(1, dt * 6));
       }
+    },
+
+    /* The food chain inside the glass: a hunter drifts toward something it
+       really would hunt, the other one darts off, and nothing is ever lost. */
+    huntTarget: function (tk, id, x, y, reach) {
+      if (!GG.EATS || !GG.EATS[id]) return null;
+      var pools = [tk.bugs, tk.fish || []], best = null, bestD = reach, self = this;
+      for (var p = 0; p < pools.length; p++) {
+        for (var i = 0; i < pools[p].length; i++) {
+          var it = pools[p][i];
+          if (!GG.hunts(id, it.id)) continue;
+          var m = self.motionFor(it);
+          var d = GG.dist(x, y, m.lx, m.ly);
+          if (d < bestD) { bestD = d; best = { it: it, m: m, d: d }; }
+        }
+      }
+      return best;
+    },
+
+    spookPrey: function (m, fromX, fromY) {
+      m.ang = Math.atan2(m.ly - fromY, m.lx - fromX) + GG.rand(-0.4, 0.4);
+      m.dash = 0.5;
+      m.timer = GG.rand(0.9, 1.6);
     },
 
     livePos: function (e) {
@@ -655,7 +698,7 @@
           var ascale = GG.animalFit(adef, 40 + 90 * GG.clamp(adef.size || 1, 0.2, 1));
           if (!afly) GG.AnimalArt.shadow(c, am.lx, am.ly + 3, 15, 0.16);
           else GG.AnimalArt.shadow(c, am.lx, b.ground[0] + 26, 12, 0.09);
-          GG.AnimalArt.draw(c, adef, pos.x, pos.y, ascale, am.faceLeft, t + it.seed * 6);
+          GG.AnimalArt.draw(c, adef, pos.x, pos.y, ascale, am.faceLeft, t + it.seed * 6, am.gait);
         } else if (e.kind === 'fish') {
           var fdef = GG.FISH_BY_ID[it.id];
           if (!fdef) continue;
@@ -794,6 +837,77 @@
       return (total === 1 ? 'There is ' : 'There are ') + list + ' in it.';
     },
 
+    /* ---------- changing a tank's kind ---------- */
+
+    /* What would have to come out if this tank became `type`? Nothing is
+       destroyed - it all lives in the books and the decoration box already. */
+    wouldMove: function (tk, type) {
+      var ty = GG.TANK_TYPE_BY_ID[type] || {};
+      var out = { bugs: 0, fish: 0, friends: 0, decor: 0 };
+      tk.bugs.forEach(function (x) {
+        if (!ty.maxBugs || !GG.bugFitsTank(GG.BUG_BY_ID[x.id], type)) out.bugs++;
+      });
+      out.fish = ty.maxFish ? Math.max(0, (tk.fish || []).length - ty.maxFish) : (tk.fish || []).length;
+      out.friends = ty.maxFriends ? Math.max(0, (tk.friends || []).length - ty.maxFriends)
+        : (tk.friends || []).length;
+      tk.decor.forEach(function (x) {
+        if (!GG.decorFits(GG.DECOR_BY_ID[x.id], type)) out.decor++;
+      });
+      /* and anything over the new limits */
+      var keptBugs = tk.bugs.length - out.bugs;
+      if (ty.maxBugs && keptBugs > ty.maxBugs) out.bugs += keptBugs - ty.maxBugs;
+      var keptDecor = tk.decor.length - out.decor;
+      if (ty.maxDecor && keptDecor > ty.maxDecor) out.decor += keptDecor - ty.maxDecor;
+      out.total = out.bugs + out.fish + out.friends + out.decor;
+      return out;
+    },
+
+    /* Turn this tank into another kind. */
+    changeType: function (type) {
+      var tk = this.tank(), ty = GG.TANK_TYPE_BY_ID[type];
+      if (!ty || tk.type === type) return false;
+      var moved = this.wouldMove(tk, type);
+
+      tk.bugs = tk.bugs.filter(function (x) {
+        return ty.maxBugs && GG.bugFitsTank(GG.BUG_BY_ID[x.id], type);
+      }).slice(0, ty.maxBugs || 0);
+      tk.fish = (ty.maxFish ? (tk.fish || []) : []).slice(0, ty.maxFish || 0);
+      tk.friends = (ty.maxFriends ? (tk.friends || []) : []).slice(0, ty.maxFriends || 0);
+      tk.decor = tk.decor.filter(function (x) {
+        return GG.decorFits(GG.DECOR_BY_ID[x.id], type);
+      }).slice(0, ty.maxDecor || 0);
+
+      tk.type = type;
+      tk.bg = GG.defaultSceneFor(type);
+
+      /* everything left has to sit somewhere legal in the new layout */
+      var b = this.bands(tk), self = this;
+      this._motion = null;
+      tk.bugs.forEach(function (x) { self.reseat(x, bandFor(GG.BUG_BY_ID[x.id], b)); });
+      tk.fish.forEach(function (x) { self.reseat(x, b.water); });
+      tk.friends.forEach(function (x) { self.reseat(x, self.friendBand(GG.ANIMAL_BY_ID[x.id], b)); });
+      tk.decor.forEach(function (x) { self.reseat(x, b.decor); });
+
+      this.sel = null; this.drag = null;
+      GG.Save.save();
+      this.refresh();
+      GG.Sfx.place();
+
+      var msg = 'This is a ' + ty.name.toLowerCase() + ' now!';
+      if (moved.total) {
+        msg += ' ' + moved.total + (moved.total === 1 ? ' thing went' : ' things went') +
+          ' back to your books, safe and sound.';
+      }
+      GG.UI.toast(msg, 3600);
+      return true;
+    },
+
+    reseat: function (it, band) {
+      if (!band) return;
+      it.y = GG.clamp(it.y, band[0] + 4, band[1] - 4);
+      it.x = GG.clamp(it.x, 44, CW - 44);
+    },
+
     /* Getting rid of a tank: never the last one, and always asked twice. */
     askDelete: function () {
       var d = GG.Save.data;
@@ -823,11 +937,45 @@
       return true;
     },
 
-    /* Little pictures of each kind of tank on the chooser. */
+    /* Little pictures of each kind of tank on the chooser. The same screen
+       does double duty: buying a new tank, and changing this one's kind. */
+    openChooser: function (mode) {
+      var d = GG.Save.data;
+      this.chooserMode = mode;
+      var changing = mode === 'change';
+      $('newtank-title').textContent = changing ? 'What kind should it be?' : 'A new tank';
+      $('newtank-cost').hidden = changing;
+      if (!changing) $('newtank-cost').textContent = '✦ ' + (d.terrariums.length * 250);
+      var note = $('newtank-note');
+      note.hidden = !changing;
+      if (changing) {
+        note.textContent = 'Changing the kind is free. Anything that cannot live in the new ' +
+          'kind goes back to your books, and your decorations stay bought.';
+      }
+      GG.UI.open('screen-newtank');
+      this.drawChooser();
+    },
+
     drawChooser: function () {
       var self = this;
+      var changing = this.chooserMode === 'change';
+      var cur = changing ? this.tank() : null;
       document.querySelectorAll('#newtank-list .newtank').forEach(function (el) {
         var type = el.getAttribute('data-type');
+        var warn = el.querySelector('.nt-warn');
+        el.classList.toggle('current', !!cur && cur.type === type);
+        if (warn) {
+          if (!changing) { warn.hidden = true; }
+          else if (cur.type === type) { warn.hidden = false; warn.textContent = 'This is what it is now.'; }
+          else {
+            var m = self.wouldMove(cur, type);
+            warn.hidden = false;
+            warn.textContent = m.total
+              ? m.total + (m.total === 1 ? ' thing would come out' : ' things would come out') +
+                ' and go back to your books.'
+              : 'Everything in it can stay.';
+          }
+        }
         var cv = el.querySelector('canvas');
         var c = cv.getContext('2d');
         c.save();
@@ -948,18 +1096,37 @@
       $('tank-new').addEventListener('click', function () {
         GG.Sfx.click();
         var d = GG.Save.data;
-        if (d.terrariums.length >= 6) { GG.UI.toast('Six tanks is plenty!'); return; }
-        $('newtank-cost').textContent = '✦ ' + (d.terrariums.length * 250);
-        GG.UI.open('screen-newtank');
-        self.drawChooser();
+        if (d.terrariums.length >= GG.MAX_TANKS) {
+          GG.UI.toast(GG.MAX_TANKS + ' tanks is plenty!'); return;
+        }
+        self.openChooser('new');
+      });
+
+      $('tank-type').addEventListener('click', function () {
+        GG.Sfx.click();
+        self.openChooser('change');
       });
 
       document.querySelectorAll('#newtank-list .newtank').forEach(function (el) {
         el.addEventListener('click', function () {
           var d = GG.Save.data;
           var type = el.getAttribute('data-type');
+
+          if (self.chooserMode === 'change') {
+            GG.Sfx.click();
+            if (self.tank().type === type) {
+              GG.UI.toast('It is already a ' + GG.TANK_TYPE_BY_ID[type].name.toLowerCase() + '.');
+              return;
+            }
+            self.changeType(type);
+            GG.UI.close('screen-newtank');
+            return;
+          }
+
           var cost = d.terrariums.length * 250;
-          if (d.terrariums.length >= 6) { GG.UI.toast('Six tanks is plenty!'); return; }
+          if (d.terrariums.length >= GG.MAX_TANKS) {
+            GG.UI.toast(GG.MAX_TANKS + ' tanks is plenty!'); return;
+          }
           if (d.sparkles < cost) { GG.UI.toast('That costs ✦ ' + cost); return; }
           d.sparkles -= cost;
           var ty = GG.TANK_TYPE_BY_ID[type];

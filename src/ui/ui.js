@@ -160,7 +160,7 @@
           var fs = GG.animalFit(def, 150);
           GG.AnimalArt.shadow(c, cv.width / 2, cv.height / 2 + 54, 44, 0.16);
           GG.AnimalArt.draw(c, def, cv.width / 2, cv.height / 2 + 52 + Math.sin(t * 2) * 4,
-            fs, false, t);
+            fs, false, t, 0.8);
         }
         self._fraf = requestAnimationFrame(frame);
       }

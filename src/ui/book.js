@@ -161,6 +161,25 @@
       }
       det.appendChild(meta);
 
+      /* who eats whom */
+      var eats = GG.eatsList ? GG.eatsList(def.id) : [];
+      var eatenBy = GG.eatenByList ? GG.eatenByList(def.id) : [];
+      if (eats.length || eatenBy.length) {
+        var chain = GG.el('div', 'foodchain');
+        chain.appendChild(GG.el('b', null, 'In the wild'));
+        if (eats.length) {
+          chain.appendChild(GG.el('div', 'fcline',
+            '\ud83d\udc1b It hunts: ' + GG.nameList(eats, 6)));
+        }
+        if (eatenBy.length) {
+          chain.appendChild(GG.el('div', 'fcline',
+            '\ud83d\udc40 Watch out for: ' + GG.nameList(eatenBy, 6)));
+        }
+        chain.appendChild(GG.el('div', 'fcnote',
+          'In your garden everybody always gets away.'));
+        det.appendChild(chain);
+      }
+
       def.facts.forEach(function (f) {
         var line = GG.el('div', 'factline');
         line.innerHTML = '<b>&#10022;</b> ' + f;
@@ -173,6 +192,36 @@
         man.style.margin = '10px 0';
         man.innerHTML = '<b>Good manners</b><span>' + def.manners + '</span>';
         det.appendChild(man);
+
+        /* silly hats */
+        var hh = GG.el('div', 'hat-head', 'Silly hats');
+        det.appendChild(hh);
+        var hatRow = GG.el('div'); hatRow.id = 'hat-row';
+        var picked = GG.Save.hatOf(def.id);
+
+        var none = GG.el('div', 'hatpick' + (picked ? '' : ' on'));
+        none.appendChild(GG.el('div', 'hatnone', '\u2014'));
+        none.appendChild(GG.el('div', 'nm', 'No hat'));
+        none.addEventListener('click', function () {
+          GG.Sfx.click(); GG.Save.setHat(def.id, null); Book.showDetail(def);
+        });
+        hatRow.appendChild(none);
+
+        GG.HATS.forEach(function (hat) {
+          var cell = GG.el('div', 'hatpick' + (picked === hat.id ? ' on' : ''));
+          var hv = GG.el('canvas'); hv.width = 120; hv.height = 120;
+          var hc = hv.getContext('2d'); hc.scale(2, 2);
+          GG.drawHatOnly(hc, hat.id, 30, 42, 17, 0.4);
+          cell.appendChild(hv);
+          cell.appendChild(GG.el('div', 'nm', hat.name));
+          cell.addEventListener('click', function () {
+            GG.Sfx.place();
+            GG.Save.setHat(def.id, hat.id);
+            Book.showDetail(def);
+          });
+          hatRow.appendChild(cell);
+        });
+        det.appendChild(hatRow);
 
         var along = GG.el('button', 'btn primary');
         along.style.width = '100%';
@@ -207,7 +256,8 @@
           c.beginPath();
           c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
         }
-        GG.drawAny(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t);
+        GG.drawAny(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t,
+          false, def.isAnimal ? 0.8 : 0);
         self._raf = requestAnimationFrame(frame);
       }
       this._raf = requestAnimationFrame(frame);
