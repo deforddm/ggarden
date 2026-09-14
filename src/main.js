@@ -229,6 +229,12 @@
     GG.Time.update(dt);
     P.update(dt, function (x, y, r) { return H.blocked(x, y, r); });
 
+    /* the friend who is with her comes indoors too, and the ones waiting at
+       home potter about the room */
+    GG.Friends.update(dt, P, 'house');
+    GG.Friends.stepCompanion(dt, P);
+    GG.Friends.stepHome(dt);
+
     var spot = H.nearest(P.x, P.y);
     GG.UI.prompt(spot ? spot.label : null);
     setActionLabel(spot ? 'OPEN' : '\u2014', spot ? spot.label.toLowerCase() : 'walk around');
@@ -254,7 +260,17 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, GG.view.w, GG.view.h);
     GG.House.draw(ctx, cam, t);
-    GG.Player.draw(ctx, GG.Player.x - cam.x, GG.Player.y - cam.y, t);
+
+    /* Guin, her friend and anybody waiting at home, sorted back to front */
+    var indoors = [{ y: GG.Player.y, player: true }];
+    GG.Friends.collect(indoors, cam);
+    GG.Friends.collectHome(indoors, cam);
+    indoors.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 0; i < indoors.length; i++) {
+      var e = indoors[i];
+      if (e.player) GG.Player.draw(ctx, GG.Player.x - cam.x, GG.Player.y - cam.y, t);
+      else GG.Friends.drawEntry(ctx, e, cam, t);
+    }
     if (GG.Time.isDark()) {
       ctx.fillStyle = 'rgba(30,34,80,0.24)';
       ctx.fillRect(0, 0, GG.view.w, GG.view.h);
@@ -263,6 +279,7 @@
 
   function enterHouse() {
     GG.Sfx.door();
+    GG.Friends.loadHome();
     GG.Critters.calmAll();
     GG.Fishing.reset();
     $('btn-fish').classList.add('hidden');
@@ -277,6 +294,7 @@
   }
   function leaveHouse() {
     GG.Sfx.door();
+    GG.Friends.homeList = [];
     setScene('world');
     GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 50);
     GG.UI.prompt(null);
