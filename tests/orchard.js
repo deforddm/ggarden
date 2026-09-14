@@ -379,9 +379,9 @@ const { chromium } = require('playwright');
   });
   ok('all twenty new bugs are in the roster ' + JSON.stringify(bugs.missing), !bugs.missing.length);
   ok('and every one of them draws something ' + JSON.stringify(bugs.blank), !bugs.blank.length);
-  ok('the roster is 103 (got ' + bugs.total + ')', bugs.total === 103);
+  ok('the roster is 104 (got ' + bugs.total + ')', bugs.total === 104);
   ok('the orchard has plenty now (' + bugs.orchard + ')', bugs.orchard >= 25);
-  ok('the hills are no longer empty (' + bugs.hill + ')', bugs.hill >= 12);
+  ok('the hills are no longer empty (' + bugs.hill + ')', bugs.hill >= 13);
   ok('both have something out at night (' + bugs.orchardNight + ', ' + bugs.hillNight + ')',
     bugs.orchardNight >= 3 && bugs.hillNight >= 3);
   ok('the ones that sting are marked ' + JSON.stringify(bugs.stingers), bugs.stingers.length === 7);
@@ -443,6 +443,148 @@ const { chromium } = require('playwright');
     };
   });
   ok('a Jerusalem cricket can live in a terrarium', keep.fitsTerrarium && keep.notAquatic);
+
+  /* ---------------- look, don't catch ---------------- */
+  const widow = await p.evaluate(() => {
+    const d = GG.BUG_BY_ID.black_widow;
+    if (!d) return { missing: true };
+    const cv = document.createElement('canvas'); cv.width = 100; cv.height = 100;
+    const c = cv.getContext('2d');
+    GG.BugArt.draw(c, d, 50, 50, 2.8, -Math.PI / 2, 1.2);
+    const px = c.getImageData(0, 0, 100, 100).data;
+    let ink = 0, red = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] > 8) ink++;
+      if (px[i] > 150 && px[i + 1] < 90 && px[i + 2] < 90 && px[i + 3] > 100) red++;
+    }
+    return {
+      lookOnly: d.lookOnly === true,
+      value: d.value,
+      hills: d.habitats.length === 1 && d.habitats[0] === 'hill',
+      night: d.times.indexOf('night') >= 0,
+      danger: d.danger || '',
+      facts: d.facts.length,
+      ink, red,
+      notAquatic: !GG.isAquaticBug(d),
+      onlyOne: GG.BUGS.filter(x => x.lookOnly).length
+    };
+  });
+  ok('the black widow is in the roster', !widow.missing && widow.lookOnly);
+  ok('she lives on the hills after dark', widow.hills && widow.night);
+  ok('she is the only look-only creature (' + widow.onlyOne + ')', widow.onlyOne === 1);
+  ok('she draws, hourglass and all (' + widow.ink + 'px, ' + widow.red + ' red)',
+    widow.ink > 200 && widow.red > 20);
+  ok('she is worth no sparkles, because she is never caught', widow.value === 0);
+  ok('her danger line says do not reach where you cannot see',
+    /cannot see/i.test(widow.danger) && /rock/i.test(widow.danger));
+  ok('and she has a proper page of facts (' + widow.facts + ')', widow.facts >= 4);
+
+  const refuse = await p.evaluate(async () => {
+    const P = GG.Player;
+    /* away from the cottage, or GO IN wins the button */
+    P.reset(GG.World.DOOR.x + 320, GG.World.DOOR.y + 300);
+    await new Promise(r => setTimeout(r, 260));
+    GG.Critters.clear();
+    GG.Critters.add(GG.BUG_BY_ID.black_widow, P.x + 36, P.y + 8);
+    await new Promise(r => setTimeout(r, 420));
+    const before = GG.Critters.list.length;
+    P.angle = 0;
+    const caught = GG.Critters.tryCatch(P);
+    return {
+      near: !!GG.Critters.nearestLookOnly(P, 78),
+      label: document.getElementById('btn-a').textContent.replace(/\s+/g, ' '),
+      prompt: document.getElementById('prompt').textContent,
+      caught: caught && caught.id,
+      stillThere: GG.Critters.list.some(c => c.def.id === 'black_widow'),
+      underNet: !!GG.Critters.lookOnlyUnderNet(P),
+      before
+    };
+  });
+  ok('standing beside her is noticed', refuse.near);
+  ok('and the button says LOOK (' + refuse.label + ')', /LOOK/.test(refuse.label));
+  ok('with a prompt that says she is not for catching',
+    /not for catching/i.test(refuse.prompt));
+  ok('the net refuses her', refuse.caught === null || refuse.caught === undefined);
+  ok('and she is still sitting there afterwards', refuse.stillThere);
+  ok('a swing at her is recognised for what it is', refuse.underNet);
+
+  await p.click('#btn-a');
+  await p.waitForTimeout(700);
+  const wcard = await p.evaluate(() => ({
+    shown: !document.getElementById('warn-pop').classList.contains('hidden'),
+    badge: document.getElementById('warn-badge').textContent,
+    name: document.getElementById('warn-name').textContent,
+    danger: document.getElementById('warn-danger').textContent,
+    paused: GG.UI.anyOpen(),
+    seen: GG.Save.hasSeen('black_widow'),
+    caught: GG.Save.has('black_widow'),
+    inTray: Object.keys(GG.Save.data.caught).indexOf('black_widow') >= 0
+  }));
+  ok('meeting her shows the warning card', wcard.shown && wcard.name === 'Western Black Widow');
+  ok('with the LOOK, DON\u2019T CATCH badge', /LOOK, DON/.test(wcard.badge));
+  ok('and the safety line on it', /cannot see/i.test(wcard.danger));
+  ok('the card pauses the garden while it is up', wcard.paused);
+  ok('meeting her records her as MET, never as caught',
+    wcard.seen && !wcard.caught && !wcard.inTray);
+
+  await p.click('#warn-ok');
+  await p.waitForTimeout(300);
+
+  const wbook = await p.evaluate(() => {
+    GG.Book.open('bugs');
+    const cells = document.querySelectorAll('#book-grid .bugcell');
+    const got = document.querySelectorAll('#book-grid .bugcell.got').length;
+    GG.Book.showDetail(GG.BUG_BY_ID.black_widow);
+    const det = document.getElementById('book-detail');
+    const tags = Array.from(det.querySelectorAll('.meta .tag')).map(e => e.textContent);
+    return {
+      cells: cells.length,
+      got,
+      progress: document.getElementById('progress').textContent.trim(),
+      tags,
+      dangerBox: !!document.getElementById('fruit-care'),
+      facts: det.querySelectorAll('.factline').length,
+      hunts: !!det.querySelector('.foodchain')
+    };
+  });
+  ok('the Bug Book lists 104 now (' + wbook.cells + ')', wbook.cells === 104);
+  ok('meeting her opened her page (' + wbook.progress + ')', wbook.got >= 1);
+  ok('the page says Met, not Caught', wbook.tags.some(t => /^Met: /.test(t))
+    && !wbook.tags.some(t => /^Caught: /.test(t)));
+  ok('it carries the look-don\u2019t-catch tag',
+    wbook.tags.some(t => /Look, don/.test(t) && /net will not take her/.test(t)));
+  ok('and the red safety box', wbook.dangerBox);
+  ok('she is in the food chain like everybody else', wbook.hunts);
+  await p.evaluate(() => GG.UI.close('screen-book'));
+
+  /* she survives a reload as MET */
+  await p.evaluate(() => GG.Save.save());
+  await p.reload();
+  await p.waitForTimeout(800);
+  await p.click('#btn-play');
+  await p.waitForTimeout(700);
+  await p.evaluate(() => {
+    const n = document.getElementById('screen-news');
+    if (n && !n.classList.contains('hidden')) GG.UI.close('screen-news');
+  });
+  const wafter = await p.evaluate(() => ({
+    seen: GG.Save.hasSeen('black_widow'),
+    caught: GG.Save.has('black_widow'),
+    counted: GG.Save.totalSpecies() >= 1,
+    /* and an old save that somehow had her caught is tidied up */
+    tidied: (function () {
+      GG.Save.data.caught.black_widow = { count: 3, first: 1 };
+      GG.Save.data.terrariums[0].bugs.push({ id: 'black_widow', x: 100, y: 100 });
+      GG.Save.save();
+      GG.Save.load();
+      return !GG.Save.data.caught.black_widow
+        && GG.Save.data.terrariums[0].bugs.every(x => x.id !== 'black_widow')
+        && GG.Save.hasSeen('black_widow');
+    })()
+  }));
+  ok('she is still MET after a reload', wafter.seen && !wafter.caught);
+  ok('and she counts toward the book', wafter.counted);
+  ok('an old save with her caught or in a tank is tidied up', wafter.tidied);
 
   console.log(r.join('\n'));
   console.log(errs.length ? errs.join('\n') : 'no console errors');
