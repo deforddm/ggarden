@@ -272,6 +272,23 @@ ul.tips li{margin-bottom:3px}
 .eat-never{background:#fdeaea;border-color:#f0c0c0}
 .eat-never b{color:#b22b2b}
 
+/* ---------- look, don't catch (v1.12.1) ---------- */
+#warn-pop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:31;
+  background:rgba(46,26,26,.6);padding:14px}
+#warn-pop.hidden{display:none}
+#warn-card{background:var(--cream);border-radius:22px;border:3px solid #e8b8b8;box-shadow:var(--shadow);
+  width:100%;max-width:352px;max-height:100%;overflow:auto;text-align:center;padding:16px;
+  animation:pop .34s cubic-bezier(.2,1.5,.4,1)}
+#warn-art{width:100%;height:130px;display:block;border-radius:16px}
+#warn-badge{display:inline-block;background:#d8322a;color:#fff;font-weight:bold;font-size:12px;
+  border-radius:999px;padding:3px 12px;margin:6px 0 2px;letter-spacing:.02em}
+#warn-name{font-size:21px;font-weight:bold;margin:2px 0 2px}
+#warn-danger{font-size:13.5px;line-height:1.45;background:#fdeaea;border:2px solid #f0c0c0;
+  border-radius:14px;padding:10px;margin:8px 0;text-align:left}
+#warn-danger b{display:block;color:#b22b2b;margin-bottom:3px}
+#warn-fact{font-size:14px;line-height:1.45;background:var(--cream2);border-radius:14px;padding:10px;margin:8px 0}
+.tag.lookonly{background:#fdeaea;color:#b22b2b}
+
 </style>
 <div id="app">
   <canvas id="game"></canvas>
@@ -586,6 +603,18 @@ ul.tips li{margin-bottom:3px}
     </div>
   </div>
 
+  <!-- look, don't catch -->
+  <div id="warn-pop" class="hidden">
+    <div id="warn-card">
+      <canvas id="warn-art" width="640" height="260"></canvas>
+      <div id="warn-badge">LOOK, DON&rsquo;T CATCH</div>
+      <div id="warn-name"></div>
+      <div id="warn-danger"><b>Keep your hands to yourself</b><span></span></div>
+      <div id="warn-fact"></div>
+      <button class="btn primary" id="warn-ok" style="width:100%;padding:12px;font-size:16px">I&rsquo;ll leave her be</button>
+    </div>
+  </div>
+
   <!-- catch popup -->
   <div id="catch-pop" class="hidden">
     <div id="catch-card">
@@ -694,6 +723,7 @@ ul.tips li{margin-bottom:3px}
       hats: {},            // animalId -> hatId  (silly hats for your friends)
       homeFriends: [],     // friends waiting for her indoors
       fruit: {},           // fruitId -> { count, first(ms) }  (picked in the orchard and the hills)
+      seen: {},            // bugId -> { count, first(ms) }  (met but never caught - the look-only ones)
       terrariums: [
         { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [], friends: [] }
       ],
@@ -821,6 +851,7 @@ ul.tips li{margin-bottom:3px}
       if (!this.data.friends) this.data.friends = {};
       if (!this.data.hats) this.data.hats = {};
       if (!this.data.fruit) this.data.fruit = {};
+      if (!this.data.seen) this.data.seen = {};
       if (!this.data.homeFriends) this.data.homeFriends = [];
       /* only friends she has actually made can be waiting at the house, and
          the one walking with her is not also sitting indoors */
@@ -835,6 +866,21 @@ ul.tips li{margin-bottom:3px}
       });
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
+      }
+      /* the look-only creatures are never caught, so an old save that somehow
+         has one in the caught list or in a tank is tidied up */
+      if (GG.BUG_BY_ID) {
+        for (var ck in this.data.caught) {
+          if (GG.BUG_BY_ID[ck] && GG.BUG_BY_ID[ck].lookOnly) {
+            this.data.seen[ck] = this.data.seen[ck] || this.data.caught[ck];
+            delete this.data.caught[ck];
+          }
+        }
+        (this.data.terrariums || []).forEach(function (t) {
+          t.bugs = (t.bugs || []).filter(function (x) {
+            return !(GG.BUG_BY_ID[x.id] && GG.BUG_BY_ID[x.id].lookOnly);
+          });
+        });
       }
       /* fruit arrived in v1.12, so drop any fruit id this build does not know */
       if (GG.FRUIT_BY_ID) {
@@ -860,7 +906,10 @@ ul.tips li{margin-bottom:3px}
     },
     has: function (id) { return !!this.data.caught[id]; },
     countOf: function (id) { var c = this.data.caught[id]; return c ? c.count : 0; },
-    totalSpecies: function () { return Object.keys(this.data.caught).length; },
+    totalSpecies: function () {
+      /* the look-only ones count too, once she has met them */
+      return Object.keys(this.data.caught).length + Object.keys(this.data.seen || {}).length;
+    },
     hasFish: function (id) { return !!this.data.caughtFish[id]; },
     countOfFish: function (id) { var c = this.data.caughtFish[id]; return c ? c.count : 0; },
     totalFish: function () { return Object.keys(this.data.caughtFish).length; },
@@ -870,6 +919,28 @@ ul.tips li{margin-bottom:3px}
       return c ? c.count : 0;
     },
     totalFriends: function () { return Object.keys(this.data.friends || {}).length; },
+    /* The look-only creatures are met, not caught. Meeting one is what opens
+       its page in the Bug Book. */
+    hasSeen: function (id) { return !!(this.data.seen && this.data.seen[id]); },
+    countOfSeen: function (id) {
+      var c = this.data.seen && this.data.seen[id];
+      return c ? c.count : 0;
+    },
+    totalSeen: function () { return Object.keys(this.data.seen || {}).length; },
+    addSeen: function (id) {
+      if (!this.data.seen) this.data.seen = {};
+      var c = this.data.seen[id];
+      var isNew = !c;
+      if (!c) c = this.data.seen[id] = { count: 0, first: Date.now() };
+      c.count++;
+      this.save();
+      return isNew;
+    },
+    /* "found it" for the Bug Book: caught it, or - for a look-only one - met it */
+    found: function (def) {
+      if (!def) return false;
+      return def.lookOnly ? this.hasSeen(def.id) : this.has(def.id);
+    },
     hasFruit: function (id) { return !!(this.data.fruit && this.data.fruit[id]); },
     countOfFruit: function (id) {
       var c = this.data.fruit && this.data.fruit[id];
@@ -1223,6 +1294,11 @@ ul.tips li{margin-bottom:3px}
     click: function () { tone(760, 0.05, 'square', 0.05); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
+    warn: function () {
+      /* two low, careful notes - a "mind yourself", not an alarm */
+      tone(392, 0.20, 'sine', 0.08, 330);
+      tone(294, 0.30, 'sine', 0.07, 247, 0.16);
+    },
     pick: function () {
       /* a little woody snap, then the fruit dropping into her hand */
       noise(0.06, 0.05, 1800);
@@ -1689,9 +1765,17 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.12.0';
+  GG.VERSION = '1.12.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.12.1', title: 'One you look at and leave alone',
+      lines: [
+        'There is a black widow spider out on the Pebble Hills after dark, and she is the one creature in the whole garden you never catch. Your net will not take her, however hard you swing.',
+        'Walk up to her and the button says LOOK instead of NET. Tap it and she gets a card of her own with the real reason: never put your hand anywhere you cannot see. Lift the far edge of a rock, have a look, and put it back exactly how it was.',
+        'Meeting her is what opens her page in the Bug Book — it says Met instead of Caught — and the page tells you the true things about her, including that Washington has no brown recluse spiders at all.'
+      ]
+    },
     {
       v: '1.12.0', title: 'Fruit to pick, a footbridge, and twenty new bugs',
       lines: [
@@ -3077,6 +3161,26 @@ ul.tips li{margin-bottom:3px}
         'Its caterpillars eat only bitterbrush and mountain mahogany, the grey shrubs of the dry hills. No bitterbrush, no butterfly — so never pull those bushes up.',
         'It flies for just a few weeks in June and July, once a year, and the males sit on top of a shrub and wait for a female to pass by.'
       ]
+    },
+    {
+      /* The one creature in the whole garden that is never caught.
+         `lookOnly` means the net refuses her, meeting her is what opens her
+         Bug Book page, and her `danger` line is shown every time. */
+      id: 'black_widow', name: 'Western Black Widow',
+      habitats: ['hill'], times: ['evening', 'night'], rarity: 4, value: 0,
+      behavior: 'cling', speed: 14, shy: 30, size: 1.0,
+      lookOnly: true,
+      measure: 'her body is about half an inch',
+      danger: 'Never put your hand anywhere you cannot see \u2014 not under a rock, not into a woodpile, not into a dark corner. Lift the far edge of a rock, have a look, and put it back exactly how it was.',
+      art: { shape: 'widow', body: '#141419', mark: '#d8322a', web: 'rgba(240,244,248,0.42)' },
+      facts: [
+        'This is the one creature in the garden you never catch. You look at her, you leave her alone, and you both go on with your day.',
+        'She hangs upside down in her web, which is why the red hourglass on her tummy is the part you can see.',
+        'Her web is not a neat round one. It is a messy tangle close to the ground, in a woodpile or under a rock or in the gap behind a plant pot.',
+        'She is common in eastern Washington, and she really would rather you went away. Widow spiders almost never bite unless they are squashed inside their own web.',
+        'The little brown one a quarter of her size is the male, and he cannot bite people at all.',
+        'Washington has no brown recluse spiders. Not one. That is a story people tell each other.'
+      ]
     }
 
   ];
@@ -3891,6 +3995,8 @@ ul.tips li{margin-bottom:3px}
     velvet_ant: ['sweat_bee'],
     robber_fly: ['bumblebee', 'grasshopper', 'honeybee', 'housefly', 'hoverfly',
       'sweat_bee', 'mason_bee', 'damselfly', 'yellowjacket'],
+    black_widow: ['ant', 'harvester_ant', 'cricket', 'grasshopper', 'pinacate_beetle',
+      'pillbug', 'cockroach', 'silverfish'],
 
     /* --- garden and woodland --- */
     ladybug: ['aphid'],
@@ -6318,6 +6424,84 @@ ul.tips li{margin-bottom:3px}
       c.beginPath(); c.moveTo(w * 0.55, -7.6); c.lineTo(w * 1.25, -10.2); c.stroke();
     }
     line(c, 0, -8, 0, -11.4, 0.9, GG.shade(a.body, -0.3));
+  };
+
+
+  /* A western black widow, hanging the way she really hangs: upside down in
+     her messy tangle web. Because we are looking at her from above and she is
+     belly-up, the red hourglass on her underside is the part we can see.
+     She is never caught - only looked at. */
+  S.widow = function (c, a, t) {
+    var sway = Math.sin(t * 0.9) * 0.5;
+
+    /* the untidy tangle web - nothing like a neat round orb */
+    c.strokeStyle = a.web || 'rgba(236,240,246,0.30)';
+    c.lineWidth = 0.32;
+    var strands = [
+      [-14, -12, -2.5, -3], [13, -13, 2.5, -3], [-15, 10, -3, 2.5], [14, 11, 3, 2.5],
+      [-6, -16, -1, -4], [7, -15, 1.5, -4], [-9, 15, -1.5, 4.5], [10, 14, 2, 4.5],
+      [-16, -1, -4, -0.5], [16, 0, 4, 0.5], [-4, -17, -0.5, -5], [3, 17, 0.5, 6]
+    ];
+    for (var s = 0; s < strands.length; s++) {
+      var q = strands[s];
+      c.beginPath();
+      c.moveTo(q[0] + sway * 0.6, q[1]);
+      c.quadraticCurveTo((q[0] + q[2]) / 2 + sway, (q[1] + q[3]) / 2, q[2], q[3]);
+      c.stroke();
+    }
+    c.beginPath();
+    c.moveTo(-12, -7); c.quadraticCurveTo(0, -3 + sway, 12, -8); c.stroke();
+    c.beginPath();
+    c.moveTo(-11, 7); c.quadraticCurveTo(0, 4 + sway, 11, 8); c.stroke();
+
+    /* eight long thin legs, fanned out to the sides the way a hanging widow
+       holds them - never straight up, or they read as antennae */
+    var LEGS = [
+      [-1, -1.02, 6.8, 10.6], [-1, -0.42, 7.6, 11.6],
+      [-1, 0.24, 7.6, 11.2], [-1, 0.86, 6.6, 10.0],
+      [1, -1.02, 6.8, 10.6], [1, -0.42, 7.6, 11.6],
+      [1, 0.24, 7.6, 11.2], [1, 0.86, 6.6, 10.0]
+    ];
+    c.strokeStyle = a.body; c.lineCap = 'round'; c.lineWidth = 1.05;
+    for (var i = 0; i < LEGS.length; i++) {
+      var L = LEGS[i], side = L[0], ang = L[1], kneeR = L[2], tipR = L[3];
+      var wob = Math.sin(t * 1.3 + i * 0.8) * 0.4;
+      var ox = side * 1.8, oy = -2.2;
+      /* the knee is lifted and the foot drops back down - the widow crook */
+      var kx = ox + side * Math.cos(ang) * kneeR;
+      var ky = oy + Math.sin(ang) * kneeR * 0.7 - 1.8 + wob;
+      var tx = ox + side * Math.cos(ang) * tipR;
+      var ty = oy + Math.sin(ang) * tipR * 0.85 + 1.2 + wob * 1.3;
+      c.beginPath();
+      c.moveTo(ox, oy);
+      c.quadraticCurveTo(kx, ky, tx, ty);
+      c.stroke();
+    }
+
+    /* the little front body */
+    c.fillStyle = GG.shade(a.body, 0.16);
+    ell(c, 0, -4.4, 2.3, 2.4);
+    c.fillStyle = 'rgba(255,255,255,0.20)';
+    ell(c, -0.85, -5.1, 0.85, 0.95, -0.4);
+
+    /* the big round belly, glossy black */
+    c.fillStyle = a.body;
+    ell(c, 0, 2.8, 5.5, 5.9);
+    /* the gloss goes on BEFORE the hourglass, and off to one side of it */
+    c.fillStyle = 'rgba(255,255,255,0.11)';
+    ell(c, -3.2, -0.2, 1.0, 1.8, -0.4);
+
+    /* the hourglass, because she is hanging belly-up */
+    c.fillStyle = a.mark || '#d8322a';
+    c.beginPath();
+    c.moveTo(-2.3, -0.2);
+    c.lineTo(2.3, -0.2);
+    c.lineTo(0.8, 2.9);
+    c.lineTo(2.4, 6.0);
+    c.lineTo(-2.4, 6.0);
+    c.lineTo(-0.8, 2.9);
+    c.closePath();
+    c.fill();
   };
 
 
@@ -11194,6 +11378,8 @@ ul.tips li{margin-bottom:3px}
       var best = null, bestD = 1e9;
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
+        /* the look-only ones are never in the net, whatever she swings at */
+        if (b.def.lookOnly) continue;
         var dz = Math.max(0, b.z - 26) * 0.8;
         var d = GG.dist(b.x, b.y - b.z * 0.5, n.x, n.y) + dz;
         var reach = n.r + 8 * (b.def.size || 1);
@@ -11203,6 +11389,31 @@ ul.tips li{margin-bottom:3px}
       this.list.splice(this.list.indexOf(best), 1);
       this.burst(best.x, best.y - best.z, best.def);
       return best.def;
+    },
+
+    /* Did she just swing the net at something she must not catch? */
+    lookOnlyUnderNet: function (player) {
+      var n = player.netPoint();
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (!b.def.lookOnly) continue;
+        var reach = n.r + 10 * (b.def.size || 1);
+        if (GG.dist(b.x, b.y, n.x, n.y) < reach) return b;
+      }
+      return null;
+    },
+
+    /* The nearest look-only creature she is standing beside. */
+    nearestLookOnly: function (player, radius) {
+      var best = null, bestD = (radius || 74) * (radius || 74);
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (!b.def.lookOnly) continue;
+        var dx = player.x - b.x, dy = (player.y - b.y) * 1.15;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = b; }
+      }
+      return best;
     },
 
     /* Swing at a bee and miss and she takes it personally. */
@@ -12616,6 +12827,10 @@ ul.tips li{margin-bottom:3px}
         b.addEventListener('click', function () { GG.Sfx.click(); self.close(b.getAttribute('data-close')); });
       });
       $('catch-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideCatch(); });
+      $('warn-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideWarning(); });
+      $('warn-pop').addEventListener('click', function (e) {
+        if (e.target.id === 'warn-pop') self.hideWarning();
+      });
       $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop') self.hideCatch(); });
       $('friend-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideFriend(); });
       $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop') self.hideFriend(); });
@@ -12643,6 +12858,7 @@ ul.tips li{margin-bottom:3px}
     anyOpen: function () {
       return this.openPanels.length > 0 ||
         !$('catch-pop').classList.contains('hidden') ||
+        !$('warn-pop').classList.contains('hidden') ||
         !$('friend-pop').classList.contains('hidden');
     },
 
@@ -12680,6 +12896,55 @@ ul.tips li{margin-bottom:3px}
       $('catch-care').style.display = 'none';
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
+    },
+
+    /* ---------- look, don't catch ---------- */
+    showWarning: function (def, isNew) {
+      var cv = $('warn-art');
+      cv.width = 640; cv.height = 260;
+      this._warnDef = def;
+      $('warn-name').textContent = def.name;
+      $('warn-danger').querySelector('span').textContent = def.danger || '';
+      var n = GG.Save.countOfSeen(def.id);
+      $('warn-fact').textContent = isNew
+        ? def.facts[0]
+        : def.facts[1 + Math.floor(Math.random() * (def.facts.length - 1))];
+      $('warn-pop').classList.remove('hidden');
+      this._animWarn();
+    },
+
+    _animWarn: function () {
+      var self = this;
+      cancelAnimationFrame(this._wraf);
+      var cv = $('warn-art'), c = cv.getContext('2d');
+      var start = performance.now();
+      function frame(now) {
+        if ($('warn-pop').classList.contains('hidden')) return;
+        var t = (now - start) / 1000;
+        c.clearRect(0, 0, cv.width, cv.height);
+        var g = c.createLinearGradient(0, 0, 0, cv.height);
+        g.addColorStop(0, '#3a3340'); g.addColorStop(1, '#241f28');
+        c.fillStyle = g;
+        GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
+        /* a few faint web strands across the dark, for atmosphere */
+        c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+        for (var i = 0; i < 7; i++) {
+          c.beginPath();
+          c.moveTo(0, i * 44 - 20);
+          c.quadraticCurveTo(cv.width / 2, i * 30 + Math.sin(t + i) * 8, cv.width, i * 48);
+          c.stroke();
+        }
+        GG.drawAny(c, self._warnDef, cv.width / 2,
+          cv.height / 2 + Math.sin(t * 1.1) * 5, 7.6, -Math.PI / 2, t);
+        self._wraf = requestAnimationFrame(frame);
+      }
+      this._wraf = requestAnimationFrame(frame);
+    },
+
+    hideWarning: function () {
+      $('warn-pop').classList.add('hidden');
+      cancelAnimationFrame(this._wraf);
+      if (this.onWarningClosed) this.onWarningClosed();
     },
 
     /* ---------- a piece of fruit ---------- */
@@ -12866,7 +13131,7 @@ ul.tips li{margin-bottom:3px}
       list.forEach(function (def) {
         var got = fruit ? GG.Save.hasFruit(def.id)
           : (friends ? GG.Save.hasFriend(def.id)
-            : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id)));
+            : (fish ? GG.Save.hasFish(def.id) : GG.Save.found(def)));
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
         cv.style.width = '100%'; cv.style.height = '54px';
@@ -12875,8 +13140,9 @@ ul.tips li{margin-bottom:3px}
         if (got) {
           var n0 = fruit ? GG.Save.countOfFruit(def.id)
             : (friends ? GG.Save.countOfFriend(def.id)
-              : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
-          cell.appendChild(GG.el('div', 'cnt', '×' + n0));
+              : (fish ? GG.Save.countOfFish(def.id)
+                : (def.lookOnly ? GG.Save.countOfSeen(def.id) : GG.Save.countOf(def.id))));
+          cell.appendChild(GG.el('div', 'cnt', def.lookOnly ? '✔' : '×' + n0));
           if (!fruit) {
             var r = GG.el('div', 'rar');
             r.style.background = GG.RARITY_COLORS[def.rarity];
@@ -12891,6 +13157,7 @@ ul.tips li{margin-bottom:3px}
         cell.addEventListener('click', function () {
           GG.Sfx.click();
           if (got) Book.showDetail(def);
+          else if (def.lookOnly) GG.UI.toast('You have not met this one yet. She is out on the hills after dark.', 2800);
           else GG.UI.toast(fruit ? 'You have not picked this one yet!'
             : (friends ? 'You have not made friends with this one yet!'
               : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
@@ -12994,7 +13261,13 @@ ul.tips li{margin-bottom:3px}
       } else {
         var places = def.habitats.map(function (x) { return GG.HABITAT_NAMES[x]; }).join(', ');
         rows = [['Found in', places], ['Comes out', times], ['Size', def.measure],
-          ['Rarity', GG.RARITY_NAMES[def.rarity]], ['Caught', n + ' time' + (n === 1 ? '' : 's')]];
+          ['Rarity', GG.RARITY_NAMES[def.rarity]]];
+        if (def.lookOnly) {
+          var seen = GG.Save.countOfSeen(def.id);
+          rows.push(['Met', seen + ' time' + (seen === 1 ? '' : 's')]);
+        } else {
+          rows.push(['Caught', n + ' time' + (n === 1 ? '' : 's')]);
+        }
       }
       rows.forEach(function (p) {
         meta.appendChild(GG.el('span', 'tag', p[0] + ': ' + p[1]));
@@ -13002,6 +13275,9 @@ ul.tips li{margin-bottom:3px}
       if (def.sting) {
         var warn = GG.el('span', 'tag sting', 'Can sting if you upset her');
         meta.appendChild(warn);
+      }
+      if (def.lookOnly) {
+        meta.appendChild(GG.el('span', 'tag lookonly', 'Look, don\u2019t catch \u2014 your net will not take her'));
       }
       if (!isFish && !isAnimal && GG.isAquaticBug(def)) {
         meta.appendChild(GG.el('span', 'tag wet', 'Needs water: keep it in a fish tank or a hybrid tank'));
@@ -13011,6 +13287,14 @@ ul.tips li{margin-bottom:3px}
         if (way) meta.appendChild(GG.el('span', 'tag way', 'How to say hello: ' + way.blurb));
       }
       det.appendChild(meta);
+
+      if (def.lookOnly && def.danger) {
+        var dbox = GG.el('div');
+        dbox.id = 'fruit-care';
+        dbox.className = 'eat-never';
+        dbox.innerHTML = '<b>Keep your hands to yourself</b><span>' + def.danger + '</span>';
+        det.appendChild(dbox);
+      }
 
       if (isFruit) {
         var eatInfo = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
@@ -13107,15 +13391,28 @@ ul.tips li{margin-bottom:3px}
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
+        if (def.lookOnly) { g.addColorStop(0, '#3a3340'); g.addColorStop(1, '#241f28'); }
+        else if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
         else if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
         else if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
         else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
-        c.fillStyle = 'rgba(255,255,255,0.35)';
-        for (var i = 0; i < 5; i++) {
-          c.beginPath();
-          c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
+        /* soft clouds along the bottom - but the look-only page is a dark
+           night scene, so they become faint web strands instead */
+        if (def.lookOnly) {
+          c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+          for (var w = 0; w < 6; w++) {
+            c.beginPath();
+            c.moveTo(0, w * 52 - 10);
+            c.quadraticCurveTo(cv.width / 2, w * 38 + Math.sin(t + w) * 7, cv.width, w * 56);
+            c.stroke();
+          }
+        } else {
+          c.fillStyle = 'rgba(255,255,255,0.35)';
+          for (var i = 0; i < 5; i++) {
+            c.beginPath();
+            c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
+          }
         }
         GG.drawAny(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t,
           false, def.isAnimal ? 0.8 : 0);
@@ -14548,6 +14845,8 @@ ul.tips li{margin-bottom:3px}
     GG.Orchard.stepPops(dt);
     var fishing = Fi.active();
     var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
+    var lookAt = !fishing && !atDoor && !GG.Friends.busy ? GG.Critters.nearestLookOnly(P, 78) : null;
+    if (lookAt) pickable = null;   // she is the more important thing to notice
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
@@ -14560,6 +14859,7 @@ ul.tips li{margin-bottom:3px}
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
+      if (lookAt) { lookAtCreature(lookAt.def); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (P.startSwing()) swingChecked = false;
@@ -14589,11 +14889,13 @@ ul.tips li{margin-bottom:3px}
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
     GG.UI.prompt(atDoor ? 'Tap to go inside'
-      : (pickable ? 'Tap to pick the fruit' : null));
+      : (lookAt ? 'Look \u2014 but this one is not for catching'
+        : (pickable ? 'Tap to pick the fruit' : null)));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
       setActionLabel('PICK', pf ? pf.name.toLowerCase() : 'fruit');
@@ -14733,6 +15035,9 @@ ul.tips li{margin-bottom:3px}
   /* ---------- bees ---------- */
   function onSwingMiss(P) {
     var net = P.netPoint();
+    /* swinging at the one she must not catch teaches, it does not punish */
+    var forbidden = GG.Critters.lookOnlyUnderNet(P);
+    if (forbidden) { lookAtCreature(forbidden.def); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
     if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
@@ -14787,6 +15092,16 @@ ul.tips li{margin-bottom:3px}
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+  }
+
+  /* ---------- look, don't catch ---------- */
+  /* One creature in the whole garden is never caught. Meeting her is what
+     opens her page in the Bug Book, and the warning comes with it. */
+  function lookAtCreature(def) {
+    var isNew = GG.Save.addSeen(def.id);
+    GG.UI.refreshHud();
+    if (isNew) GG.Sfx.warn(); else GG.Sfx.click();
+    GG.UI.showWarning(def, isNew);
   }
 
   /* ---------- picking fruit ---------- */
@@ -15317,6 +15632,7 @@ ul.tips li{margin-bottom:3px}
     $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
 
     GG.UI.onCatchClosed = function () { swingChecked = true; };
+    GG.UI.onWarningClosed = function () { swingChecked = true; };
     GG.Friends.onFriend = function (def, isNew, reward) {
       GG.UI.showFriend(def, isNew, reward);
     };
