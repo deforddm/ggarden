@@ -134,7 +134,10 @@
     GG.Friends.update(dt, P, 'world');
     GG.Friends.stepCompanion(dt, P);
 
+    GG.Orchard.update(dt);
+    GG.Orchard.stepPops(dt);
     var fishing = Fi.active();
+    var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
@@ -147,6 +150,7 @@
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
+      if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (P.startSwing()) swingChecked = false;
     }
@@ -174,11 +178,16 @@
     if (W.W < GG.view.w) cam.x = (W.W - GG.view.w) / 2;
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
-    GG.UI.prompt(atDoor ? 'Tap to go inside' : null);
+    GG.UI.prompt(atDoor ? 'Tap to go inside'
+      : (pickable ? 'Tap to pick the fruit' : null));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
-    else setActionLabel(atDoor ? 'GO IN' : 'NET', atDoor ? 'door' : 'tap');
+    else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (pickable) {
+      var pf = GG.FRUIT_BY_ID[pickable.fruit];
+      setActionLabel('PICK', pf ? pf.name.toLowerCase() : 'fruit');
+    } else setActionLabel('NET', 'tap');
   }
 
   function drawWorld(t) {
@@ -187,6 +196,7 @@
     canvas._vw = GG.view.w;
     W.drawWater(ctx, cam, t);
     GG.Fishing.drawShadows(ctx, cam, t);
+    W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
 
     // everything that stands up gets sorted so Guin walks behind trees
@@ -204,10 +214,11 @@
         GG.Friends.drawEntry(ctx, d, cam, t);
       } else {
         var p = d.p, fn = GG.Props[p.type];
-        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     }
     GG.Friends.drawHearts(ctx, cam);
+    GG.Orchard.drawPops(ctx, cam);
     GG.Critters.draw(ctx, cam, t);
     GG.Fishing.draw(ctx, cam, t, P);
 
@@ -366,6 +377,16 @@
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+  }
+
+  /* ---------- picking fruit ---------- */
+  function pickFruit(plant) {
+    var res = GG.Orchard.pick(plant);
+    if (!res) return;
+    GG.Orchard.pop(res.def, plant.x, plant.y - 10);
+    if (res.unlocked) GG.Sfx.unlocked(); else GG.Sfx.pick();
+    GG.UI.refreshHud();
+    GG.UI.showFruit(res);
   }
 
   /* ---------- catching ---------- */
@@ -851,6 +872,7 @@
     GG.Time.minutes = GG.Save.data.clock;
     GG.Time.day = GG.Save.data.day;
     GG.World.build();
+    GG.Orchard.assign();
     GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
     GG.Friends.loadCompanion();
     resize();
