@@ -646,7 +646,8 @@
 
 
   GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft, gait) {
-    if (def.isAnimal) {
+    if (def.isFruit) GG.FruitArt.draw(c, def, x, y, scale, t);
+    else if (def.isAnimal) {
       /* animals are normalised to fill their frame, so a hummingbird on a
          book page is not a speck next to a labrador */
       var as = GG.animalFit(def, 26 * scale);

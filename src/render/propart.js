@@ -52,13 +52,50 @@
     }
   };
 
-  P.appleTree = function (c, x, y, r, t, seed) {
+  P.appleTree = function (c, x, y, r, t, seed, col, p) {
     P.tree(c, x, y, r, t, seed);
     var cx = x + Math.sin(t * 0.8 + seed * 6) * 2.2, cy = y - r * 1.18;
+    /* Since v1.12 each orchard tree carries a real fruit, and it grows back
+       after she picks it. A tree with no fruit assigned keeps its old apples. */
+    var def = p && p.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[p.fruit] : null;
+    if (def) {
+      var ripe = (p.ripe == null) ? 1 : p.ripe;
+      GG.FruitArt.onPlant(c, def, cx, cy, r, 6, seed, t, ripe);
+      return;
+    }
     c.fillStyle = '#e0413c';
     var rnd = GG.mulberry32(Math.floor(seed * 9999));
     for (var i = 0; i < 5; i++) {
       ell(c, cx + (rnd() - 0.5) * r * 1.2, cy + (rnd() - 0.3) * r * 0.9, r * 0.11, r * 0.11);
+    }
+  };
+
+  /* A low, tough, grey-green hillside shrub: serviceberry, currant,
+     chokecherry, wild rose or snowberry, depending on what it carries. */
+  P.wildBush = function (c, x, y, r, t, seed, col, p) {
+    var def = p && p.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[p.fruit] : null;
+    var leaf = (def && def.leaf) || '#6a8f5a';
+    shadow(c, x + 1, y, r * 0.8);
+    /* woody stems */
+    c.strokeStyle = '#7a6a52'; c.lineWidth = Math.max(1, r * 0.07); c.lineCap = 'round';
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.08, y);
+      c.quadraticCurveTo(x + i * r * 0.3, y - r * 0.5, x + i * r * 0.42, y - r * 0.78);
+      c.stroke();
+    }
+    c.fillStyle = GG.shade(leaf, -0.14);
+    ell(c, x - r * 0.4, y - r * 0.34, r * 0.52, r * 0.4);
+    ell(c, x + r * 0.4, y - r * 0.34, r * 0.52, r * 0.4);
+    ell(c, x, y - r * 0.58, r * 0.6, r * 0.48);
+    c.fillStyle = leaf;
+    ell(c, x - r * 0.18, y - r * 0.6, r * 0.38, r * 0.3);
+    ell(c, x + r * 0.26, y - r * 0.44, r * 0.32, r * 0.26);
+    c.fillStyle = GG.shade(leaf, 0.16);
+    ell(c, x - r * 0.32, y - r * 0.72, r * 0.2, r * 0.16);
+    if (def) {
+      var ripe = (p.ripe == null) ? 1 : p.ripe;
+      GG.FruitArt.onPlant(c, def, x, y - r * 0.52, r * 0.98, 5, seed, t, ripe);
     }
   };
 

@@ -235,18 +235,53 @@
   };
 
   S.beetle = function (c, a, t) {
-    legs(c, GG.shade(a.body, -0.35), 3, 3.6, 6.6, t * 8, 1.3);
-    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -6, 3.4, 2.6);
-    line(c, -1.6, -8, -3.6, -11, 0.9, a.accent);
-    line(c, 1.6, -8, 3.6, -11, 0.9, a.accent);
-    c.fillStyle = a.body; ell(c, 0, 0.4, 5.4, 7.2);
-    c.fillStyle = a.wing; ell(c, 0, 0.8, 4.9, 6.6);
+    var w = a.slim ? 0.62 : 1;        // blister beetles are narrow and soft
+    legs(c, GG.shade(a.body, -0.35), 3, 3.6, 6.6 * (a.slim ? 1.1 : 1), t * 8, 1.3);
+    c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -6, 3.4 * w, 2.6);
+    if (a.antennae === 'fan') {
+      /* the male ten-lined june beetle opens his antennae like a hand of cards */
+      var open = 0.5 + 0.5 * Math.abs(Math.sin(t * 1.4));
+      c.fillStyle = a.fan || '#e08a2c';
+      for (var s2 = -1; s2 <= 1; s2 += 2) {
+        for (var bl = 0; bl < 5; bl++) {
+          c.save();
+          c.translate(s2 * 2, -8.2);
+          c.rotate(s2 * (0.25 + bl * 0.13 * open));
+          ell(c, s2 * 1.4, -2.6, 0.55, 2.6);
+          c.restore();
+        }
+      }
+    } else {
+      line(c, -1.6, -8, -3.6, -11, 0.9, a.accent);
+      line(c, 1.6, -8, 3.6, -11, 0.9, a.accent);
+    }
+    c.fillStyle = a.body; ell(c, 0, 0.4, 5.4 * w, 7.2);
+    if (a.rim) { c.fillStyle = a.rim; ell(c, 0, 0.6, 5.1 * w, 6.9); }
+    c.fillStyle = a.wing; ell(c, 0, 0.8, 4.9 * w, 6.6);
     c.fillStyle = a.accent; ell(c, 0, 0.8, 0.5, 6.6);
     if (a.pattern === 'stripes') {
       c.fillStyle = a.accent;
-      ell(c, -2.6, 0.8, 0.7, 5.4); ell(c, 2.6, 0.8, 0.7, 5.4);
+      ell(c, -2.6 * w, 0.8, 0.7, 5.4); ell(c, 2.6 * w, 0.8, 0.7, 5.4);
+    } else if (a.pattern === 'tenline') {
+      c.fillStyle = a.accent;
+      for (var ln = 1; ln <= 4; ln++) {
+        var lx = ln * 1.0 * w;
+        var lh = 6.2 - ln * 0.9;
+        ell(c, -lx, 0.8, 0.34, lh); ell(c, lx, 0.8, 0.34, lh);
+      }
+    } else if (a.pattern === 'fourspot') {
+      c.fillStyle = a.accent;
+      ell(c, -2.5 * w, -2.4, 1.6, 1.5, -0.3); ell(c, 2.5 * w, -2.4, 1.6, 1.5, 0.3);
+      ell(c, -2.6 * w, 3.4, 1.5, 1.4, 0.3); ell(c, 2.6 * w, 3.4, 1.5, 1.4, -0.3);
+      /* short wing cases leave the tip of the abdomen bare */
+      c.fillStyle = GG.shade(a.body, -0.3); ell(c, 0, 6.6, 3 * w, 1.6);
     }
-    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -2.2, -2.4, 1.7, 2.6, -0.35);
+    if (a.club) {
+      /* a sap beetle's antennae end in a little knob */
+      c.fillStyle = a.accent;
+      ell(c, -3.7, -11.1, 1, 0.95); ell(c, 3.7, -11.1, 1, 0.95);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -2.2 * w, -2.4, 1.7 * w, 2.6, -0.35);
   };
 
   S.stagbeetle = function (c, a, t) {
@@ -308,9 +343,12 @@
     c.fillStyle = a.wing;
     ell(c, -4.4, -2, 4, 2.4, -0.5); ell(c, 4.4, -2, 4, 2.4, 0.5);
     c.restore(); c.globalAlpha = 1;
-    c.fillStyle = a.accent; ell(c, 0, -6, 2.6, 2.4);
+    c.fillStyle = a.head || a.accent; ell(c, 0, -6, 2.6, 2.4);
     c.fillStyle = '#fff'; ell(c, -1.1, -6.6, 0.6, 0.7); ell(c, 1.1, -6.6, 0.6, 0.7);
-    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.6, 3.4, 3);
+    c.fillStyle = a.thorax || GG.shade(a.body, -0.12); ell(c, 0, -2.6, 3.4, 3);
+    if (a.thorax) {
+      c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, -1.2, -3.6, 1.3, 1.4, -0.4);
+    }
     c.fillStyle = a.body; ell(c, 0, 2.4, 3.8, 5.2);
     c.fillStyle = a.accent;
     ell(c, 0, 0.6, 3.5, 0.9); ell(c, 0, 3.4, 3.3, 0.9); ell(c, 0, 5.8, 2.4, 0.8);
@@ -706,9 +744,22 @@
 
   S.fly = function (c, a, t) {
     var flap = 0.35 + 0.65 * Math.abs(Math.cos(t * 22));
-    c.save(); c.globalAlpha = 0.55; c.scale(flap, 1);
+    c.save(); c.globalAlpha = a.wingBands ? 0.9 : 0.55; c.scale(flap, 1);
     c.fillStyle = a.wing;
     ell(c, -4.6, 0.6, 3.4, 6, 0.32); ell(c, 4.6, 0.6, 3.4, 6, -0.32);
+    if (a.wingBands) {
+      /* the four dark bands that make an F on each wing */
+      c.fillStyle = a.wingBands;
+      for (var sgn = -1; sgn <= 1; sgn += 2) {
+        c.save();
+        c.translate(sgn * 4.6, 0.6); c.rotate(sgn * -0.32);
+        c.beginPath(); c.ellipse(0, 0, 3.4, 6, 0, 0, Math.PI * 2); c.clip();
+        [-4.2, -1.4, 1.4, 4.2].forEach(function (by, i) {
+          c.fillRect(-3.6 + (i % 2 ? 1.6 : 0), by - 0.75, 5.4, 1.5);
+        });
+        c.restore();
+      }
+    }
     c.restore();
     legs(c, a.accent, 3, 3, 5, t * 10, 1);
     c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
@@ -1208,8 +1259,9 @@
     c.fillStyle = a.wing;
     ell(c, -4.6, -1, 3.4, 6.4, -0.36); ell(c, 4.6, -1, 3.4, 6.4, 0.36);
     c.restore(); c.globalAlpha = 1;
-    c.fillStyle = a.accent; ell(c, 0, -6.4, 2.4, 2.2);
-    c.fillStyle = '#f6efd8'; ell(c, -1.1, -6.8, 0.5, 0.6); ell(c, 1.1, -6.8, 0.5, 0.6);
+    c.fillStyle = a.face || a.accent; ell(c, 0, -6.4, 2.4, 2.2);
+    c.fillStyle = a.face ? '#2a2620' : '#f6efd8';
+    ell(c, -1.1, -6.8, 0.5, 0.6); ell(c, 1.1, -6.8, 0.5, 0.6);
     c.fillStyle = a.body; ell(c, 0, -3, 3, 2.8);
     // the pinched waist
     c.strokeStyle = a.accent; c.lineWidth = 1.1;
@@ -1220,8 +1272,13 @@
     c.quadraticCurveTo(0, 10.4, -2.4, 7.4);
     c.quadraticCurveTo(-3.8, 3, 0, 1);
     c.closePath(); c.fill();
-    c.fillStyle = a.accent;
-    ell(c, 0, 3.2, 3, 0.9); ell(c, 0, 5.6, 2.4, 0.9);
+    c.fillStyle = a.band || a.accent;
+    if (a.tipOnly) {
+      /* a bald-faced hornet is black, with white only right at the tip */
+      ell(c, 0, 7.2, 2.3, 0.8); ell(c, 0, 8.8, 1.9, 0.8);
+    } else {
+      ell(c, 0, 3.2, 3, 0.9); ell(c, 0, 5.6, 2.4, 0.9);
+    }
     c.strokeStyle = a.accent; c.lineWidth = 0.9; c.lineCap = 'round';
     c.beginPath(); c.moveTo(0, 9.6); c.lineTo(0, 12); c.stroke();
     line(c, -1, -7.8, -3, -10.8, 0.8, a.accent);
@@ -1740,6 +1797,353 @@
     c.beginPath(); c.moveTo(3.2, -8.2); c.lineTo(3.6, 2.6); c.stroke();
     c.fillStyle = a.eyes || '#3a2c1c';
     ell(c, -4.6, -4.4, 1, 0.75, -0.3); ell(c, 4.6, -4.4, 1, 0.75, 0.3);
+  };
+
+
+  /* ---------- v1.12 orchard and hillside shapes ---------- */
+
+  /* A snakefly rears its little flat head up on a long neck. The female
+     trails a needle-thin egg-layer, which is NOT a sting. */
+  S.snakefly = function (c, a, t) {
+    var sway = Math.sin(t * 2.2) * 0.5;
+    /* four clear wings, held roof-like over the back */
+    c.save(); c.globalAlpha = 0.78;
+    c.fillStyle = a.wing;
+    ell(c, -4.2, 2.8, 3.4, 7.6, -0.2); ell(c, 4.2, 2.8, 3.4, 7.6, 0.2);
+    c.fillStyle = GG.shade(a.wing, -0.08);
+    ell(c, -2.6, 3.6, 2.6, 6.4, -0.12); ell(c, 2.6, 3.6, 2.6, 6.4, 0.12);
+    c.restore(); c.globalAlpha = 1;
+    c.strokeStyle = a.accent; c.lineWidth = 0.45;
+    for (var s = -1; s <= 1; s += 2) {
+      for (var v = 0; v < 4; v++) {
+        c.beginPath();
+        c.moveTo(s * 1.4, -1.6);
+        c.lineTo(s * (2.6 + v * 1.7), 8.4 - v * 1.4);
+        c.stroke();
+      }
+    }
+    legs(c, a.accent, 3, 3, 4.6, t * 7, 0.9);
+    /* abdomen */
+    c.fillStyle = a.body; ell(c, 0, 4.4, 2.2, 6);
+    c.fillStyle = GG.shade(a.body, 0.16);
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.4 + b * 2.2, 2.05, 0.4);
+    /* the egg-layer, long and fine */
+    if (a.tail !== false) {
+      curve(c, 0, 10.2, 0.6, 13, 0.2, 16.4, 0.6, a.accent);
+    }
+    /* thorax */
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -1.4, 2.4, 3.2);
+    /* the long neck, tipped up */
+    c.save();
+    c.translate(0, -4);
+    c.rotate(sway * 0.12);
+    c.fillStyle = a.neck || GG.shade(a.body, 0.1);
+    ell(c, 0, -1.6, 1.25, 3.4);
+    /* the flat head */
+    c.fillStyle = a.head || a.body;
+    ell(c, 0, -6, 2.1, 2.1);
+    c.fillStyle = '#f4efe0';
+    ell(c, -1.15, -6.5, 0.62, 0.66); ell(c, 1.15, -6.5, 0.62, 0.66);
+    c.fillStyle = '#16110c';
+    ell(c, -1.15, -6.6, 0.34, 0.36); ell(c, 1.15, -6.6, 0.34, 0.36);
+    line(c, -0.9, -7.6, -2.4, -10.2, 0.55, a.accent);
+    line(c, 0.9, -7.6, 2.4, -10.2, 0.55, a.accent);
+    c.restore();
+  };
+
+  /* A bee fly: a round furry ball that hovers with a long straight drinking
+     straw out in front. Two wings, dark along the front edge. */
+  S.beefly = function (c, a, t) {
+    var flap = 0.28 + 0.72 * Math.abs(Math.cos(t * 26));
+    c.save(); c.globalAlpha = 0.5; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -5.6, -0.6, 5, 2.6, -0.42); ell(c, 5.6, -0.6, 5, 2.6, 0.42);
+    c.fillStyle = a.accent; c.globalAlpha = 0.55;
+    ell(c, -6.2, -2, 4.4, 0.75, -0.42); ell(c, 6.2, -2, 4.4, 0.75, 0.42);
+    c.restore(); c.globalAlpha = 1;
+    /* dangling legs */
+    c.strokeStyle = a.accent; c.lineWidth = 0.7; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        c.beginPath();
+        c.moveTo(s * 1.6, 1 + i);
+        c.quadraticCurveTo(s * (3 + i), 6 + i * 1.4, s * (2.4 + i * 1.6), 10 + i * 1.6);
+        c.stroke();
+      }
+    }
+    /* the fat furry ball */
+    c.fillStyle = GG.shade(a.body, -0.16); ell(c, 0, 0.6, 5.4, 5.6);
+    c.fillStyle = a.body; ell(c, 0, 0.2, 4.9, 5.1);
+    /* fur */
+    c.strokeStyle = GG.shade(a.body, 0.28); c.lineWidth = 0.6;
+    for (var f = 0; f < 14; f++) {
+      var ang = f / 14 * Math.PI * 2;
+      var rx = Math.cos(ang) * 4.6, ry = 0.2 + Math.sin(ang) * 4.8;
+      c.beginPath(); c.moveTo(rx * 0.8, ry * 0.8);
+      c.lineTo(rx * 1.16, ry * 1.16); c.stroke();
+    }
+    c.fillStyle = a.accent; ell(c, 0, -4.4, 2.1, 1.9);
+    c.fillStyle = '#101010'; ell(c, -1.3, -4.8, 0.85, 0.95); ell(c, 1.3, -4.8, 0.85, 0.95);
+    /* the straw - straight out in front, never a sting */
+    line(c, 0, -5.4, 0, -13, 0.75, a.accent);
+  };
+
+  /* A Jerusalem cricket: no wings at all, a big amber head wider than the
+     body, and a fat banded abdomen. */
+  S.jerusalem = function (c, a, t) {
+    var dig = Math.sin(t * 4) * 0.8;
+    /* stout digging legs */
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 1.9; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -2.4 + i * 3.8;
+        var k = Math.sin(t * 6 + i * 1.7 + (s > 0 ? 0 : 2)) * 1.2;
+        c.beginPath();
+        c.moveTo(s * 2.4, y);
+        c.quadraticCurveTo(s * 6.4, y + 1.4 + k, s * 6.8, y + 4.6 + k);
+        c.stroke();
+      }
+      /* little spines on the back legs */
+      c.lineWidth = 0.8;
+      for (var sp = 0; sp < 3; sp++) {
+        c.beginPath();
+        c.moveTo(s * (5.4 + sp * 0.4), 6 + sp * 1.3);
+        c.lineTo(s * (7.6 + sp * 0.4), 5.4 + sp * 1.3);
+        c.stroke();
+      }
+      c.lineWidth = 1.9;
+    }
+    /* the striped abdomen */
+    c.fillStyle = a.accent; ell(c, 0, 5, 4.6, 6.6);
+    c.fillStyle = a.band || '#f3e2bd';
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.2 + b * 2.5, 4.4 - b * 0.35, 0.95);
+    c.fillStyle = 'rgba(0,0,0,0.16)'; ell(c, 0, 10.6, 2.4, 1.2);
+    /* thorax */
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.4, 4, 3.2);
+    /* the great round head */
+    c.save(); c.translate(0, dig * 0.25);
+    c.fillStyle = a.body; ell(c, 0, -7.4, 5.2, 4.6);
+    c.fillStyle = GG.shade(a.body, 0.2); ell(c, 0, -8.6, 4.2, 2.4);
+    c.fillStyle = '#1c1008';
+    ell(c, -2.9, -8.4, 0.85, 0.95); ell(c, 2.9, -8.4, 0.85, 0.95);
+    /* the wide-set jaws */
+    c.strokeStyle = GG.shade(a.body, -0.42); c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(-1.8, -10.6); c.quadraticCurveTo(-2.8, -12.4, -1, -13.2); c.stroke();
+    c.beginPath(); c.moveTo(1.8, -10.6); c.quadraticCurveTo(2.8, -12.4, 1, -13.2); c.stroke();
+    curve(c, -2.4, -10.2, -4.6, -12.4, -5.2, -14.6, 0.75, GG.shade(a.body, -0.3));
+    curve(c, 2.4, -10.2, 4.6, -12.4, 5.2, -14.6, 0.75, GG.shade(a.body, -0.3));
+    c.restore();
+  };
+
+  /* A little northern scorpion. Seen from above the tail curls up over its
+     back, so the sting ends up pointing forward over the body. */
+  S.scorpion = function (c, a, t) {
+    var curl = Math.sin(t * 2.2) * 0.7;
+    legs(c, GG.shade(a.body, -0.28), 4, 3.4, 6.4, t * 8, 1.1);
+    /* body */
+    c.fillStyle = a.body; ell(c, 0, 3.2, 3.2, 5.6);
+    c.fillStyle = GG.shade(a.body, 0.16);
+    for (var k = 0; k < 4; k++) ell(c, 0, 0.4 + k * 2.1, 3 - k * 0.2, 0.55);
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -3.4, 2.8, 3);
+    c.fillStyle = '#1a1208'; ell(c, -0.75, -4.4, 0.42, 0.46); ell(c, 0.75, -4.4, 0.42, 0.46);
+    /* the pincers, reaching forward */
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      var wig = Math.sin(t * 3 + (s2 > 0 ? 0 : 1.4)) * 0.5;
+      c.strokeStyle = a.body; c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(s2 * 2, -4.6);
+      c.quadraticCurveTo(s2 * 4.6, -7, s2 * (4 + wig * 0.3), -9.6);
+      c.stroke();
+      c.fillStyle = a.claw || GG.shade(a.body, 0.1);
+      ell(c, s2 * (4 + wig * 0.3), -10.8, 1.5, 2.3, s2 * 0.25);
+      c.strokeStyle = GG.shade(a.body, -0.34); c.lineWidth = 0.7;
+      c.beginPath();
+      c.moveTo(s2 * (3.4 + wig * 0.3), -12);
+      c.lineTo(s2 * (4.8 + wig * 0.3), -12.6 + wig * 0.5);
+      c.stroke();
+    }
+    /* the tail, arcing up over the back with the sting over her head */
+    var seg = [[0.4, 8.6], [2.4, 8.2], [3.6, 5.6], [3.4, 2.4], [2.4, -0.6], [0.9, -2.8]];
+    c.strokeStyle = GG.shade(a.tailCol || a.body, -0.22); c.lineWidth = 2.6; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(seg[0][0], seg[0][1]);
+    for (var i = 1; i < seg.length; i++) c.lineTo(seg[i][0] + curl * 0.35, seg[i][1] + curl * 0.25);
+    c.stroke();
+    c.fillStyle = a.tailCol || GG.shade(a.body, 0.12);
+    for (var j = 0; j < seg.length; j++) {
+      ell(c, seg[j][0] + curl * 0.35, seg[j][1] + curl * 0.25, 1.25 - j * 0.06, 1.25 - j * 0.06);
+    }
+    /* the bulb and the sting */
+    c.fillStyle = GG.shade(a.tailCol || a.body, 0.16);
+    ell(c, 0.9 + curl * 0.35, -2.8 + curl * 0.25, 1.5, 1.7, -0.4);
+    c.fillStyle = GG.shade(a.body, -0.4);
+    c.beginPath();
+    c.moveTo(0.2 + curl * 0.35, -4.2);
+    c.lineTo(-0.6 + curl * 0.35, -6.6);
+    c.lineTo(1.8 + curl * 0.35, -4.6);
+    c.closePath(); c.fill();
+  };
+
+  /* A windscorpion: neither spider nor scorpion. Enormous jaws, and two long
+     feelers waved out in front that look like an extra pair of legs. */
+  S.windscorpion = function (c, a, t) {
+    var rush = Math.sin(t * 11) * 1.4;
+    legs(c, GG.shade(a.body, -0.24), 4, 4.4, 7.4, t * 16, 1.1);
+    /* the waving pedipalps */
+    c.strokeStyle = GG.shade(a.body, -0.1); c.lineWidth = 1.2; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      var w = Math.sin(t * 6 + (s > 0 ? 0 : 1.8)) * 1.8;
+      c.beginPath();
+      c.moveTo(s * 2, -5);
+      c.quadraticCurveTo(s * 5.4, -9, s * (4 + w * 0.4), -13.4);
+      c.stroke();
+    }
+    /* pale abdomen */
+    c.fillStyle = a.accent; ell(c, 0, 4.6, 3.8, 6);
+    c.fillStyle = GG.shade(a.accent, -0.1);
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.4 + b * 2.2, 3.6 - b * 0.3, 0.5);
+    /* thorax */
+    c.fillStyle = a.body; ell(c, 0, -2.2, 3.2, 3.4);
+    /* head */
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, -6, 2.8, 2.8);
+    c.fillStyle = '#141010'; ell(c, -0.85, -7.4, 0.55, 0.6); ell(c, 0.85, -7.4, 0.55, 0.6);
+    /* the huge jaws, opening and closing */
+    var gap = 0.9 + Math.abs(Math.sin(t * 7)) * 0.9;
+    c.fillStyle = a.jaw || GG.shade(a.body, -0.2);
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.save();
+      c.translate(s2 * gap, -8.4);
+      c.rotate(s2 * 0.12 + rush * 0.01);
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(s2 * 2.4, -2.4, s2 * 1, -5.6);
+      c.quadraticCurveTo(s2 * -0.6, -2.8, 0, 0);
+      c.closePath(); c.fill();
+      c.restore();
+    }
+  };
+
+  /* A pinacate beetle: matte black, held high on long legs, and when it is
+     startled it stands on its head. */
+  S.darkling = function (c, a, t) {
+    var stand = a.headstand ? 1 : Math.max(0, Math.sin(t * 0.9) - 0.86) * 7;
+    c.save();
+    c.translate(0, stand * 1.6);
+    c.rotate(stand * 0.34);
+    /* long stilt legs */
+    c.strokeStyle = GG.shade(a.body, 0.18); c.lineWidth = 1.2; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -3 + i * 3.6;
+        var k = Math.sin(t * 5 + i * 1.6 + (s > 0 ? 0 : 2.1)) * 1.1;
+        c.beginPath();
+        c.moveTo(s * 2, y);
+        c.quadraticCurveTo(s * 6.4, y - 1.6 + k, s * 7.6, y + 3.4 + k);
+        c.stroke();
+      }
+    }
+    c.fillStyle = GG.shade(a.body, 0.1); ell(c, 0, -6.4, 2.8, 2.2);
+    line(c, -1.4, -8, -3.2, -11, 0.85, GG.shade(a.body, 0.2));
+    line(c, 1.4, -8, 3.2, -11, 0.85, GG.shade(a.body, 0.2));
+    c.fillStyle = GG.shade(a.body, 0.06); ell(c, 0, -3.2, 3.4, 2.6);
+    /* the fused, unopenable wing cases */
+    c.fillStyle = a.body; ell(c, 0, 2.4, 5.2, 7.4);
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, 2.4, 4.6, 6.8);
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.45;
+    for (var r = -2; r <= 2; r++) {
+      c.beginPath();
+      c.moveTo(r * 1.5, -3.4); c.lineTo(r * 1.9, 8.6); c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.14)'; ell(c, -2, -0.6, 1.5, 3, -0.3);
+    c.restore();
+  };
+
+  /* A velvet ant - really a wingless wasp - in plush orange and black. */
+  S.velvetant = function (c, a, t) {
+    legs(c, a.accent, 3, 3.6, 6, t * 15, 1.2);
+    /* the fuzzy abdomen */
+    c.fillStyle = a.body; ell(c, 0, 5, 4, 5.6);
+    c.fillStyle = a.accent;
+    ell(c, 0, 2.2, 3.5, 0.8); ell(c, 0, 8.2, 2.6, 1.1);
+    /* plush */
+    c.strokeStyle = GG.shade(a.body, 0.3); c.lineWidth = 0.55;
+    for (var f = 0; f < 16; f++) {
+      var ang = f / 16 * Math.PI * 2;
+      var rx = Math.cos(ang) * 3.8, ry = 5 + Math.sin(ang) * 5.4;
+      c.beginPath();
+      c.moveTo(rx * 0.84, 5 + (ry - 5) * 0.84);
+      c.lineTo(rx * 1.2, 5 + (ry - 5) * 1.2); c.stroke();
+    }
+    /* waist and thorax */
+    c.strokeStyle = a.accent; c.lineWidth = 1.1;
+    c.beginPath(); c.moveTo(0, 0.2); c.lineTo(0, -1); c.stroke();
+    c.fillStyle = a.body; ell(c, 0, -3.2, 3, 3);
+    c.strokeStyle = GG.shade(a.body, 0.3); c.lineWidth = 0.55;
+    for (var g = 0; g < 9; g++) {
+      var a2 = g / 9 * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(Math.cos(a2) * 2.5, -3.2 + Math.sin(a2) * 2.5);
+      c.lineTo(Math.cos(a2) * 3.7, -3.2 + Math.sin(a2) * 3.7); c.stroke();
+    }
+    /* head */
+    c.fillStyle = a.accent; ell(c, 0, -6.8, 2.4, 2.2);
+    c.fillStyle = '#f2e8d8'; ell(c, -1, -7.2, 0.5, 0.55); ell(c, 1, -7.2, 0.5, 0.55);
+    curve(c, -1, -8.2, -2.6, -9.6, -2.2, -11.8, 0.75, a.accent);
+    curve(c, 1, -8.2, 2.6, -9.6, 2.2, -11.8, 0.75, a.accent);
+  };
+
+  /* A robber fly: sits dead still on a stone, then launches. Tapered
+     abdomen, humped back, huge eyes and a bristly beard. */
+  S.robberfly = function (c, a, t) {
+    var flap = 0.3 + 0.7 * Math.abs(Math.cos(t * 20));
+    c.save(); c.globalAlpha = 0.45; c.scale(flap, 1);
+    c.fillStyle = a.wing;
+    ell(c, -3.6, 3.4, 2.6, 7.4, -0.14); ell(c, 3.6, 3.4, 2.6, 7.4, 0.14);
+    c.restore(); c.globalAlpha = 1;
+    /* spiny grabbing legs */
+    c.strokeStyle = a.accent; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -3 + i * 2.6;
+        var k = Math.sin(t * 6 + i * 1.5 + (s > 0 ? 0 : 2)) * 0.9;
+        c.beginPath();
+        c.moveTo(s * 1.8, y);
+        c.quadraticCurveTo(s * 5.4, y + 1 + k, s * 4.6, y + 5 + k);
+        c.stroke();
+      }
+      c.lineWidth = 0.55;
+      for (var sp = 0; sp < 3; sp++) {
+        c.beginPath();
+        c.moveTo(s * (4.8 - sp * 0.2), 0.6 + sp * 1.8);
+        c.lineTo(s * (6.2 - sp * 0.2), 0 + sp * 1.8); c.stroke();
+      }
+      c.lineWidth = 1.3;
+    }
+    /* the long tapered abdomen */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-2.6, 0.4);
+    c.quadraticCurveTo(-2.2, 7, -0.4, 11.6);
+    c.quadraticCurveTo(0.4, 11.6, 0.4, 11.6);
+    c.quadraticCurveTo(2.2, 7, 2.6, 0.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.accent;
+    for (var b = 0; b < 4; b++) ell(c, 0, 1.6 + b * 2.4, 2.3 - b * 0.42, 0.42);
+    if (a.tailTip) { c.fillStyle = a.tailTip; ell(c, 0, 10.4, 1, 1.5); }
+    /* humped thorax */
+    c.fillStyle = GG.shade(a.body, -0.12); ell(c, 0, -2.4, 3.4, 3.6);
+    c.fillStyle = 'rgba(255,255,255,0.16)'; ell(c, -1.4, -3.6, 1.5, 1.6, -0.4);
+    /* the big eyes with a dip between them */
+    c.fillStyle = a.eyes || '#6a3a2a';
+    ell(c, -2.1, -6.4, 2.1, 2.4); ell(c, 2.1, -6.4, 2.1, 2.4);
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    ell(c, -2.5, -7.2, 0.6, 0.6); ell(c, 2.5, -7.2, 0.6, 0.6);
+    /* beard and beak */
+    c.strokeStyle = a.beard || '#e8dcc0'; c.lineWidth = 0.5;
+    for (var w = -2; w <= 2; w++) {
+      c.beginPath(); c.moveTo(w * 0.55, -7.6); c.lineTo(w * 1.25, -10.2); c.stroke();
+    }
+    line(c, 0, -8, 0, -11.4, 0.9, GG.shade(a.body, -0.3));
   };
 
 

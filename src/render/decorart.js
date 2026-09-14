@@ -688,6 +688,227 @@
   /* `for` says which tanks a piece belongs in:
      land = terrariums, water = fish tanks, any = all three.
      A hybrid tank has both a bank and a pool, so it takes everything. */
+
+
+  /* ---------- v1.12: brought back from the orchard and the hills ----------
+     Each of these is unlocked by picking the fruit it is made of, never
+     bought. Drawn like every other decoration: (x, y) is where it sits on the
+     ground, and s is the scale. */
+
+  D.appleplate = function (c, x, y, s, t) {
+    c.fillStyle = '#d8cdb4'; ell(c, x, y - 2 * s, 15 * s, 5 * s);
+    c.fillStyle = '#f0e4cf'; ell(c, x, y - 4 * s, 14 * s, 4.4 * s);
+    [[-6, -8, 5], [6, -7, 4.6], [0, -13, 5.2]].forEach(function (p, i) {
+      c.fillStyle = i === 2 ? '#d8452e' : '#e8913a';
+      ell(c, x + p[0] * s, y + p[1] * s, p[2] * s, p[2] * s);
+      c.fillStyle = 'rgba(255,255,255,0.4)';
+      ell(c, x + (p[0] - 1.8) * s, y + (p[1] - 1.8) * s, p[2] * 0.28 * s, p[2] * 0.34 * s, -0.5);
+    });
+    c.strokeStyle = '#6a4a2a'; c.lineWidth = 1 * s;
+    c.beginPath(); c.moveTo(x, y - 18 * s); c.lineTo(x + 1.6 * s, y - 22 * s); c.stroke();
+    c.fillStyle = '#4f9450';
+    ell(c, x + 5 * s, y - 22.5 * s, 3.6 * s, 1.9 * s, -0.4);
+  };
+
+  D.applecrate = function (c, x, y, s, t) {
+    c.fillStyle = '#8a6438';
+    GG.roundRect(c, x - 13 * s, y - 13 * s, 26 * s, 13 * s, 1.6 * s); c.fill();
+    c.fillStyle = '#a07a4c';
+    for (var i = 0; i < 3; i++) c.fillRect(x - 12 * s, y - 12 * s + i * 4 * s, 24 * s, 2.4 * s);
+    c.fillStyle = '#6b4a2c';
+    c.fillRect(x - 13 * s, y - 13.5 * s, 2.2 * s, 13.5 * s);
+    c.fillRect(x + 10.8 * s, y - 13.5 * s, 2.2 * s, 13.5 * s);
+    [[-7, -16.5], [0, -18.5], [7, -16.5]].forEach(function (p, k) {
+      c.fillStyle = k === 1 ? '#7d1412' : '#b5241f';
+      ell(c, x + p[0] * s, y + p[1] * s, 4.6 * s, 4.6 * s);
+      c.fillStyle = 'rgba(255,255,255,0.32)';
+      ell(c, x + (p[0] - 1.6) * s, y + (p[1] - 1.8) * s, 1.5 * s, 1.8 * s, -0.5);
+    });
+  };
+
+  D.blossomspray = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.1) * 1.4;
+    c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.6 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y); c.quadraticCurveTo(x + 3 * s, y - 10 * s, x + (6 + sway) * s, y - 21 * s);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x + 1.4 * s, y - 6 * s);
+    c.quadraticCurveTo(x - 5 * s, y - 13 * s, x - (9 - sway) * s, y - 18 * s);
+    c.stroke();
+    [[6, -22], [-9, -19], [1, -13], [-2, -24], [10, -11]].forEach(function (p, i) {
+      var px = x + (p[0] + sway * (i % 2 ? 0.4 : -0.4)) * s, py = y + p[1] * s, pr = 3.1 * s;
+      c.fillStyle = i % 2 ? '#ffe6ee' : '#ffffff';
+      for (var k = 0; k < 5; k++) {
+        var a = k / 5 * Math.PI * 2 + i;
+        ell(c, px + Math.cos(a) * pr, py + Math.sin(a) * pr, pr * 0.74, pr * 0.62, a);
+      }
+      c.fillStyle = '#f7c948'; ell(c, px, py, pr * 0.36, pr * 0.36);
+    });
+  };
+
+  D.cherrybough = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.4) * 1.1;
+    c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.8 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 13 * s, y - 24 * s);
+    c.quadraticCurveTo(x, y - 20 * s, x + 13 * s, y - 25 * s);
+    c.stroke();
+    [[-8, 1], [0.5, -1], [8, 0.6]].forEach(function (p) {
+      var bx = x + (p[0] + sway * p[1]) * s;
+      c.strokeStyle = '#7a9a4a'; c.lineWidth = 1 * s;
+      c.beginPath(); c.moveTo(x + p[0] * s, y - 22 * s); c.lineTo(bx, y - 8 * s); c.stroke();
+      c.fillStyle = '#4a0a16'; ell(c, bx, y - 4.6 * s, 4.4 * s, 4.4 * s);
+      c.fillStyle = '#7d1224'; ell(c, bx - 0.5 * s, y - 5.2 * s, 3.7 * s, 3.6 * s);
+      c.fillStyle = 'rgba(255,255,255,0.45)';
+      ell(c, bx - 1.5 * s, y - 6.4 * s, 1.2 * s, 1.5 * s, -0.5);
+    });
+    c.fillStyle = '#4f9450';
+    ell(c, x - 5 * s, y - 27 * s, 4.4 * s, 2 * s, -0.5);
+    ell(c, x + 6 * s, y - 28 * s, 4 * s, 1.9 * s, 0.4);
+  };
+
+  D.pearbasket = function (c, x, y, s, t) {
+    c.fillStyle = '#c49a5e';
+    c.beginPath();
+    c.moveTo(x - 12 * s, y - 13 * s);
+    c.quadraticCurveTo(x - 10 * s, y, x, y);
+    c.quadraticCurveTo(x + 10 * s, y, x + 12 * s, y - 13 * s);
+    c.closePath(); c.fill();
+    c.strokeStyle = '#9a7442'; c.lineWidth = 0.8 * s;
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * 4.4 * s, y - 13 * s);
+      c.lineTo(x + i * 3.4 * s, y - 1 * s);
+      c.stroke();
+    }
+    c.lineWidth = 1.4 * s;
+    c.beginPath();
+    c.moveTo(x - 11 * s, y - 13 * s);
+    c.quadraticCurveTo(x, y - 27 * s, x + 11 * s, y - 13 * s);
+    c.stroke();
+    [[-5, -17], [5, -18]].forEach(function (p) {
+      c.fillStyle = '#8fa63a';
+      ell(c, x + p[0] * s, y + (p[1] + 2) * s, 3.8 * s, 4.8 * s);
+      ell(c, x + p[0] * s, y + (p[1] - 2.6) * s, 2.4 * s, 2.8 * s);
+      c.fillStyle = '#b8cc52';
+      ell(c, x + (p[0] - 0.6) * s, y + (p[1] + 1.6) * s, 3 * s, 4 * s);
+    });
+  };
+
+  D.berrybowl = function (c, x, y, s, t) {
+    c.fillStyle = '#7a8fa8';
+    c.beginPath();
+    c.moveTo(x - 11 * s, y - 10 * s);
+    c.quadraticCurveTo(x - 9 * s, y, x, y);
+    c.quadraticCurveTo(x + 9 * s, y, x + 11 * s, y - 10 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = '#93a8c0'; ell(c, x, y - 10 * s, 11 * s, 3 * s);
+    var rnd = GG.mulberry32(4242);
+    for (var i = 0; i < 11; i++) {
+      var bx = x + (rnd() - 0.5) * 17 * s, by = y - (11 + rnd() * 3.4) * s;
+      c.fillStyle = '#2e2752'; ell(c, bx, by, 2.4 * s, 2.4 * s);
+      c.fillStyle = '#4a3f7a'; ell(c, bx - 0.3 * s, by - 0.4 * s, 1.9 * s, 1.9 * s);
+      c.fillStyle = 'rgba(255,255,255,0.3)';
+      ell(c, bx - 0.8 * s, by - 0.9 * s, 0.7 * s, 0.8 * s, -0.5);
+    }
+  };
+
+  D.chokespray = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.2) * 0.9;
+    for (var b = -1; b <= 1; b += 2) {
+      c.strokeStyle = '#6a7a3a'; c.lineWidth = 1.2 * s; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(x + b * 3 * s, y - 25 * s);
+      c.quadraticCurveTo(x + b * (5 + sway) * s, y - 12 * s, x + b * (6 + sway) * s, y - 1 * s);
+      c.stroke();
+      for (var i = 0; i < 7; i++) {
+        var f = i / 6;
+        var yy = y - (23 - f * 21) * s;
+        var xx = x + b * (3.4 + f * 2.6 + sway * f) * s + (i % 2 ? 1.8 * s : -1.8 * s);
+        var rr = (2.3 - f * 0.6) * s;
+        c.fillStyle = '#20080f'; ell(c, xx, yy, rr, rr);
+        c.fillStyle = '#3a1020'; ell(c, xx - rr * 0.18, yy - rr * 0.22, rr * 0.78, rr * 0.78);
+      }
+    }
+    c.fillStyle = '#6a8f5a';
+    ell(c, x - 7 * s, y - 26 * s, 4.4 * s, 2 * s, -0.5);
+    ell(c, x + 7 * s, y - 27 * s, 4.4 * s, 2 * s, 0.5);
+  };
+
+  D.hipring = function (c, x, y, s, t) {
+    var cy = y - 13 * s, R = 9.5 * s;
+    c.strokeStyle = '#8a7a4a'; c.lineWidth = 1.8 * s;
+    c.beginPath(); c.arc(x, cy, R, 0, Math.PI * 2); c.stroke();
+    c.strokeStyle = '#6a8f5a'; c.lineWidth = 0.9 * s;
+    for (var k = 0; k < 10; k++) {
+      var a = k / 10 * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(x + Math.cos(a) * R, cy + Math.sin(a) * R);
+      c.lineTo(x + Math.cos(a) * R * 1.38, cy + Math.sin(a) * R * 1.38);
+      c.stroke();
+    }
+    for (var i = 0; i < 6; i++) {
+      var ang = i / 6 * Math.PI * 2 + 0.3;
+      var hx = x + Math.cos(ang) * R, hy = cy + Math.sin(ang) * R;
+      c.fillStyle = '#a32f18'; ell(c, hx, hy, 3.2 * s, 3.4 * s);
+      c.fillStyle = '#d84a2a'; ell(c, hx - 0.4 * s, hy - 0.5 * s, 2.6 * s, 2.7 * s);
+      c.fillStyle = 'rgba(255,255,255,0.35)';
+      ell(c, hx - 1 * s, hy - 1.2 * s, 0.85 * s, 1 * s, -0.5);
+    }
+  };
+
+  D.currantsprig = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.5) * 0.9;
+    c.strokeStyle = '#7a6a52'; c.lineWidth = 1.4 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y);
+    c.quadraticCurveTo(x + 1.4 * s, y - 12 * s, x + (0.8 + sway) * s, y - 24 * s);
+    c.stroke();
+    c.fillStyle = '#7a9a68';
+    [[-7, -13, -0.6], [7, -10, 0.5], [-6, -4, -0.3]].forEach(function (p) {
+      c.save(); c.translate(x + p[0] * s, y + p[1] * s); c.rotate(p[2]); c.scale(s, s);
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(3, -3.4, 6.8, 0);
+      c.quadraticCurveTo(3, 3.4, 0, 0);
+      c.closePath(); c.fill();
+      c.restore();
+    });
+    for (var i = 0; i < 5; i++) {
+      var ang = i / 5 * Math.PI * 2;
+      var bx = x + (0.8 + sway) * s + Math.cos(ang) * 4.2 * s;
+      var by = y - 21 * s + Math.sin(ang) * 3.8 * s;
+      c.fillStyle = '#b03828'; ell(c, bx, by, 2.7 * s, 2.7 * s);
+      c.fillStyle = '#e05a4a'; ell(c, bx - 0.4 * s, by - 0.45 * s, 2.2 * s, 2.2 * s);
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+      ell(c, bx - 0.9 * s, by - 1 * s, 0.8 * s, 0.9 * s, -0.5);
+    }
+  };
+
+  D.snowsprig = function (c, x, y, s, t) {
+    c.strokeStyle = '#9a8f7a'; c.lineWidth = 1.4 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 1.4 * s, y);
+    c.quadraticCurveTo(x + 0.8 * s, y - 12 * s, x + 2.4 * s, y - 22 * s);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x, y - 8 * s);
+    c.quadraticCurveTo(x - 5 * s, y - 13 * s, x - 9 * s, y - 18 * s);
+    c.stroke();
+    [[2.4, -23], [-9, -19], [6, -13], [-3, -13]].forEach(function (p, i) {
+      var px = x + p[0] * s, py = y + p[1] * s, pr = (3.1 - (i % 2) * 0.5) * s;
+      for (var k = 0; k < 3; k++) {
+        var a = k / 3 * Math.PI * 2 + i;
+        var qx = px + Math.cos(a) * pr * 0.6, qy = py + Math.sin(a) * pr * 0.6;
+        c.fillStyle = '#d8d4cc'; ell(c, qx, qy, pr * 0.74, pr * 0.74);
+        c.fillStyle = '#f4f2ee'; ell(c, qx - pr * 0.14, qy - pr * 0.16, pr * 0.6, pr * 0.6);
+      }
+    });
+    c.fillStyle = '#7a9a68';
+    ell(c, x - 1 * s, y - 4 * s, 3.8 * s, 1.7 * s, -0.4);
+  };
+
   GG.DECOR = [
     // --- for a terrarium (and the bank of a hybrid) ---
     { id: 'leaf', name: 'Big Leaf', price: 0, for: 'land' },
@@ -733,6 +954,18 @@
     { id: 'scratchpost', name: 'Scratching Post', price: 360, for: 'habitat' },
     { id: 'kennel', name: 'Dog Kennel', price: 420, for: 'habitat' },
     { id: 'vine', name: 'Jungle Vine', price: 460, for: 'habitat' },
+
+    // --- brought back from the orchard and the hills (picked, never bought) ---
+    { id: 'appleplate', name: 'Plate of Apples', price: 0, for: 'land', fruit: 'gala' },
+    { id: 'applecrate', name: 'Apple Crate', price: 0, for: 'land', fruit: 'red_delicious' },
+    { id: 'blossomspray', name: 'Apple Blossom', price: 0, for: 'land', fruit: 'cosmic_crisp' },
+    { id: 'cherrybough', name: 'Cherry Bough', price: 0, for: 'land', fruit: 'bing_cherry' },
+    { id: 'pearbasket', name: 'Basket of Pears', price: 0, for: 'land', fruit: 'bartlett_pear' },
+    { id: 'berrybowl', name: 'Bowl of Berries', price: 0, for: 'land', fruit: 'serviceberry' },
+    { id: 'chokespray', name: 'Chokecherry Spray', price: 0, for: 'land', fruit: 'chokecherry' },
+    { id: 'hipring', name: 'Rose Hip Ring', price: 0, for: 'land', fruit: 'rosehip' },
+    { id: 'currantsprig', name: 'Currant Sprig', price: 0, for: 'land', fruit: 'wax_currant' },
+    { id: 'snowsprig', name: 'Snowberry Sprig', price: 0, for: 'land', fruit: 'snowberry' },
 
     // --- for anywhere ---
     { id: 'signplate', name: 'Name Plate', price: 300, for: 'any' },
