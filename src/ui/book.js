@@ -54,7 +54,7 @@
       list.forEach(function (def) {
         var got = fruit ? GG.Save.hasFruit(def.id)
           : (friends ? GG.Save.hasFriend(def.id)
-            : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id)));
+            : (fish ? GG.Save.hasFish(def.id) : GG.Save.found(def)));
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
         cv.style.width = '100%'; cv.style.height = '54px';
@@ -63,8 +63,9 @@
         if (got) {
           var n0 = fruit ? GG.Save.countOfFruit(def.id)
             : (friends ? GG.Save.countOfFriend(def.id)
-              : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
-          cell.appendChild(GG.el('div', 'cnt', '×' + n0));
+              : (fish ? GG.Save.countOfFish(def.id)
+                : (def.lookOnly ? GG.Save.countOfSeen(def.id) : GG.Save.countOf(def.id))));
+          cell.appendChild(GG.el('div', 'cnt', def.lookOnly ? '✔' : '×' + n0));
           if (!fruit) {
             var r = GG.el('div', 'rar');
             r.style.background = GG.RARITY_COLORS[def.rarity];
@@ -79,6 +80,7 @@
         cell.addEventListener('click', function () {
           GG.Sfx.click();
           if (got) Book.showDetail(def);
+          else if (def.lookOnly) GG.UI.toast('You have not met this one yet. She is out on the hills after dark.', 2800);
           else GG.UI.toast(fruit ? 'You have not picked this one yet!'
             : (friends ? 'You have not made friends with this one yet!'
               : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
@@ -182,7 +184,13 @@
       } else {
         var places = def.habitats.map(function (x) { return GG.HABITAT_NAMES[x]; }).join(', ');
         rows = [['Found in', places], ['Comes out', times], ['Size', def.measure],
-          ['Rarity', GG.RARITY_NAMES[def.rarity]], ['Caught', n + ' time' + (n === 1 ? '' : 's')]];
+          ['Rarity', GG.RARITY_NAMES[def.rarity]]];
+        if (def.lookOnly) {
+          var seen = GG.Save.countOfSeen(def.id);
+          rows.push(['Met', seen + ' time' + (seen === 1 ? '' : 's')]);
+        } else {
+          rows.push(['Caught', n + ' time' + (n === 1 ? '' : 's')]);
+        }
       }
       rows.forEach(function (p) {
         meta.appendChild(GG.el('span', 'tag', p[0] + ': ' + p[1]));
@@ -190,6 +198,9 @@
       if (def.sting) {
         var warn = GG.el('span', 'tag sting', 'Can sting if you upset her');
         meta.appendChild(warn);
+      }
+      if (def.lookOnly) {
+        meta.appendChild(GG.el('span', 'tag lookonly', 'Look, don\u2019t catch \u2014 your net will not take her'));
       }
       if (!isFish && !isAnimal && GG.isAquaticBug(def)) {
         meta.appendChild(GG.el('span', 'tag wet', 'Needs water: keep it in a fish tank or a hybrid tank'));
@@ -199,6 +210,14 @@
         if (way) meta.appendChild(GG.el('span', 'tag way', 'How to say hello: ' + way.blurb));
       }
       det.appendChild(meta);
+
+      if (def.lookOnly && def.danger) {
+        var dbox = GG.el('div');
+        dbox.id = 'fruit-care';
+        dbox.className = 'eat-never';
+        dbox.innerHTML = '<b>Keep your hands to yourself</b><span>' + def.danger + '</span>';
+        det.appendChild(dbox);
+      }
 
       if (isFruit) {
         var eatInfo = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
@@ -295,15 +314,28 @@
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
+        if (def.lookOnly) { g.addColorStop(0, '#3a3340'); g.addColorStop(1, '#241f28'); }
+        else if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
         else if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
         else if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
         else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
-        c.fillStyle = 'rgba(255,255,255,0.35)';
-        for (var i = 0; i < 5; i++) {
-          c.beginPath();
-          c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
+        /* soft clouds along the bottom - but the look-only page is a dark
+           night scene, so they become faint web strands instead */
+        if (def.lookOnly) {
+          c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+          for (var w = 0; w < 6; w++) {
+            c.beginPath();
+            c.moveTo(0, w * 52 - 10);
+            c.quadraticCurveTo(cv.width / 2, w * 38 + Math.sin(t + w) * 7, cv.width, w * 56);
+            c.stroke();
+          }
+        } else {
+          c.fillStyle = 'rgba(255,255,255,0.35)';
+          for (var i = 0; i < 5; i++) {
+            c.beginPath();
+            c.ellipse(80 + i * 130, 250 + Math.sin(t + i) * 6, 60, 16, 0, 0, Math.PI * 2); c.fill();
+          }
         }
         GG.drawAny(c, def, cv.width / 2, cv.height / 2 + Math.sin(t * 1.6) * 8, 8.4, -Math.PI / 2, t,
           false, def.isAnimal ? 0.8 : 0);

@@ -13,6 +13,10 @@
         b.addEventListener('click', function () { GG.Sfx.click(); self.close(b.getAttribute('data-close')); });
       });
       $('catch-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideCatch(); });
+      $('warn-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideWarning(); });
+      $('warn-pop').addEventListener('click', function (e) {
+        if (e.target.id === 'warn-pop') self.hideWarning();
+      });
       $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop') self.hideCatch(); });
       $('friend-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideFriend(); });
       $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop') self.hideFriend(); });
@@ -40,6 +44,7 @@
     anyOpen: function () {
       return this.openPanels.length > 0 ||
         !$('catch-pop').classList.contains('hidden') ||
+        !$('warn-pop').classList.contains('hidden') ||
         !$('friend-pop').classList.contains('hidden');
     },
 
@@ -77,6 +82,55 @@
       $('catch-care').style.display = 'none';
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
+    },
+
+    /* ---------- look, don't catch ---------- */
+    showWarning: function (def, isNew) {
+      var cv = $('warn-art');
+      cv.width = 640; cv.height = 260;
+      this._warnDef = def;
+      $('warn-name').textContent = def.name;
+      $('warn-danger').querySelector('span').textContent = def.danger || '';
+      var n = GG.Save.countOfSeen(def.id);
+      $('warn-fact').textContent = isNew
+        ? def.facts[0]
+        : def.facts[1 + Math.floor(Math.random() * (def.facts.length - 1))];
+      $('warn-pop').classList.remove('hidden');
+      this._animWarn();
+    },
+
+    _animWarn: function () {
+      var self = this;
+      cancelAnimationFrame(this._wraf);
+      var cv = $('warn-art'), c = cv.getContext('2d');
+      var start = performance.now();
+      function frame(now) {
+        if ($('warn-pop').classList.contains('hidden')) return;
+        var t = (now - start) / 1000;
+        c.clearRect(0, 0, cv.width, cv.height);
+        var g = c.createLinearGradient(0, 0, 0, cv.height);
+        g.addColorStop(0, '#3a3340'); g.addColorStop(1, '#241f28');
+        c.fillStyle = g;
+        GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
+        /* a few faint web strands across the dark, for atmosphere */
+        c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+        for (var i = 0; i < 7; i++) {
+          c.beginPath();
+          c.moveTo(0, i * 44 - 20);
+          c.quadraticCurveTo(cv.width / 2, i * 30 + Math.sin(t + i) * 8, cv.width, i * 48);
+          c.stroke();
+        }
+        GG.drawAny(c, self._warnDef, cv.width / 2,
+          cv.height / 2 + Math.sin(t * 1.1) * 5, 7.6, -Math.PI / 2, t);
+        self._wraf = requestAnimationFrame(frame);
+      }
+      this._wraf = requestAnimationFrame(frame);
+    },
+
+    hideWarning: function () {
+      $('warn-pop').classList.add('hidden');
+      cancelAnimationFrame(this._wraf);
+      if (this.onWarningClosed) this.onWarningClosed();
     },
 
     /* ---------- a piece of fruit ---------- */
