@@ -132,7 +132,43 @@
         }
         if (b.flee > 0) b.flee -= dt;
 
-        var sp = d.speed * (b.flee > 0 ? 1.95 : 1);
+        /* the food chain: creep up on something you really would hunt */
+        b.hunt = (b.hunt || 0) - dt;
+        if (b.hunt <= 0) {
+          b.hunt = GG.rand(0.3, 0.7);
+          b.prey = null;
+          if (b.flee <= 0 && !b.angry && GG.EATS && GG.EATS[d.id]) {
+            var bestD = 150, target = null;
+            for (var q = 0; q < this.list.length; q++) {
+              var o2 = this.list[q];
+              if (o2 === b || !GG.hunts(d.id, o2.def.id)) continue;
+              var dd = GG.dist(b.x, b.y, o2.x, o2.y);
+              if (dd < bestD) { bestD = dd; target = o2; }
+            }
+            b.prey = target;
+          }
+        }
+        if (b.prey && b.flee <= 0) {
+          if (this.list.indexOf(b.prey) < 0) { b.prey = null; }
+          else {
+            var pd = GG.dist(b.x, b.y, b.prey.x, b.prey.y);
+            if (pd > 160) { b.prey = null; }
+            else {
+              b.angle = GG.angLerp(b.angle,
+                Math.atan2(b.prey.y - b.y, b.prey.x - b.x), Math.min(1, dt * 2.4));
+              /* close enough to be noticed - and it always gets away */
+              if (pd < 34) {
+                b.prey.flee = GG.rand(1.4, 2.4);
+                b.prey.alert = 0;
+                b.prey.angle = Math.atan2(b.prey.y - b.y, b.prey.x - b.x) + GG.rand(-0.5, 0.5);
+                b.prey = null;
+                b.hunt = GG.rand(2.4, 4.5);
+              }
+            }
+          }
+        }
+
+        var sp = d.speed * (b.flee > 0 ? 1.95 : (b.prey ? 1.25 : 1));
         b.timer -= dt;
 
         if (b.angry > 0) {
