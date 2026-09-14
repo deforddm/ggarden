@@ -258,3 +258,14 @@ ul.tips li{margin-bottom:3px}
   padding:8px 10px;margin-bottom:10px}
 #companion-row canvas{width:52px;height:44px;flex:none}
 #companion-row .grow{text-align:left;font-size:13px;line-height:1.3}
+
+/* ---------- fruit (v1.12) ---------- */
+#fruit-care,#catch-care{font-size:13.5px;line-height:1.45;border-radius:14px;
+  padding:10px;margin:8px 0;text-align:left;border:2px solid}
+#fruit-care b,#catch-care b{display:block;margin-bottom:3px}
+.eat-yes{background:#eaf6e4;border-color:#bcdcae}
+.eat-yes b{color:#3f7a3a}
+.eat-careful{background:#fdf4e4;border-color:#efd8a8}
+.eat-careful b{color:#9a6a12}
+.eat-never{background:#fdeaea;border-color:#f0c0c0}
+.eat-never b{color:#b22b2b}
