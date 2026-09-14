@@ -87,6 +87,22 @@
 
   var SHELF = { x0: 3620, x1: 4800, pad: 210 };
 
+  /* The footbridge near Shell Beach. It crosses the water where the river
+     opens out into Gull Inlet, so she can walk over instead of all the way
+     round - and she can fish off the side of it. Everything about it is
+     worked out from these five numbers. */
+  var BRIDGE = {
+    x: 2857, y: 2383,        // mid-channel, where the river meets the beach
+    ang: 2.167,              // square across the current, in radians
+    len: 258,                // end to end, with a landing on the sand each side
+    w: 34                    // how wide the deck is
+  };
+  BRIDGE.dx = Math.cos(BRIDGE.ang); BRIDGE.dy = Math.sin(BRIDGE.ang);
+  BRIDGE.ax = BRIDGE.x - BRIDGE.dx * BRIDGE.len / 2;
+  BRIDGE.ay = BRIDGE.y - BRIDGE.dy * BRIDGE.len / 2;
+  BRIDGE.bx = BRIDGE.x + BRIDGE.dx * BRIDGE.len / 2;
+  BRIDGE.by = BRIDGE.y + BRIDGE.dy * BRIDGE.len / 2;
+
   var MS = 8;   // water mask resolution, in pixels
 
   var World = GG.World = {
@@ -100,6 +116,18 @@
     pond: POND_E,
     flow: FLOW,
     tidepools: TIDEPOOLS,
+    bridge: BRIDGE,
+
+    /* Is this point on the footbridge deck? Walking on it is the whole
+       point, so it beats the deep water underneath. */
+    onBridge: function (x, y, pad) {
+      var B = BRIDGE;
+      var ox = x - B.x, oy = y - B.y;
+      var along = ox * B.dx + oy * B.dy;
+      var across = -ox * B.dy + oy * B.dx;
+      var p = pad || 0;
+      return Math.abs(along) <= B.len / 2 + p && Math.abs(across) <= B.w / 2 + p;
+    },
 
     /* ---------- water ---------- */
     _kindAtRaw: function (x, y) {
@@ -275,6 +303,7 @@
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
         if (nearHouse(x, y, 40)) continue;
+        if (this.onBridge(x, y, 26)) continue;
         var b = this.biomeAt(x, y);
         var v = rnd();
 
@@ -304,8 +333,10 @@
           else if (v < 0.26) add('flower', x, y, 11 + rnd() * 5, false, 0, { col: GG.pick(FLOWER_COLS) });
           else if (v < 0.80) add('grassTuft', x, y, 13 + rnd() * 8);
         } else if (b === 'hill') {
-          if (v < 0.14) add('rock', x, y, 16 + rnd() * 18, true, 15);
-          else if (v < 0.20) add('bush', x, y, 18 + rnd() * 6, true, 11);
+          if (v < 0.12) add('rock', x, y, 16 + rnd() * 18, true, 15);
+          /* the hills are where the wild fruit grows, so there is plenty of it */
+          else if (v < 0.25) add('wildBush', x, y, 19 + rnd() * 6, true, 11);
+          else if (v < 0.265) add('bush', x, y, 18 + rnd() * 6, true, 11);
           else if (v < 0.55) add('grassTuft', x, y, 10 + rnd() * 5);
           else if (v < 0.62) add('flower', x, y, 9 + rnd() * 3, false, 0, { col: '#ffe9a8' });
         } else if (b === 'pond') {
@@ -368,6 +399,7 @@
       add('sign', 2300, 2000, 26, false, 0, { label: 'River' });
       add('sign', 3150, 2400, 26, false, 0, { label: 'Inlet' });
       add('sign', 2660, 2510, 26, false, 0, { label: 'Beach' });
+      add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
       add('sign', 4000, 2200, 26, false, 0, { label: 'Tidepools' });
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
@@ -378,7 +410,7 @@
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
-      if (this.isDeepWater(x, y)) return true;   // the stream and the pools are waded, not blocked
+      if (this.isDeepWater(x, y) && !this.onBridge(x, y)) return true;   // the stream and the pools are waded, not blocked
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
           y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
@@ -570,6 +602,58 @@
       c.restore();
     },
 
+    /* The footbridge. Drawn after the water and before anything that walks,
+       so Guin and her friends cross on top of it. */
+    drawBridge: function (c, cam, t) {
+      var B = BRIDGE;
+      var mx = B.x - cam.x, my = B.y - cam.y;
+      if (mx < -B.len || my < -B.len || mx > GG.view.w + B.len || my > GG.view.h + B.len) return;
+      c.save();
+      c.translate(mx, my);
+      c.rotate(B.ang);
+      var L = B.len, W = B.w;
+
+      /* the shadow it casts on the water */
+      c.fillStyle = 'rgba(20,40,60,0.22)';
+      c.fillRect(-L / 2 + 3, -W / 2 + 5, L, W);
+
+      /* the two stringers under the planks */
+      c.fillStyle = '#6b4a2c';
+      c.fillRect(-L / 2, -W / 2 - 1, L, W + 2);
+
+      /* the planks, laid across */
+      var planks = Math.round(L / 9);
+      for (var i = 0; i < planks; i++) {
+        var px = -L / 2 + (i + 0.06) * (L / planks);
+        var shade = (i % 3 === 0) ? '#a07a4c' : (i % 3 === 1 ? '#b08a58' : '#97713f');
+        c.fillStyle = shade;
+        c.fillRect(px, -W / 2 + 1, L / planks - 1.4, W - 2);
+      }
+      /* the worn line down the middle where everybody walks */
+      c.fillStyle = 'rgba(255,240,210,0.10)';
+      c.fillRect(-L / 2, -3.5, L, 7);
+
+      /* the rails, one each side, with posts */
+      [-1, 1].forEach(function (side) {
+        var ry = side * (W / 2 + 1);
+        c.fillStyle = '#5c3f26';
+        c.fillRect(-L / 2, ry - 2, L, 4);
+        c.fillStyle = '#8a6438';
+        c.fillRect(-L / 2, ry - 8.5, L, 3.2);
+        for (var k = 0; k <= 7; k++) {
+          var qx = -L / 2 + k * (L / 7);
+          c.fillStyle = '#6b4a2c';
+          c.fillRect(qx - 2, ry - 9.5, 4, 11);
+        }
+      });
+
+      /* a plank or two missing a nail, for character */
+      c.strokeStyle = 'rgba(70,45,25,0.5)'; c.lineWidth = 0.8;
+      c.beginPath(); c.moveTo(-L * 0.18, -W / 2 + 2); c.lineTo(-L * 0.18, W / 2 - 2); c.stroke();
+      c.beginPath(); c.moveTo(L * 0.27, -W / 2 + 2); c.lineTo(L * 0.27, W / 2 - 2); c.stroke();
+      c.restore();
+    },
+
     drawProps: function (c, cam, vw, vh, t, layer) {
       var P = GG.Props;
       var pad = 140;
@@ -581,7 +665,7 @@
         if (layer === 'flat' && !isFlat) continue;
         if (layer === 'sorted' && isFlat) continue;
         var fn = P[p.type];
-        if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label);
+        if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     },
 
