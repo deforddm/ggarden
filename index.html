@@ -218,6 +218,7 @@
           <button class="btn small" id="tank-next">&#8594;</button>
           <button class="btn small" id="tank-rename">Name</button>
           <button class="btn small" id="tank-bg">Scene</button>
+          <button class="btn small" id="tank-type">Type</button>
           <button class="btn small pink" id="tank-remove">Take out</button>
         </div>
         <div class="tabs">
@@ -262,28 +263,33 @@
   <!-- choose a new tank -->
   <div class="panel hidden" id="screen-newtank">
     <div class="sheet">
-      <header><h2>A new tank</h2><span class="chip gold" id="newtank-cost"></span><button class="x" data-close="screen-newtank">&times;</button></header>
+      <header><h2 id="newtank-title">A new tank</h2><span class="chip gold" id="newtank-cost"></span><button class="x" data-close="screen-newtank">&times;</button></header>
       <div class="body">
+        <div class="note" id="newtank-note" hidden></div>
         <div id="newtank-list">
           <div class="newtank" data-type="terrarium">
             <canvas width="240" height="132"></canvas>
             <div class="nt-name">Terrarium</div>
             <div class="nt-blurb">Dry land. For bugs.</div>
+            <div class="nt-warn" hidden></div>
           </div>
           <div class="newtank" data-type="aquarium">
             <canvas width="240" height="132"></canvas>
             <div class="nt-name">Fish Tank</div>
             <div class="nt-blurb">All water. For fish.</div>
+            <div class="nt-warn" hidden></div>
           </div>
           <div class="newtank" data-type="hybrid">
             <canvas width="240" height="132"></canvas>
             <div class="nt-name">Hybrid Tank</div>
             <div class="nt-blurb">A grassy bank above, water below. Bugs and fish together.</div>
+            <div class="nt-warn" hidden></div>
           </div>
           <div class="newtank" data-type="habitat">
             <canvas width="240" height="132"></canvas>
             <div class="nt-name">Garden Habitat</div>
             <div class="nt-blurb">A corner of the garden, out under the sky. Your animal friends come and visit.</div>
+            <div class="nt-warn" hidden></div>
           </div>
         </div>
       </div>
@@ -344,6 +350,7 @@
 <script src="src/data/bugs.js"></script>
 <script src="src/data/fish.js"></script>
 <script src="src/data/animals.js"></script>
+<script src="src/data/foodchain.js"></script>
 <script src="src/render/bugart.js"></script>
 <script src="src/render/fishart.js"></script>
 <script src="src/render/animalart.js"></script>

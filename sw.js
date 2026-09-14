@@ -1,5 +1,5 @@
 /* Guin's Garden service worker - lets the game work with no internet. */
-const CACHE = 'guins-garden-v1.10.1';
+const CACHE = 'guins-garden-v1.11.0';
 const ASSETS = [
   './', './index.html', './manifest.json', './css/style.css',
   './src/core/util.js', './src/core/save.js', './src/core/input.js', './src/core/audio.js',
