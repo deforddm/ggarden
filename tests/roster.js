@@ -66,7 +66,7 @@ const { chromium } = require('playwright');
       emptyCombos: Object.keys(combos).filter(k => combos[k] === 0) };
   });
 
-  ok('83 bugs and 29 fish (' + data.count + ' + ' + data.fish + ')', data.count === 83 && data.fish === 29);
+  ok('103 bugs and 29 fish (' + data.count + ' + ' + data.fish + ')', data.count === 103 && data.fish === 29);
   ok('every fish says which waters it lives in', data.bad.noWater.length === 0);
   ok('no duplicate ids', data.bad.dupe.length === 0);
   ok('every bug has a drawing shape', data.bad.noShape.length === 0);
@@ -83,8 +83,8 @@ const { chromium } = require('playwright');
   // the book copes with the bigger roster
   await p.evaluate(() => { GG.BUGS.forEach(x => GG.Save.addCatch(x.id)); GG.Book.open('bugs'); });
   await p.waitForTimeout(600);
-  ok('the Bug Book shows all of them', await p.$eval('#book-grid', e => e.children.length) === 83);
-  ok('the counter reads 83 / 83', (await p.$eval('#progress', e => e.textContent)).trim() === '83 / 83');
+  ok('the Bug Book shows all of them', await p.$eval('#book-grid', e => e.children.length) === 103);
+  ok('the counter reads 103 / 103', (await p.$eval('#progress', e => e.textContent)).trim() === '103 / 103');
   await p.screenshot({ path: __dirname + '/shots/book-full.png' });
 
   console.log(r.join('\n'));

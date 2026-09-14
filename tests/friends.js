@@ -420,6 +420,18 @@ const { chromium } = require('playwright');
     !chain.millipedeMyth && !chain.boatmanMyth);
   ok('nothing eats a monarch', chain.monarchSafe);
 
+  /* Nothing below can be timed properly while a card is still on screen -
+     the whole game loop pauses whenever a panel or a popup is open. */
+  const unpause = () => p.evaluate(() => {
+    GG.UI.hideCatch && GG.UI.hideCatch();
+    GG.UI.hideFriend && GG.UI.hideFriend();
+    document.getElementById('catch-pop').classList.add('hidden');
+    document.getElementById('friend-pop').classList.add('hidden');
+    (GG.UI.openPanels || []).slice().forEach(id => GG.UI.close(id));
+    return GG.UI.anyOpen();
+  });
+
+  ok('nothing is left open before the chase', !(await unpause()));
   const chase2 = await p.evaluate(async () => {
     const P = GG.Player;
     GG.Critters.clear();
@@ -428,13 +440,15 @@ const { chromium } = require('playwright');
     const hunter = GG.Critters.list[0], prey = GG.Critters.list[1];
     const d0 = GG.dist(hunter.x, hunter.y, prey.x, prey.y);
     let closest = d0, stalked = false, bolted = false;
-    for (let i = 0; i < 90; i++) {
+    /* a hunt is a wander with a purpose, so give it long enough to land */
+    for (let i = 0; i < 200; i++) {
       await new Promise(r => setTimeout(r, 50));
       if (GG.Critters.list.indexOf(prey) < 0) break;
       const d = GG.dist(hunter.x, hunter.y, prey.x, prey.y);
       if (d < closest) closest = d;
       if (hunter.prey) stalked = true;
       if (prey.flee > 0) bolted = true;
+      if (bolted) break;
     }
     return { d0: Math.round(d0), closest: Math.round(closest), stalked, bolted,
       preyAlive: GG.Critters.list.indexOf(prey) >= 0 };
@@ -502,13 +516,32 @@ const { chromium } = require('playwright');
   await p.waitForTimeout(1300);
   const indoors = await p.evaluate(async () => {
     if (GG.debugScene() !== 'house') return { notInside: true };
+    GG.UI.hideCatch && GG.UI.hideCatch();
+    document.getElementById('catch-pop').classList.add('hidden');
+    document.getElementById('friend-pop').classList.add('hidden');
+    (GG.UI.openPanels || []).slice().forEach(id => GG.UI.close(id));
     const c0 = GG.Friends.companion;
     const start = c0 ? { x: c0.x, y: c0.y } : null;
     const homeStart = (GG.Friends.homeList || []).map(f => ({ x: f.x, y: f.y }));
     GG.Input.keys['d'] = true;
-    await new Promise(r => setTimeout(r, 2200));
+    /* a friend pottering about wanders and pauses, and can wander back to
+       where it started - so watch the whole window, not just the ends */
+    let homeMax = 0;
+    for (let i = 0; i < 26; i++) {
+      await new Promise(r => setTimeout(r, 200));
+      (GG.Friends.homeList || []).forEach((f, k) => {
+        if (!homeStart[k]) return;
+        homeMax = Math.max(homeMax, GG.dist(f.x, f.y, homeStart[k].x, homeStart[k].y));
+      });
+    }
     GG.Input.keys['d'] = false;
-    await new Promise(r => setTimeout(r, 1000));
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 200));
+      (GG.Friends.homeList || []).forEach((f, k) => {
+        if (!homeStart[k]) return;
+        homeMax = Math.max(homeMax, GG.dist(f.x, f.y, homeStart[k].x, homeStart[k].y));
+      });
+    }
     const c1 = GG.Friends.companion, H = GG.House;
     const homeNow = (GG.Friends.homeList || []).map(f => ({ x: f.x, y: f.y }));
     return {
@@ -516,8 +549,8 @@ const { chromium } = require('playwright');
       gap: c1 ? Math.round(GG.dist(c1.x, c1.y, GG.Player.x, GG.Player.y)) : -1,
       inRoom: c1 ? (c1.x > 50 && c1.x < H.W - 50 && c1.y > H.FLOOR && c1.y < H.H) : false,
       homeCount: homeNow.length,
-      homeMoved: homeStart.length > 0 && homeNow.some((h, i) =>
-        GG.dist(h.x, h.y, homeStart[i].x, homeStart[i].y) > 2),
+      homeMoved: homeStart.length > 0 && homeMax > 2,
+      homeMax: Math.round(homeMax),
       homeInRoom: homeNow.every(h => !H.blocked(h.x, h.y, 6))
     };
   });
@@ -526,7 +559,7 @@ const { chromium } = require('playwright');
   ok('without walking through the walls', indoors.notInside || indoors.inRoom);
   ok('the friend waiting at home is in the room (' + indoors.homeCount + ')',
     indoors.notInside || indoors.homeCount === 1);
-  ok('and potters about it', indoors.notInside || indoors.homeMoved);
+  ok('and potters about it (' + indoors.homeMax + 'px)', indoors.notInside || indoors.homeMoved);
   ok('without walking into the furniture', indoors.notInside || indoors.homeInRoom);
 
   const kept = await p.evaluate(() => {
