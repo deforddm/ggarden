@@ -138,6 +138,8 @@
     GG.Orchard.stepPops(dt);
     var fishing = Fi.active();
     var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
+    var lookAt = !fishing && !atDoor && !GG.Friends.busy ? GG.Critters.nearestLookOnly(P, 78) : null;
+    if (lookAt) pickable = null;   // she is the more important thing to notice
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
@@ -150,6 +152,7 @@
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
+      if (lookAt) { lookAtCreature(lookAt.def); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (P.startSwing()) swingChecked = false;
@@ -179,11 +182,13 @@
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
     GG.UI.prompt(atDoor ? 'Tap to go inside'
-      : (pickable ? 'Tap to pick the fruit' : null));
+      : (lookAt ? 'Look \u2014 but this one is not for catching'
+        : (pickable ? 'Tap to pick the fruit' : null)));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
       setActionLabel('PICK', pf ? pf.name.toLowerCase() : 'fruit');
@@ -323,6 +328,9 @@
   /* ---------- bees ---------- */
   function onSwingMiss(P) {
     var net = P.netPoint();
+    /* swinging at the one she must not catch teaches, it does not punish */
+    var forbidden = GG.Critters.lookOnlyUnderNet(P);
+    if (forbidden) { lookAtCreature(forbidden.def); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
     if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
@@ -377,6 +385,16 @@
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+  }
+
+  /* ---------- look, don't catch ---------- */
+  /* One creature in the whole garden is never caught. Meeting her is what
+     opens her page in the Bug Book, and the warning comes with it. */
+  function lookAtCreature(def) {
+    var isNew = GG.Save.addSeen(def.id);
+    GG.UI.refreshHud();
+    if (isNew) GG.Sfx.warn(); else GG.Sfx.click();
+    GG.UI.showWarning(def, isNew);
   }
 
   /* ---------- picking fruit ---------- */
@@ -907,6 +925,7 @@
     $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
 
     GG.UI.onCatchClosed = function () { swingChecked = true; };
+    GG.UI.onWarningClosed = function () { swingChecked = true; };
     GG.Friends.onFriend = function (def, isNew, reward) {
       GG.UI.showFriend(def, isNew, reward);
     };
