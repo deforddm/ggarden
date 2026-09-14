@@ -6,9 +6,20 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.10.1';
+  GG.VERSION = '1.11.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.11.0', title: 'Everything Guin asked for',
+      lines: [
+        'Cookie is in the game! She is an Alaskan Husky with a bandit mask, pointy ears and a curly tail, and she turns up in the garden, the meadow, the woods and the hills.',
+        'Your friends walk properly now \u2014 dogs trot with their legs swinging, cats stand up and pad along on all four paws, and parrots hop.',
+        'Silly hats! Open any friend in the Friends Book and give them a party hat, a crown, a wizard hat, silly antlers, a propeller beanie and eight more. They wear it everywhere.',
+        'You can have ten tanks now instead of six, and you can change a tank into a different kind whenever you like \u2014 tap "Type". It is free, and anything that cannot live in the new kind goes safely back to your books.',
+        'Cats really hate water and will not go near it, frogs love it and stay close to the pond, and cats cannot resist chasing a butterfly (they never, ever catch one).',
+        'There is a food chain now. A ladybug hunts aphids, a pike hunts minnows, a sea star hunts limpets, and every book page tells you what a creature hunts and what hunts it. But nothing is ever eaten in your garden \u2014 whoever is being chased always gets away.'
+      ]
+    },
     {
       v: '1.10.1', title: 'Getting rid of a tank',
       lines: [

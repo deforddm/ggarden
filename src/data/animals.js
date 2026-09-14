@@ -270,6 +270,22 @@
 
     /* ---------------- cats ---------------- */
     {
+      id: 'cookie', name: 'Cookie', family: 'dog',
+      way: 'ask', patience: 2.5, keep: 52, rarity: 2, value: 110,
+      times: ['morning', 'day', 'evening', 'night'],
+      places: ['garden', 'meadow', 'forest', 'hill'],
+      measure: 'comes up past your knee', size: 0.8,
+      art: { shape: 'dog', body: '#2f2b29', ear: '#241f1d', accent: '#f4f2ee',
+        muzzle: '#f4f2ee', nose: '#171412', collar: '#b0322c', build: 'big',
+        ears: 'up', face: 'bandit', curl: true, patch: 'ruff' },
+      facts: [
+        'An Alaskan Husky is not really one breed at all \u2014 it is a kind of sled dog, bred for running well rather than for looking a certain way.',
+        'A dog can have up to 300 million tiny smell-catchers in its nose. People only have about six million, so the world smells a hundred times more interesting to her.',
+        'When a dog is happy to see someone it loves, its tail wags a little more to its right side than its left.'
+      ],
+      manners: 'Ask whoever she belongs to before you say hello, then hold out a soft fist and let her come to you. Huskies are chatty and wriggly and love to lean on people, but even the friendliest dog wants to be left alone while it is eating or sleeping.'
+    },
+    {
       id: 'tabby', name: 'Tabby Cat', family: 'cat',
       way: 'blink', patience: 3.2, keep: 54, rarity: 1, value: 55,
       times: ['morning', 'evening'], places: ['garden', 'meadow', 'orchard'],
