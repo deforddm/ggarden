@@ -6,9 +6,17 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.11.0';
+  GG.VERSION = '1.11.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.11.1', title: 'Your friend really comes with you',
+      lines: [
+        'When you ask a friend along there is no longer a copy of them left wandering about the garden \u2014 they properly come with you.',
+        'They follow you into the house now, and stay by you while you look at your books and your tanks.',
+        'When you ask a different friend along, the one who was with you goes and waits at your house instead of just disappearing. Up to eight friends can be pottering about indoors, and asking one back out again takes them out of the house.'
+      ]
+    },
     {
       v: '1.11.0', title: 'Everything Guin asked for',
       lines: [
