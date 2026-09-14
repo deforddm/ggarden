@@ -290,6 +290,8 @@
       var best = null, bestD = 1e9;
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
+        /* the look-only ones are never in the net, whatever she swings at */
+        if (b.def.lookOnly) continue;
         var dz = Math.max(0, b.z - 26) * 0.8;
         var d = GG.dist(b.x, b.y - b.z * 0.5, n.x, n.y) + dz;
         var reach = n.r + 8 * (b.def.size || 1);
@@ -299,6 +301,31 @@
       this.list.splice(this.list.indexOf(best), 1);
       this.burst(best.x, best.y - best.z, best.def);
       return best.def;
+    },
+
+    /* Did she just swing the net at something she must not catch? */
+    lookOnlyUnderNet: function (player) {
+      var n = player.netPoint();
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (!b.def.lookOnly) continue;
+        var reach = n.r + 10 * (b.def.size || 1);
+        if (GG.dist(b.x, b.y, n.x, n.y) < reach) return b;
+      }
+      return null;
+    },
+
+    /* The nearest look-only creature she is standing beside. */
+    nearestLookOnly: function (player, radius) {
+      var best = null, bestD = (radius || 74) * (radius || 74);
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (!b.def.lookOnly) continue;
+        var dx = player.x - b.x, dy = (player.y - b.y) * 1.15;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = b; }
+      }
+      return best;
     },
 
     /* Swing at a bee and miss and she takes it personally. */
