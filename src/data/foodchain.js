@@ -24,6 +24,21 @@
 
   /* predator id -> everything it hunts */
   var EATS = {
+    /* --- the orchard and the hills (v1.12) --- */
+    yellowjacket: ['caterpillar', 'housefly', 'crane_fly', 'apple_maggot_fly', 'sap_beetle'],
+    baldfaced_hornet: ['caterpillar', 'housefly', 'hoverfly', 'crane_fly', 'yellowjacket'],
+    snakefly: ['aphid', 'caterpillar', 'leafhopper'],
+    bee_fly: ['mason_bee'],
+    cross_orbweaver: ['aphid', 'apple_maggot_fly', 'housefly', 'crane_fly', 'hoverfly',
+      'mason_bee', 'sap_beetle', 'leafhopper'],
+    ground_beetle: ['caterpillar', 'snail', 'earthworm'],
+    jerusalem_cricket: ['earthworm', 'pillbug'],
+    northern_scorpion: ['pinacate_beetle', 'grasshopper', 'stink_bug', 'cricket', 'ant'],
+    windscorpion: ['ant', 'cricket', 'grasshopper', 'harvester_ant', 'silverfish'],
+    velvet_ant: ['sweat_bee'],
+    robber_fly: ['bumblebee', 'grasshopper', 'honeybee', 'housefly', 'hoverfly',
+      'sweat_bee', 'mason_bee', 'damselfly', 'yellowjacket'],
+
     /* --- garden and woodland --- */
     ladybug: ['aphid'],
     lacewing: ['aphid'],

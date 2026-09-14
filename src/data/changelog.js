@@ -6,9 +6,20 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.11.1';
+  GG.VERSION = '1.12.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.12.0', title: 'Fruit to pick, a footbridge, and twenty new bugs',
+      lines: [
+        'You can pick fruit now! Walk up to a tree in the Apple Orchard or a bush in the Pebble Hills and the button turns into PICK. There are ten kinds — apples, cherries, pears, and five wild ones from the hills.',
+        'Every new kind of fruit you pick unlocks a decoration for your tanks. They are in the shop under "Picked, not bought", and you cannot buy them with sparkles — you have to go and find them.',
+        'There is a new Fruit tab in your book. Every fruit says whether it is good to eat, and two of them are not, so have a read before you nibble anything.',
+        'A wooden footbridge has been built near Shell Beach, where the river opens out into Gull Inlet. You can walk right across it instead of going all the way round, and you can fish off the side.',
+        'Twenty new bugs. Ten for the orchard, including a bee fly like a tiny flying teddy bear and a snakefly that rears its head up like a snake.',
+        'Ten more for the Pebble Hills, which were rather empty before — a Jerusalem cricket, a real Washington scorpion that glows under ultraviolet light, a windscorpion, and a beetle that stands on its head when it is frightened.'
+      ]
+    },
     {
       v: '1.11.1', title: 'Your friend really comes with you',
       lines: [

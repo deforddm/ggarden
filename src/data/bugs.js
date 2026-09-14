@@ -1011,6 +1011,269 @@
         'Some sea slugs eat stinging anemones and then store the stingers in their own fingertips to use for themselves.',
         'Their bright colours are a warning sign that says, quite clearly, do not eat me.'
       ]
+    },
+
+    /* ---------- v1.12: the Apple Orchard ---------- */
+    {
+      id: 'mason_bee', name: 'Blue Orchard Mason Bee',
+      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 2, value: 55,
+      behavior: 'hover', speed: 46, shy: 52, size: 0.85, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'bee', body: '#2a3a6e', wing: '#dfe9f6', accent: '#1a2242', pattern: 'plain' },
+      facts: [
+        'A mason bee is shiny blue-black all over, with no stripes at all. She is not a honeybee and she makes no honey.',
+        'Just two or three hundred mason bees will pollinate a whole acre of apple trees. Honeybees need two or three entire hives to do the same job.',
+        'She carries pollen on her tummy instead of in baskets on her legs, so she dusts every flower she lands on.',
+        'She works on cold cloudy days when honeybees stay at home, and she walls each baby into its own little room with a plug of mud.'
+      ]
+    },
+    {
+      id: 'yellowjacket', name: 'Western Yellowjacket',
+      habitats: ['orchard', 'meadow'], times: ['morning', 'day', 'evening'], rarity: 1, value: 26,
+      behavior: 'dart', speed: 66, shy: 58, size: 0.9, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'wasp', body: '#f2cc2a', wing: '#efeadc', accent: '#171410', pattern: 'stripes' },
+      facts: [
+        'A yellowjacket is a wasp, not a bee. She is smooth and shiny where a bee is furry, and she makes no honey at all.',
+        'The whole nest dies every autumn. Only the new queens live through the winter, so every nest you ever find was built from nothing that same year.',
+        'She usually nests underground, very often in an old mouse burrow, so the way to stay friends is to walk around any hole with wasps going in and out.',
+        'Early in the summer she hunts caterpillars and flies for her grubs. Only late on does she come looking for sweet fallen apples.'
+      ]
+    },
+    {
+      id: 'baldfaced_hornet', name: 'Bald-faced Hornet',
+      habitats: ['orchard', 'forest'], times: ['morning', 'day'], rarity: 3, value: 95,
+      behavior: 'hover', speed: 60, shy: 70, size: 1.1, sting: true,
+      measure: 'three quarters of an inch long',
+      art: { shape: 'wasp', body: '#22242a', wing: '#e6e6df', accent: '#3a3c44', face: '#f2f0e6', band: '#f2f0e6', tipOnly: true, pattern: 'stripes' },
+      facts: [
+        'She is not really a hornet. She is a big yellowjacket that lost her yellow, so she is black with an ivory-white face.',
+        'Her grey football-shaped nest is real paper. The hornets scrape wood off a fence, chew it into pulp, and spread it out to dry.',
+        'Unlike a honeybee she can sting again and again, and she will defend her nest, so a hornet nest is for looking at from a very long way off.',
+        'She is a fierce hunter of caterpillars and flies, which makes her genuinely good for an orchard.'
+      ]
+    },
+    {
+      id: 'sap_beetle', name: 'Four-spotted Sap Beetle',
+      habitats: ['orchard', 'garden'], times: ['day', 'evening'], rarity: 2, value: 24,
+      behavior: 'crawl', speed: 26, shy: 34, size: 0.65,
+      measure: 'a quarter of an inch',
+      art: { shape: 'beetle', body: '#1c1a18', wing: '#242220', accent: '#e08a2c', pattern: 'fourspot', club: true },
+      facts: [
+        'People call this one the picnic beetle, because it turns up wherever there is sweet fruit going soft.',
+        'It finds its food entirely by smell. The scent of a bruised, fermenting apple will bring it in from right across the orchard.',
+        'The giveaway is its antennae: each one ends in a tiny knob, like a pin. No other little black beetle in the orchard has that.'
+      ]
+    },
+    {
+      id: 'apple_maggot_fly', name: 'Apple Maggot Fly',
+      habitats: ['orchard'], times: ['morning', 'day'], rarity: 3, value: 34,
+      behavior: 'dart', speed: 58, shy: 50, size: 0.75,
+      measure: 'a fifth of an inch',
+      art: { shape: 'fly', body: '#1a1a1e', wing: '#eef4f8', accent: '#f4f2ea', wingBands: '#20242a', pattern: 'bands' },
+      facts: [
+        'Each wing carries four black bands that make the shape of a letter F.',
+        'Long ago this fly laid its eggs only in wild hawthorn fruit. In the 1800s some began using apples instead, and those two groups are slowly turning into two different kinds of fly.',
+        'It is not from the Pacific Northwest at all. That is why, in real life, there are rules about carrying backyard apples from one county to another.',
+        'The mother pushes her egg right under the apple skin, leaving nothing behind but a pinprick and a little dimple.'
+      ]
+    },
+    {
+      id: 'snakefly', name: 'Snakefly',
+      habitats: ['orchard', 'forest'], times: ['morning', 'day'], rarity: 4, value: 130,
+      behavior: 'cling', speed: 24, shy: 58, size: 0.95,
+      measure: 'half an inch, with a long neck',
+      art: { shape: 'snakefly', body: '#2a2420', neck: '#3a322a', head: '#1e1a16', wing: '#eef3f6', accent: '#c9b98f' },
+      facts: [
+        'A snakefly rears its little flat head up on a long neck, exactly like a snake about to strike. That is where the name comes from.',
+        'Snakeflies live only in the west of North America and nowhere else on the whole continent.',
+        'The long needle trailing behind her is not a sting. It is a tool for pushing her eggs deep into a crack in the bark.',
+        'Most snakeflies take two or three years to grow up, and they spend that time eating aphids and other little pests in the trees.'
+      ]
+    },
+    {
+      id: 'bee_fly', name: 'Greater Bee Fly',
+      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 3, value: 70,
+      behavior: 'hover', speed: 50, shy: 56, size: 0.9,
+      measure: 'three quarters of an inch across',
+      art: { shape: 'beefly', body: '#c8975a', wing: '#f2eee4', accent: '#3a2c1e' },
+      facts: [
+        'A bee fly looks like a tiny flying teddy bear with a long needle out in front. That needle is a drinking straw, not a sting, and a bee fly cannot sting or bite at all.',
+        'It drinks nectar while hovering in front of a flower without ever landing on it.',
+        'The mother builds no nest. She hovers over a mining bee’s burrow and flicks her eggs at the hole with the tip of her tummy.',
+        'It is one of the very first things flying in spring, when the fruit blossom opens.'
+      ]
+    },
+    {
+      id: 'cross_orbweaver', name: 'Cross Orbweaver',
+      habitats: ['orchard', 'garden'], times: ['evening', 'night'], rarity: 2, value: 40,
+      behavior: 'cling', speed: 20, shy: 50, size: 1.0,
+      measure: 'three quarters of an inch across',
+      art: { shape: 'spider', body: '#b98a5e', wing: '#6a4c32', accent: '#f4ece0', pattern: 'spots' },
+      facts: [
+        'She is named for the little cross of white dots on her fat round back.',
+        'She is not from here. She arrived from Europe and was first noticed in western Washington in the 1920s.',
+        'People say spiders suddenly appear in September. They do not — she has been there all year, quietly growing, and has only just become big enough to notice.',
+        'Two cross orbweavers called Arabella and Anita flew on the Skylab space station in 1973 and learned to spin webs with no gravity. Arabella’s web is in a museum.',
+        'No orb weaver anywhere is dangerous to people. Walk around her web instead of through it — it took her all night.'
+      ]
+    },
+    {
+      id: 'tenlined_beetle', name: 'Ten-lined June Beetle',
+      habitats: ['orchard', 'forest'], times: ['night'], rarity: 3, value: 110,
+      behavior: 'drift', speed: 34, shy: 44, size: 1.25,
+      measure: 'an inch long',
+      art: { shape: 'beetle', body: '#5a3a22', wing: '#6b4728', accent: '#f0ead8', fan: '#e08a2c', pattern: 'tenline', antennae: 'fan' },
+      facts: [
+        'Ten chalk-white stripes run down its brown back, which is exactly how it got its name.',
+        'The male has huge orange antennae that open out like a hand of cards. They are not for hearing — they are for smelling, so he can find a female in the dark.',
+        'Pick one up and it hisses and squeaks at you. It is frightened, so the kind thing is to put it down gently, away from the light.',
+        'Its grubs live underground for years, eating tree roots, which is why every orchardist knows this beetle.'
+      ]
+    },
+    {
+      id: 'ground_beetle', name: 'European Ground Beetle',
+      habitats: ['orchard', 'garden'], times: ['night'], rarity: 3, value: 78,
+      behavior: 'crawl', speed: 42, shy: 52, size: 1.05,
+      measure: 'an inch long',
+      art: { shape: 'beetle', body: '#1e2028', wing: '#2a2c36', rim: '#6a4a8a', accent: '#101018' },
+      facts: [
+        'Its black back is edged with a thin rim that shines purple or bronze when the light catches it.',
+        'It hunts at night along the ground, and slugs and caterpillars are its favourite supper — which makes it a gardener’s friend.',
+        'It came over from Europe a long time ago and now lives right down the west side of North America.'
+      ]
+    },
+
+    /* ---------- v1.12: the Pebble Hills ---------- */
+    {
+      id: 'jerusalem_cricket', name: 'Jerusalem Cricket',
+      habitats: ['hill'], times: ['night'], rarity: 4, value: 140,
+      behavior: 'slow', speed: 20, shy: 38, size: 1.35,
+      measure: 'up to two inches long',
+      art: { shape: 'jerusalem', body: '#e0a054', accent: '#3a2a1c', band: '#f3e2bd' },
+      facts: [
+        'It has no wings at all, and a big shiny amber head that is wider than the rest of it.',
+        'It cannot chirp. Instead it drums its fat tummy against the ground, and the drumming travels through the soil to another Jerusalem cricket.',
+        'It spends nearly its whole life underground eating roots, and comes up at night — especially after rain.',
+        'It can nip if you pick it up, and it hurts for a little while, but it is not poisonous. The kind thing is to look and not lift.',
+        'It is not a cricket, it is not from Jerusalem, and nobody actually knows where the name came from.'
+      ]
+    },
+    {
+      id: 'northern_scorpion', name: 'Northern Scorpion',
+      habitats: ['hill'], times: ['night'], rarity: 4, value: 160,
+      behavior: 'crawl', speed: 30, shy: 56, size: 1.15, sting: true,
+      measure: 'two inches, tail and all',
+      art: { shape: 'scorpion', body: '#c9a468', claw: '#d8b478', tailCol: '#e0c07e', accent: '#7a5a2a' },
+      facts: [
+        'Washington really does have a scorpion. It lives on dry ground east of the mountains, under flat rocks.',
+        'It glows blue-green under ultraviolet light. Scientists all agree that it glows — they still do not agree about why.',
+        'Its sting is strong enough to make you say ouch, but it hurts less than a bee sting and it does not last long.',
+        'It hides under a rock all day and hunts beetles and grasshoppers at night. Lift the far edge of a rock, have a look, and always put the rock back exactly where it was — that rock is somebody’s house.'
+      ]
+    },
+    {
+      id: 'windscorpion', name: 'Windscorpion',
+      habitats: ['hill'], times: ['night'], rarity: 5, value: 260,
+      behavior: 'dart', speed: 92, shy: 78, size: 1.2,
+      measure: 'an inch and a half across',
+      art: { shape: 'windscorpion', body: '#b5763c', accent: '#e0cfae', jaw: '#7a4a20' },
+      facts: [
+        'It is neither a spider nor a scorpion. It belongs to a group all of its own.',
+        'It has enormous jaws, nearly a third of its whole body — and no poison at all. It cannot hurt you.',
+        'It hunts by touch. The two long feelers waving out in front are not legs, and it walks on the eight behind them.',
+        'It is one of the fastest runners on the hillside, in quick stop-start dashes. If you meet one, just let it run.'
+      ]
+    },
+    {
+      id: 'pinacate_beetle', name: 'Pinacate Beetle',
+      habitats: ['hill', 'meadow'], times: ['evening', 'night'], rarity: 2, value: 44,
+      behavior: 'crawl', speed: 24, shy: 32, size: 1.1,
+      measure: 'an inch long',
+      art: { shape: 'darkling', body: '#1a1a1e' },
+      facts: [
+        'When something frightens it, it stands on its head — nose down, bottom in the air — and that is its whole plan.',
+        'If the headstand does not work it can squirt a smelly chemical, which is horrid in a fox’s nose and mouth but cannot really hurt anybody. The smell is very hard to wash off, so admire the headstand and leave the beetle alone.',
+        'Its wing cases are fused shut, so it can never, ever fly.',
+        'One animal has worked out the answer. The grasshopper mouse grabs the beetle, jams its bottom into the dirt so the spray goes into the soil, and eats it head first.'
+      ]
+    },
+    {
+      id: 'harvester_ant', name: 'Western Harvester Ant',
+      habitats: ['hill'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
+      behavior: 'crawl', speed: 38, shy: 26, size: 0.7, sting: true,
+      measure: 'a third of an inch',
+      art: { shape: 'ant', body: '#a33a24', wing: '#c25038', accent: '#5e1c10', pattern: 'plain' },
+      facts: [
+        'You can spot a harvester ant nest from a long way off. They clear a bare circle of gravel around the door and pile a little cone of pebbles on top.',
+        'They are farmers. They carry seeds home to store, and the ones they drop along the way help plants spread across the whole hillside.',
+        'This is the eastern Washington harvester ant, and it lives from here down through Oregon, Idaho, Montana and Nevada.',
+        'They do sting, and they come out together, so the polite thing is to keep off the bare gravel circle — that patch is their doormat.'
+      ]
+    },
+    {
+      id: 'velvet_ant', name: 'Velvet Ant',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 120,
+      behavior: 'dart', speed: 56, shy: 46, size: 0.85, sting: true,
+      measure: 'half an inch long',
+      art: { shape: 'velvetant', body: '#e2562a', accent: '#171310' },
+      facts: [
+        'It is not an ant at all. It is a wasp, and the fuzzy scarlet one running about on the ground is the female, who simply has no wings.',
+        'Pick one up and she squeaks out loud, rubbing parts of her tummy together to warn you off.',
+        'Her bright orange coat is not camouflage. It is a sign, and the sign says do not touch me. Her sting really hurts, so this one is for watching only.',
+        'People call her a cow killer, which is only a story. She has never killed a cow.'
+      ]
+    },
+    {
+      id: 'robber_fly', name: 'Robber Fly',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 2, value: 52,
+      behavior: 'dart', speed: 74, shy: 62, size: 1.0,
+      measure: 'an inch long',
+      art: { shape: 'robberfly', body: '#7a6a52', wing: '#eceadf', accent: '#3a3226', eyes: '#6a3a2a', beard: '#e8dcc0', tailTip: '#d8cdb4' },
+      facts: [
+        'A robber fly sits perfectly still on a warm stone, and then launches out and catches another insect in mid-air.',
+        'It will take on bees, wasps and grasshoppers bigger than itself, and carry them back to its perch.',
+        'The bristly beard over its face is a shield, so a struggling meal cannot damage those enormous eyes.',
+        'If one lands on you, brush it off gently rather than slapping it — trapped in a hand it can give you a jab.'
+      ]
+    },
+    {
+      id: 'blister_beetle', name: 'Black Blister Beetle',
+      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 66,
+      behavior: 'slow', speed: 22, shy: 36, size: 0.85,
+      measure: 'half an inch long',
+      art: { shape: 'beetle', body: '#171820', wing: '#23242e', accent: '#0d0e14', slim: true },
+      facts: [
+        'This one is eyes only. It does not bite and it does not sting, but it makes a chemical that can raise a blister on your skin if you handle it.',
+        'It is long and narrow and soft, with a little head on a thin neck, so it looks quite different from a hard shiny beetle.',
+        'Its grubs hunt down grasshopper eggs under the ground and eat them, so it is a nuisance grown up and a helper as a baby.',
+        'Farmers watch out for them at haymaking, because a blister beetle caught in the hay can make a horse very ill.'
+      ]
+    },
+    {
+      id: 'sweat_bee', name: 'Green Sweat Bee',
+      habitats: ['hill', 'meadow', 'garden'], times: ['morning', 'day'], rarity: 2, value: 48,
+      behavior: 'hover', speed: 50, shy: 50, size: 0.7, sting: true,
+      measure: 'a third of an inch',
+      art: { shape: 'bee', body: '#e8cc3e', wing: '#eef4f6', accent: '#1d1a14', head: '#1f9a5a', thorax: '#1f9a5a', pattern: 'stripes' },
+      facts: [
+        'Her head and back are brilliant metallic green, like enamel paint.',
+        'She digs a deep tunnel straight down into bare sun-baked soil, which is why thin, stony hillsides are full of them.',
+        'In some kinds, a dozen or more females share one front door but each digs her own private rooms off the main shaft.',
+        'Despite the name, this green sort is not interested in your sweat at all. That is a different, much duller group of bees.'
+      ]
+    },
+    {
+      id: 'behrs_hairstreak', name: 'Behr’s Hairstreak',
+      habitats: ['hill'], times: ['morning', 'day'], rarity: 4, value: 150,
+      behavior: 'flutter', speed: 48, shy: 66, size: 0.8,
+      measure: 'an inch across',
+      art: { shape: 'butterfly', body: '#4a3a28', wing: '#e08a2c', wing2: '#c9b89a', accent: '#4a3520', pattern: 'edge' },
+      facts: [
+        'It is a hairstreak with no hairstreak tails, which is the quickest way to know it.',
+        'Its caterpillars eat only bitterbrush and mountain mahogany, the grey shrubs of the dry hills. No bitterbrush, no butterfly — so never pull those bushes up.',
+        'It flies for just a few weeks in June and July, once a year, and the males sit on top of a shrub and wait for a female to pass by.'
+      ]
     }
 
   ];
