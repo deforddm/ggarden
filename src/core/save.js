@@ -20,6 +20,8 @@
       caughtFish: {},      // fishId -> { count, first(ms) }
       friends: {},         // animalId -> { count, first(ms) }  (Garden Friends)
       companion: null,     // the friend tagging along today
+      hats: {},            // animalId -> hatId  (silly hats for your friends)
+      homeFriends: [],     // friends waiting for her indoors
       terrariums: [
         { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [], friends: [] }
       ],
@@ -145,6 +147,15 @@
       this.data.guest = (this.slot === 'guest');
       this.data.settings = this.readSettings();
       if (!this.data.friends) this.data.friends = {};
+      if (!this.data.hats) this.data.hats = {};
+      if (!this.data.homeFriends) this.data.homeFriends = [];
+      /* only friends she has actually made can be waiting at the house, and
+         the one walking with her is not also sitting indoors */
+      this.data.homeFriends = this.data.homeFriends.filter(function (id) {
+        return GG.ANIMAL_BY_ID && GG.ANIMAL_BY_ID[id];
+      }.bind(this)).filter(function (id) {
+        return this.hasFriend(id) && id !== this.data.companion;
+      }.bind(this));
       /* every tank grew a friends list when Garden Habitats arrived */
       (this.data.terrariums || []).forEach(function (t) {
         if (!t.friends) t.friends = [];
@@ -178,8 +189,31 @@
       return c ? c.count : 0;
     },
     totalFriends: function () { return Object.keys(this.data.friends || {}).length; },
+    hatOf: function (id) { return (this.data.hats || {})[id] || null; },
+    setHat: function (id, hatId) {
+      if (!this.data.hats) this.data.hats = {};
+      if (!this.data.homeFriends) this.data.homeFriends = [];
+      /* only friends she has actually made can be waiting at the house, and
+         the one walking with her is not also sitting indoors */
+      this.data.homeFriends = this.data.homeFriends.filter(function (id) {
+        return GG.ANIMAL_BY_ID && GG.ANIMAL_BY_ID[id];
+      }.bind(this)).filter(function (id) {
+        return this.hasFriend(id) && id !== this.data.companion;
+      }.bind(this));
+      if (hatId) this.data.hats[id] = hatId; else delete this.data.hats[id];
+      this.save();
+    },
     addFriend: function (id) {
       if (!this.data.friends) this.data.friends = {};
+      if (!this.data.hats) this.data.hats = {};
+      if (!this.data.homeFriends) this.data.homeFriends = [];
+      /* only friends she has actually made can be waiting at the house, and
+         the one walking with her is not also sitting indoors */
+      this.data.homeFriends = this.data.homeFriends.filter(function (id) {
+        return GG.ANIMAL_BY_ID && GG.ANIMAL_BY_ID[id];
+      }.bind(this)).filter(function (id) {
+        return this.hasFriend(id) && id !== this.data.companion;
+      }.bind(this));
       var c = this.data.friends[id];
       var isNew = !c;
       if (!c) c = this.data.friends[id] = { count: 0, first: Date.now() };
