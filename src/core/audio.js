@@ -112,6 +112,11 @@
     click: function () { tone(760, 0.05, 'square', 0.05); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
+    warn: function () {
+      /* two low, careful notes - a "mind yourself", not an alarm */
+      tone(392, 0.20, 'sine', 0.08, 330);
+      tone(294, 0.30, 'sine', 0.07, 247, 0.16);
+    },
     pick: function () {
       /* a little woody snap, then the fruit dropping into her hand */
       noise(0.06, 0.05, 1800);

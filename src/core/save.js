@@ -23,6 +23,7 @@
       hats: {},            // animalId -> hatId  (silly hats for your friends)
       homeFriends: [],     // friends waiting for her indoors
       fruit: {},           // fruitId -> { count, first(ms) }  (picked in the orchard and the hills)
+      seen: {},            // bugId -> { count, first(ms) }  (met but never caught - the look-only ones)
       terrariums: [
         { name: 'My First Terrarium', type: 'terrarium', bg: 'meadow', decor: [], bugs: [], fish: [], friends: [] }
       ],
@@ -150,6 +151,7 @@
       if (!this.data.friends) this.data.friends = {};
       if (!this.data.hats) this.data.hats = {};
       if (!this.data.fruit) this.data.fruit = {};
+      if (!this.data.seen) this.data.seen = {};
       if (!this.data.homeFriends) this.data.homeFriends = [];
       /* only friends she has actually made can be waiting at the house, and
          the one walking with her is not also sitting indoors */
@@ -164,6 +166,21 @@
       });
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
+      }
+      /* the look-only creatures are never caught, so an old save that somehow
+         has one in the caught list or in a tank is tidied up */
+      if (GG.BUG_BY_ID) {
+        for (var ck in this.data.caught) {
+          if (GG.BUG_BY_ID[ck] && GG.BUG_BY_ID[ck].lookOnly) {
+            this.data.seen[ck] = this.data.seen[ck] || this.data.caught[ck];
+            delete this.data.caught[ck];
+          }
+        }
+        (this.data.terrariums || []).forEach(function (t) {
+          t.bugs = (t.bugs || []).filter(function (x) {
+            return !(GG.BUG_BY_ID[x.id] && GG.BUG_BY_ID[x.id].lookOnly);
+          });
+        });
       }
       /* fruit arrived in v1.12, so drop any fruit id this build does not know */
       if (GG.FRUIT_BY_ID) {
@@ -189,7 +206,10 @@
     },
     has: function (id) { return !!this.data.caught[id]; },
     countOf: function (id) { var c = this.data.caught[id]; return c ? c.count : 0; },
-    totalSpecies: function () { return Object.keys(this.data.caught).length; },
+    totalSpecies: function () {
+      /* the look-only ones count too, once she has met them */
+      return Object.keys(this.data.caught).length + Object.keys(this.data.seen || {}).length;
+    },
     hasFish: function (id) { return !!this.data.caughtFish[id]; },
     countOfFish: function (id) { var c = this.data.caughtFish[id]; return c ? c.count : 0; },
     totalFish: function () { return Object.keys(this.data.caughtFish).length; },
@@ -199,6 +219,28 @@
       return c ? c.count : 0;
     },
     totalFriends: function () { return Object.keys(this.data.friends || {}).length; },
+    /* The look-only creatures are met, not caught. Meeting one is what opens
+       its page in the Bug Book. */
+    hasSeen: function (id) { return !!(this.data.seen && this.data.seen[id]); },
+    countOfSeen: function (id) {
+      var c = this.data.seen && this.data.seen[id];
+      return c ? c.count : 0;
+    },
+    totalSeen: function () { return Object.keys(this.data.seen || {}).length; },
+    addSeen: function (id) {
+      if (!this.data.seen) this.data.seen = {};
+      var c = this.data.seen[id];
+      var isNew = !c;
+      if (!c) c = this.data.seen[id] = { count: 0, first: Date.now() };
+      c.count++;
+      this.save();
+      return isNew;
+    },
+    /* "found it" for the Bug Book: caught it, or - for a look-only one - met it */
+    found: function (def) {
+      if (!def) return false;
+      return def.lookOnly ? this.hasSeen(def.id) : this.has(def.id);
+    },
     hasFruit: function (id) { return !!(this.data.fruit && this.data.fruit[id]); },
     countOfFruit: function (id) {
       var c = this.data.fruit && this.data.fruit[id];
