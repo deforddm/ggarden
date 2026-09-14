@@ -35,43 +35,72 @@
     showGrid: function () {
       var grid = $('book-grid'), det = $('book-detail');
       var tab = this.tab;
-      var fish = tab === 'fish', friends = tab === 'friends';
+      var fish = tab === 'fish', friends = tab === 'friends', fruit = tab === 'fruit';
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
       $('book-tabs').style.display = '';
-      $('book-title').textContent = friends ? 'Friends Book' : (fish ? 'Fish Book' : 'Bug Book');
+      $('book-title').textContent = fruit ? 'Fruit Book'
+        : (friends ? 'Friends Book' : (fish ? 'Fish Book' : 'Bug Book'));
       document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
         el.classList.toggle('on', el.getAttribute('data-book') === tab);
       });
       grid.innerHTML = '';
-      var list = friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS);
-      var found = friends ? GG.Save.totalFriends() : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies());
+      var list = fruit ? GG.FRUITS : (friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS));
+      var found = fruit ? GG.Save.totalFruit()
+        : (friends ? GG.Save.totalFriends() : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies()));
       $('progress').textContent = found + ' / ' + list.length;
       if (friends) this.companionRow(grid);
+      if (fruit) this.fruitRow(grid);
       list.forEach(function (def) {
-        var got = friends ? GG.Save.hasFriend(def.id)
-          : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id));
+        var got = fruit ? GG.Save.hasFruit(def.id)
+          : (friends ? GG.Save.hasFriend(def.id)
+            : (fish ? GG.Save.hasFish(def.id) : GG.Save.has(def.id)));
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
         cv.style.width = '100%'; cv.style.height = '54px';
         cell.appendChild(cv);
         cell.appendChild(GG.el('div', 'nm', got ? def.name : '???'));
         if (got) {
-          var n0 = friends ? GG.Save.countOfFriend(def.id)
-            : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id));
+          var n0 = fruit ? GG.Save.countOfFruit(def.id)
+            : (friends ? GG.Save.countOfFriend(def.id)
+              : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
           cell.appendChild(GG.el('div', 'cnt', '×' + n0));
-          var r = GG.el('div', 'rar');
-          r.style.background = GG.RARITY_COLORS[def.rarity];
-          cell.appendChild(r);
+          if (!fruit) {
+            var r = GG.el('div', 'rar');
+            r.style.background = GG.RARITY_COLORS[def.rarity];
+            cell.appendChild(r);
+          } else {
+            var e = GG.el('div', 'rar');
+            e.style.background = def.eat === 'never' ? '#d84a4a'
+              : (def.eat === 'careful' ? '#e0a13c' : '#8fb98f');
+            cell.appendChild(e);
+          }
         }
         cell.addEventListener('click', function () {
           GG.Sfx.click();
           if (got) Book.showDetail(def);
-          else GG.UI.toast(friends ? 'You have not made friends with this one yet!'
-            : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!'));
+          else GG.UI.toast(fruit ? 'You have not picked this one yet!'
+            : (friends ? 'You have not made friends with this one yet!'
+              : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
         });
         grid.appendChild(cell);
       });
+    },
+
+    /* a little basket at the top of the Fruit tab, saying what picking is for */
+    fruitRow: function (grid) {
+      var row = GG.el('div', '', null);
+      row.id = 'companion-row';
+      row.style.gridColumn = '1/-1';
+      var kinds = GG.Orchard ? GG.Orchard.kinds() : GG.Save.totalFruit();
+      var txt = GG.el('div', 'grow');
+      txt.innerHTML = kinds
+        ? '<b>' + kinds + ' of ' + GG.FRUITS.length + ' kinds picked.</b> Every new kind '
+          + 'unlocks a decoration for your tanks.'
+        : 'Walk up to a tree in the <b>Apple Orchard</b> or a bush in the <b>Pebble Hills</b> '
+          + 'and tap <b>PICK</b>. Every new kind unlocks a decoration.';
+      row.appendChild(txt);
+      grid.appendChild(row);
     },
 
     /* who is tagging along today, right at the top of the Friends tab */
@@ -111,12 +140,14 @@
       var grid = $('book-grid'), det = $('book-detail');
       grid.style.display = 'none'; det.style.display = 'block';
       $('book-back').style.display = 'block';
-      $('book-back').textContent = def.isAnimal ? 'All friends'
-        : (def.isFish ? 'All fish' : 'All bugs');
+      $('book-back').textContent = def.isFruit ? 'All fruit'
+        : (def.isAnimal ? 'All friends'
+          : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
       det.innerHTML = '';
       var isFish = !!def.isFish;
       var isAnimal = !!def.isAnimal;
+      var isFruit = !!def.isFruit;
 
       var cv = GG.el('canvas'); cv.id = 'detail-art';
       cv.width = 640; cv.height = 300;
@@ -127,11 +158,19 @@
       det.appendChild(h);
 
       var meta = GG.el('div', 'meta');
-      var times = def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
-      var n = isAnimal ? GG.Save.countOfFriend(def.id)
-        : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id));
+      var times = isFruit ? '' : def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
+      var n = isFruit ? GG.Save.countOfFruit(def.id)
+        : (isAnimal ? GG.Save.countOfFriend(def.id)
+          : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
       var rows;
-      if (isAnimal) {
+      if (isFruit) {
+        var un = GG.DECOR_BY_ID[def.unlock];
+        rows = [['Grows in', GG.FRUITS_WHERE[def.where] || def.where],
+          ['On', def.on === 'tree' ? 'a tree' : 'a bush'],
+          ['Ripe in', def.ripens], ['Size', def.measure],
+          ['Picked', n + ' time' + (n === 1 ? '' : 's')]];
+        if (un) rows.push(['Unlocked', un.name]);
+      } else if (isAnimal) {
         rows = [['Found in', GG.animalPlaces(def)], ['Out and about', times],
           ['Size', def.measure], ['Rarity', GG.RARITY_NAMES[def.rarity]],
           ['Said hello', n + ' time' + (n === 1 ? '' : 's')]];
@@ -160,6 +199,15 @@
         if (way) meta.appendChild(GG.el('span', 'tag way', 'How to say hello: ' + way.blurb));
       }
       det.appendChild(meta);
+
+      if (isFruit) {
+        var eatInfo = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
+        var box = GG.el('div');
+        box.id = 'fruit-care';
+        box.className = eatInfo.cls;
+        box.innerHTML = '<b>' + eatInfo.label + '</b><span>' + def.care + '</span>';
+        det.appendChild(box);
+      }
 
       /* who eats whom */
       var eats = GG.eatsList ? GG.eatsList(def.id) : [];
@@ -247,7 +295,8 @@
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
+        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
+        else if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
         else if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
         else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();

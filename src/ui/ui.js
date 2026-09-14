@@ -74,11 +74,36 @@
         $('catch-reward').innerHTML = '&#10022; ' + reward + ' sparkles' +
           (isNew ? ' &nbsp;+&nbsp; new page in your ' + (def.isFish ? 'Fish Book' : 'Bug Book') + '!' : '');
       }
+      $('catch-care').style.display = 'none';
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
     },
 
-    _animCatch: function () {
+    /* ---------- a piece of fruit ---------- */
+    showFruit: function (res) {
+      var def = res.def;
+      var cv = $('catch-art');
+      cv.width = 640; cv.height = 260;
+      this._catchDef = def;
+      $('catch-new').style.display = res.first ? 'inline-block' : 'none';
+      $('catch-name').textContent = def.name;
+      var n = GG.Save.countOfFruit(def.id);
+      $('catch-fact').textContent = res.first
+        ? def.facts[0]
+        : ('You have picked ' + n + ' of these.');
+      var care = $('catch-care');
+      var eat = GG.FRUIT_EAT[def.eat] || GG.FRUIT_EAT.careful;
+      care.className = eat.cls;
+      care.innerHTML = '<b>' + eat.label + '</b><span>' + def.care + '</span>';
+      care.style.display = 'block';
+      $('catch-reward').innerHTML = res.unlocked
+        ? 'New decoration for your tanks: <b>' + res.unlocked.name + '</b>'
+        : (res.first ? 'New page in your Fruit Book!' : '&#10022; one for the basket');
+      $('catch-pop').classList.remove('hidden');
+      this._animCatch(true);
+    },
+
+    _animCatch: function (isFruit) {
       var self = this;
       cancelAnimationFrame(this._raf);
       var cv = $('catch-art'), c = cv.getContext('2d');
@@ -88,7 +113,8 @@
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2');
+        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#f2ddb4'); }
+        else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2'); }
         c.fillStyle = g;
         GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
         c.save();
@@ -101,7 +127,8 @@
         }
         c.restore();
         var bob = Math.sin(t * 2) * 6;
-        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob, 7.2, -Math.PI / 2, t);
+        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob,
+          isFruit ? 8.6 : 7.2, -Math.PI / 2, t);
         self._raf = requestAnimationFrame(frame);
       }
       this._raf = requestAnimationFrame(frame);

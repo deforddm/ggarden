@@ -15,22 +15,46 @@
         ['land', 'For terrariums (and the bank of a hybrid)'],
         ['water', 'For fish tanks (and the pool of a hybrid)'],
         ['habitat', 'For a garden habitat'],
-        ['any', 'For any tank']
+        ['any', 'For any tank'],
+        ['picked', 'Picked, not bought — from the orchard and the hills']
       ];
       groupsD.forEach(function (g) {
         grid.appendChild(GG.el('div', 'shop-group', g[1]));
-        GG.DECOR.filter(function (x) { return (x.for || 'any') === g[0]; }).forEach(function (dec) {
+        GG.DECOR.filter(function (x) {
+          /* the fruit ones live in their own group, however they are tagged */
+          if (g[0] === 'picked') return !!x.fruit;
+          return !x.fruit && (x.for || 'any') === g[0];
+        }).forEach(function (dec) {
         var owned = d.unlockedDecor.indexOf(dec.id) >= 0;
+        var fruitDef = dec.fruit && GG.FRUIT_BY_ID ? GG.FRUIT_BY_ID[dec.fruit] : null;
         var el = GG.el('div', 'shopitem' + (owned ? ' owned' : ''));
         var cv = GG.el('canvas'); cv.width = 176; cv.height = 112; cv.style.height = '56px';
         var c = cv.getContext('2d'); c.scale(2, 2);
         var fn = GG.DecorArt[dec.id];
-        if (fn) fn(c, 44, 50, 0.9, 1);
+        if (fn) {
+          if (!owned && fruitDef) {
+            /* a shadow of the thing she has not found yet */
+            c.save();
+            fn(c, 44, 50, 0.9, 1);
+            c.globalCompositeOperation = 'source-in';
+            c.fillStyle = 'rgba(120,132,112,0.5)';
+            c.fillRect(0, 0, 88, 56);
+            c.restore();
+          } else {
+            fn(c, 44, 50, 0.9, 1);
+          }
+        }
         el.appendChild(cv);
-        el.appendChild(GG.el('div', 'nm', dec.name));
-        el.appendChild(GG.el('div', 'price', owned ? 'owned' : '✦ ' + dec.price));
+        el.appendChild(GG.el('div', 'nm', (!owned && fruitDef) ? '???' : dec.name));
+        el.appendChild(GG.el('div', 'price', owned ? 'owned'
+          : (fruitDef ? 'pick one' : '✦ ' + dec.price)));
         el.addEventListener('click', function () {
           if (owned) { GG.UI.toast('You already have this one'); return; }
+          if (fruitDef) {
+            GG.UI.toast('Pick a ' + fruitDef.name + ' in '
+              + (GG.FRUITS_WHERE[fruitDef.where] || 'the garden') + ' and this is yours.', 3000);
+            return;
+          }
           if (d.sparkles < dec.price) { GG.UI.toast('Not enough sparkles yet'); return; }
           d.sparkles -= dec.price;
           d.unlockedDecor.push(dec.id);
