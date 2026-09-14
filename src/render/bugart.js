@@ -2147,6 +2147,84 @@
   };
 
 
+  /* A western black widow, hanging the way she really hangs: upside down in
+     her messy tangle web. Because we are looking at her from above and she is
+     belly-up, the red hourglass on her underside is the part we can see.
+     She is never caught - only looked at. */
+  S.widow = function (c, a, t) {
+    var sway = Math.sin(t * 0.9) * 0.5;
+
+    /* the untidy tangle web - nothing like a neat round orb */
+    c.strokeStyle = a.web || 'rgba(236,240,246,0.30)';
+    c.lineWidth = 0.32;
+    var strands = [
+      [-14, -12, -2.5, -3], [13, -13, 2.5, -3], [-15, 10, -3, 2.5], [14, 11, 3, 2.5],
+      [-6, -16, -1, -4], [7, -15, 1.5, -4], [-9, 15, -1.5, 4.5], [10, 14, 2, 4.5],
+      [-16, -1, -4, -0.5], [16, 0, 4, 0.5], [-4, -17, -0.5, -5], [3, 17, 0.5, 6]
+    ];
+    for (var s = 0; s < strands.length; s++) {
+      var q = strands[s];
+      c.beginPath();
+      c.moveTo(q[0] + sway * 0.6, q[1]);
+      c.quadraticCurveTo((q[0] + q[2]) / 2 + sway, (q[1] + q[3]) / 2, q[2], q[3]);
+      c.stroke();
+    }
+    c.beginPath();
+    c.moveTo(-12, -7); c.quadraticCurveTo(0, -3 + sway, 12, -8); c.stroke();
+    c.beginPath();
+    c.moveTo(-11, 7); c.quadraticCurveTo(0, 4 + sway, 11, 8); c.stroke();
+
+    /* eight long thin legs, fanned out to the sides the way a hanging widow
+       holds them - never straight up, or they read as antennae */
+    var LEGS = [
+      [-1, -1.02, 6.8, 10.6], [-1, -0.42, 7.6, 11.6],
+      [-1, 0.24, 7.6, 11.2], [-1, 0.86, 6.6, 10.0],
+      [1, -1.02, 6.8, 10.6], [1, -0.42, 7.6, 11.6],
+      [1, 0.24, 7.6, 11.2], [1, 0.86, 6.6, 10.0]
+    ];
+    c.strokeStyle = a.body; c.lineCap = 'round'; c.lineWidth = 1.05;
+    for (var i = 0; i < LEGS.length; i++) {
+      var L = LEGS[i], side = L[0], ang = L[1], kneeR = L[2], tipR = L[3];
+      var wob = Math.sin(t * 1.3 + i * 0.8) * 0.4;
+      var ox = side * 1.8, oy = -2.2;
+      /* the knee is lifted and the foot drops back down - the widow crook */
+      var kx = ox + side * Math.cos(ang) * kneeR;
+      var ky = oy + Math.sin(ang) * kneeR * 0.7 - 1.8 + wob;
+      var tx = ox + side * Math.cos(ang) * tipR;
+      var ty = oy + Math.sin(ang) * tipR * 0.85 + 1.2 + wob * 1.3;
+      c.beginPath();
+      c.moveTo(ox, oy);
+      c.quadraticCurveTo(kx, ky, tx, ty);
+      c.stroke();
+    }
+
+    /* the little front body */
+    c.fillStyle = GG.shade(a.body, 0.16);
+    ell(c, 0, -4.4, 2.3, 2.4);
+    c.fillStyle = 'rgba(255,255,255,0.20)';
+    ell(c, -0.85, -5.1, 0.85, 0.95, -0.4);
+
+    /* the big round belly, glossy black */
+    c.fillStyle = a.body;
+    ell(c, 0, 2.8, 5.5, 5.9);
+    /* the gloss goes on BEFORE the hourglass, and off to one side of it */
+    c.fillStyle = 'rgba(255,255,255,0.11)';
+    ell(c, -3.2, -0.2, 1.0, 1.8, -0.4);
+
+    /* the hourglass, because she is hanging belly-up */
+    c.fillStyle = a.mark || '#d8322a';
+    c.beginPath();
+    c.moveTo(-2.3, -0.2);
+    c.lineTo(2.3, -0.2);
+    c.lineTo(0.8, 2.9);
+    c.lineTo(2.4, 6.0);
+    c.lineTo(-2.4, 6.0);
+    c.lineTo(-0.8, 2.9);
+    c.closePath();
+    c.fill();
+  };
+
+
   GG.BugArt = {
     shapes: S,
     /* Draw a bug. (x,y) is its centre, angle is where it is heading (radians),
