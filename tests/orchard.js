@@ -41,9 +41,9 @@ const { chromium } = require('playwright');
   });
   Object.keys(roster.bad).forEach(k =>
     ok('fruit ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('ten fruits (got ' + roster.count + ')', roster.count === 10);
+  ok('sixteen fruits (got ' + roster.count + ')', roster.count === 16);
   ok('five in the orchard and five in the hills',
-    roster.orchard === 5 && roster.hill === 5);
+    roster.orchard === 11 && roster.hill === 5);
   ok('all three eat ratings are used ' + JSON.stringify(roster.kinds),
     roster.kinds.yes > 0 && roster.kinds.careful > 0 && roster.kinds.never > 0);
 
@@ -99,17 +99,21 @@ const { chromium } = require('playwright');
   });
   Object.keys(decor.bad).forEach(k =>
     ok('fruit decor ' + k + ' ' + JSON.stringify(decor.bad[k]), !decor.bad[k].length));
-  ok('ten fruit decorations (got ' + decor.count + ')', decor.count === 10);
+  ok('sixteen fruit decorations (got ' + decor.count + ')', decor.count === 16);
   ok('none of them are unlocked to begin with', decor.startsLocked);
 
   /* ---------------- the plants out in the garden ---------------- */
   const plants = await p.evaluate(() => {
     const by = {};
     GG.Orchard.plants.forEach(q => { by[q.fruit] = (by[q.fruit] || 0) + 1; });
+    /* a fruit has to be on the kind of plant it really grows on */
+    const WANT = { tree: ['appleTree'], bramble: ['berryBush'], cane: ['berryBush'],
+      bush: ['berryBush'], vine: ['berryBush'], shrub: ['wildBush', 'berryBush'],
+      ground: ['fruitPatch'] };
     const placeOK = GG.Orchard.plants.every(q => {
       const def = GG.FRUIT_BY_ID[q.fruit];
-      const place = GG.World.biomeRaw(q.x, q.y);
-      return def.where === 'orchard' ? q.type === 'appleTree' : q.type === 'wildBush';
+      if (def.where === 'hill') return q.type === 'wildBush';
+      return (WANT[def.on] || []).indexOf(q.type) >= 0;
     });
     return { total: GG.Orchard.plants.length, by, placeOK,
       everyKind: GG.FRUITS.every(f => by[f.id] >= 4),
@@ -117,7 +121,7 @@ const { chromium } = require('playwright');
   });
   ok('the garden is planted (' + plants.total + ' plants)', plants.total > 60);
   ok('every kind of fruit grows somewhere ' + JSON.stringify(plants.by), plants.everyKind);
-  ok('orchard fruit on trees, hill fruit on bushes', plants.placeOK);
+  ok('every fruit on the kind of plant it really grows on', plants.placeOK);
   ok('all of it starts ripe', plants.allRipe);
 
   /* ---------------- picking ---------------- */
@@ -126,7 +130,11 @@ const { chromium } = require('playwright');
   }, { fx, fy });
 
   const pick = await p.evaluate(async () => {
-    const plant = GG.Orchard.plants.find(q => q.fruit === 'gala');
+    /* a gala tree with no other fruiting plant crowding it, so the nearest
+       thing to her really is the one we meant */
+    const plant = GG.Orchard.plants.filter(q => q.fruit === 'gala').find(q =>
+      !GG.Orchard.plants.some(o => o !== q &&
+        Math.hypot(o.x - q.x, o.y - (q.y + 40)) < 44));
     GG.Player.reset(plant.x, plant.y + 40);
     await new Promise(r => setTimeout(r, 260));
     const near = GG.Orchard.nearest(GG.Player);
@@ -212,8 +220,8 @@ const { chromium } = require('playwright');
     };
   });
   ok('the Fruit Book opens', book.title === 'Fruit Book' && book.tab);
-  ok('it lists every fruit (' + book.cells + ')', book.cells === 10);
-  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 10');
+  ok('it lists every fruit (' + book.cells + ')', book.cells === 16);
+  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 16');
 
   const page = await p.evaluate(() => {
     GG.Book.showDetail(GG.FRUIT_BY_ID.chokecherry);
@@ -253,8 +261,8 @@ const { chromium } = require('playwright');
     };
   });
   ok('the shop has a picked-not-bought shelf', shop.pickedGroup);
-  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 8);
-  ok('and they say "pick one" instead of a price', shop.pickOne === 8);
+  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 14);
+  ok('and they say "pick one" instead of a price', shop.pickOne === 14);
   ok('the apple plate she earned is hers', shop.plateOwned);
   await p.evaluate(() => GG.UI.close('screen-shop'));
 
@@ -379,7 +387,7 @@ const { chromium } = require('playwright');
   });
   ok('all twenty new bugs are in the roster ' + JSON.stringify(bugs.missing), !bugs.missing.length);
   ok('and every one of them draws something ' + JSON.stringify(bugs.blank), !bugs.blank.length);
-  ok('the roster is 104 (got ' + bugs.total + ')', bugs.total === 104);
+  ok('the roster is 153 (got ' + bugs.total + ')', bugs.total === 153);
   ok('the orchard has plenty now (' + bugs.orchard + ')', bugs.orchard >= 25);
   ok('the hills are no longer empty (' + bugs.hill + ')', bugs.hill >= 13);
   ok('both have something out at night (' + bugs.orchardNight + ', ' + bugs.hillNight + ')',
@@ -460,7 +468,7 @@ const { chromium } = require('playwright');
     return {
       lookOnly: d.lookOnly === true,
       value: d.value,
-      hills: d.habitats.length === 1 && d.habitats[0] === 'hill',
+      hills: d.habitats.indexOf('hill') >= 0 && d.habitats.indexOf('desert') >= 0,
       night: d.times.indexOf('night') >= 0,
       danger: d.danger || '',
       facts: d.facts.length,
@@ -470,8 +478,10 @@ const { chromium } = require('playwright');
     };
   });
   ok('the black widow is in the roster', !widow.missing && widow.lookOnly);
-  ok('she lives on the hills after dark', widow.hills && widow.night);
-  ok('she is the only look-only creature (' + widow.onlyOne + ')', widow.onlyOne === 1);
+  ok('she lives on the hills and in the desert, after dark', widow.hills && widow.night);
+  /* v1.13 added two more, both up the mountain, and both for the same
+     reason in reverse: a warm hand is what kills them. */
+  ok('look-only creatures (' + widow.onlyOne + ')', widow.onlyOne === 3);
   ok('she draws, hourglass and all (' + widow.ink + 'px, ' + widow.red + ' red)',
     widow.ink > 200 && widow.red > 20);
   ok('she is worth no sparkles, because she is never caught', widow.value === 0);
@@ -547,7 +557,7 @@ const { chromium } = require('playwright');
       hunts: !!det.querySelector('.foodchain')
     };
   });
-  ok('the Bug Book lists 104 now (' + wbook.cells + ')', wbook.cells === 104);
+  ok('the Bug Book lists 153 now (' + wbook.cells + ')', wbook.cells === 153);
   ok('meeting her opened her page (' + wbook.progress + ')', wbook.got >= 1);
   ok('the page says Met, not Caught', wbook.tags.some(t => /^Met: /.test(t))
     && !wbook.tags.some(t => /^Caught: /.test(t)));

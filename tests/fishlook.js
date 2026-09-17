@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   await p.waitForTimeout(900);
   await p.evaluate(() => {
     const W = GG.World;
-    let x = W.water.cx, y = W.water.cy;
+    let x = W.pond.cx, y = W.pond.cy;
     while (W.isWater(x, y)) x += 4;
     GG.Player.reset(x + 14, y);
     GG.Player.angle = Math.PI; GG.Player.dir = 'left';

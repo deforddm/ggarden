@@ -20,11 +20,11 @@ const { chromium } = require('playwright');
     for (let i = 0; i < W.mask.length; i++) counts[W.mask[i]] = (counts[W.mask[i]] || 0) + 1;
     const probe = (x, y) => ({ kind: W.waterKind(x, y), place: W.placeName(x, y) });
     out.counts = counts;
-    out.pond = probe(620, 2020);
-    out.stream = probe(900, 880);
-    out.river = probe(2080, 2150);
-    out.estuary = probe(3290, 2770);
-    out.sea = probe(4000, 3100);
+    out.pond = probe(2220, 2980);
+    out.stream = probe(2500, 1840);
+    out.river = probe(3680, 3110);
+    out.estuary = probe(4890, 3730);
+    out.sea = probe(5600, 4060);
     out.pool = probe(W.tidepools[0].x, W.tidepools[0].y);
     out.house = probe(W.HOUSE.x, W.HOUSE.y);
     out.poolsAboveTide = W.tidepools.every(q => q.y + q.ry * 1.2 < W.shoreY(q.x));
@@ -52,14 +52,14 @@ const { chromium } = require('playwright');
   // ---- she can wade a tidepool but not the sea ----
   const wade = await p.evaluate(() => {
     const W = GG.World, q = W.tidepools[1];
-    return { pool: !W.blocked(q.x, q.y, 6), sea: W.blocked(4000, 3100, 6) };
+    return { pool: !W.blocked(q.x, q.y, 6), sea: W.blocked(5600, 4060, 6) };
   });
   ok('she can wade into a tidepool', wade.pool);
   ok('but the deep sea stops her', wade.sea);
   ok('she can paddle across the little stream', await p.evaluate(() =>
-    !GG.World.blocked(900, 880, 6) && GG.World.waterKind(900, 880) === 2));
+    !GG.World.blocked(2500, 1840, 6) && GG.World.waterKind(2500, 1840) === 2));
   ok('the river is too deep to cross', await p.evaluate(() =>
-    GG.World.blocked(2080, 2150, 6) && GG.World.waterKind(2080, 2150) === 3));
+    GG.World.blocked(3680, 3110, 6) && GG.World.waterKind(3680, 3110) === 3));
 
   // ---- fish live in the right water ----
   const fish = await p.evaluate(() => {
@@ -68,7 +68,7 @@ const { chromium } = require('playwright');
       out[w] = F.eligible(w).map(c => c.f.id);
     });
     out.tidepoolFishable = F.fishable(GG.World.tidepools[0].x, GG.World.tidepools[0].y);
-    out.seaFishable = F.fishable(4000, 3100);
+    out.seaFishable = F.fishable(5600, 4060);
     out.wrong = [];
     GG.FISH.forEach(f => {
       f.waters.forEach(w => {
@@ -144,7 +144,7 @@ const { chromium } = require('playwright');
       return !W.isDeepWater(x, y);
     };
     const seen = new Uint8Array(gw * gh);
-    const q = [Math.floor(1600 / S) * gw + Math.floor(W.HOUSE.x / S)];
+    const q = [Math.floor(2560 / S) * gw + Math.floor(W.HOUSE.x / S)];
     seen[q[0]] = 1;
     while (q.length) {
       const i = q.pop(), gx = i % gw, gy = (i / gw) | 0;
@@ -158,11 +158,11 @@ const { chromium } = require('playwright');
     }
     const at = (x, y) => !!seen[Math.floor(y / S) * gw + Math.floor(x / S)];
     const spots = {
-      'the pond': [1150, 2020], 'the hills': [420, 400], 'the woods': [2500, 700],
-      'the orchard': [2360, 1420], 'the stream': [900, 880],
-      'the riverbank': [2100, 2060], 'the far bank': [2100, 2240],
-      'the west beach': [2000, 2500], 'the east beach': [3300, 2350],
-      'the tidepools': [4120, 2250]
+      'the pond': [2750, 2980], 'the hills': [2020, 1360], 'the woods': [4100, 1660],
+      'the orchard': [3960, 2380], 'the stream': [2500, 1840],
+      'the riverbank': [3700, 3020], 'the far bank': [3700, 3200],
+      'the west beach': [3600, 3460], 'the east beach': [4900, 3310],
+      'the tidepools': [5720, 3210]
     };
     const cut = Object.keys(spots).filter(k => !at(spots[k][0], spots[k][1]));
     return cut;

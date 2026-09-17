@@ -139,14 +139,14 @@ const { chromium } = require('playwright');
       for (let i = 0; i < 120; i++) GG.Ambience.update(0.05, 'world', x, y);
       return GG.Ambience.beds.surf.level;
     };
-    const beach = await read(2700, 2560);
-    const meadow = await read(900, 700);
+    const beach = await read(4300, 3520);
+    const meadow = await read(2500, 1660);
     return beach > 0.25 && meadow < 0.05;
   }));
   ok('crickets come out at night and not at noon', await p.evaluate(async () => {
     const run = (mins) => {
       GG.Time.minutes = mins;
-      for (let i = 0; i < 120; i++) GG.Ambience.update(0.05, 'world', 900, 700);
+      for (let i = 0; i < 120; i++) GG.Ambience.update(0.05, 'world', 2500, 1660);
       return GG.Ambience.callers.crickets.target;
     };
     const night = run(23 * 60), noon = run(12 * 60);
@@ -178,14 +178,14 @@ const { chromium } = require('playwright');
     return out;
   }, [scene, x, y]);
 
-  const beach = await settle('world', 2700, 2560);
+  const beach = await settle('world', 4300, 3520);
   ok('at the beach you can hear the sea (' + beach.surf.gain + ')', beach.surf.gain > 0.01);
 
-  const meadow = await settle('world', 2450, 780);
+  const meadow = await settle('world', 4050, 1740);
   ok('in the meadow the sea is silent (' + meadow.surf.gain + ')', meadow.surf.gain < 0.0005);
   ok('and so is the river there (' + meadow.river.gain + ')', meadow.river.gain < 0.0005);
 
-  const indoors = await settle('house', 2450, 780);
+  const indoors = await settle('house', 4050, 1740);
   const wet = ['surf', 'river', 'stream'];
   ok('indoors every water layer is silent (' +
     wet.map(k => k + ':' + indoors[k].gain).join(' ') + ')',
@@ -231,10 +231,10 @@ const { chromium } = require('playwright');
       for (let i = 0; i < steps; i++) GG.Ambience.update(0.05, scene, x, y);
       return GG.Ambience.beds.surf.level;
     };
-    read('world', 2700, 2560, 10);
+    read('world', 4300, 3520, 10);
     const atBeach = GG.Ambience.beds.surf.level;
-    const after1s = read('world', 2450, 780, 1);
-    const after6s = read('world', 2450, 780, 5);
+    const after1s = read('world', 4050, 1740, 1);
+    const after6s = read('world', 4050, 1740, 5);
     return { atBeach, after1s, after6s };
   });
   ok('walking away fades the sea out rather than cutting it (' +

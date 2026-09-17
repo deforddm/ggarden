@@ -362,7 +362,9 @@ const { chromium } = require('playwright');
     GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 90);
     await new Promise(r => setTimeout(r, 200));
     F.clear(); GG.Critters.clear();
-    GG.Critters.add(GG.BUG_BY_ID.monarch, P.x + 90, P.y);
+    /* not a monarch: a monarch is poisonous and nothing in this game hunts
+       one, friends included */
+    GG.Critters.add(GG.BUG_BY_ID.cabbage_white, P.x + 90, P.y);
     F.add(GG.ANIMAL_BY_ID.tabby, P.x + 10, P.y);
     const cat = F.list[0];
     const bug0 = GG.Critters.list[0];
@@ -431,17 +433,57 @@ const { chromium } = require('playwright');
     return GG.UI.anyOpen();
   });
 
+  /* Staging a chase needs two things.
+
+     One: the world keeps topping the friends and the bugs back up, and a
+     spare cat or a nearer moth turns a measured chase into a guess. Emptying
+     the lists every frame does not help - the spawner then works flat out,
+     the frame rate drops, and because dt is capped at 50ms the whole game
+     quietly runs in slow motion and nothing gets anywhere. So hold the
+     spawner still instead, and put it back afterwards.
+
+     Two: a clear dry patch to do it on. Put a bush between the two of them
+     and the cat never gets near enough to try. */
+  await p.evaluate(() => {
+    window.__hold = () => {
+      if (!GG.Friends._spawn) GG.Friends._spawn = GG.Friends.spawnNear;
+      if (!GG.Critters._spawn) GG.Critters._spawn = GG.Critters.spawnNear;
+      GG.Friends.spawnNear = () => false;
+      GG.Critters.spawnNear = () => false;
+      GG.Friends.clear();
+      GG.Critters.clear();
+    };
+    window.__release = () => {
+      if (GG.Friends._spawn) GG.Friends.spawnNear = GG.Friends._spawn;
+      if (GG.Critters._spawn) GG.Critters.spawnNear = GG.Critters._spawn;
+    };
+    window.__spot = (x, y, reach) => {
+      const W = GG.World;
+      for (let rr = 0; rr <= (reach || 60); rr += 8) {
+        for (let a = 0; a < Math.PI * 2; a += 0.45) {
+          const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr;
+          if (!W.isWater(px, py) && !W.blocked(px, py, 14) &&
+              !GG.Friends.waterNear(px, py, 90)) return { x: px, y: py };
+        }
+      }
+      return { x: x, y: y };
+    };
+  });
+
   ok('nothing is left open before the chase', !(await unpause()));
   const chase2 = await p.evaluate(async () => {
     const P = GG.Player;
-    GG.Critters.clear();
+    /* this one is about bugs hunting bugs, so hold the world still: a cat
+       pouncing on the tiger beetle sends it running and we end up measuring
+       the cat, and a nearer ant is a different hunt altogether */
+    window.__hold();
     GG.Critters.add(GG.BUG_BY_ID.tiger_beetle, P.x + 70, P.y + 50);
     GG.Critters.add(GG.BUG_BY_ID.ant, P.x + 140, P.y + 50);
     const hunter = GG.Critters.list[0], prey = GG.Critters.list[1];
     const d0 = GG.dist(hunter.x, hunter.y, prey.x, prey.y);
     let closest = d0, stalked = false, bolted = false;
     /* a hunt is a wander with a purpose, so give it long enough to land */
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 300; i++) {
       await new Promise(r => setTimeout(r, 50));
       if (GG.Critters.list.indexOf(prey) < 0) break;
       const d = GG.dist(hunter.x, hunter.y, prey.x, prey.y);
@@ -450,6 +492,7 @@ const { chromium } = require('playwright');
       if (prey.flee > 0) bolted = true;
       if (bolted) break;
     }
+    window.__release();
     return { d0: Math.round(d0), closest: Math.round(closest), stalked, bolted,
       preyAlive: GG.Critters.list.indexOf(prey) >= 0 };
   });
@@ -469,6 +512,365 @@ const { chromium } = require('playwright');
   ok('the book says what a creature hunts', chainBook.hunts);
   ok('and promises everybody gets away', chainBook.safe);
 
+
+  /* ================= THE HUNT =================
+     Guin: "add the ability to for friends to hunt (friends cant hunt friends)"
+
+     Three things have to be true: a hunt really happens, a friend only ever
+     goes after something it really eats, and a friend never goes after
+     another friend. */
+
+  ok('nothing is left open before the friends hunt', !(await unpause()));
+
+  /* ---------- the prey lists themselves ---------- */
+  const prey = await p.evaluate(() => {
+    const bad = [];
+    const animals = {};
+    GG.ANIMALS.forEach(a => { animals[a.id] = 1; });
+    Object.keys(GG.ANIMAL_HUNTS).forEach(id => {
+      if (!GG.ANIMAL_BY_ID[id]) bad.push('no such friend: ' + id);
+      const seen = {};
+      GG.ANIMAL_HUNTS[id].forEach(q => {
+        if (!GG.BUG_BY_ID[q] && !GG.FISH_BY_ID[q]) bad.push(id + ' -> not a real creature: ' + q);
+        if (animals[q]) bad.push(id + ' -> hunts a friend: ' + q);
+        if (seen[q]) bad.push(id + ' -> listed twice: ' + q);
+        seen[q] = 1;
+      });
+      if (!GG.ANIMAL_HUNTS[id].length) bad.push(id + ' -> empty list');
+    });
+    const fams = {};
+    GG.ANIMALS.forEach(a => {
+      if (GG.animalPrey(a.id).length) fams[a.family] = (fams[a.family] || 0) + 1;
+    });
+    return {
+      bad,
+      fams,
+      /* the pairings the research says would be false animations */
+      hummerTakesADragonfly: GG.animalHunts('annas_hummingbird', 'emperor_dragonfly'),
+      hummerTakesAGrasshopper: GG.animalHunts('ruby_hummingbird', 'grasshopper'),
+      hummerTakesAnAphid: GG.animalHunts('ruby_hummingbird', 'aphid'),
+      hummerTakesASpider: GG.animalHunts('annas_hummingbird', 'garden_spider'),
+      batTakesAnEarthworm: GG.animalHunts('little_brown_bat', 'earthworm'),
+      batTakesASnail: GG.animalHunts('big_brown_bat', 'snail'),
+      batTakesAButterfly: GG.animalHunts('hoary_bat', 'monarch'),
+      hoaryTakesAMoth: GG.animalHunts('hoary_bat', 'luna_moth'),
+      bigBrownTakesABeetle: GG.animalHunts('big_brown_bat', 'stag_beetle'),
+      catTakesAMoth: GG.animalHunts('tabby', 'hawk_moth'),
+      catTakesAWorm: GG.animalHunts('maine_coon', 'earthworm'),
+      catTakesABee: GG.animalHunts('siamese', 'honeybee'),
+      dogTakesAFly: GG.animalHunts('cookie', 'housefly'),
+      dogTakesAWasp: GG.animalHunts('beagle', 'paper_wasp'),
+      dogTakesASnail: GG.animalHunts('labrador', 'snail'),
+      frogTakesAWorm: GG.animalHunts('green_frog', 'earthworm'),
+      tinyFrogTakesACrayfish: GG.animalHunts('chorus_frog', 'crayfish'),
+      tinyFrogTakesACicada: GG.animalHunts('chorus_frog', 'cicada'),
+      bullfrogTakesACrayfish: GG.animalHunts('bullfrog', 'crayfish'),
+      nobodyTakesAMonarch: GG.ANIMALS.every(a => !GG.animalHunts(a.id, 'monarch')),
+      nobodyTakesASting: GG.ANIMALS.every(a => GG.animalPrey(a.id)
+        .every(q => !(GG.BUG_BY_ID[q] && GG.BUG_BY_ID[q].sting))),
+      parrotsHuntNothing: ['budgie', 'cockatiel', 'scarlet_macaw', 'african_grey']
+        .every(id => GG.animalPrey(id).length === 0),
+      parrotsForage: ['budgie', 'cockatiel', 'scarlet_macaw', 'african_grey']
+        .every(id => !!GG.animalForage(id)),
+      styles: GG.ANIMALS.map(a => a.family + ':' + GG.animalHuntStyle(a))
+        .filter((v, i, l) => l.indexOf(v) === i).sort().join(' ')
+    };
+  });
+  ok('every prey list is real ' + JSON.stringify(prey.bad.slice(0, 5)), !prey.bad.length);
+  ok('five of the six families hunt ' + JSON.stringify(prey.fams),
+    Object.keys(prey.fams).length === 5);
+  ok('a hummingbird hunts aphids and spiders',
+    prey.hummerTakesAnAphid && prey.hummerTakesASpider);
+  ok('but never a dragonfly or a grasshopper - they are far too big',
+    !prey.hummerTakesADragonfly && !prey.hummerTakesAGrasshopper);
+  ok('a hoary bat hunts moths and a big brown bat hunts beetles',
+    prey.hoaryTakesAMoth && prey.bigBrownTakesABeetle);
+  ok('but a bat never hunts the ground or a daytime butterfly',
+    !prey.batTakesAnEarthworm && !prey.batTakesASnail && !prey.batTakesAButterfly);
+  ok('a cat hunts moths but not worms', prey.catTakesAMoth && !prey.catTakesAWorm);
+  ok('a dog snaps at flies but not at snails',
+    prey.dogTakesAFly && !prey.dogTakesASnail);
+  ok('a fist-sized frog takes a worm', prey.frogTakesAWorm);
+  ok('a frog the size of a paperclip does not take a crayfish or a cicada',
+    !prey.tinyFrogTakesACrayfish && !prey.tinyFrogTakesACicada);
+  ok('but a bullfrog does take a crayfish', prey.bullfrogTakesACrayfish);
+  ok('nothing hunts a monarch', prey.nobodyTakesAMonarch);
+  ok('nobody is ever shown hunting a bee or a wasp',
+    prey.nobodyTakesASting && !prey.catTakesABee && !prey.dogTakesAWasp);
+  ok('parrots hunt nothing at all, and forage instead',
+    prey.parrotsHuntNothing && prey.parrotsForage);
+  ok('each family hunts in its own way (' + prey.styles + ')',
+    /cat:pounce/.test(prey.styles) && /dog:dash/.test(prey.styles) &&
+    /hummingbird:hover/.test(prey.styles) && /bat:swoop/.test(prey.styles) &&
+    /frog:ambush/.test(prey.styles) && /parrot:null/.test(prey.styles));
+
+  /* ---------- a hunt really happens ---------- */
+  const catHunt = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 90);
+    await new Promise(r => setTimeout(r, 200));
+    window.__hold();
+    /* the spider on a clear dry patch, and the cat a short walk from it */
+    const sp = window.__spot(P.x + 130, P.y + 4, 60);
+    const sc = window.__spot(sp.x - 80, sp.y, 30);
+    GG.Critters.add(GG.BUG_BY_ID.garden_spider, sp.x, sp.y);
+    F.add(GG.ANIMAL_BY_ID.tabby, sc.x, sc.y);
+    const cat = F.list[0], bug = GG.Critters.list[0];
+    const d0 = GG.dist(cat.x, cat.y, bug.x, bug.y);
+    let closest = d0, picked = false, tried = false;
+    /* a hunt is a wander with a purpose, so give it long enough to land */
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (cat.chaseId === bug) picked = true;
+      const d = GG.dist(cat.x, cat.y, bug.x, bug.y);
+      if (d < closest) closest = d;
+      if (cat.missed > 0 || bug.flee > 0) tried = true;
+      if (tried) break;
+    }
+    window.__release();
+    return { d0: Math.round(d0), closest: Math.round(closest), picked, tried,
+      alive: GG.Critters.list.indexOf(bug) >= 0 };
+  });
+  ok('a cat picks out a spider it really does hunt', catHunt.picked);
+  ok('and goes after it (' + catHunt.d0 + ' -> ' + catHunt.closest + ')',
+    catHunt.closest < catHunt.d0);
+  ok('and has a go at it', catHunt.tried);
+  ok('and the spider gets away, the way it usually does', catHunt.alive);
+
+  /* a second family, to show it is not a cat trick */
+  const batHunt = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sm = window.__spot(P.x + 130, P.y - 10, 60);
+    const sb = window.__spot(sm.x - 110, sm.y, 40);
+    GG.Critters.add(GG.BUG_BY_ID.rosy_maple, sm.x, sm.y);
+    F.add(GG.ANIMAL_BY_ID.little_brown_bat, sb.x, sb.y);
+    const bat = F.list[0], moth = GG.Critters.list[0];
+    const d0 = GG.dist(bat.x, bat.y, moth.x, moth.y);
+    let closest = d0, picked = false, tried = false;
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (bat.chaseId === moth) picked = true;
+      const d = GG.dist(bat.x, bat.y, moth.x, moth.y);
+      if (d < closest) closest = d;
+      if (bat.missed > 0 || moth.flee > 0) tried = true;
+      if (tried) break;
+    }
+    window.__release();
+    return { d0: Math.round(d0), closest: Math.round(closest), picked, tried,
+      alive: GG.Critters.list.indexOf(moth) >= 0 };
+  });
+  ok('a little brown bat goes after a moth (' + batHunt.d0 + ' -> ' + batHunt.closest + ')',
+    batHunt.picked && batHunt.closest < batHunt.d0);
+  ok('and has a go at that too', batHunt.tried);
+  ok('and the moth gets away as well', batHunt.alive);
+
+  /* a frog does not chase. It sits still and waits. */
+  const frogWait = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sf = window.__spot(P.x + 90, P.y + 40, 60);
+    GG.Critters.add(GG.BUG_BY_ID.housefly, sf.x + 60, sf.y);
+    F.add(GG.ANIMAL_BY_ID.green_frog, sf.x, sf.y);
+    const frog = F.list[0], fly = GG.Critters.list[0];
+    const start = { x: frog.x, y: frog.y };
+    let waiting = false, wander = 0, moveWhileWaiting = 0, at = null;
+    for (let i = 0; i < 200; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      /* watch the whole window: a frog that hops back to where it began
+         would look like a frog that never moved */
+      wander = Math.max(wander, GG.dist(frog.x, frog.y, start.x, start.y));
+      if (frog.chase > 0) {
+        if (!waiting) { waiting = true; at = { x: frog.x, y: frog.y }; }
+        moveWhileWaiting = Math.max(moveWhileWaiting, GG.dist(frog.x, frog.y, at.x, at.y));
+      }
+      if (waiting && i > 60) break;
+    }
+    window.__release();
+    return { waiting, wander: Math.round(wander),
+      moveWhileWaiting: Math.round(moveWhileWaiting) };
+  });
+  ok('a frog picks out its dinner', frogWait.waiting);
+  ok('and then sits perfectly still and waits for it (' + frogWait.moveWhileWaiting + 'px)',
+    frogWait.moveWhileWaiting < 26);
+
+  /* ---------- it only ever chases what it really eats ---------- */
+  const wrongPrey = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    /* a dragonfly is bigger than the hummingbird - in the real world the
+       dragonfly is the one doing the catching */
+    GG.Critters.add(GG.BUG_BY_ID.emperor_dragonfly, P.x + 60, P.y + 10);
+    GG.Critters.add(GG.BUG_BY_ID.earthworm, P.x + 40, P.y + 40);
+    F.add(GG.ANIMAL_BY_ID.annas_hummingbird, P.x + 20, P.y + 10);
+    F.add(GG.ANIMAL_BY_ID.hoary_bat, P.x + 20, P.y + 50);
+    const bird = F.list[0], bat = F.list[1];
+    const dragon = GG.Critters.list[0], worm = GG.Critters.list[1];
+    const wrong = [];
+    for (let i = 0; i < 200; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      /* `flee` is no evidence here - a bug bolts from Guin as well - so watch
+         who picked what, and who was close enough to have a go at it */
+      [[bird, 'hummingbird'], [bat, 'bat']].forEach(pair => {
+        if (pair[0].chaseId === dragon) wrong.push(pair[1] + ' picked the dragonfly');
+        if (pair[0].chaseId === worm) wrong.push(pair[1] + ' picked the earthworm');
+        if (pair[0].missed > 0) {
+          if (GG.dist(pair[0].x, pair[0].y, dragon.x, dragon.y) < 40) wrong.push(pair[1] + ' struck at the dragonfly');
+          if (GG.dist(pair[0].x, pair[0].y, worm.x, worm.y) < 40) wrong.push(pair[1] + ' struck at the earthworm');
+        }
+      });
+      if (wrong.length) break;
+    }
+    window.__release();
+    return { wrong: wrong.filter((v, i, l) => l.indexOf(v) === i) };
+  });
+  ok('nothing chases what it could never eat ' + JSON.stringify(wrongPrey.wrong),
+    !wrongPrey.wrong.length);
+
+  /* ---------- Guin's rule: friends never hunt friends ---------- */
+  const ruleData = await p.evaluate(() => {
+    const A = GG.ANIMAL_BY_ID;
+    return {
+      catAndBird: !!GG.friendRuleFor(A.tabby, A.annas_hummingbird),
+      dogAndCat: !!GG.friendRuleFor(A.cookie, A.tabby),
+      bullfrogAndBat: !!GG.friendRuleFor(A.bullfrog, A.hoary_bat),
+      bullfrogAndFrog: !!GG.friendRuleFor(A.bullfrog, A.chorus_frog),
+      catAndFrog: !!GG.friendRuleFor(A.tabby, A.green_frog),
+      birdAndCat: !!GG.friendRuleFor(A.annas_hummingbird, A.tabby),
+      notItself: !!GG.friendRuleFor(A.tabby, A.tabby),
+      /* no friend is ever on another friend's prey list either */
+      noneInThePreyLists: GG.ANIMALS.every(a => GG.animalPrey(a.id)
+        .every(q => !GG.ANIMAL_BY_ID[q])),
+      /* and it is written down where she can read it */
+      onTheCatsPage: GG.ANIMALS.filter(a => a.family === 'cat')
+        .every(a => a.facts.join(' ').indexOf('friends never hunt friends') >= 0),
+      onTheDogsPage: GG.ANIMALS.filter(a => a.family === 'dog')
+        .every(a => a.facts.join(' ').indexOf('friends never hunt friends') >= 0),
+      onTheBullfrogsPage: A.bullfrog.facts.join(' ').indexOf('friends never hunt friends') >= 0
+    };
+  });
+  ok('no friend is on any other friend\u2019s prey list', ruleData.noneInThePreyLists);
+  ok('the rule knows a cat would really take a hummingbird', ruleData.catAndBird);
+  ok('and that a dog would chase a cat', ruleData.dogAndCat);
+  ok('and that a bullfrog would swallow a bat or a little frog',
+    ruleData.bullfrogAndBat && ruleData.bullfrogAndFrog);
+  ok('and it does not invent pairs that are not real',
+    !ruleData.catAndFrog && !ruleData.birdAndCat && !ruleData.notItself);
+  ok('the book says so on every cat page', ruleData.onTheCatsPage);
+  ok('and on every dog page', ruleData.onTheDogsPage);
+  ok('and on the bullfrog page', ruleData.onTheBullfrogsPage);
+
+  const ruleLive = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    /* a cat, a hummingbird it really would catch, and a moth it really would
+       chase, all within reach at once */
+    GG.Critters.add(GG.BUG_BY_ID.hawk_moth, P.x + 120, P.y + 60);
+    F.add(GG.ANIMAL_BY_ID.tabby, P.x + 90, P.y + 60);
+    F.add(GG.ANIMAL_BY_ID.annas_hummingbird, P.x + 140, P.y + 60);
+    const cat = F.list[0], bird = F.list[1];
+    let watched = false, wentForTheBird = false, sat = 0;
+    for (let i = 0; i < 200; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (cat.watch > 0) watched = true;
+      if (cat.chaseId === bird) wentForTheBird = true;
+      if (watched) break;
+    }
+    /* and while it is watching, it stays put */
+    const at = { x: cat.x, y: cat.y };
+    for (let i = 0; i < 14 && cat.watch > 0; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      sat = Math.max(sat, GG.dist(cat.x, cat.y, at.x, at.y));
+    }
+    window.__release();
+    return { watched, wentForTheBird, sat: Math.round(sat),
+      birdAlive: F.list.indexOf(bird) >= 0,
+      why: cat.watchWhy ? cat.watchWhy.why : '' };
+  });
+  ok('a cat that spots a hummingbird stops and watches instead', ruleLive.watched);
+  ok('it never goes after the bird', !ruleLive.wentForTheBird);
+  ok('it sits there while it watches (' + ruleLive.sat + 'px)', ruleLive.sat < 22);
+  ok('and the hummingbird is still there', ruleLive.birdAlive);
+  ok('and it knows why (' + ruleLive.why.slice(0, 40) + ')',
+    /friends never hunt friends/i.test(ruleLive.why));
+
+  /* ---------- the ones that do not hunt ---------- */
+  const forage = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    F.bits.length = 0;
+    GG.Critters.add(GG.BUG_BY_ID.housefly, P.x + 110, P.y + 30);
+    F.add(GG.ANIMAL_BY_ID.budgie, P.x + 80, P.y + 30);
+    const bird = F.list[0];
+    let foraged = false, bits = 0, chased = false;
+    for (let i = 0; i < 200; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (bird.forage > 0) foraged = true;
+      bits = Math.max(bits, F.bits.length);
+      if (bird.chase > 0 || bird.chaseId) chased = true;
+      if (foraged && bits > 0) break;
+    }
+    window.__release();
+    return { foraged, bits, chased };
+  });
+  ok('a budgie stops to forage', forage.foraged);
+  ok('and makes a mess of husks doing it (' + forage.bits + ')', forage.bits > 0);
+  ok('and never chases anything', !forage.chased);
+
+  /* ---------- and the book carries all of it ---------- */
+  const huntBook = await p.evaluate(() => {
+    GG.Book.open(); GG.Book.tab = 'friends';
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.annas_hummingbird);
+    const bird = document.getElementById('book-detail').textContent;
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.tabby);
+    const cat = document.getElementById('book-detail').textContent;
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.budgie);
+    const budgie = document.getElementById('book-detail').textContent;
+    GG.UI.close('screen-book');
+    return {
+      birdHunts: bird.indexOf('It hunts') >= 0,
+      birdLeafhoppers: bird.indexOf('thirty-two leafhoppers') >= 0,
+      catHunts: cat.indexOf('It hunts') >= 0,
+      catRule: cat.indexOf('friends never hunt friends') >= 0,
+      catHomeless: cat.indexOf('no home') >= 0,
+      getsAway: cat.indexOf('always gets away') >= 0,
+      budgieHunts: budgie.indexOf('It hunts') >= 0,
+      budgieForages: budgie.indexOf('does not hunt') >= 0
+    };
+  });
+  ok('an animal page now says what it hunts', huntBook.birdHunts && huntBook.catHunts);
+  ok('and still promises everybody gets away', huntBook.getsAway);
+  ok('the hummingbird page has the thirty-two leafhoppers', huntBook.birdLeafhoppers);
+  ok('the cat page puts the weight on cats with no home', huntBook.catHomeless);
+  ok('and spells out the rule', huntBook.catRule);
+  ok('a budgie page has no hunting line at all', !huntBook.budgieHunts);
+  ok('it says the budgie does not hunt instead', huntBook.budgieForages);
+
+  /* ---------- the three range errors in the roster ---------- */
+  const range = await p.evaluate(() => {
+    const A = GG.ANIMAL_BY_ID;
+    const frogs = GG.ANIMALS.filter(a => a.family === 'frog').map(a => a.id);
+    return {
+      frogs,
+      peeperGone: !A.spring_peeper,
+      redLegged: !!A.red_legged_frog,
+      redLeggedFacts: A.red_legged_frog ? A.red_legged_frog.facts.length : 0,
+      greenIsAVisitor: A.green_frog.facts.join(' ').indexOf('eastern side of the country') >= 0,
+      bullfrogIntroduced: A.bullfrog.facts.join(' ').indexOf('prohibited') >= 0,
+      bullfrogTwiceTheSize: A.bullfrog.facts.join(' ').indexOf('twice the size') >= 0,
+      bullfrogNotBlamed: A.bullfrog.facts.join(' ').indexOf('not the frog') >= 0,
+      chorusStillHere: !!A.chorus_frog
+    };
+  });
+  ok('the Spring Peeper is gone - it is an eastern frog and never lived here',
+    range.peeperGone);
+  ok('a Northern Red-legged Frog took its place ' + JSON.stringify(range.frogs),
+    range.redLegged && range.redLeggedFacts >= 3);
+  ok('the Pacific Chorus Frog, the properly local one, is still here', range.chorusStillHere);
+  ok('the Green Frog page says it came from the east', range.greenIsAVisitor);
+  ok('the bullfrog page says it is introduced and prohibited here',
+    range.bullfrogIntroduced && range.bullfrogTwiceTheSize);
+  ok('and does not blame the frog for it', range.bullfrogNotBlamed);
 
   /* ---------- the friend who comes with you ---------- */
   await p.evaluate(() => {
