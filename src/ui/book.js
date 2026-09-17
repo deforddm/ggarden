@@ -168,7 +168,7 @@
       if (isFruit) {
         var un = GG.DECOR_BY_ID[def.unlock];
         rows = [['Grows in', GG.FRUITS_WHERE[def.where] || def.where],
-          ['On', def.on === 'tree' ? 'a tree' : 'a bush'],
+          ['On', GG.fruitOnName ? GG.fruitOnName(def) : (def.on === 'tree' ? 'a tree' : 'a bush')],
           ['Ripe in', def.ripens], ['Size', def.measure],
           ['Picked', n + ' time' + (n === 1 ? '' : 's')]];
         if (un) rows.push(['Unlocked', un.name]);
@@ -231,19 +231,27 @@
       /* who eats whom */
       var eats = GG.eatsList ? GG.eatsList(def.id) : [];
       var eatenBy = GG.eatenByList ? GG.eatenByList(def.id) : [];
-      if (eats.length || eatenBy.length) {
+      /* Some friends do not hunt at all, and that is worth a line of its own
+         rather than an empty space where the hunting would have been. */
+      var forage = (isAnimal && GG.animalForage) ? GG.animalForage(def.id) : null;
+      if (eats.length || eatenBy.length || forage) {
         var chain = GG.el('div', 'foodchain');
         chain.appendChild(GG.el('b', null, 'In the wild'));
         if (eats.length) {
           chain.appendChild(GG.el('div', 'fcline',
             '\ud83d\udc1b It hunts: ' + GG.nameList(eats, 6)));
+        } else if (forage) {
+          chain.appendChild(GG.el('div', 'fcline',
+            '\ud83c\udf3e It does not hunt. ' + forage.note));
         }
         if (eatenBy.length) {
           chain.appendChild(GG.el('div', 'fcline',
             '\ud83d\udc40 Watch out for: ' + GG.nameList(eatenBy, 6)));
         }
         chain.appendChild(GG.el('div', 'fcnote',
-          'In your garden everybody always gets away.'));
+          (eats.length || eatenBy.length)
+            ? 'In your garden everybody always gets away.'
+            : 'It forages instead \u2014 watch it work at something with its beak.'));
         det.appendChild(chain);
       }
 
