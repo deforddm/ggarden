@@ -13,11 +13,18 @@ tools needed, installable to a phone home screen, works offline).
 
 ## How the game works
 
-* Walk around one open world, 4800 x 3200, with twelve places: Sunny Meadow,
-  Flower Garden (home), Whispering Woods, Apple Orchard, Pebble Hills, the Lily
-  Pond, Pebble Stream, the Winding River and its riverbank, Gull Inlet, Shell
-  Beach, the rocky shore and The Tidepools.
-* 103 real insects and mini-beasts, each with its own habitat, time of day
+* Walk around one open world, 6400 x 4160, with eighteen places: Sunny Meadow,
+  Flower Garden (home), Whispering Woods, the Golden Glade, Apple Orchard,
+  Pebble Hills, Cloudtop Ridge, the Sagebrush Desert, the Spruce Taiga, the
+  Lichen Tundra, the Mossy Rainforest, the Lily Pond, Pebble Stream, the
+  Winding River and its riverbank, Gull Inlet, Shell Beach, the rocky shore and
+  The Tidepools.
+* The geography is honest. The sea is in the south-east, so the wet air comes
+  off it, crosses the rainforest, climbs the ridge and drops its rain on the
+  way up - which is why the desert sits behind the mountains, and why it is a
+  cold shrub-steppe rather than a Sahara. North of the woods the trees get
+  smaller until the taiga gives out altogether and the tundra begins.
+* 153 real insects and mini-beasts, each with its own habitat, time of day
   and behaviour. Bugs get nervous when you charge at them - a `!` appears,
   and then they bolt. Creep closer instead (tiptoe = hold shift on a keyboard,
   or push the joystick gently).
