@@ -909,6 +909,332 @@
     ell(c, x - 1 * s, y - 4 * s, 3.8 * s, 1.7 * s, -0.4);
   };
 
+  /* ---------- v1.13: brought back from the berry rows in the orchard ----------
+     Same rule as the ones above: picked, never bought. (x, y) is where it sits
+     on the ground and s is the scale, about 26 * s tall. */
+
+  /* a bundle of drupelets — a blackberry or a raspberry is never one berry */
+  function drupeClump(c, bx, by, rr, skin, skin2, hollow) {
+    c.fillStyle = GG.shade(skin2, -0.32);
+    ell(c, bx, by, rr * 1.55, rr * 1.85);
+    [[-0.78, -1.0], [0.78, -1.0], [-0.9, 0.1], [0.9, 0.1], [0, -0.46], [0, 1.16]]
+      .forEach(function (q) {
+        c.fillStyle = skin2; ell(c, bx + q[0] * rr, by + q[1] * rr, rr * 0.74, rr * 0.74);
+        c.fillStyle = skin; ell(c, bx + (q[0] - 0.16) * rr, by + (q[1] - 0.2) * rr, rr * 0.54, rr * 0.54);
+        c.fillStyle = 'rgba(255,255,255,0.5)';
+        ell(c, bx + (q[0] - 0.3) * rr, by + (q[1] - 0.36) * rr, rr * 0.2, rr * 0.23, -0.5);
+      });
+    if (hollow) {
+      /* the hole a raspberry keeps, because it left its core on the cane */
+      c.fillStyle = 'rgba(60,10,18,0.72)';
+      ell(c, bx, by - rr * 0.1, rr * 0.62, rr * 0.5);
+      c.fillStyle = 'rgba(255,225,225,0.35)';
+      ell(c, bx, by - rr * 0.32, rr * 0.5, rr * 0.22);
+    }
+  }
+
+  D.bramblearch = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.1) * 1.2;
+    c.strokeStyle = '#6d5a3a'; c.lineWidth = 2.2 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 12 * s, y);
+    c.bezierCurveTo(x - 14 * s, y - 20 * s, x + 3 * s, y - 28 * s,
+      x + (13 + sway) * s, y - 14 * s);
+    c.stroke();
+    /* the prickles curve backwards, which is how they catch you */
+    c.strokeStyle = '#d3c095'; c.lineWidth = 1.2 * s;
+    [[-12.8, -7, 1], [-10.4, -18, 1], [-1, -26, -1], [8, -24.5, -1]].forEach(function (p) {
+      c.beginPath();
+      c.moveTo(x + p[0] * s, y + p[1] * s);
+      c.quadraticCurveTo(x + (p[0] + p[2] * 3.2) * s, y + (p[1] + 1.6) * s,
+        x + (p[0] + p[2] * 3.6) * s, y + (p[1] + 5) * s);
+      c.stroke();
+    });
+    /* five leaflets on one stalk: the invader's field mark */
+    for (var i = 0; i < 5; i++) {
+      c.save();
+      c.translate(x - 12.6 * s, y - 13 * s);
+      c.rotate(Math.PI + 0.92 - i * 0.46);
+      c.fillStyle = i % 2 ? '#4f7a45' : '#59864d';
+      c.beginPath(); c.moveTo(0, 0);
+      c.quadraticCurveTo(4 * s, -3.1 * s, 9 * s, 0);
+      c.quadraticCurveTo(4 * s, 3.1 * s, 0, 0);
+      c.closePath(); c.fill();
+      c.restore();
+    }
+    drupeClump(c, x + (10 + sway) * s, y - 11 * s, 2.5 * s, '#3d2545', '#180d20');
+    drupeClump(c, x + 2 * s, y - 21 * s, 2.2 * s, '#3d2545', '#180d20');
+    drupeClump(c, x - 5.6 * s, y - 24 * s, 2 * s, '#d8464e', '#a01e2a');
+  };
+
+  D.berrypunnet = function (c, x, y, s, t) {
+    c.fillStyle = '#c9a469';
+    c.beginPath();
+    c.moveTo(x - 13 * s, y - 13 * s);
+    c.lineTo(x - 10 * s, y);
+    c.lineTo(x + 10 * s, y);
+    c.lineTo(x + 13 * s, y - 13 * s);
+    c.closePath(); c.fill();
+    c.strokeStyle = '#a3814c'; c.lineWidth = 0.9 * s;
+    for (var i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * 5 * s, y - 12.6 * s);
+      c.lineTo(x + i * 3.9 * s, y - 0.6 * s);
+      c.stroke();
+    }
+    c.fillStyle = '#b8935c';
+    GG.roundRect(c, x - 13.6 * s, y - 15.4 * s, 27.2 * s, 3 * s, 1.2 * s); c.fill();
+    drupeClump(c, x - 6.4 * s, y - 18 * s, 2.5 * s, '#dc3a4e', '#9e1c30');
+    drupeClump(c, x + 6.6 * s, y - 17.4 * s, 2.4 * s, '#dc3a4e', '#9e1c30');
+    /* two tipped over, so you can see they are hollow */
+    drupeClump(c, x - 0.4 * s, y - 23.4 * s, 2.5 * s, '#dc3a4e', '#9e1c30', true);
+    drupeClump(c, x + 8.6 * s, y - 23 * s, 2.1 * s, '#dc3a4e', '#9e1c30', true);
+  };
+
+  D.strawpatch = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.0) * 0.8;
+    /* the runner: a red string crawling off to start a whole new plant */
+    c.strokeStyle = '#b24a3a'; c.lineWidth = 1.2 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x + 2 * s, y - 3 * s);
+    c.quadraticCurveTo(x + 14 * s, y - 1 * s, x + 21 * s, y - 4 * s);
+    c.stroke();
+    function trio(cx0, cy0, L, rot) {
+      for (var i = -1; i <= 1; i++) {
+        c.save(); c.translate(cx0, cy0); c.rotate(rot + i * 0.72);
+        c.fillStyle = i === 0 ? '#4f9450' : '#448a47';
+        c.beginPath(); c.moveTo(0, 0);
+        c.quadraticCurveTo(L * 0.42, -L * 0.38, L, 0);
+        c.quadraticCurveTo(L * 0.42, L * 0.38, 0, 0);
+        c.closePath(); c.fill();
+        c.strokeStyle = '#2f6b33'; c.lineWidth = 0.5;
+        c.beginPath(); c.moveTo(0.4, 0); c.lineTo(L * 0.9, 0); c.stroke();
+        c.restore();
+      }
+    }
+    trio(x - 3 * s, y - 4 * s, 11 * s, -2.5);
+    trio(x + 3 * s, y - 4 * s, 11 * s, -0.7);
+    trio(x - 1 * s, y - 5 * s, 10 * s, -1.6);
+    trio(x + 21 * s, y - 4 * s, 5.5 * s, -1.7);   /* the baby plant */
+    /* a white flower with a yellow middle */
+    var fx = x - 9 * s, fy = y - 17 * s;
+    c.fillStyle = '#ffffff';
+    for (var k = 0; k < 5; k++) {
+      var a = k / 5 * Math.PI * 2;
+      ell(c, fx + Math.cos(a) * 2.6 * s, fy + Math.sin(a) * 2.6 * s, 2.2 * s, 2 * s, a);
+    }
+    c.fillStyle = '#f7c948'; ell(c, fx, fy, 1.5 * s, 1.5 * s);
+    /* two berries hanging just off the ground */
+    function berry(bx, by, w, h) {
+      c.fillStyle = '#ae1a20';
+      c.beginPath();
+      c.moveTo(bx, by - h);
+      c.bezierCurveTo(bx - w * 1.15, by - h * 1.15, bx - w * 1.1, by + h * 0.35, bx, by + h);
+      c.bezierCurveTo(bx + w * 1.1, by + h * 0.35, bx + w * 1.15, by - h * 1.15, bx, by - h);
+      c.closePath(); c.fill();
+      c.fillStyle = '#e8332e'; ell(c, bx - w * 0.1, by - h * 0.05, w * 0.78, h * 0.82);
+      c.fillStyle = 'rgba(255,255,255,0.3)';
+      ell(c, bx - w * 0.42, by - h * 0.4, w * 0.22, h * 0.32, -0.4);
+      c.fillStyle = '#f4dc84';
+      for (var r = 0; r < 4; r++) {
+        for (var q = 0; q < 3; q++) {
+          ell(c, bx + (q - 1) * w * 0.52 + (r % 2 ? w * 0.26 : 0),
+            by - h * 0.62 + r * h * 0.46, w * 0.09, h * 0.085, 0.2);
+        }
+      }
+      c.fillStyle = '#4f9450';
+      for (var m = 0; m < 5; m++) {
+        var ang = -Math.PI + 0.35 + m * (Math.PI - 0.7) / 4;
+        ell(c, bx + Math.cos(ang) * w * 0.5, by - h + Math.sin(ang) * h * 0.2,
+          w * 0.5, h * 0.16, ang * 0.5);
+      }
+    }
+    berry(x + 6 * s + sway * 0.5, y - 9 * s, 5 * s, 6.4 * s);
+    berry(x - 6.5 * s, y - 7.5 * s, 4 * s, 5.2 * s);
+  };
+
+  D.redstrig = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.4) * 1;
+    c.strokeStyle = '#7a6a52'; c.lineWidth = 1.8 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 13 * s, y - 26 * s);
+    c.quadraticCurveTo(x, y - 20 * s, x + 13 * s, y - 25 * s);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x, y);
+    c.quadraticCurveTo(x - 2 * s, y - 14 * s, x - 1 * s, y - 22.5 * s);
+    c.stroke();
+    /* maple-shaped leaves, and not a thorn anywhere on it */
+    function lobeLeaf(cx0, cy0, R, col) {
+      c.fillStyle = col;
+      c.beginPath();
+      for (var i = 0; i <= 48; i++) {
+        var a = (i / 48) * Math.PI * 2 - Math.PI / 2;
+        var rr = R * (0.56 + 0.44 * Math.abs(Math.cos(a * 2.5)));
+        var px = cx0 + Math.cos(a) * rr, py = cy0 + Math.sin(a) * rr;
+        if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.closePath(); c.fill();
+    }
+    lobeLeaf(x - 12 * s, y - 22 * s, 6 * s, '#5f9450');
+    lobeLeaf(x + 12 * s, y - 21 * s, 5.2 * s, '#528a46');
+    /* two strigs, dangling like tiny bunches of grapes */
+    [[-5.5, 1], [5, 0.7]].forEach(function (g, gi) {
+      var sx0 = x + g[0] * s;
+      c.strokeStyle = '#8a9a52'; c.lineWidth = 1 * s;
+      c.beginPath();
+      c.moveTo(sx0, y - 23 * s);
+      c.quadraticCurveTo(sx0 + sway * g[1] * s, y - 14 * s, sx0 + sway * g[1] * 1.6 * s, y - 3 * s);
+      c.stroke();
+      for (var i = 0; i < 7; i++) {
+        var f = i / 6;
+        var px0 = sx0 + sway * g[1] * 1.6 * s * f * f;
+        var py0 = y - (23 - f * 20) * s;
+        var bx = px0 + (i % 2 ? 1 : -1) * (2.9 - f * 0.8) * s;
+        var by = py0 + 1.4 * s;
+        var rr = (2.7 - f * 0.7) * s;
+        c.strokeStyle = '#8a9a52'; c.lineWidth = 0.6 * s;
+        c.beginPath(); c.moveTo(px0, py0); c.lineTo(bx, by - rr * 0.8); c.stroke();
+        c.fillStyle = '#a4151c'; ell(c, bx, by, rr, rr);
+        c.fillStyle = '#e42f33'; ell(c, bx, by, rr * 0.84, rr * 0.84);
+        c.fillStyle = '#f56a5c'; ell(c, bx - rr * 0.1, by + rr * 0.12, rr * 0.48, rr * 0.48);
+        c.fillStyle = 'rgba(110,16,20,0.5)';
+        ell(c, bx - rr * 0.26, by + rr * 0.06, rr * 0.16, rr * 0.22, 0.4);
+        c.fillStyle = 'rgba(255,255,255,0.6)';
+        ell(c, bx - rr * 0.34, by - rr * 0.4, rr * 0.26, rr * 0.3, -0.5);
+      }
+    });
+  };
+
+  D.goosebranch = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.0) * 0.8;
+    c.strokeStyle = '#7a6a52'; c.lineWidth = 2 * s; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - 14 * s, y - 12 * s);
+    c.quadraticCurveTo(x - 4 * s, y - 27 * s, x + 14 * s, y - 20 * s);
+    c.stroke();
+    c.lineWidth = 1.6 * s;
+    c.beginPath();
+    c.moveTo(x - 3 * s, y);
+    c.quadraticCurveTo(x - 6 * s, y - 12 * s, x - 9 * s, y - 20 * s);
+    c.stroke();
+    /* a stiff spine beside every single leaf: this is the careful bit */
+    var nodes = [[-10, -19], [-1, -25], [8, -23.5]];
+    nodes.forEach(function (p, i) {
+      c.strokeStyle = '#e4d8a8'; c.lineWidth = 1.2 * s;
+      for (var k = -1; k <= 1; k++) {
+        c.beginPath();
+        c.moveTo(x + p[0] * s, y + p[1] * s);
+        c.lineTo(x + (p[0] + k * 3.2) * s, y + (p[1] - 4.4) * s);
+        c.stroke();
+      }
+      c.save();
+      c.translate(x + p[0] * s, y + p[1] * s);
+      c.rotate(i === 2 ? -0.5 : Math.PI + 0.5);
+      c.fillStyle = '#5f8f4a';
+      c.beginPath();
+      for (var q = 0; q <= 40; q++) {
+        var a = (q / 40) * Math.PI * 2 - Math.PI / 2;
+        var rr = 4.6 * s * (0.58 + 0.42 * Math.abs(Math.cos(a * 2.5)));
+        var px = 4.6 * s + Math.cos(a) * rr, py = Math.sin(a) * rr;
+        if (q === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.closePath(); c.fill();
+      c.restore();
+    });
+    /* the fruit: singly, or in twos, on very short stalks */
+    function goose(bx, by, rx, ry) {
+      c.strokeStyle = '#8a9a52'; c.lineWidth = 0.9 * s;
+      c.beginPath(); c.moveTo(bx, by - ry - 3.4 * s); c.lineTo(bx, by - ry * 0.8); c.stroke();
+      c.fillStyle = '#93b34a'; ell(c, bx, by, rx, ry);
+      c.fillStyle = '#c9dc74'; ell(c, bx, by, rx * 0.86, ry * 0.86);
+      c.fillStyle = '#e2ee9e'; ell(c, bx, by + ry * 0.14, rx * 0.58, ry * 0.56);
+      c.strokeStyle = 'rgba(104,132,44,0.6)'; c.lineWidth = 0.7 * s;
+      for (var v = -2; v <= 2; v++) {
+        c.beginPath();
+        c.moveTo(bx + v * rx * 0.13, by - ry * 0.9);
+        c.quadraticCurveTo(bx + v * rx * 0.55, by, bx + v * rx * 0.15, by + ry * 0.9);
+        c.stroke();
+      }
+      c.fillStyle = 'rgba(126,140,54,0.6)';
+      ell(c, bx - rx * 0.24, by + ry * 0.1, rx * 0.14, ry * 0.18, 0.4);
+      ell(c, bx + rx * 0.2, by - ry * 0.06, rx * 0.13, ry * 0.17, -0.3);
+      c.strokeStyle = '#9a8f66'; c.lineWidth = 0.7 * s;
+      for (var k = -1; k <= 1; k++) {
+        c.beginPath();
+        c.moveTo(bx + k * 0.5 * s, by + ry * 0.92);
+        c.lineTo(bx + k * 1.6 * s, by + ry * 1.34);
+        c.stroke();
+      }
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+      ell(c, bx - rx * 0.38, by - ry * 0.42, rx * 0.24, ry * 0.28, -0.5);
+    }
+    goose(x - 9 * s + sway * 0.4, y - 11 * s, 5.2 * s, 4.9 * s);
+    goose(x + 1.5 * s, y - 15 * s, 4.2 * s, 4 * s);
+    goose(x + 9.5 * s - sway * 0.4, y - 13.5 * s, 4.8 * s, 4.6 * s);
+  };
+
+  D.nightvine = function (c, x, y, s, t) {
+    var sway = Math.sin((t || 0) * 1.2) * 1;
+    /* a stake with the vine twining up it, because nightshade climbs */
+    c.strokeStyle = '#8a7856'; c.lineWidth = 2.2 * s; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x - 7 * s, y); c.lineTo(x - 5 * s, y - 27 * s); c.stroke();
+    c.strokeStyle = '#5f7a44'; c.lineWidth = 1.5 * s;
+    c.beginPath();
+    c.moveTo(x - 7 * s, y - 1 * s);
+    for (var i = 1; i <= 5; i++) {
+      var yy = y - (i * 5.2) * s;
+      c.quadraticCurveTo(x + (i % 2 ? 1 : -11) * s, yy + 2.6 * s, x - 6 * s, yy);
+    }
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x - 6 * s, y - 24 * s);
+    c.quadraticCurveTo(x + 2 * s, y - 25 * s, x + (7 + sway) * s, y - 19 * s);
+    c.stroke();
+    /* a leaf with the little ear-shaped lobes at its base */
+    function earLeaf(cx0, cy0, L, rot) {
+      c.save(); c.translate(cx0, cy0); c.rotate(rot);
+      c.fillStyle = '#3f6f3c';
+      c.beginPath(); c.moveTo(0, 0);
+      c.quadraticCurveTo(L * 0.4, -L * 0.4, L, 0);
+      c.quadraticCurveTo(L * 0.4, L * 0.4, 0, 0);
+      c.closePath(); c.fill();
+      ell(c, L * 0.22, -L * 0.3, L * 0.22, L * 0.12, -0.55);
+      ell(c, L * 0.22, L * 0.3, L * 0.22, L * 0.12, 0.55);
+      c.strokeStyle = '#2d5a2c'; c.lineWidth = 0.6;
+      c.beginPath(); c.moveTo(L * 0.1, 0); c.lineTo(L * 0.92, 0); c.stroke();
+      c.restore();
+    }
+    earLeaf(x - 5 * s, y - 20 * s, 12 * s, -2.7);
+    earLeaf(x - 5 * s, y - 11 * s, 10 * s, 0.5);
+    /* the purple star flower with its yellow beak */
+    var fx = x - 13 * s, fy = y - 25 * s;
+    c.fillStyle = '#7c4fbe';
+    for (var k = 0; k < 5; k++) {
+      var a = -Math.PI / 2 + k / 5 * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(fx, fy);
+      c.lineTo(fx + Math.cos(a - 0.34) * 3.4 * s, fy + Math.sin(a - 0.34) * 3.4 * s);
+      c.lineTo(fx + Math.cos(a) * 5.4 * s, fy + Math.sin(a) * 5.4 * s);
+      c.lineTo(fx + Math.cos(a + 0.34) * 3.4 * s, fy + Math.sin(a + 0.34) * 3.4 * s);
+      c.closePath(); c.fill();
+    }
+    c.fillStyle = '#f2c62e'; ell(c, fx + 0.5 * s, fy + 0.8 * s, 1.5 * s, 2.4 * s, 0.3);
+    /* one bunch, three colours at once — green, orange and red together */
+    var mix = ['#d81f28', '#e2892a', '#7fae46', '#c41a24', '#8fbb4e', '#e08a2c'];
+    var hub = [x + (7 + sway) * s, y - 19 * s];
+    [[3.4, 2.6], [8.2, 0.6], [1.6, 7.4], [6.6, 8.4], [11, 5.2], [10.4, 10.6]]
+      .forEach(function (p, i) {
+        var bx = hub[0] + (p[0] - 6) * s, by = hub[1] + p[1] * s;
+        c.strokeStyle = '#5f7a44'; c.lineWidth = 0.8 * s;
+        c.beginPath(); c.moveTo(hub[0], hub[1]); c.lineTo(bx, by - 2.6 * s); c.stroke();
+        c.fillStyle = GG.shade(mix[i], -0.32); ell(c, bx, by, 2.7 * s, 3.3 * s);
+        c.fillStyle = mix[i]; ell(c, bx - 0.3 * s, by - 0.4 * s, 2.1 * s, 2.7 * s);
+        c.fillStyle = 'rgba(255,255,255,0.55)';
+        ell(c, bx - 1 * s, by - 1.5 * s, 0.7 * s, 0.9 * s, -0.5);
+      });
+  };
+
   GG.DECOR = [
     // --- for a terrarium (and the bank of a hybrid) ---
     { id: 'leaf', name: 'Big Leaf', price: 0, for: 'land' },
@@ -966,6 +1292,12 @@
     { id: 'hipring', name: 'Rose Hip Ring', price: 0, for: 'land', fruit: 'rosehip' },
     { id: 'currantsprig', name: 'Currant Sprig', price: 0, for: 'land', fruit: 'wax_currant' },
     { id: 'snowsprig', name: 'Snowberry Sprig', price: 0, for: 'land', fruit: 'snowberry' },
+    { id: 'bramblearch', name: 'Blackberry Bramble', price: 0, for: 'land', fruit: 'blackberry' },
+    { id: 'berrypunnet', name: 'Punnet of Raspberries', price: 0, for: 'land', fruit: 'raspberry' },
+    { id: 'strawpatch', name: 'Strawberry Patch', price: 0, for: 'land', fruit: 'strawberry' },
+    { id: 'redstrig', name: 'String of Red Currants', price: 0, for: 'land', fruit: 'red_currant' },
+    { id: 'goosebranch', name: 'Gooseberry Branch', price: 0, for: 'land', fruit: 'gooseberry' },
+    { id: 'nightvine', name: 'Nightshade Vine', price: 0, for: 'land', fruit: 'nightshade' },
 
     // --- for anywhere ---
     { id: 'signplate', name: 'Name Plate', price: 300, for: 'any' },
