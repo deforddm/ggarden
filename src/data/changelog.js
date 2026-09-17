@@ -6,9 +6,24 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.12.1';
+  GG.VERSION = '1.13.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.13.0', title: 'Six new places, berries, and friends that hunt',
+      lines: [
+        'The garden has grown. There are six new places to walk to, and the map is nearly twice the size it was.',
+        'Go north and it gets colder: first the Spruce Taiga, full of narrow black spruces and fallen logs, and then past the very last tree into the Lichen Tundra, where the ground is a patchwork of grey-green lichen and the only willow lies flat so the wind cannot get it.',
+        'Go west and you climb Cloudtop Ridge — talus, snow patches that have not melted, and little alpine gardens tucked between the rocks. Over the far side is the Sagebrush Desert, and it is a cold desert, not a Sahara: silver sagebrush, bunchgrass with bare dirt between the clumps, black basalt and a cactus that only comes up to your ankle.',
+        'The reason the desert is there is the ridge. The sea is in the south-east, so the wet air comes off it, crosses the forest, climbs the mountains and drops its rain on the way up. What is left over is dry.',
+        'In the south-east corner, right by the sea, is the Mossy Rainforest, where every fallen log has a row of little trees growing along the top of it. And hidden inside the Whispering Woods there is a Golden Glade — a bright hole in a dark ceiling, with long grass, fireweed and one big fallen log.',
+        'Forty-eight new creatures live in the six new places, and a lot of the old ones turn out to live there too. There is a worm that spends its whole life inside a glacier, a fly with no wings that walks about on snow, a beetle that clicks itself into the air, a spider that changes colour to match her flower, and a water bear you can only find by squeezing a cushion of wet moss.',
+        'Two of the new ones are LOOK, DON’T CATCH — but not because they are dangerous. The ice worm and the ice crawler are both killed by a warm hand. You are the dangerous one.',
+        'There are berries in the orchard now: blackberries, raspberries, strawberries, red currants and gooseberries, all pickable, all with a decoration to unlock. And there is one you must never eat — bittersweet nightshade, which climbs up through the brambles and hangs its shiny red berries right where a currant would be.',
+        'Your friends hunt now. Every one of them goes after what it really eats and nothing else — a bat after moths, a hummingbird after gnats and spiders, a robin listening for a worm. Nothing is ever caught; it always gets away.',
+        'And your rule is kept. Friends never hunt friends. A cat that spots a hummingbird stops, sits down, and watches it instead.'
+      ]
+    },
     {
       v: '1.12.1', title: 'One you look at and leave alone',
       lines: [

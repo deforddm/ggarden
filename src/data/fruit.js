@@ -86,6 +86,98 @@
       ]
     },
 
+    /* ---------- the berries along the edge of the orchard ----------
+       Guin asked for pluckable berries in the orchard, so here they are: the
+       brambles in the fence line, the currants and gooseberries at the end of
+       a row, the strawberries down in the grass — and the one that climbs up
+       through the blackberries and is not food at all. */
+    {
+      id: 'blackberry', name: 'Himalayan Blackberry', where: 'orchard', on: 'bramble',
+      shape: 'bramble', skin: '#3d2545', skin2: '#180d20', glossy: true, leaf: '#4f7a45',
+      measure: 'a bundle of shiny black beads, about as long as your thumbnail',
+      ripens: 'late July and August',
+      eat: 'yes', unlock: 'bramblearch',
+      care: 'Good to eat, straight off the cane. Reach in slowly though — the prickles curve backwards, so they let you in and catch you on the way out.',
+      facts: [
+        'A blackberry is not one fruit. It is a bundle of tiny ones, and every little shiny bead has its own seed inside it.',
+        'A blackberry keeps its core. The little white cone comes away with the fruit, which is why a blackberry is solid all the way through and a raspberry is hollow.',
+        'One cane can run forty feet, arch straight over a fence, and put down roots wherever its nose touches the ground. That is how one bush becomes a whole hedge.',
+        'This one came here from far away and it grows faster than the plants that were here first, so it crowds them out. Birds eat the berries and plant the seeds on fence posts. It is delicious, and it is in the wrong place — both of those are true at once.',
+        'Count the leaflets on a leaf. Washington’s own wild blackberry has three. This one, the one from away, has five, and its leaves are pale grey underneath.'
+      ]
+    },
+    {
+      id: 'raspberry', name: 'Red Raspberry', where: 'orchard', on: 'cane',
+      shape: 'bramble', skin: '#dc3a4e', skin2: '#9e1c30', thimble: true, leaf: '#6a9455',
+      measure: 'a soft red thimble', ripens: 'late June and July, with more in late summer',
+      eat: 'yes', unlock: 'berrypunnet',
+      care: 'If you have to pull, it is not ready. A ripe raspberry slides off its little white core and into your hand all by itself.',
+      facts: [
+        'A raspberry is hollow because it leaves its core behind. Look at the cane after you pick one and the little white cone is still standing there.',
+        'A raspberry is not really a berry either. It is dozens of tiny fruits, each with its own seed, packed together into a thimble.',
+        'Whatcom County, right up in the corner of Washington, grows more red raspberries than anywhere else in the whole country.',
+        'Its prickles are thin and straight, not hooked like a blackberry’s, so a raspberry cane is a much friendlier thing to reach into.'
+      ]
+    },
+    {
+      id: 'strawberry', name: 'Strawberry', where: 'orchard', on: 'ground',
+      shape: 'straw', skin: '#e8332e', skin2: '#ae1a20', leaf: '#4f9450',
+      measure: 'a red heart lying low in the grass', ripens: 'June',
+      eat: 'yes', unlock: 'strawpatch',
+      care: 'A strawberry grows lying on the dirt, so this is the one you always wash before you eat it.',
+      facts: [
+        'The little specks are not seeds. They are called achenes, and each one is a whole tiny fruit of its own, like a sunflower seed still in its shell.',
+        'There are about two hundred of them on one medium strawberry. So one strawberry is really two hundred fruits, all riding along together.',
+        'The red sweet part is not the fruit at all. It is the receptacle — the piece of the plant that holds the fruit up.',
+        'A strawberry plant makes copies of itself. It throws a red string sideways across the ground, and where the string stops it puts down roots and becomes a whole new plant.'
+      ]
+    },
+    {
+      id: 'red_currant', name: 'Red Currant', where: 'orchard', on: 'bush',
+      shape: 'strig', skin: '#e42f33', skin2: '#a4151c', clear: true, leaf: '#5f9450',
+      measure: 'a dangling string of eight to thirty pea-sized berries',
+      ripens: 'July and August',
+      eat: 'yes', unlock: 'redstrig',
+      care: 'Pick the whole dangling string at once and pull the berries off later. Pick them one at a time and you will squash every one.',
+      facts: [
+        'Currants hang in a string called a strig, swinging under the branch like a tiny bunch of grapes.',
+        'A currant bush has no thorns at all. Its cousin the gooseberry has a spine beside every single leaf.',
+        'Hold one up to the sun and you can see the seeds inside it. The skin really is that clear.',
+        'The dried "currants" in a hot cross bun are not currants. They are tiny dried grapes from Corinth in Greece, and somebody muddled up the names hundreds of years ago.',
+        'Currants and white pine trees can pass a disease back and forth, called white pine blister rust. It cannot finish growing up without both kinds of plant, so it goes pine, currant, pine.'
+      ]
+    },
+    {
+      id: 'gooseberry', name: 'Gooseberry', where: 'orchard', on: 'bush',
+      shape: 'goose', skin: '#c9dc74', skin2: '#93b34a', clear: true, leaf: '#5f8f4a',
+      measure: 'a plump grape-sized berry you can see through',
+      ripens: 'July and August',
+      eat: 'careful', unlock: 'goosebranch',
+      care: 'The berry is proper food. The bush is the problem — there is a stiff spine beside every single leaf, so hold the branch with a folded-over sleeve and never with a bare hand.',
+      facts: [
+        'You can see through a gooseberry. Hold a ripe one up to the sun and the veins run down the skin like the lines on a beach ball.',
+        'A gooseberry keeps getting sweeter after it is already ripe, so the last week of the season is the very best week.',
+        'A gooseberry and a currant are the same kind of plant, both of them a Ribes. The gooseberry is the one that grew spines and gave up hanging its fruit in strings.',
+        'Gooseberries never hang in strings. They sit on their own, or in twos and threes, on very short stalks tucked under the branch.',
+        'An unripe one is rock hard and will pucker your whole mouth up. Wait until it softens and changes colour.'
+      ]
+    },
+    {
+      id: 'nightshade', name: 'Bittersweet Nightshade', where: 'orchard', on: 'vine',
+      shape: 'nightshade', skin: '#d81f28', skin2: '#8c0f16', leaf: '#3f6f3c',
+      measure: 'shiny little eggs, green and orange and red all at once',
+      ripens: 'midsummer, and it hangs on into autumn',
+      eat: 'never', unlock: 'nightvine',
+      care: 'Pick it, look at it, put it in a tank — and do not eat it, not one single berry. These are poisonous, and the green ones are the worst of all.',
+      facts: [
+        'Nightshade climbs. It scrambles up through the blackberry brambles, so its berries end up dangling right beside berries that are good to eat.',
+        'One little bunch has green ones, orange ones and red ones on it all at the same time. Almost nothing else in the hedge does that.',
+        'Here is how you tell it from a currant. A currant dangles on a string, from a bush with no thorns and maple-shaped leaves. Nightshade climbs, and its flowers are purple stars with a small yellow beak poking out of the middle.',
+        'Look at the bottom of a leaf and you will often find one or two little ear-shaped lobes sticking out sideways. That is the giveaway.',
+        'It is in this book because it is poisonous, not in spite of it. Shiny and red and hanging in a bunch is not a promise.'
+      ]
+    },
+
     /* ---------- the Pebble Hills ---------- */
     {
       id: 'serviceberry', name: 'Saskatoon Serviceberry', where: 'hill', on: 'shrub',
@@ -154,6 +246,16 @@
   GG.FRUITS.forEach(function (f, i) { f.index = i; f.isFruit = true; GG.FRUIT_BY_ID[f.id] = f; });
 
   GG.FRUITS_WHERE = { orchard: 'the Apple Orchard', hill: 'the Pebble Hills' };
+
+  /* what the thing it grows on is actually called, for the book page */
+  GG.FRUIT_ON = {
+    tree: 'a tree', shrub: 'a bush', bush: 'a bush',
+    bramble: 'an arching bramble', cane: 'an upright cane',
+    ground: 'a low plant on the ground', vine: 'a climbing vine'
+  };
+  GG.fruitOnName = function (def) {
+    return (def && GG.FRUIT_ON[def.on]) || 'a bush';
+  };
 
   /* every fruit unlocks exactly one decoration */
   GG.fruitForDecor = function (decorId) {

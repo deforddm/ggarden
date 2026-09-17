@@ -6,8 +6,10 @@
    and read the truth of it in the books without ever losing a creature she
    caught.
 
-   Two rules of her own, kept exactly as she wrote them: a friend you have
-   tamed never hunts anything, and friends never hunt each other.
+   One rule of her own, kept exactly as she wrote it: friends can never hunt
+   friends. Since v1.13 the friends do hunt - each one goes after what it
+   really eats and nothing else - and a friend that spots another friend sits
+   down and watches instead.
 
    Every pairing below was checked against university extension services,
    state and federal wildlife agencies (NOAA, state DNRs), Animal Diversity
@@ -105,6 +107,30 @@
     eel: ['caddisfly', 'crayfish', 'creek_chub', 'mayfly', 'minnow'],
     chinook: ['caddisfly', 'mayfly'],
 
+    /* --- the six new places (v1.13) --- */
+    /* the tundra's top hunter, and what it really lives on */
+    arctic_wolf_spider: ['snow_flea', 'arctic_springtail'],
+    wolf_spider: ['ant', 'cricket', 'grasshopper', 'pallid_grasshopper', 'harvester_ant',
+      'silverfish', 'jumping_spider', 'thatching_ant'],
+    /* it picks up what the wind blew onto the snow and left too cold to move */
+    ice_crawler: ['snow_fly', 'snow_flea', 'snow_scorpionfly'],
+    four_spot_skimmer: ['arctic_mosquito', 'crane_fly', 'mayfly', 'housefly'],
+    hudsonian_whiteface: ['arctic_mosquito', 'crane_fly', 'housefly'],
+    /* it does not sit and wait. It runs its dinner down across bare ground. */
+    ground_mantis: ['housefly', 'ant', 'pallid_grasshopper', 'thatching_ant', 'harvester_ant'],
+    /* she sits still on a flower and takes whatever lands, bumblebees included */
+    crab_spider: ['bumblebee', 'hoverfly', 'honeybee', 'sweat_bee', 'mason_bee',
+      'leafcutter_bee', 'cabbage_white', 'woodland_skipper'],
+    jumping_spider: ['housefly', 'ant', 'leafhopper', 'aphid', 'caterpillar', 'crab_spider'],
+    /* long thin head and neck, for reaching down inside a shell */
+    snail_beetle: ['banana_slug', 'sideband_snail', 'snail', 'earthworm', 'garden_spider'],
+    /* she smells the fungus the grub is eating, then drills through the wood */
+    giant_ichneumon: ['western_horntail'],
+    /* the click beetle's own grub is the hunter, down inside the dead wood */
+    click_beetle: ['pine_beetle', 'whitespotted_sawyer', 'alder_borer'],
+    thatching_ant: ['aphid', 'caterpillar', 'housefly'],
+    folding_door_spider: ['cricket', 'ground_beetle', 'pillbug', 'yellow_millipede'],
+
     /* --- out at sea --- */
     striped_bass: ['eel', 'mackerel', 'blue_crab', 'mayfly'],
     flounder: ['sea_bass', 'blue_crab'],
@@ -115,13 +141,24 @@
 
   GG.EATS = EATS;
 
-  /* the other way round, worked out once */
+  /* The other way round, worked out once. The friends' own prey lists live in
+     animals.js and are folded in here too, so a caterpillar's page knows that
+     a chickadee is looking for it - without putting any animal into EATS,
+     which is what keeps `GG.hunts` a bug-and-fish question. */
   var EATEN_BY = {};
   Object.keys(EATS).forEach(function (pred) {
     EATS[pred].forEach(function (prey) {
       (EATEN_BY[prey] = EATEN_BY[prey] || []).push(pred);
     });
   });
+  if (GG.ANIMAL_HUNTS) {
+    Object.keys(GG.ANIMAL_HUNTS).forEach(function (pred) {
+      GG.ANIMAL_HUNTS[pred].forEach(function (prey) {
+        var list = (EATEN_BY[prey] = EATEN_BY[prey] || []);
+        if (list.indexOf(pred) < 0) list.push(pred);
+      });
+    });
+  }
   GG.EATEN_BY = EATEN_BY;
 
   GG.eatsList = function (id) { return EATS[id] || []; };

@@ -187,7 +187,7 @@
     },
     {
       id: 'bumblebee', name: 'Bumblebee',
-      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 15,
+      habitats: ['garden', 'meadow', 'glade'], times: ['morning', 'day'], rarity: 1, value: 15,
       behavior: 'hover', speed: 38, shy: 44, size: 1.0, sting: true,
       measure: '1 inch long',
       art: { shape: 'bee', body: '#f2c53d', wing: '#fff6dc', accent: '#241f1a', pattern: 'bands' },
@@ -244,7 +244,7 @@
     },
     {
       id: 'grasshopper', name: 'Grasshopper',
-      habitats: ['meadow', 'hill'], times: ['morning', 'day', 'evening'], rarity: 1, value: 12,
+      habitats: ['meadow', 'hill', 'glade'], times: ['morning', 'day', 'evening'], rarity: 1, value: 12,
       behavior: 'hop', speed: 30, shy: 50, size: 1.0,
       measure: '1.5 inches long',
       art: { shape: 'grasshopper', body: '#7fbf3f', wing: '#a6d95f', accent: '#3f6b1f', pattern: 'plain' },
@@ -267,7 +267,7 @@
     },
     {
       id: 'katydid', name: 'Katydid',
-      habitats: ['forest', 'orchard'], times: ['night'], rarity: 3, value: 60,
+      habitats: ['forest', 'orchard', 'glade'], times: ['night'], rarity: 3, value: 60,
       behavior: 'cling', speed: 24, shy: 62, size: 1.15,
       measure: '2 inches long',
       art: { shape: 'katydid', body: '#6fbf4e', wing: '#8fd96a', accent: '#3d7a2c', pattern: 'veins' },
@@ -349,7 +349,7 @@
     },
     {
       id: 'pillbug', name: 'Pill Bug',
-      habitats: ['forest', 'garden'], times: ['any'], rarity: 1, value: 8,
+      habitats: ['forest', 'garden', 'rainforest'], times: ['any'], rarity: 1, value: 8,
       behavior: 'slow', speed: 14, shy: 22, size: 0.7,
       measure: 'half an inch',
       art: { shape: 'pillbug', body: '#6b6b78', wing: '#8a8a99', accent: '#42424d', pattern: 'bands' },
@@ -375,7 +375,7 @@
     /* ===== the second wave ===== */
     {
       id: 'earthworm', name: 'Earthworm',
-      habitats: ['garden', 'meadow', 'forest'], times: ['any'], rarity: 1, value: 10,
+      habitats: ['garden', 'meadow', 'forest', 'rainforest'], times: ['any'], rarity: 1, value: 10,
       behavior: 'slow', speed: 9, shy: 18, size: 1.15, rainLover: true,
       measure: '4 inches long',
       art: { shape: 'worm', body: '#c98a8a', wing: '#e0a5a5', accent: '#a86a6a', pattern: 'rings' },
@@ -388,7 +388,7 @@
     },
     {
       id: 'centipede', name: 'Centipede',
-      habitats: ['forest', 'garden'], times: ['evening', 'night'], rarity: 2, value: 28,
+      habitats: ['forest', 'garden', 'rainforest'], times: ['evening', 'night'], rarity: 2, value: 28,
       behavior: 'crawl', speed: 62, shy: 44, size: 1.25,
       measure: '2 inches long',
       art: { shape: 'centipede', body: '#c4682f', wing: '#e08a45', accent: '#7a3d18', pattern: 'plain' },
@@ -412,7 +412,7 @@
     },
     {
       id: 'harvestman', name: 'Harvestman',
-      habitats: ['forest', 'garden'], times: ['evening', 'night'], rarity: 2, value: 26,
+      habitats: ['forest', 'garden', 'rainforest'], times: ['evening', 'night'], rarity: 2, value: 26,
       behavior: 'crawl', speed: 30, shy: 46, size: 1.2,
       measure: 'body the size of a pea',
       art: { shape: 'harvestman', body: '#8a6a4a', wing: '#3a2f26', accent: '#4a3a2a', pattern: 'plain' },
@@ -424,7 +424,7 @@
     },
     {
       id: 'crane_fly', name: 'Crane Fly',
-      habitats: ['meadow', 'pond', 'garden'], times: ['evening', 'night'], rarity: 1, value: 12,
+      habitats: ['meadow', 'pond', 'garden', 'rainforest'], times: ['evening', 'night'], rarity: 1, value: 12,
       behavior: 'drift', speed: 34, shy: 44, size: 1.25,
       measure: '2 inches across',
       art: { shape: 'cranefly', body: '#9a8a6a', wing: '#eae6d8', accent: '#6b5f47', pattern: 'plain' },
@@ -436,7 +436,7 @@
     },
     {
       id: 'hoverfly', name: 'Hoverfly',
-      habitats: ['garden', 'meadow'], times: ['morning', 'day'], rarity: 1, value: 14,
+      habitats: ['garden', 'meadow', 'glade'], times: ['morning', 'day'], rarity: 1, value: 14,
       behavior: 'hover', speed: 48, shy: 46, size: 0.8,
       measure: 'half an inch',
       art: { shape: 'fly', body: '#e0a832', wing: '#f2f6ff', accent: '#2b2b20', pattern: 'bands' },
@@ -472,7 +472,7 @@
     },
     {
       id: 'caddisfly', name: 'Caddisfly',
-      habitats: ['pond', 'riverbank'], times: ['evening', 'night'], rarity: 2, value: 28,
+      habitats: ['pond', 'riverbank', 'rainforest'], times: ['evening', 'night'], rarity: 2, value: 28,
       behavior: 'flutter', speed: 30, shy: 48, size: 0.9,
       measure: '1 inch long',
       art: { shape: 'caddis', body: '#8a7048', wing: '#b09a6a', accent: '#5a462c', pattern: 'plain' },
@@ -485,7 +485,7 @@
     },
     {
       id: 'lacewing', name: 'Green Lacewing',
-      habitats: ['garden', 'meadow'], times: ['evening', 'night'], rarity: 2, value: 32,
+      habitats: ['garden', 'meadow', 'glade'], times: ['evening', 'night'], rarity: 2, value: 32,
       behavior: 'drift', speed: 28, shy: 46, size: 0.95,
       measure: '1 inch across',
       art: { shape: 'lacewing', body: '#a8dc6a', wing: '#e6ffe0', accent: '#5f9c3a', pattern: 'veins' },
@@ -787,7 +787,7 @@
     /* ---------- the riverbank ---------- */
     {
       id: 'stonefly', name: 'Stonefly',
-      habitats: ['riverbank'], times: ['evening', 'night'], rarity: 2, value: 34,
+      habitats: ['riverbank', 'rainforest'], times: ['evening', 'night'], rarity: 2, value: 34,
       behavior: 'crawl', speed: 15, shy: 40, size: 0.95,
       measure: 'three quarters of an inch long',
       art: { shape: 'stonefly', body: '#6b5a3c', wing: '#d8cdb0', accent: '#3c3222', pattern: 'plain' },
@@ -1106,7 +1106,7 @@
     },
     {
       id: 'cross_orbweaver', name: 'Cross Orbweaver',
-      habitats: ['orchard', 'garden'], times: ['evening', 'night'], rarity: 2, value: 40,
+      habitats: ['orchard', 'garden', 'glade'], times: ['evening', 'night'], rarity: 2, value: 40,
       behavior: 'cling', speed: 20, shy: 50, size: 1.0,
       measure: 'three quarters of an inch across',
       art: { shape: 'spider', body: '#b98a5e', wing: '#6a4c32', accent: '#f4ece0', pattern: 'spots' },
@@ -1147,7 +1147,7 @@
     /* ---------- v1.12: the Pebble Hills ---------- */
     {
       id: 'jerusalem_cricket', name: 'Jerusalem Cricket',
-      habitats: ['hill'], times: ['night'], rarity: 4, value: 140,
+      habitats: ['hill', 'desert'], times: ['night'], rarity: 4, value: 140,
       behavior: 'slow', speed: 20, shy: 38, size: 1.35,
       measure: 'up to two inches long',
       art: { shape: 'jerusalem', body: '#e0a054', accent: '#3a2a1c', band: '#f3e2bd' },
@@ -1161,7 +1161,7 @@
     },
     {
       id: 'northern_scorpion', name: 'Northern Scorpion',
-      habitats: ['hill'], times: ['night'], rarity: 4, value: 160,
+      habitats: ['hill', 'desert'], times: ['night'], rarity: 4, value: 160,
       behavior: 'crawl', speed: 30, shy: 56, size: 1.15, sting: true,
       measure: 'two inches, tail and all',
       art: { shape: 'scorpion', body: '#c9a468', claw: '#d8b478', tailCol: '#e0c07e', accent: '#7a5a2a' },
@@ -1174,7 +1174,7 @@
     },
     {
       id: 'windscorpion', name: 'Windscorpion',
-      habitats: ['hill'], times: ['night'], rarity: 5, value: 260,
+      habitats: ['hill', 'desert'], times: ['night'], rarity: 5, value: 260,
       behavior: 'dart', speed: 92, shy: 78, size: 1.2,
       measure: 'an inch and a half across',
       art: { shape: 'windscorpion', body: '#b5763c', accent: '#e0cfae', jaw: '#7a4a20' },
@@ -1187,7 +1187,7 @@
     },
     {
       id: 'pinacate_beetle', name: 'Pinacate Beetle',
-      habitats: ['hill', 'meadow'], times: ['evening', 'night'], rarity: 2, value: 44,
+      habitats: ['hill', 'meadow', 'desert'], times: ['evening', 'night'], rarity: 2, value: 44,
       behavior: 'crawl', speed: 24, shy: 32, size: 1.1,
       measure: 'an inch long',
       art: { shape: 'darkling', body: '#1a1a1e' },
@@ -1200,7 +1200,7 @@
     },
     {
       id: 'harvester_ant', name: 'Western Harvester Ant',
-      habitats: ['hill'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
+      habitats: ['hill', 'desert'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
       behavior: 'crawl', speed: 38, shy: 26, size: 0.7, sting: true,
       measure: 'a third of an inch',
       art: { shape: 'ant', body: '#a33a24', wing: '#c25038', accent: '#5e1c10', pattern: 'plain' },
@@ -1213,7 +1213,7 @@
     },
     {
       id: 'velvet_ant', name: 'Velvet Ant',
-      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 120,
+      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 3, value: 120,
       behavior: 'dart', speed: 56, shy: 46, size: 0.85, sting: true,
       measure: 'half an inch long',
       art: { shape: 'velvetant', body: '#e2562a', accent: '#171310' },
@@ -1226,7 +1226,7 @@
     },
     {
       id: 'robber_fly', name: 'Robber Fly',
-      habitats: ['hill', 'meadow'], times: ['day'], rarity: 2, value: 52,
+      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 2, value: 52,
       behavior: 'dart', speed: 74, shy: 62, size: 1.0,
       measure: 'an inch long',
       art: { shape: 'robberfly', body: '#7a6a52', wing: '#eceadf', accent: '#3a3226', eyes: '#6a3a2a', beard: '#e8dcc0', tailTip: '#d8cdb4' },
@@ -1239,7 +1239,7 @@
     },
     {
       id: 'blister_beetle', name: 'Black Blister Beetle',
-      habitats: ['hill', 'meadow'], times: ['day'], rarity: 3, value: 66,
+      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 3, value: 66,
       behavior: 'slow', speed: 22, shy: 36, size: 0.85,
       measure: 'half an inch long',
       art: { shape: 'beetle', body: '#171820', wing: '#23242e', accent: '#0d0e14', slim: true },
@@ -1265,7 +1265,7 @@
     },
     {
       id: 'behrs_hairstreak', name: 'Behr’s Hairstreak',
-      habitats: ['hill'], times: ['morning', 'day'], rarity: 4, value: 150,
+      habitats: ['hill', 'desert'], times: ['morning', 'day'], rarity: 4, value: 150,
       behavior: 'flutter', speed: 48, shy: 66, size: 0.8,
       measure: 'an inch across',
       art: { shape: 'butterfly', body: '#4a3a28', wing: '#e08a2c', wing2: '#c9b89a', accent: '#4a3520', pattern: 'edge' },
@@ -1280,7 +1280,7 @@
          `lookOnly` means the net refuses her, meeting her is what opens her
          Bug Book page, and her `danger` line is shown every time. */
       id: 'black_widow', name: 'Western Black Widow',
-      habitats: ['hill'], times: ['evening', 'night'], rarity: 4, value: 0,
+      habitats: ['hill', 'desert'], times: ['evening', 'night'], rarity: 4, value: 0,
       behavior: 'cling', speed: 14, shy: 30, size: 1.0,
       lookOnly: true,
       measure: 'her body is about half an inch',
@@ -1294,7 +1294,700 @@
         'The little brown one a quarter of her size is the male, and he cannot bite people at all.',
         'Washington has no brown recluse spiders. Not one. That is a story people tell each other.'
       ]
+    },
+
+    /* =================================================================
+       CLOUDTOP RIDGE - subalpine and alpine.
+       Everything up here is solving the same problem in a different way:
+       how to stay alive somewhere that is frozen most of the year.
+       ================================================================= */
+    {
+      /* Look-only for a reason no other creature in the game has: a warm
+         hand is what kills it. */
+      id: 'ice_worm', name: 'Glacier Ice Worm',
+      habitats: ['mountain'], times: ['evening', 'night'], rarity: 5, value: 0,
+      behavior: 'slow', speed: 5, shy: 18, size: 0.8,
+      lookOnly: true,
+      measure: 'an inch long and thinner than a hair',
+      danger: 'Do not pick this one up. It is not dangerous — you are. It dies at about the temperature of a cool room, and your hand is far hotter than that. Look at it on the snow and leave it there.',
+      art: { shape: 'worm', body: '#2a211c', body2: '#4a382c', rings: '#14100d' },
+      facts: [
+        'It is the only worm in the world that lives its whole life inside a glacier.',
+        'It does not dig through the ice. It squeezes between the ice grains, like sliding between packed snowballs.',
+        'Every evening they climb up to the top of the glacier to eat, and go back down before the sun reaches them. There can be two and a half thousand of them in one square metre.',
+        'They eat the pink snow — that watermelon colour on an old snowfield is a living alga, and this is what eats it.',
+        'Nobody knows where they go in winter. One of the scientists who studies them says there are more mysteries about ice worms than there are answers.'
+      ]
+    },
+    {
+      id: 'ice_crawler', name: 'Ice Crawler',
+      habitats: ['mountain'], times: ['night'], rarity: 5, value: 0,
+      behavior: 'crawl', speed: 13, shy: 40, size: 0.95,
+      lookOnly: true,
+      measure: 'about an inch',
+      danger: 'Your hand is too hot for it. A person is about 32 degrees Celsius and this animal dies above about 27. Look, and let it walk away.',
+      art: { shape: 'icecrawler', body: '#d9c9a8', seg: '#b09b74', legs: '#c7b593', eye: '#3b332a' },
+      facts: [
+        'It lives in a tiny window of temperature. It can walk about below freezing, and it dies if it gets warm.',
+        'At night it comes out onto the snow to pick up moths and flies that the wind blew there and left too cold to move.',
+        'It has no wings at all, very long feelers at the front and two long feelers at the back, so it looks the same at both ends.',
+        'It was only found by scientists in 1914, and there are still only about thirty-five kinds known in the whole world. One lives at nine thousand feet on Mount Rainier.'
+      ]
+    },
+    {
+      id: 'snow_fly', name: 'Snow Fly',
+      habitats: ['mountain', 'taiga'], times: ['morning', 'day', 'evening'], rarity: 4, value: 130,
+      behavior: 'crawl', speed: 20, shy: 44, size: 0.85,
+      measure: 'about the size of a blueberry, legs and all',
+      art: { shape: 'cranefly', body: '#8a5f3c', legs: '#6b4a2e', wingless: true, halteres: '#c2a07a' },
+      facts: [
+        'It is a crane fly that gave up flying so it could walk about on snow. It has no wings at all.',
+        'Scientists have watched them running about at twelve degrees below freezing.',
+        'If one of its legs starts to freeze, the fly drops the leg off on purpose — in about half a second — to stop the ice spreading into the rest of it. No other animal has ever been caught doing that because of cold.',
+        'They were found by a scientist out for a run in the Cascades in October.'
+      ]
+    },
+    {
+      id: 'snow_scorpionfly', name: 'Snow Scorpionfly',
+      habitats: ['mountain', 'taiga'], times: ['morning', 'day'], rarity: 4, value: 120,
+      behavior: 'hop', speed: 26, shy: 48, size: 0.7,
+      measure: 'a quarter of an inch',
+      art: { shape: 'boreus', body: '#3a2a22', sheen: '#7a4a2c', legs: '#241c17', bristle: '#1a1512' },
+      facts: [
+        'It has no sting and there is no scorpion in it anywhere. The name comes from the tail shape of its warm-weather cousins.',
+        'The two stiff spines on the male’s back are not wings and cannot fly. They are hooks for holding on to a female.',
+        'It eats moss, as a grub and as a grown-up, and hops across open snow to get from one moss patch to the next.',
+        'They have been counted at the Hanford Reach, which is just down the road from Richland.'
+      ]
+    },
+    {
+      id: 'vidlers_alpine', name: 'Vidler’s Alpine',
+      habitats: ['mountain'], times: ['day'], rarity: 3, value: 95,
+      behavior: 'flutter', speed: 34, shy: 58, size: 1.05,
+      measure: 'nearly 2 inches across',
+      art: { shape: 'butterfly', body: '#3a2c24', wing: '#2c211c', wing2: '#33261f', accent: '#d2762e', pattern: 'eyeband' },
+      facts: [
+        'It lives nowhere else in the world except the high mountains from British Columbia down to the Olympics and the north Cascades.',
+        'It flies for a few weeks in July and August — the only weeks the meadow is out from under the snow.',
+        'Park rangers count them every summer to see how the mountains are changing.'
+      ]
+    },
+    {
+      id: 'clodius_parnassian', name: 'Clodius Parnassian',
+      habitats: ['mountain', 'forest'], times: ['day'], rarity: 3, value: 110,
+      behavior: 'drift', speed: 26, shy: 50, size: 1.2,
+      measure: 'about 2½ inches across',
+      art: { shape: 'butterfly', body: '#8e8a82', wing: '#f4f2ec', wing2: '#eceae2', accent: '#c8302c', pattern: 'redspots' },
+      facts: [
+        'It looks like a paper butterfly with two drops of blood on it. The wings are so thin you can nearly see through them.',
+        'Its caterpillar eats only bleeding-heart plants, so you only find the butterfly where bleeding hearts grow.',
+        'It belongs to the apollo butterflies, which live in mountains right around the top half of the world.'
+      ]
+    },
+    {
+      id: 'snow_flea', name: 'Snow Flea',
+      habitats: ['mountain', 'taiga', 'tundra'], times: ['morning', 'day'], rarity: 2, value: 26,
+      behavior: 'hop', speed: 30, shy: 34, size: 0.55,
+      measure: 'smaller than this full stop',
+      art: { shape: 'springtail', body: '#232b4a', body2: '#3a4570', legs: '#1a2036', furcula: true },
+      facts: [
+        'It is not a flea and it does not bite. It is a springtail, and it jumps by snapping a folded tail-spring against the ground.',
+        'It makes its own antifreeze. The protein sticks to baby ice crystals and stops them growing, and people are studying it for keeping transplant organs cold — and for ice cream.',
+        'They turn up in hundreds at once, like pepper scattered in your footprints.',
+        'It is not quite an insect. Springtails are their own branch of six-legged animals.'
+      ]
+    },
+    {
+      id: 'thatching_ant', name: 'Western Thatching Ant',
+      habitats: ['mountain', 'taiga', 'desert', 'glade'], times: ['morning', 'day', 'evening'], rarity: 1, value: 16,
+      behavior: 'crawl', speed: 36, shy: 26, size: 0.8,
+      sting: true,
+      measure: 'up to a third of an inch',
+      art: { shape: 'ant', body: '#241f1d', head: '#a8482a', legs: '#2c2523', bicolour: true },
+      facts: [
+        'It builds a haystack out of grass stems and pine needles, up to a foot and a half high, with the nest going four feet down underneath it.',
+        'One nest can hold forty thousand ants. A supercolony found in Oregon had two hundred and ten connected nests and fifty-six million ants.',
+        'It has no sting. It bites, then curls its tail forward and sprays acid into the bite — nearly three-quarters of the spray is formic acid.',
+        'If a plant shades the mound, the ants spray it until it dies.',
+        'Never sit or kneel on the mound. The acid does not really hurt your skin, but it stings badly in your eyes.'
+      ]
+    },
+    {
+      id: 'water_bear', name: 'Water Bear',
+      habitats: ['mountain', 'taiga', 'tundra', 'rainforest'], times: ['any'], rarity: 5, value: 300,
+      behavior: 'slow', speed: 6, shy: 20, size: 0.7,
+      measure: 'under a millimetre — you need a lens',
+      art: { shape: 'tardigrade', body: '#d8c48f', body2: '#b9cc9a', claw: '#8f7a4e', eye: '#2a241c' },
+      facts: [
+        'You find it by squeezing a cushion of wet moss and looking at the drop through a lens. It is far too small to see on its own.',
+        'When its moss dries out it pulls its legs in, curls into a barrel, and switches itself almost off until the water comes back.',
+        'Dried water bears have been put outside a spacecraft for ten days in the vacuum of space, and came back to Earth alive and had babies.',
+        'They are not indestructible, though. Even a dried one is killed by an hour in an oven at eighty degrees. They survive extremes; they do not live in them.',
+        'It has eight stubby legs and each one ends in a little handful of claws.'
+      ]
+    },
+
+    /* =================================================================
+       THE SPRUCE TAIGA - boreal forest, bog and burned ground.
+       Half of these live inside dead wood, and the other half eat the
+       ones that do.
+       ================================================================= */
+    {
+      id: 'pine_beetle', name: 'Mountain Pine Beetle',
+      habitats: ['taiga', 'mountain'], times: ['day', 'evening'], rarity: 3, value: 60,
+      behavior: 'crawl', speed: 22, shy: 36, size: 0.55,
+      measure: 'the size of a grain of rice',
+      art: { shape: 'beetle', body: '#2e1d14', shell: '#3a2519', shell2: '#241610', legs: '#1a100b', slim: true, club: true },
+      facts: [
+        'The female chews a straight tunnel up the inside of the bark, usually about ten inches long, and lays her eggs along both sides of it.',
+        'When a pine is attacked it fights back by pushing out sticky resin. That makes a blob on the bark called a pitch tube, and a big pale blob usually means the tree won.',
+        'It carries a fungus on its body. The fungus stains the wood blue and blocks the tree’s plumbing, so it is really beetle and fungus together that kill a tree.',
+        'Woodpeckers hunt them by hammering the bark off.'
+      ]
+    },
+    {
+      id: 'whitespotted_sawyer', name: 'Whitespotted Sawyer',
+      habitats: ['taiga'], times: ['day', 'evening'], rarity: 2, value: 55,
+      behavior: 'crawl', speed: 20, shy: 40, size: 1.05,
+      measure: 'up to an inch, with much longer feelers',
+      art: { shape: 'longhorn', body: '#191616', shell: '#221e1e', fleck: '#e6e2da', legs: '#12100f', antenna: '#1a1717', scutellum: true, spine: true, longAntennae: 2.0 },
+      facts: [
+        'The male’s feelers are up to twice as long as the rest of him. The female’s are only a little longer than her body — that is how you tell them apart.',
+        'It moves into a forest after a fire and lays its eggs in trees that are already dead or dying. It does not attack healthy trees.',
+        'The female makes a loud scraping noise gnawing her egg pits into the bark — loud enough that things that want to eat her can find her by it.',
+        'The white dot right where the wing covers meet is how you know it from the other long-horned beetles.'
+      ]
+    },
+    {
+      id: 'white_horntail', name: 'White-horned Horntail',
+      habitats: ['taiga'], times: ['day'], rarity: 4, value: 140,
+      behavior: 'hover', speed: 30, shy: 46, size: 1.15,
+      measure: 'an inch or more, plus her needle',
+      art: { shape: 'horntail', body: '#161414', band: '#f0c22a', wing: 'rgba(214,180,120,0.55)', antenna: '#f2efe6', legs: '#1f1c1a', ovipositor: '#4a3f33' },
+      facts: [
+        'The long needle trailing behind her is not a sting. It is a drill for putting eggs into wood, and she cannot sting with it at all.',
+        'When she drills, she squirts a fungus in along with the egg. The fungus softens the wood, and the grub eats the softened wood.',
+        'The grub can take five years to grow up in cold country, which is why a horntail sometimes chews its way out of the wood of a brand new house.',
+        'It looks terrifying and it is completely harmless. Those white feelers are where it gets its name.'
+      ]
+    },
+    {
+      id: 'seed_bug', name: 'Western Conifer Seed Bug',
+      habitats: ['taiga', 'mountain'], times: ['day', 'evening'], rarity: 2, value: 40,
+      behavior: 'crawl', speed: 19, shy: 34, size: 0.95,
+      measure: 'about three quarters of an inch',
+      art: { shape: 'leaffoot', body: '#6e4a2f', body2: '#3a2a1c', zig: '#efe6d2', legs: '#3f2f22', flag: '#4a3625', flagBar: '#d8c9ac' },
+      facts: [
+        'Its back legs each carry a flat leaf-shaped flag. Nobody is certain what they are for.',
+        'It drinks the insides of pine seeds straight through the closed cone, using a beak like a drinking straw.',
+        'It does not bite, it does not sting and it carries no disease — but if you frighten it, it lets off a strong smell that hangs about.',
+        'People often mistake it for something dangerous. It is not.'
+      ]
+    },
+    {
+      id: 'pine_white', name: 'Pine White',
+      habitats: ['taiga', 'mountain'], times: ['day'], rarity: 3, value: 70,
+      behavior: 'drift', speed: 22, shy: 44, size: 1.1,
+      measure: 'about 2 inches across',
+      art: { shape: 'butterfly', body: '#35322c', wing: '#fbfbf7', wing2: '#f4f4ee', accent: '#1d1b18', pattern: 'blackbar' },
+      facts: [
+        'It is a butterfly that lives up in the conifers, and its caterpillars eat pine and fir needles. Almost no other butterfly does that.',
+        'The female lays her eggs stuck in a neat row along a single needle.',
+        'It drifts down out of the treetops so slowly that from underneath a whole hillside of them looks like it is snowing in August.'
+      ]
+    },
+    {
+      id: 'jutta_arctic', name: 'Jutta Arctic',
+      habitats: ['taiga', 'tundra'], times: ['day'], rarity: 4, value: 120,
+      behavior: 'flutter', speed: 36, shy: 62, size: 1.15,
+      measure: 'about 2 inches across',
+      art: { shape: 'butterfly', body: '#5a4b3c', wing: '#6b5a48', wing2: '#7a6b58', accent: '#d8a63c', pattern: 'eyeband' },
+      facts: [
+        'It takes two years to grow up. A tiny caterpillar sleeps through the first winter and a big one sleeps through the second.',
+        'The males sit on logs and tree trunks rather than on flowers, and wait for a female to go past.',
+        'Sitting head-down on a spruce trunk it almost vanishes — the underneath of its wings is mottled like bark.',
+        'It lives all the way round the top of the world, in spruce bogs and wet tundra, and its caterpillars eat sedges and cotton grass.'
+      ]
+    },
+    {
+      id: 'four_spot_skimmer', name: 'Four-spotted Skimmer',
+      habitats: ['taiga', 'tundra', 'pond'], times: ['morning', 'day'], rarity: 2, value: 50,
+      behavior: 'dart', speed: 78, shy: 70, size: 1.3,
+      measure: 'about 1¾ inches long',
+      art: { shape: 'dragonfly', body: '#8a6a3c', body2: '#3a2c1c', wing: 'rgba(230,240,246,0.5)', accent: '#2a2018', wingSpots: true, amberBase: '#c9a05c', eye: '#4a3a22' },
+      facts: [
+        'It is the state insect of Alaska. Schoolchildren picked it.',
+        'Each of its four wings has a dark spot right in the middle of the front edge. That is where the name comes from and it is the way to know it.',
+        'It spends two years underwater as a larva before it ever flies.',
+        'It hunts by sitting on a twig, tipping its head back to watch the sky, and shooting out at whatever goes over.'
+      ]
+    },
+    {
+      id: 'hudsonian_whiteface', name: 'Hudsonian Whiteface',
+      habitats: ['taiga', 'pond'], times: ['morning', 'day'], rarity: 3, value: 66,
+      behavior: 'dart', speed: 74, shy: 68, size: 1.05,
+      measure: 'a little over an inch long',
+      art: { shape: 'dragonfly', body: '#1e1c1a', body2: '#141312', wing: 'rgba(232,240,246,0.46)', accent: '#c8331f', dorsalSpots: '#c8331f', whiteface: '#f0ece0', eye: '#2c2a26' },
+      facts: [
+        'Its whole family is named for that chalk-white face. You can see it from right across a bog pond.',
+        'The males have red spots down their back and the females have yellow ones, so you can tell them apart from a distance.',
+        'In the warm south of where it lives it retreats up into mountain bogs, where the water stays cold.'
+      ]
+    },
+
+    /* =================================================================
+       THE LICHEN TUNDRA - past the last tree.
+       Summer here is a few weeks long, and everything is built around
+       that.
+       ================================================================= */
+    {
+      id: 'arctic_woolly_bear', name: 'Arctic Woolly Bear',
+      habitats: ['tundra'], times: ['day'], rarity: 5, value: 260,
+      behavior: 'slow', speed: 9, shy: 28, size: 1.1,
+      measure: 'about an inch and a half',
+      danger: 'Look at hairy caterpillars, do not stroke them. Some of them have hairs that make skin itch, and it is not worth finding out which.',
+      art: { shape: 'caterpillar', body: '#8a5f2c', body2: '#b5813f', fur: '#d9ab6a', legs: '#5a3d1e', woolly: true, tuft: '#7a4f24' },
+      facts: [
+        'It spends up to seven years as a caterpillar, because each summer up here is only a few weeks long. The moth it turns into lives a few weeks and that is all.',
+        'It spends about six tenths of its life sunbathing. It turns to face the sun, and that can make it twenty degrees warmer than the ground it is sitting on.',
+        'It really only eats in June, on the new buds of the Arctic willow, because that is when the leaves have the most goodness in them.',
+        'More than half of them are killed by a fly that lays its eggs inside them.'
+      ]
+    },
+    {
+      id: 'arctic_wolf_spider', name: 'Arctic Wolf Spider',
+      habitats: ['tundra'], times: ['morning', 'day'], rarity: 2, value: 44,
+      behavior: 'dart', speed: 52, shy: 56, size: 0.95,
+      measure: 'her body is about a third of an inch',
+      danger: 'Use the net, not your fingers. A wolf spider can nip if you squeeze it. It is not dangerous, but nothing likes being squeezed.',
+      art: { shape: 'wolfspider', body: '#6d5c48', body2: '#57482f', stripe: '#b8a684', legs: '#4c3f2c', eye: '#14110d', eggsac: '#e6dfcb' },
+      facts: [
+        'She carries her eggs in a silk ball stuck to her back end everywhere she goes, and when they hatch the babies ride around on her back.',
+        'She is one of the top hunters of the tundra, and what she mostly hunts is springtails — the same little jumping specks that live on the snow.',
+        'Wolf spiders build no web at all. They run their dinner down on foot.',
+        'Arctic springs come earlier than they used to, and these spiders have started laying a second batch of eggs in one summer, which nobody had ever seen them do. It took twenty years of counting in Greenland to notice.'
+      ]
+    },
+    {
+      id: 'arctic_mosquito', name: 'Arctic Mosquito',
+      habitats: ['tundra'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
+      behavior: 'hover', speed: 40, shy: 30, size: 0.75,
+      measure: 'a quarter of an inch',
+      art: { shape: 'mosquito', body: '#2e2a26', body2: '#4a4239', wing: 'rgba(226,232,238,0.42)', legs: '#241f1c', beak: '#1a1613' },
+      facts: [
+        'It is probably the most numerous mosquito in the whole Arctic.',
+        'Its babies grow in the shallow ponds left by melting snow, and how fast they grow depends on exactly when the pond thaws.',
+        'Underwater its worst enemy is the diving beetle. In warm years the babies grow up faster and get away.',
+        'Only the females bite, and up here they mostly bite caribou. Nothing on the tundra would work without them — half the birds are there to eat them.'
+      ]
+    },
+    {
+      id: 'polar_bumblebee', name: 'Polar Bumble Bee',
+      habitats: ['tundra'], times: ['morning', 'day'], rarity: 3, value: 90,
+      behavior: 'hover', speed: 40, shy: 44, size: 1.2,
+      sting: true,
+      measure: 'about three quarters of an inch, and very furry',
+      art: { shape: 'bee', body: '#1c1a18', stripe: '#e08a1e', wing: 'rgba(240,246,250,0.55)', legs: '#141210', shaggy: true },
+      facts: [
+        'It warms itself up by shivering its flight muscles, and can get its chest thirty degrees hotter than the air around it.',
+        'It uses flowers as sun-chairs. Arctic poppies turn to follow the sun and cup the warmth, and the bee sits inside to heat up.',
+        'It is much hairier than the bumble bees at home — the fur is thick enough to blur its outline.',
+        'There is a second bumble bee up there, the cuckoo bumble bee, which has no workers of its own and takes over this one’s nest instead.'
+      ]
+    },
+    {
+      id: 'arctic_fritillary', name: 'Arctic Fritillary',
+      habitats: ['tundra', 'taiga', 'mountain'], times: ['day'], rarity: 2, value: 48,
+      behavior: 'flutter', speed: 42, shy: 56, size: 0.9,
+      measure: 'about 1¼ inches across',
+      art: { shape: 'butterfly', body: '#6b4a2c', wing: '#d6802f', wing2: '#e09447', accent: '#2a1f16', pattern: 'checker' },
+      facts: [
+        'Where it is really cold it takes two years to grow up — one winter asleep as a newly hatched caterpillar, and the next asleep as a big one.',
+        'Its caterpillars eat violets and dwarf willows, which on the tundra grow flat along the ground instead of standing up.',
+        'The same butterfly flies in Alaska, right across Canada, down the Rockies, and around the top of Europe and Asia.'
+      ]
+    },
+    {
+      id: 'warble_fly', name: 'Reindeer Warble Fly',
+      habitats: ['tundra'], times: ['day'], rarity: 4, value: 130,
+      behavior: 'dart', speed: 72, shy: 64, size: 1.0,
+      measure: 'about half an inch',
+      art: { shape: 'beefly', body: '#2a2622', fur: '#efe4c8', tip: '#e0921e', wing: 'rgba(226,230,236,0.5)', legs: '#1e1b18', eye: '#3a3028' },
+      facts: [
+        'It is a fly dressed up as a bumble bee, and it cannot sting or bite you at all. It has no working mouth.',
+        'Caribou are terrified of it. A whole herd will stampede away from the sound of one.',
+        'Its grubs spend the winter under a caribou’s skin, breathing through a little hole, and drop out onto the tundra in spring.',
+        'Look for two wings rather than four, and big fly eyes. That is how you know it is not a bee.'
+      ]
+    },
+    {
+      id: 'arctic_springtail', name: 'Arctic Springtail',
+      habitats: ['tundra'], times: ['any'], rarity: 4, value: 110,
+      behavior: 'crawl', speed: 12, shy: 26, size: 0.5,
+      measure: 'about a millimetre',
+      art: { shape: 'springtail', body: '#efe6d4', body2: '#d8cbb0', legs: '#b5a88c', furcula: false },
+      facts: [
+        'When the ground freezes it does not make antifreeze and it does not let itself freeze. It dries itself out on purpose, so there is nothing left inside to turn to ice.',
+        'It gets so dry that what liquid is left inside is many times saltier than the sea, and it survives that too.',
+        'Scientists later found it makes an antifreeze protein as well, as a backup, which nobody expected.',
+        'Unlike the snow flea it has no tail-spring, so it cannot jump. It walks.'
+      ]
+    },
+
+    /* =================================================================
+       THE SAGEBRUSH DESERT - the dry side of the mountains.
+       A cold desert: hot days, cold nights, and about eight inches of
+       rain a year.
+       ================================================================= */
+    {
+      id: 'hera_buckmoth', name: 'Hera Buckmoth',
+      habitats: ['desert'], times: ['day'], rarity: 3, value: 100,
+      behavior: 'flutter', speed: 52, shy: 72, size: 1.35,
+      measure: 'up to 3½ inches across',
+      danger: 'The moth is harmless — it has no mouth and no sting. Its caterpillar is the one to leave alone: the spines are hollow, they are full of venom, and they raise burning welts.',
+      art: { shape: 'moth', body: '#e0b428', wing: '#fbfbf7', wing2: '#f2f2ec', accent: '#1a1815', pattern: 'buckmoth', bands: '#1a1815' },
+      facts: [
+        'It is a moth that flies in broad daylight — big white wings crossing the sagebrush in August sunshine.',
+        'Its caterpillars eat nothing but sagebrush.',
+        'The grown moth has no working mouth and never eats at all. It lives on what it stored up as a caterpillar, and then it is done.'
+      ]
+    },
+    {
+      id: 'mormon_cricket', name: 'Mormon Cricket',
+      habitats: ['desert'], times: ['morning', 'day'], rarity: 3, value: 80,
+      behavior: 'crawl', speed: 30, shy: 52, size: 1.45,
+      measure: 'up to 2 inches, plus the female’s spike',
+      art: { shape: 'mormoncricket', body: '#3a2a3c', body2: '#241a26', shield: '#1c1520', legs: '#2c2028', antenna: '#241a26', ovi: '#5a4432' },
+      facts: [
+        'It is not a cricket. It is a shieldbacked katydid, and it cannot fly — its wings are far too short.',
+        'They march. A band of them walks half a mile to a mile a day, and twenty-five to fifty miles in one summer.',
+        'Scientists worked out that the bands keep moving partly to look for protein and salt, and partly so the ones behind do not eat them.',
+        'The long sword on the female is not a stinger. It is the tool she pushes her eggs into the soil with.',
+        'When there are just a few about they are green or purple. When there are millions they turn black or brown or red.'
+      ]
+    },
+    {
+      id: 'mormon_metalmark', name: 'Mormon Metalmark',
+      habitats: ['desert'], times: ['day'], rarity: 4, value: 150,
+      behavior: 'dart', speed: 48, shy: 64, size: 0.75,
+      measure: 'about an inch across',
+      art: { shape: 'butterfly', body: '#3a2a22', wing: '#7a4430', wing2: '#8a5038', accent: '#f4f0e6', pattern: 'checker' },
+      facts: [
+        'It flies late — August to October in eastern Washington — timed for when the snow buckwheat and the rabbitbrush are in flower.',
+        'Its caterpillars eat only wild buckwheat. It lays lavender-coloured eggs on the buckwheat stems, and they wait there all winter.',
+        'The males sit in little hollows on a hillside and watch for females going past.',
+        'It sits with its wings flat open, chequered white and black like a tiny chessboard.'
+      ]
+    },
+    {
+      id: 'sagebrush_checkerspot', name: 'Sagebrush Checkerspot',
+      habitats: ['desert'], times: ['day'], rarity: 2, value: 46,
+      behavior: 'flutter', speed: 38, shy: 52, size: 1.0,
+      measure: 'about 1½ inches across',
+      art: { shape: 'butterfly', body: '#3a2e22', wing: '#e08a2c', wing2: '#f0a648', accent: '#2c221a', pattern: 'checker' },
+      facts: [
+        'In eastern Washington it flies in spring, and the males come out about a week before the females.',
+        'The males are orange and the females are black, so the two look like different butterflies altogether.',
+        'Its caterpillars here eat green rabbitbrush and the linear-leaved daisy.',
+        'The pattern of pale and dark squares is where checkerspots get their name. It looks like a little stained-glass window.'
+      ]
+    },
+    {
+      id: 'pallid_grasshopper', name: 'Pallid-winged Grasshopper',
+      habitats: ['desert'], times: ['day'], rarity: 2, value: 34,
+      behavior: 'hop', speed: 44, shy: 50, size: 1.1,
+      measure: 'about 1¼ inches',
+      art: { shape: 'grasshopper', body: '#b5a184', body2: '#8a785e', legs: '#9c8a6e', accent: '#4a4034', mottle: true, crossBars: '#5a4c3a' },
+      facts: [
+        'When the males fly they crackle, snapping their back wings. It is called crepitation and it seems to be how courting starts.',
+        'Its home is the bare ground between the shrubs, and its mottled tan is camouflage for exactly that.',
+        'Open its back wings and there is a surprise underneath: a pale disc with one bold black band across it.',
+        'It is the most widely spread band-winged grasshopper in the New World, from south-west Canada all the way to Argentina.',
+        'If you grab one it may spit a little brown juice at you. It is harmless.'
+      ]
+    },
+    {
+      id: 'ground_mantis', name: 'Agile Ground Mantis',
+      habitats: ['desert'], times: ['day'], rarity: 5, value: 240,
+      behavior: 'dart', speed: 50, shy: 66, size: 0.85,
+      measure: 'about an inch and a bit',
+      art: { shape: 'mantis', body: '#6e6152', body2: '#574c40', legs: '#4c4238', eye: '#2a241e', wing: '#7a6d5c' },
+      facts: [
+        'It does not sit and wait like other mantises. It chases — running across bare ground after its dinner in the sun.',
+        'It cannot fly at all, male or female.',
+        'It is tiny for a mantis, about an inch, and the exact colour of dry dirt.',
+        'If you corner one it rears up and spreads its front legs at you. That is entirely bluff.'
+      ]
+    },
+    {
+      id: 'wolf_spider', name: 'Wolf Spider',
+      habitats: ['desert', 'glade'], times: ['evening', 'night'], rarity: 2, value: 42,
+      behavior: 'crawl', speed: 40, shy: 50, size: 1.15,
+      measure: 'her body up to nearly an inch',
+      art: { shape: 'wolfspider', body: '#7a6a52', body2: '#5a4c38', stripe: '#c2b294', legs: '#57492f', eye: '#12100c', heart: '#3a3022' },
+      facts: [
+        'She carries her egg sac stuck to her back end, and when the babies hatch dozens of them ride about on her back.',
+        'Wolf spiders build no web. They hunt on foot.',
+        'Shine a torch along the ground at night and their eyes shine back at you like little green sparks.',
+        'Big and fast and hairy is not the same as dangerous. Utah State University’s spider people put it plainly: no known health hazard to humans.'
+      ]
+    },
+    {
+      id: 'rain_beetle', name: 'Rain Beetle',
+      habitats: ['desert', 'orchard'], times: ['morning', 'night'], rarity: 5, value: 280,
+      behavior: 'drift', speed: 24, shy: 46, size: 1.2,
+      rainLover: true,
+      measure: 'up to an inch, and very fat',
+      art: { shape: 'rainbeetle', body: '#5a2e1c', shell: '#6e3a22', shell2: '#44210f', fur: '#c2a077', legs: '#3a1c0f', fan: '#3a1c0f' },
+      facts: [
+        'The males only fly after the first autumn rains, early in the morning. For some of them that may be a single day in the whole year.',
+        'The females never fly at all. They stay in their burrows and call the males in by smell.',
+        'The grubs live underground eating roots for nine to thirteen years before they turn into beetles.',
+        'And then the grown-up beetle cannot eat anything. Its mouth does not open. It flies, it finds a mate, and that is its whole life above ground.'
+      ]
+    },
+
+    /* =================================================================
+       THE MOSSY RAINFOREST - the wet side.
+       Not a jungle: few kinds, enormous individuals, deep shade, and a
+       floor made of moss.
+       ================================================================= */
+    {
+      id: 'banana_slug', name: 'Pacific Banana Slug',
+      habitats: ['rainforest'], times: ['any'], rarity: 1, value: 20,
+      behavior: 'slow', speed: 7, shy: 22, size: 1.5,
+      rainLover: true,
+      measure: 'up to 10 inches long',
+      danger: 'Hands, not mouth — and then wash your hands. Never put a slug or a snail near your face. Licking a banana slug really does numb your tongue, and that is exactly why you do not.',
+      art: { shape: 'slug', body: '#e0c23c', body2: '#c2a628', keel: '#a88c1e', spot: '#3a3222', tent: '#c2a628' },
+      facts: [
+        'It has about twenty-seven thousand teeth, on a ribbon of a tongue called a radula.',
+        'That little hole on its right side is its nostril — the opening to its one lung.',
+        'A biologist once timed one at about six and a half feet in two hours.',
+        'It is the forest’s recycler. It eats fallen leaves and mushrooms and puts the goodness back into the soil.',
+        'They are not always yellow. Some are green, brown, tan, white or olive, and most have black blotches.'
+      ]
+    },
+    {
+      id: 'yellow_millipede', name: 'Yellow-spotted Millipede',
+      habitats: ['rainforest'], times: ['morning', 'evening', 'night'], rarity: 1, value: 24,
+      behavior: 'crawl', speed: 16, shy: 26, size: 1.25,
+      measure: 'about 2 inches',
+      danger: 'You may hold it. Then wash your hands and keep them away from your eyes and mouth. Millipedes have no fangs and cannot bite at all.',
+      art: { shape: 'millipede', body: '#232a1e', body2: '#3a4a2e', legs: '#6e7a52', sideSpots: '#e8c82c' },
+      facts: [
+        'If something bothers it, it curls into a tight coil and leaks cyanide out of little pores along its sides.',
+        'To us that smells like almond essence. To a beetle or a bird it is a warning.',
+        'The yellow spots are the label. They mark exactly where the pores are.',
+        'One beetle eats them anyway, and it is in this forest too — the snail-eating ground beetle’s cousin specialises in hunting them.',
+        'It is one of the animals that turns the forest’s fallen leaves back into soil.'
+      ]
+    },
+    {
+      id: 'snail_beetle', name: 'Snail-eating Ground Beetle',
+      habitats: ['rainforest'], times: ['night'], rarity: 3, value: 75,
+      behavior: 'crawl', speed: 34, shy: 44, size: 1.1,
+      measure: 'about three quarters of an inch',
+      art: { shape: 'scaphinotus', body: '#241426', shell: '#3a1f3e', shell2: '#1a0e1c', neck: '#2c1a2e', legs: '#1a0e1c', sheen: '#6a3a6e' },
+      facts: [
+        'It has a long thin head and a long thin neck so that it can reach down inside a snail’s shell.',
+        'It hunts snails, slugs, worms and spiders. One beetle can clear a great many slugs.',
+        'It cannot fly. Its wings are too small, so it spends its whole life walking the forest floor.',
+        'Depending on where you find it, it is glossy black, deep purple or deep red.'
+      ]
+    },
+    {
+      id: 'sideband_snail', name: 'Pacific Sideband Snail',
+      habitats: ['rainforest'], times: ['evening', 'night'], rarity: 3, value: 70,
+      behavior: 'slow', speed: 7, shy: 24, size: 1.2,
+      rainLover: true,
+      measure: 'the shell is up to 1½ inches across',
+      danger: 'Same rule as the slug: hands, not mouth, and wash your hands afterwards.',
+      art: { shape: 'snail', shell: '#8a5a2e', shell2: '#e0b45c', band: '#3a2010', band2: '#a83428', body: '#7a5a6e', tent: '#6a4c5e', bandedShell: true },
+      facts: [
+        'It is the biggest land snail that belongs in Washington.',
+        'Its shell is banded like a humbug — chestnut, yellow, dark brown and red, going round and round.',
+        'The big black and orange slugs people find in their gardens are not from here. This snail is.',
+        'Its worst enemy is the snail-eating ground beetle, which is long and thin for exactly that reason.'
+      ]
+    },
+    {
+      id: 'western_horntail', name: 'Western Horntail',
+      habitats: ['rainforest'], times: ['day'], rarity: 3, value: 85,
+      behavior: 'drift', speed: 26, shy: 40, size: 1.15,
+      measure: 'an inch or more',
+      art: { shape: 'horntail', body: '#161414', band: '#e8c62e', wing: 'rgba(224,196,130,0.5)', antenna: '#e8c62e', legs: '#c2a028', ovipositor: '#4a3f33' },
+      facts: [
+        'It cannot sting. The horn at the tip and the long needle behind it are for laying eggs in wood, and it does not bite people either.',
+        'When she lays an egg she injects a fungus with it, and the grub eats the fungus as it tunnels along.',
+        'The grub can take five years to grow, chewing a tunnel a foot long, and then it chews out through three quarters of an inch of solid wood.',
+        'It is a straight tube from end to end. No wasp waist at all — that is how you know a horntail.'
+      ]
+    },
+    {
+      id: 'giant_ichneumon', name: 'Norton’s Giant Ichneumon',
+      habitats: ['rainforest'], times: ['day'], rarity: 4, value: 160,
+      behavior: 'cling', speed: 16, shy: 38, size: 1.3,
+      measure: 'an inch and a half, with a three-inch thread behind her',
+      art: { shape: 'ichneumon', body: '#2a2220', band: '#e8b82c', rust: '#8a4428', wing: 'rgba(238,244,248,0.42)', legs: '#d8a82c', thread: '#3a2e26' },
+      facts: [
+        'She finds a horntail grub hidden inside a tree by smelling the fungus it is eating, and by feeling the chewing through her feelers.',
+        'Then she drills through solid wood with a thread thinner than a guitar string, to reach it.',
+        'She cannot sting you. The three-inch needle is a drill, not a weapon, and she drinks nectar and water.',
+        'Look for her clinging head-down on a mossy trunk with the threads arched over her back. That pose is the whole animal.'
+      ]
+    },
+    {
+      id: 'tiger_moth', name: 'Silver-spotted Tiger Moth',
+      habitats: ['rainforest', 'glade'], times: ['night'], rarity: 2, value: 52,
+      behavior: 'flutter', speed: 34, shy: 42, size: 1.1,
+      measure: 'about 2 inches across',
+      danger: 'The moth is harmless. Its caterpillar has tiny hairs that can raise a rash or welts, so look at that one and do not touch it.',
+      art: { shape: 'moth', body: '#6e5a42', wing: '#8a6e4e', wing2: '#7a6044', accent: '#e8e4d8', pattern: 'silverspots' },
+      facts: [
+        'Its caterpillars live together in loose silk webbing on fir branches, and spend the whole winter in it before coming out to feed again in spring.',
+        'The grown moth is named for the little silver spots scattered across its brown wings.',
+        'Douglas-fir is its main tree, but it will use true fir, spruce and pine as well.'
+      ]
+    },
+    {
+      id: 'folding_door_spider', name: 'Pacific Folding-door Spider',
+      habitats: ['rainforest'], times: ['night'], rarity: 4, value: 155,
+      behavior: 'cling', speed: 20, shy: 46, size: 1.05,
+      measure: 'her body is about half an inch',
+      danger: 'Look, do not handle. It is not dangerous to people, but it is a big spider with real fangs and it does not want to be picked up.',
+      art: { shape: 'spider', body: '#2a1f22', body2: '#3e2c33', legs: '#1e1518', eye: '#0e0a0c', stocky: true },
+      facts: [
+        'It lives at the bottom of a silk-lined shaft six to ten inches deep, and closes the top by pulling the two sides of the silk rim together into a pair of doors.',
+        'It waits behind the doors, then leaps out with astonishing speed, grabs whatever walked past, and drops back down.',
+        'People ask whether Washington has tarantulas. This is the answer: not really, but we have these, and they are just as interesting.'
+      ]
+    },
+
+    /* =================================================================
+       THE GOLDEN GLADE - a bright hole in a dark ceiling.
+       Everything here needs sun inside a forest, or lives in the
+       fallen log.
+       ================================================================= */
+    {
+      id: 'lorquins_admiral', name: 'Lorquin’s Admiral',
+      habitats: ['glade', 'forest'], times: ['day'], rarity: 2, value: 56,
+      behavior: 'flutter', speed: 40, shy: 56, size: 1.15,
+      measure: 'about 2¼ inches across',
+      art: { shape: 'butterfly', body: '#2a231e', wing: '#2e2620', wing2: '#33291f', accent: '#f4f2ea', pattern: 'whiteband', tip: '#c86a28' },
+      facts: [
+        'The males spend the whole day perched at the bottom of a clearing, watching for a female to go past.',
+        'Its caterpillars spend the winter half grown, rolled up inside a leaf they have made into a shelter.',
+        'It does not only drink from flowers. It feeds at bird droppings too, which is true and which eight-year-olds find excellent.'
+      ]
+    },
+    {
+      id: 'woodland_skipper', name: 'Woodland Skipper',
+      habitats: ['glade', 'meadow', 'garden'], times: ['day'], rarity: 1, value: 18,
+      behavior: 'dart', speed: 62, shy: 48, size: 0.7,
+      measure: 'about an inch across',
+      art: { shape: 'skipper', body: '#8a6a34', wing: '#e08a24', wing2: '#c27418', accent: '#4a3418', dash: '#241a0e' },
+      facts: [
+        'It is the late-summer butterfly. It flies from the end of July into October, when nearly everything else has finished.',
+        'Its life is extraordinary: the tiny new caterpillar sleeps all winter, feeds in spring, then sleeps all summer as a big one before turning into a butterfly in the autumn.',
+        'Its caterpillars eat grass. Plain ordinary grass.',
+        'It sits like a little fighter plane, front wings up and back wings flat.'
+      ]
+    },
+    {
+      id: 'wood_nymph', name: 'Common Wood-Nymph',
+      habitats: ['glade'], times: ['day'], rarity: 2, value: 50,
+      behavior: 'drift', speed: 30, shy: 54, size: 1.2,
+      measure: 'up to 3 inches across',
+      art: { shape: 'butterfly', body: '#4a3c2e', wing: '#6a5442', wing2: '#7a6450', accent: '#e8c040', pattern: 'eyeband' },
+      facts: [
+        'Those two big eyes are on its wings, not its head. A bird pecks the wing and the butterfly gets away.',
+        'It does not care much for flowers. It feeds on rotting fruit.',
+        'Its caterpillars eat grasses, so it needs big sunny grassy openings — which is exactly what a glade is.',
+        'It flies in a dipping, bobbing way through the long grass, which is how you know it before you see the eyes.'
+      ]
+    },
+    {
+      id: 'police_car_moth', name: 'Police Car Moth',
+      habitats: ['glade'], times: ['day'], rarity: 3, value: 72,
+      behavior: 'flutter', speed: 24, shy: 34, size: 1.05,
+      measure: 'about 1¾ inches across',
+      art: { shape: 'moth', body: '#1a1a24', wing: '#1c1c22', wing2: '#222229', accent: '#d8e0a8', pattern: 'panels', dots: '#f0f0e8', leg: '#e0821e' },
+      facts: [
+        'It is a moth that flies in broad daylight, and it is black and white, which is how it got its name.',
+        'Its caterpillars eat only mountain bluebells.',
+        'It flies slowly and feeds at flowers, so it is the easy one to net in the glade.',
+        'Its front legs are bright orange, which is a lovely detail nobody expects.'
+      ]
+    },
+    {
+      id: 'alder_borer', name: 'Banded Alder Borer',
+      habitats: ['glade', 'forest'], times: ['day', 'evening'], rarity: 4, value: 145,
+      behavior: 'crawl', speed: 18, shy: 42, size: 1.2,
+      measure: 'over an inch, with longer feelers still',
+      danger: 'No sting. Strong jaws, though — a long-horned beetle can give a surprising nip if you squeeze it.',
+      art: { shape: 'longhorn', body: '#1a1a1c', shell: '#c8cdd2', shell2: '#1c1c20', legs: '#141416', antenna: '#1a1a1c', banded: true, longAntennae: 1.5 },
+      facts: [
+        'Its babies grow up inside dead alder, and also ash, willow, maple and oak.',
+        'It is sometimes drawn in numbers to fresh paint, so people meet it on a newly painted wall.',
+        'Its feelers are banded black and white too, and they are often longer than the whole beetle.',
+        'It is not a pest. Washington State University’s own advice sheet on it says there is no need to do anything about it.'
+      ]
+    },
+    {
+      id: 'click_beetle', name: 'Western Eyed Click Beetle',
+      habitats: ['glade', 'rainforest'], times: ['evening', 'night'], rarity: 3, value: 88,
+      behavior: 'hop', speed: 22, shy: 40, size: 1.25,
+      measure: 'up to an inch and a half',
+      art: { shape: 'clickbeetle', body: '#2c2a28', shell: '#4a4642', shell2: '#2a2725', speck: '#b2aca2', eyespot: '#16130f', eyering: '#cfc8bc', legs: '#1e1c1a' },
+      facts: [
+        'The two big eyes on its shoulders are not eyes. They are markings on its back. Its real eyes are small and at the front.',
+        'It has a spine on its underside that snaps into a groove on its chest. The snap makes a loud click and throws the whole beetle into the air.',
+        'It does that to flip itself over when it lands on its back — and to startle whatever just picked it up.',
+        'Its grub is a hunter. It lives in dead wood and eats the other grubs living there.'
+      ]
+    },
+    {
+      id: 'crab_spider', name: 'Goldenrod Crab Spider',
+      habitats: ['glade', 'meadow', 'garden'], times: ['day'], rarity: 2, value: 54,
+      behavior: 'cling', speed: 8, shy: 20, size: 0.7,
+      measure: 'she is about a third of an inch',
+      art: { shape: 'crabspider', body: '#f2ecd0', body2: '#e8dfb8', stripe: '#d8607e', legs: '#e6dcbc', eye: '#3a3428' },
+      facts: [
+        'She changes colour to match her flower — but slowly. White to yellow takes ten to twenty-five days. Yellow back to white takes about six.',
+        'She builds no web at all. She sits perfectly still on a flower and grabs whatever lands on it.',
+        'She catches bumblebees far bigger than she is. Bumblebees give her the most food of anything she catches.',
+        'And she cannot hurt you in the slightest. Her fangs cannot get through skin and her venom is far too weak to matter to anything big.'
+      ]
+    },
+    {
+      id: 'leafcutter_bee', name: 'Leafcutter Bee',
+      habitats: ['glade', 'meadow', 'garden', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 46,
+      behavior: 'hover', speed: 44, shy: 40, size: 0.95,
+      sting: true,
+      measure: 'about the size of a honeybee',
+      art: { shape: 'bee', body: '#2a2624', stripe: '#cfc6b2', wing: 'rgba(240,246,250,0.55)', legs: '#1e1b19', bellybrush: '#e8c83c', leaf: '#6a9c3c' },
+      facts: [
+        'She cuts neat circles out of leaves with her jaws, flies them home, and builds them into little cradles for her eggs. Those tidy half-moon notches in rose leaves are hers.',
+        'She carries pollen on the furry underside of her tummy, not in baskets on her legs like a honeybee. If you draw baskets on her legs you have drawn the wrong bee.',
+        'She works alone. There is no hive and no queen — every mother builds and stocks her own nest, in a hole about as wide as a pencil.',
+        'She can sting, but she almost never does. She has no hive to defend, and the sting is mild.'
+      ]
+    },
+    {
+      id: 'jumping_spider', name: 'Red-backed Jumping Spider',
+      habitats: ['glade', 'desert', 'hill'], times: ['day'], rarity: 3, value: 68,
+      behavior: 'dart', speed: 36, shy: 44, size: 0.7,
+      measure: 'about a third of an inch',
+      art: { shape: 'jumper', body: '#1c1a1c', back: '#c8342a', stripe: '#1c1a1c', jaw: '#2e8a7a', legs: '#241f22', eye: '#0c0a0c' },
+      facts: [
+        'Those two big front eyes give it the sharpest sight of any spider its size. It looks at you, turns, and watches you.',
+        'It builds no trap web. It stalks its dinner and jumps on it.',
+        'It sleeps in a little silk sleeping bag under a rock or a piece of wood, and moults and shelters from bad weather in there.',
+        'Its red and black colours look like a velvet ant — which has a fearsome sting — and that is thought to be why other things leave it alone.'
+      ]
     }
+
 
   ];
 
@@ -1314,6 +2007,8 @@
     pond: 'the Lily Pond', hill: 'the Pebble Hills', orchard: 'the Apple Orchard',
     riverbank: 'the riverbank', beach: 'Shell Beach', shore: 'the rocky shore',
     tidepool: 'the Tidepools', river: 'the river and the stream',
+    desert: 'the Sagebrush Desert', mountain: 'Cloudtop Ridge', taiga: 'the Spruce Taiga',
+    tundra: 'the Lichen Tundra', rainforest: 'the Mossy Rainforest', glade: 'the Golden Glade',
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
