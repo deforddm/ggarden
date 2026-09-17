@@ -426,7 +426,8 @@
     var sx = cv.width / W.W, sy = cv.height / W.H;
     var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
       hill: '#d8d2a4', orchard: '#bfe07a', riverbank: '#8fd07f', beach: '#f0e2b8',
-      shore: '#c2bcac' };
+      shore: '#c2bcac', desert: '#cdb68c', mountain: '#9d9a93', taiga: '#3c5c3a',
+      tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a' };
     var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
@@ -440,10 +441,12 @@
     c.font = 'bold 15px "Trebuchet MS", sans-serif';
     c.textAlign = 'center';
     c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
-    [['Hills', 380, 380], ['Meadow', 820, 980], ['Woods', 2500, 620], ['Orchard', 2360, 1420],
-     ['Pond', 620, 2020], ['Garden', 1520, 1720], ['Stream', 1000, 1330],
-     ['River', 2150, 2020], ['Inlet', 3180, 2560], ['Beach', 2500, 2820],
-     ['Tidepools', 4120, 2130], ['The Sea', 3900, 3060]].forEach(function (p) {
+    [['Hills', 2000, 1340], ['Meadow', 2500, 1940], ['Woods', 4100, 1580], ['Orchard', 3960, 2380],
+     ['Pond', 2220, 2980], ['Garden', 3120, 2680], ['Stream', 2600, 2290],
+     ['River', 3750, 2980], ['Inlet', 4780, 3520], ['Beach', 4100, 3780],
+     ['Tidepools', 5720, 3090], ['The Sea', 5500, 4020],
+     ['Desert', 500, 2400], ['Ridge', 1120, 2800], ['Taiga', 2400, 740],
+     ['Tundra', 2400, 260], ['Glade', 4200, 1640], ['Rainforest', 5850, 2500]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
