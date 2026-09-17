@@ -227,8 +227,13 @@
         want.surf = Math.pow(near('dSea', 26), 2.2);
         want.river = Math.pow(near('dRiver', 17), 2.2) * 0.85;
         want.stream = want.river * 0.7;
-        if (biome === 'forest') { want.leaves = 0.85; }
+        if (biome === 'rainforest') { want.leaves = 1; want.wind = 0.30; }
+        else if (biome === 'forest' || biome === 'glade') { want.leaves = 0.85; }
+        else if (biome === 'taiga') { want.leaves = 0.70; want.wind = 0.65; }
         else if (biome === 'orchard' || biome === 'garden') { want.leaves = 0.45; }
+        /* Nothing up here breaks the wind, so you hear it and almost nothing else. */
+        else if (biome === 'mountain' || biome === 'tundra') { want.leaves = 0.05; want.wind = 1; }
+        else if (biome === 'desert') { want.leaves = 0.12; want.wind = 0.85; }
         else { want.leaves = 0.22; }
 
         var pondNear = (W.waterKind && W.dShore && i >= 0) ? near('dShore', 40) : 0;
