@@ -7,7 +7,34 @@
    the animal never runs off for good. Worst case she waits a moment longer.
 
    Every animal already befriended still wanders about; she just cannot be
-   asked to befriend it twice. */
+   asked to befriend it twice.
+
+   THE HUNT (Guin: "add the ability to for friends to hunt")
+
+   Every friend that really hunts, hunts here. What it may go after comes
+   from GG.ANIMAL_HUNTS in the roster, species by species, and nothing else
+   is ever chased - a hummingbird will cross the garden for a gnat and take
+   no notice of a dragonfly, and a bat never looks at the ground. Each family
+   goes about it its own true way: a cat creeps and pounces, a dog runs
+   straight in, a hummingbird hovers and picks, a bat swoops, and a frog does
+   not chase at all - it sits perfectly still until dinner comes within reach
+   of its tongue.
+
+   Nothing is ever caught. Everything scatters and gets away, which is nearly
+   what happens in the real world anyway: more than half of a cat's pounces
+   end with the moth going free.
+
+   AND GUIN'S RULE: friends never hunt friends.
+
+   The awkward part is that some of them really would. A cat catches birds, a
+   dog chases cats, a bullfrog swallows small frogs and bats. Rather than
+   quietly leaving those pairs off the lists, the garden shows the rule
+   happening: the hunter stops, sits down, and watches, three little dots
+   appear over its head, and the book explains exactly why. That beat is the
+   feature, not a hole in it.
+
+   The parrots hunt nothing at all, because parrots do not hunt. They forage
+   instead - see stepForage. */
 (function (GG) {
   'use strict';
 
@@ -17,11 +44,15 @@
   var F = GG.Friends = {
     list: [],
     hearts: [],
+    bits: [],                  // seed husks and bark from a foraging parrot
     /* the befriending in progress */
     busy: null,                // { animal, ring, need, from }
     companion: null,           // the friend tagging along today
 
-    clear: function () { this.list.length = 0; this.hearts.length = 0; this.busy = null; },
+    clear: function () {
+      this.list.length = 0; this.hearts.length = 0; this.bits.length = 0;
+      this.busy = null;
+    },
 
 
     /* ---------- who could turn up here, and now? ---------- */
@@ -112,6 +143,12 @@
         h.life -= dt; h.y -= dt * 26; h.x += Math.sin(h.life * 6) * 0.4;
         if (h.life <= 0) this.hearts.splice(i, 1);
       }
+      for (i = this.bits.length - 1; i >= 0; i--) {
+        var q = this.bits[i];
+        q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 140 * dt;
+        if (q.life <= 0) this.bits.splice(i, 1);
+      }
+      if (this.ruleSaid > 0) this.ruleSaid -= dt;
       void W;
     },
 
@@ -145,18 +182,184 @@
       return best == null ? null : { ang: best, dist: bestD };
     },
 
-    /* The nearest flutterer a cat would love to chase. */
-    nearestFlutter: function (x, y, radius) {
+    /* The nearest creature this one would really hunt. Anything that is not
+       on its own list simply does not register, however close it comes. */
+    nearestPrey: function (f, radius) {
       var C = GG.Critters, best = null, bestD = radius;
       if (!C || !C.list) return null;
+      var id = f.def.id;
       for (var i = 0; i < C.list.length; i++) {
         var b = C.list[i];
-        var bh = b.def.behavior;
-        if (bh !== 'flutter' && bh !== 'hover' && bh !== 'drift') continue;
-        var d = GG.dist(x, y, b.x, b.y);
+        if (!b.def || !GG.animalHunts(id, b.def.id)) continue;
+        var d = GG.dist(f.x, f.y, b.x, b.y);
         if (d < bestD) { bestD = d; best = b; }
       }
       return best;
+    },
+
+    /* Guin's rule. Is there a friend nearby that this one really would hunt?
+       The cat and the hummingbird, the dog and the cat, the bullfrog and
+       very nearly everybody. */
+    RULE_SEE: 195,
+    friendRuleNear: function (f) {
+      var best = null, bd = this.RULE_SEE, i, d;
+      for (i = 0; i < this.list.length; i++) {
+        var o = this.list[i];
+        if (o === f) continue;
+        var rule = GG.friendRuleFor(f.def, o.def);
+        if (!rule) continue;
+        d = GG.dist(f.x, f.y, o.x, o.y);
+        if (d < bd) { bd = d; best = { x: o.x, y: o.y, rule: rule, def: o.def }; }
+      }
+      var comp = this.companion;
+      if (comp) {
+        var cdef = GG.ANIMAL_BY_ID[comp.id];
+        var crule = cdef && GG.friendRuleFor(f.def, cdef);
+        if (crule) {
+          d = GG.dist(f.x, f.y, comp.x, comp.y);
+          if (d < bd) best = { x: comp.x, y: comp.y, rule: crule, def: cdef };
+        }
+      }
+      return best;
+    },
+
+    /* Said out loud, but not over and over. */
+    ruleSaid: 0,
+    sayRule: function (f, rule) {
+      if (this.ruleSaid > 0) return;
+      var p = GG.Player;
+      if (!p || GG.dist(f.x, f.y, p.x, p.y) > 280) return;
+      this.ruleSaid = 75;
+      if (GG.UI && GG.UI.toast) {
+        GG.UI.toast(f.def.name + ' ' + rule.does + '. Friends never hunt friends.', 3200);
+      }
+    },
+
+    /* How each kind goes about it.
+         see    how far off it notices something worth having
+         hold   how long it will stay interested
+         speed  how much faster than its usual pottering
+         strike how close counts as a try
+         rest   how long before it bothers again */
+    HUNT: {
+      pounce: { see: 150, hold: [1.6, 3.2], speed: 1.9, strike: 30, rest: [3, 6] },
+      dash: { see: 180, hold: [1.3, 2.4], speed: 2.2, strike: 34, rest: [3.5, 7] },
+      hover: { see: 130, hold: [1.8, 3.2], speed: 1.8, strike: 22, rest: [2.5, 5] },
+      swoop: { see: 205, hold: [1.6, 3.0], speed: 2.0, strike: 26, rest: [2.5, 5] },
+      ambush: { see: 110, hold: [3.0, 6.0], speed: 0, strike: 32, rest: [4, 8] }
+    },
+
+    /* The whole hunt, for every family. Returns the movement multiplier. */
+    stepHunt: function (dt, f, move, wet) {
+      /* ---- sitting and watching, because of the rule ---- */
+      if (f.watch > 0) {
+        f.watch -= dt;
+        f.chase = 0; f.chaseId = null;
+        if (f.watchAt) {
+          f.faceLeft = f.watchAt.x < f.x;
+        }
+        return wet ? move : 0;
+      }
+
+      var style = GG.animalHuntStyle(f.def);
+      if (!style) return move;
+
+      /* ---- the rule, checked before anything else ---- */
+      var other = this.friendRuleNear(f);
+      if (other) {
+        f.watch = GG.rand(2.6, 4.6);
+        f.watchAt = { x: other.x, y: other.y };
+        f.watchWhy = other.rule;
+        f.chase = 0; f.chaseId = null;
+        f.chaseTimer = GG.rand(2.5, 5);
+        this.sayRule(f, other.rule);
+        return wet ? move : 0;
+      }
+
+      var S = this.HUNT[style];
+      if (!S) return move;
+
+      /* ---- nothing in mind: have a look round now and then ---- */
+      if (!(f.chase > 0)) {
+        f.chaseTimer = (f.chaseTimer || 0) - dt;
+        if (f.chaseTimer <= 0) {
+          f.chaseTimer = GG.rand(0.4, 1.1);
+          var prey = this.nearestPrey(f, S.see);
+          if (prey) { f.chase = GG.rand(S.hold[0], S.hold[1]); f.chaseId = prey; }
+        }
+        return move;
+      }
+
+      /* ---- after something ---- */
+      f.chase -= dt;
+      var b = f.chaseId;
+      if (!b || !GG.Critters || GG.Critters.list.indexOf(b) < 0) {
+        f.chase = 0; f.chaseId = null;
+        return move;
+      }
+      var fd = GG.dist(f.x, f.y, b.x, b.y);
+      var to = Math.atan2(b.y - f.y, b.x - f.x);
+      if (style === 'ambush') {
+        /* A frog does not chase its dinner. It stops dead, faces it, and
+           waits for it to come within reach of that sticky tongue. */
+        f.hop = 0;
+        f.faceLeft = Math.cos(to) < 0;
+        move = 0;
+        if (fd > S.see * 1.4) { f.chase = 0; f.chaseId = null; }
+      } else {
+        /* The last stride is the fast one. A cat creeps and then rushes, a
+           dog drops its nose and goes, a bat tips over into the swoop - and
+           none of them let go of something that is nearly in reach. */
+        var near = fd < S.strike * 2.4;
+        f.ang = GG.angLerp(f.ang, to, Math.min(1, dt * (near ? 6 : 3)));
+        move = Math.max(move, near ? S.speed * 1.5 : S.speed);
+        if (near && f.chase < 0.9) f.chase = 0.9;
+      }
+      if (fd < S.strike) this.strike(f, b, style);
+      return move;
+    },
+
+    /* The try, and the miss. Nothing is ever caught here - and more than
+       half of the time nothing is caught out there either. */
+    strike: function (f, b, style) {
+      var S = this.HUNT[style] || this.HUNT.pounce;
+      if (GG.Critters && GG.Critters.scatter) GG.Critters.scatter(b.x, b.y, 48);
+      f.chase = 0; f.chaseId = null;
+      f.chaseTimer = GG.rand(S.rest[0], S.rest[1]);
+      f.missed = 0.5;
+      if (style !== 'hover' && style !== 'swoop') f.hop = 0.3;
+      if (style === 'ambush') f.timer = GG.rand(2.4, 5);
+      for (var i = 0; i < 4; i++) {
+        this.bits.push({
+          x: b.x + GG.rand(-4, 4), y: b.y - (b.z || 0),
+          vx: GG.rand(-30, 30), vy: GG.rand(-46, -14),
+          life: GG.rand(0.3, 0.6), col: 'rgba(255,255,255,0.9)', s: GG.rand(0.9, 1.7)
+        });
+      }
+    },
+
+    /* The ones that do not hunt. A parrot stops, works at something with
+       that beak, and drops husks everywhere. */
+    stepForage: function (dt, f, move) {
+      var fg = GG.animalForage(f.def.id);
+      if (!fg) return move;
+      if (f.forage > 0) {
+        f.forage -= dt;
+        f.peck = Math.abs(Math.sin(f.t * 8));
+        if (f.forage <= 0) { f.peck = 0; f.forageTimer = GG.rand(5, 11); }
+        else if (Math.random() < dt * 6) {
+          this.bits.push({
+            x: f.x + GG.rand(-5, 9), y: f.y - 7,
+            vx: GG.rand(-24, 24), vy: GG.rand(-46, -14),
+            life: GG.rand(0.5, 1.1), col: fg.bits, s: GG.rand(1.1, 2.1)
+          });
+        }
+        return 0;
+      }
+      if (f.forageTimer == null) f.forageTimer = GG.rand(1, 5);
+      f.forageTimer -= dt;
+      if (f.forageTimer <= 0) { f.forage = GG.rand(2.2, 4.4); f.forageTimer = 0; }
+      return move;
     },
 
     stepAnimal: function (dt, f, player) {
@@ -197,37 +400,15 @@
 
       /* --- habits --- */
       var fam = d.family;
+      var wet = null;
       if (fam === 'cat') {
-        /* cats really do hate getting their feet wet */
-        var wet = this.waterNear(f.x, f.y, 74);
+        /* cats really do hate getting their feet wet, and that comes before
+           any butterfly */
+        wet = this.waterNear(f.x, f.y, 74);
         if (wet) {
           f.ang = GG.angLerp(f.ang, wet.ang + Math.PI, Math.min(1, dt * 4));
           move = Math.max(move, 1.2);
           f.shy = Math.min(1, f.shy + dt * 1.5);
-        } else if (!f.chase || f.chase <= 0) {
-          /* and they cannot leave a butterfly alone */
-          f.chaseTimer = (f.chaseTimer || 0) - dt;
-          if (f.chaseTimer <= 0) {
-            f.chaseTimer = GG.rand(0.4, 1.1);
-            var flut = this.nearestFlutter(f.x, f.y, 150);
-            if (flut) { f.chase = GG.rand(1.6, 3.2); f.chaseId = flut; }
-          }
-        }
-        if (f.chase > 0) {
-          f.chase -= dt;
-          var fl = f.chaseId;
-          if (fl && GG.Critters.list.indexOf(fl) >= 0) {
-            var fd = GG.dist(f.x, f.y, fl.x, fl.y);
-            f.ang = GG.angLerp(f.ang, Math.atan2(fl.y - f.y, fl.x - f.x), Math.min(1, dt * 3));
-            move = Math.max(move, 1.8);
-            if (fd < 30) {
-              /* a pounce, and the butterfly is away before she lands */
-              GG.Critters.scatter(f.x, f.y, 44);
-              f.hop = 0.3;
-              f.chase = 0; f.chaseId = null;
-              f.chaseTimer = GG.rand(3, 6);
-            }
-          } else { f.chase = 0; f.chaseId = null; }
         }
       } else if (fam === 'frog') {
         /* frogs want to be near the water, and hop that way when they can */
@@ -238,6 +419,11 @@
           f.timer = Math.min(f.timer, 0.8);
         }
       }
+
+      /* --- the hunt, Guin's rule, and the ones that forage instead --- */
+      if (f.missed > 0) f.missed -= dt;
+      move = this.stepHunt(dt, f, move, !!wet);
+      move = this.stepForage(dt, f, move);
 
       /* too close, and it backs away rather than bolting */
       if (near < d.keep * 0.55) {
@@ -270,6 +456,7 @@
       else if (d.family === 'bat') f.bob = -34 + Math.sin(f.t * 1.7) * 6;
       else if (f.hop > 0) f.bob = -Math.sin((1 - f.hop / 0.34) * Math.PI) * 16;
       else f.bob = 0;
+      if (f.peck > 0) f.bob += f.peck * 3.2;
     },
 
     /* ---------- can she start right now? ---------- */
@@ -547,6 +734,17 @@
       }
       this.drawOne(c, f.def, sx, sy, f.bob, f.faceLeft, t + f.t, f.gait);
 
+      /* Guin's rule, made visible: it has spotted a friend it really would
+         hunt, and it has sat down to watch instead. */
+      if (f.watch > 0) {
+        c.fillStyle = 'rgba(255,255,255,0.78)';
+        for (var k = 0; k < 3; k++) {
+          c.beginPath();
+          c.arc(sx - 6 + k * 6, sy + (f.bob || 0) - 36, 1.7, 0, Math.PI * 2);
+          c.fill();
+        }
+      }
+
       /* a "!" while it is making its mind up, and a ring while she waits */
       if (this.busy && this.busy.animal === f) {
         this.drawRing(c, sx, sy + (f.bob || 0) - 30, this.busy.ring);
@@ -562,13 +760,24 @@
     },
 
     drawHearts: function (c, cam) {
-      for (var i = 0; i < this.hearts.length; i++) {
+      var i;
+      for (i = 0; i < this.hearts.length; i++) {
         var h = this.hearts[i];
         c.globalAlpha = GG.clamp(h.life, 0, 1);
         c.fillStyle = '#ff6f9a';
         this.heart(c, h.x - cam.x, h.y - cam.y, 5 * h.s);
         c.globalAlpha = 1;
       }
+      /* husks from a foraging parrot, and the dust of a missed pounce */
+      for (i = 0; i < this.bits.length; i++) {
+        var q = this.bits[i];
+        c.globalAlpha = GG.clamp(q.life * 2.2, 0, 1);
+        c.fillStyle = q.col;
+        c.beginPath();
+        c.arc(q.x - cam.x, q.y - cam.y, q.s, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.globalAlpha = 1;
     },
 
     /* one-shot drawing, used by the tests and the title art */
@@ -603,5 +812,17 @@
       c.bezierCurveTo(x + s * 0.55, y - s * 1.3, x + s * 1.5, y - s * 0.3, x, y + s * 0.9);
       c.closePath(); c.fill();
     }
+  };
+
+  /* The books already know how to print a food chain - every page asks
+     GG.eatsList what that creature hunts. The friends were never in the bugs'
+     food chain (that table is for the bugs and the fish, and a tamed friend
+     is not in it at all), so hand the book the friends' own hunting lists as
+     well, and every animal page gains an honest "It hunts:" line. */
+  var baseEats = GG.eatsList;
+  GG.eatsList = function (id) {
+    var own = baseEats ? baseEats(id) : [];
+    if (own && own.length) return own;
+    return GG.animalPrey ? GG.animalPrey(id) : [];
   };
 })(window.GG = window.GG || {});

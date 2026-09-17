@@ -3,31 +3,42 @@
 (function (GG) {
   'use strict';
 
-  var CELL = 160, COLS = 30, ROWS = 20;
-  // H hill  M meadow  G garden  F forest  O orchard  P pond bank
+  var CELL = 160, COLS = 40, ROWS = 26;
+  /* H hill  M meadow  G garden  F forest  O orchard  P pond bank
+     T tundra  A taiga  N mountain  D desert  R rainforest  L forest glade
+     The sea is in the south-east, so wet air comes off it, crosses the
+     rainforest, climbs the mountains and drops its rain on the way up.
+     What is left is dry, which is why the desert sits behind the ridge. */
   var MAP = [
-    'HHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
-    'HHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
-    'HHHHMMMMMMFFFFFFFFFFFFFFFFFFFF',
-    'HHHMMMMMMMFFFFFFFFFFFFFFFFFFFF',
-    'HHMMMMMMMMMFFFFFFFFFFFFFFFFFFF',
-    'MMMMMMMMMMMMFFFFFFFFFFFFFFFFFF',
-    'MMMMMMMGGGGGOOOOOFFFFFFFFFFFFF',
-    'MMMMMMGGGGGGOOOOOOFFFFFFFFFFFF',
-    'PPMMMMGGGGGGGOOOOOOFFFFFFFFFFF',
-    'PPPMMMGGGGGGGOOOOOOFFFFFFFFFFF',
-    'PPPPMMGGGGGGGOOOOOMMMFFFFFFFFF',
-    'PPPPPMMGGGGGGOOOOMMMMMMFFFFFFF',
-    'PPPPPMMMGGGGMMMMMMMMMMMMMFFFFF',
-    'PPPPMMMMMMMMMMMMMMMMMMMMMMMFFF',
-    'PPPMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTAAAATTTTTAAAAAAAATTTTAAAAAAAAAAAATTT',
+    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    'AAAAAANNNNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    'DDDDHHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'DDDDDHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'DDDDDDNNNNHHHHMMMMMMFFFFFFFFFFFFFFFFFFFF',
+    'DDDDDNNNNNHHHMMMMMMMFFFFFFLLFFFFFFFFFFFF',
+    'DDDDDNNNNNHHMMMMMMMMMFFFFLLLLFFFFFFRRRRR',
+    'DDDDDNNNNHMMMMMMMMMMMMFFFLLLFFFFFFRRRRRR',
+    'DDDDDNNNNHMMMMMMMGGGGGOOOOOFFFFFFFRRRRRR',
+    'DDDDNNNNNHMMMMMMGGGGGGOOOOOOFFFFFFRRRRRR',
+    'DDDDNNNNNHPPMMMMGGGGGGGOOOOOOFFFFFRRRRRR',
+    'DDDDNNNNHHPPPMMMGGGGGGGOOOOOOFFFFFRRRRRR',
+    'DDDDNNNNHHPPPPMMGGGGGGGOOOOOMMMFFFRRRRRR',
+    'DDDNNNNNHHPPPPPMMGGGGGGOOOOMMMMMMFRRRRRR',
+    'DDDNNNNNHMPPPPPMMMGGGGMMMMMMMMMMMMMRRRRR',
+    'DDDNNNNHHMPPPPMMMMMMMMMMMMMMMMMMMMMMMRRR',
+    'DDDNNNNHHMPPPMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'DDNNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'DDNNNNHHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'DDNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'DDNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'DDNNNHHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
   ];
-  var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard' };
+  var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard',
+    T: 'tundra', A: 'taiga', N: 'mountain', D: 'desert', R: 'rainforest', L: 'glade' };
 
   /* water kinds */
   var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6;
@@ -41,41 +52,69 @@
     orchard: ['#a3d46a', '#99cb60', '#aeda78'],
     riverbank: ['#7fc472', '#74ba67', '#8cd07f'],
     beach: ['#efe0b4', '#e8d6a6', '#f5e9c2'],
-    shore: ['#b9b3a4', '#aaa595', '#c6c0b0']
+    shore: ['#b9b3a4', '#aaa595', '#c6c0b0'],
+    desert: ['#cdb68c', '#c6ae82', '#d4bf97'],
+    mountain: ['#918e86', '#8a8781', '#9b978f'],
+    taiga: ['#4a6b3e', '#446238', '#527446'],
+    tundra: ['#8d8a68', '#86835f', '#97946f'],
+    rainforest: ['#3f6b35', '#396430', '#46743a'],
+    glade: ['#b8a85e', '#b2a256', '#c0b168']
   };
 
-  var POND_E = { cx: 620, cy: 2020, rx: 460, ry: 300 };
+  /* The three shades above are a fine speckle, close enough together to read
+     as texture. These are the big blotches painted over them: the drifts of
+     straw between the sagebrush, the lichen heath on the tundra, the patch of
+     alpine turf between two slabs of talus. Real ground is a patchwork, and
+     one flat colour per place looks like a bedsheet. Each entry is
+     [colour, blob size in pixels, how much of the ground it covers, seed]. */
+  var PATCH = {
+    desert: [[189, 160, 104, 78, 0.60, 61], [181, 144, 79, 48, 0.76, 67], [142, 143, 110, 96, 0.86, 71]],
+    mountain: [[110, 140, 85, 86, 0.62, 73], [125, 132, 103, 56, 0.74, 79], [182, 178, 166, 48, 0.84, 83]],
+    taiga: [[92, 74, 51, 72, 0.66, 89], [125, 145, 80, 50, 0.76, 97], [138, 154, 76, 98, 0.90, 101]],
+    tundra: [[196, 203, 189, 88, 0.60, 103], [116, 112, 74, 64, 0.72, 109],
+             [214, 211, 194, 46, 0.84, 107], [150, 158, 96, 104, 0.92, 113]],
+    rainforest: [[47, 74, 40, 78, 0.60, 127], [87, 133, 60, 48, 0.74, 131], [58, 45, 34, 52, 0.90, 137]],
+    glade: [[111, 155, 61, 86, 0.56, 139], [127, 168, 74, 48, 0.72, 149], [90, 70, 48, 50, 0.92, 151]]
+  };
+
+  var POND_E = { cx: 2220, cy: 2980, rx: 460, ry: 300 };
 
   /* the stream grows into a river and then opens into the estuary */
   var FLOW = [
-    { x: 520,  y: 260,  w: 13, kind: STREAM },
-    { x: 700,  y: 560,  w: 15, kind: STREAM },
-    { x: 900,  y: 880,  w: 17, kind: STREAM },
-    { x: 1060, y: 1210, w: 20, kind: STREAM },
-    { x: 1180, y: 1560, w: 24, kind: STREAM },
-    { x: 1370, y: 1860, w: 31, kind: RIVER },
-    { x: 1700, y: 2030, w: 42, kind: RIVER },
-    { x: 2080, y: 2150, w: 52, kind: RIVER },
-    { x: 2450, y: 2230, w: 64, kind: RIVER },
-    { x: 2790, y: 2330, w: 82, kind: RIVER },
-    { x: 3070, y: 2520, w: 125, kind: ESTUARY },
-    { x: 3290, y: 2770, w: 180, kind: ESTUARY },
-    { x: 3470, y: 2910, w: 245, kind: ESTUARY }
+    { x: 2120,  y: 1220,  w: 13, kind: STREAM },
+    { x: 2300,  y: 1520,  w: 15, kind: STREAM },
+    { x: 2500,  y: 1840,  w: 17, kind: STREAM },
+    { x: 2660,  y: 2170, w: 20, kind: STREAM },
+    { x: 2780,  y: 2520, w: 24, kind: STREAM },
+    { x: 2970,  y: 2820, w: 31, kind: RIVER },
+    { x: 3300,  y: 2990, w: 42, kind: RIVER },
+    { x: 3680,  y: 3110, w: 52, kind: RIVER },
+    { x: 4050,  y: 3190, w: 64, kind: RIVER },
+    { x: 4390,  y: 3290, w: 82, kind: RIVER },
+    { x: 4670,  y: 3480, w: 125, kind: ESTUARY },
+    { x: 4890,  y: 3730, w: 180, kind: ESTUARY },
+    { x: 5070,  y: 3870, w: 245, kind: ESTUARY }
   ];
 
   /* the sea fills everything below this line */
   function shoreY(x) {
-    return 3050 - (x / 4800) * 760
-      + Math.sin(x * 0.0022) * 52
-      + Math.sin(x * 0.0071 + 1.2) * 22;
+    var u = x - 1600;
+    var y = 4010 - (u / 4800) * 760
+      + Math.sin(u * 0.0022) * 52
+      + Math.sin(u * 0.0071 + 1.2) * 22;
+    /* West of the river mouth the coast swings away south, so the dry side of
+       the mountains never touches the sea. A desert with a beach would be a lie. */
+    var w = (2600 - x) / 900;
+    if (w > 0) y += w * w * 1400;
+    return y;
   }
 
   /* [x, height above the tide line, rx, ry] - always on the shelf, never in the sea */
   var TIDEPOOLS = (function () {
     var defs = [
-      [3760, 132, 62, 40], [3920, 214, 46, 32], [4120, 118, 74, 44],
-      [4330, 196, 52, 36], [4520, 126, 64, 42], [3990, 322, 44, 30],
-      [4270, 306, 50, 34]
+      [5360, 132, 62, 40], [5520, 214, 46, 32], [5720, 118, 74, 44],
+      [5930, 196, 52, 36], [6120, 126, 64, 42], [5590, 322, 44, 30],
+      [5870, 306, 50, 34]
     ];
     var out = [], i, d;
     for (i = 0; i < defs.length; i++) {
@@ -85,14 +124,14 @@
     return out;
   })();
 
-  var SHELF = { x0: 3620, x1: 4800, pad: 210 };
+  var SHELF = { x0: 5220, x1: 6400, pad: 210 };
 
   /* The footbridge near Shell Beach. It crosses the water where the river
      opens out into Gull Inlet, so she can walk over instead of all the way
      round - and she can fish off the side of it. Everything about it is
      worked out from these five numbers. */
   var BRIDGE = {
-    x: 2857, y: 2383,        // mid-channel, where the river meets the beach
+    x: 4457, y: 3343,        // mid-channel, where the river meets the beach
     ang: 2.167,              // square across the current, in radians
     len: 258,                // end to end, with a landing on the sand each side
     w: 34                    // how wide the deck is
@@ -103,13 +142,17 @@
   BRIDGE.bx = BRIDGE.x + BRIDGE.dx * BRIDGE.len / 2;
   BRIDGE.by = BRIDGE.y + BRIDGE.dy * BRIDGE.len / 2;
 
+  /* Things that are part of the ground rather than standing on it. They are
+     painted before anything that walks, and never sorted by depth. */
+  var FLAT = { lilypad: 1, wetrock: 1, pebbles: 1, kelp: 1, soilCrust: 1, snowPatch: 1 };
+
   var MS = 8;   // water mask resolution, in pixels
 
   var World = GG.World = {
     CELL: CELL, COLS: COLS, ROWS: ROWS,
     W: COLS * CELL, H: ROWS * CELL,
-    HOUSE: { x: 1520, y: 1480, w: 150 },
-    DOOR: { x: 1520, y: 1486 },
+    HOUSE: { x: 3120, y: 2440, w: 150 },
+    DOOR: { x: 3120, y: 2446 },
     KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL },
     props: [], solids: [], hive: null, grid: {}, chunks: {},
     CHUNK: 400,
@@ -268,7 +311,9 @@
       return {
         meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
         pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
-        riverbank: 'Riverbank', beach: 'Shell Beach', shore: 'The Tidepools'
+        riverbank: 'Riverbank', beach: 'Shell Beach', shore: 'The Tidepools',
+        desert: 'Sagebrush Desert', mountain: 'Cloudtop Ridge', taiga: 'Spruce Taiga',
+        tundra: 'Lichen Tundra', rainforest: 'Mossy Rainforest', glade: 'Golden Glade'
       }[this.biomeRaw(x, y)];
     },
 
@@ -299,7 +344,7 @@
 
       var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
 
-      for (var i = 0; i < 13000; i++) {
+      for (var i = 0; i < 22500; i++) {
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
         if (nearHouse(x, y, 40)) continue;
@@ -318,8 +363,10 @@
           else if (v < 0.86) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#e9e2ff' });
         } else if (b === 'orchard') {
           if (v < 0.10) add('appleTree', x, y, 46 + rnd() * 14, true, 15);
-          else if (v < 0.16) add('berryBush', x, y, 22 + rnd() * 7, true, 13);
-          else if (v < 0.60) add('grassTuft', x, y, 13 + rnd() * 6);
+          /* the berry rows at the ends of the orchard, and the low patch */
+          else if (v < 0.20) add('berryBush', x, y, 22 + rnd() * 7, true, 13);
+          else if (v < 0.215) add('fruitPatch', x, y, 17 + rnd() * 5);
+          else if (v < 0.62) add('grassTuft', x, y, 13 + rnd() * 6);
           else if (v < 0.72) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: GG.pick(FLOWER_COLS) });
         } else if (b === 'garden') {
           if (v < 0.035) add('tree', x, y, 38 + rnd() * 10, true, 14);
@@ -363,6 +410,67 @@
           else if (v < 0.26) add('pebbles', x, y, 11 + rnd() * 7);
           else if (v < 0.34) add('shellProp', x, y, 9 + rnd() * 5);
           else if (v < 0.44) add('kelp', x, y, 16 + rnd() * 8);
+
+        /* ---- the dry side of the mountains: cold shrub-steppe, not the Sahara ---- */
+        } else if (b === 'desert') {
+          if (v < 0.075) add('sagebrush', x, y, 26 + rnd() * 12, true, 13);
+          else if (v < 0.110) add('rabbitbrush', x, y, 22 + rnd() * 8, true, 12);
+          else if (v < 0.132) add('basalt', x, y, 20 + rnd() * 18, true, 16);
+          else if (v < 0.150) add('pricklyPear', x, y, 15 + rnd() * 6, true, 13);
+          else if (v < 0.180) add('balsamroot', x, y, 16 + rnd() * 6);
+          else if (v < 0.40) add('bunchgrass', x, y, 15 + rnd() * 8);
+          else if (v < 0.46) add('soilCrust', x, y, 16 + rnd() * 12);
+
+        /* ---- up the ridge: talus, snowfields and the little alpine gardens ---- */
+        } else if (b === 'mountain') {
+          if (v < 0.085) add('talus', x, y, 18 + rnd() * 20, true, 17);
+          else if (v < 0.135) add('subalpineFir', x, y, 44 + rnd() * 22, true, 11);
+          else if (v < 0.155) add('krummholz', x, y, 22 + rnd() * 9, true, 15);
+          else if (v < 0.195) add('heather', x, y, 15 + rnd() * 6);
+          else if (v < 0.230) add('lupine', x, y, 17 + rnd() * 6);
+          else if (v < 0.255) add('pasque', x, y, 15 + rnd() * 5);
+          else if (v < 0.280) add('snowPatch', x, y, 26 + rnd() * 22);
+          else if (v < 0.42) add('grassTuft', x, y, 10 + rnd() * 5);
+
+        /* ---- the boreal forest: black spruce, moss hummocks and old burns ---- */
+        } else if (b === 'taiga') {
+          if (v < 0.105) add('blackSpruce', x, y, 48 + rnd() * 22, true, 12);
+          else if (v < 0.130) add('snag', x, y, 44 + rnd() * 18, true, 11);
+          else if (v < 0.155) add('deadfall', x, y, 24 + rnd() * 10, true, 18);
+          else if (v < 0.190) add('labradorTea', x, y, 19 + rnd() * 6, true, 11);
+          else if (v < 0.215) add('fireweed', x, y, 20 + rnd() * 7);
+          else if (v < 0.34) add('mossHummock', x, y, 16 + rnd() * 10);
+          else if (v < 0.48) add('grassTuft', x, y, 12 + rnd() * 6);
+
+        /* ---- past the last tree: lichen, cushions and a willow you step over ---- */
+        } else if (b === 'tundra') {
+          if (v < 0.030) add('erratic', x, y, 22 + rnd() * 18, true, 18);
+          else if (v < 0.085) add('arcticWillow', x, y, 15 + rnd() * 6);
+          else if (v < 0.140) add('mossCampion', x, y, 12 + rnd() * 5);
+          else if (v < 0.205) add('dryas', x, y, 13 + rnd() * 5);
+          else if (v < 0.38) add('cottonGrass', x, y, 16 + rnd() * 7);
+          else if (v < 0.58) add('reindeerLichen', x, y, 13 + rnd() * 7);
+
+        /* ---- the wet side: every horizontal thing is furred with moss ---- */
+        } else if (b === 'rainforest') {
+          if (v < 0.042) add('mossyTrunk', x, y, 52 + rnd() * 26, true, 19);
+          else if (v < 0.070) add('nurseLog', x, y, 28 + rnd() * 12, true, 20);
+          else if (v < 0.098) add('vineMaple', x, y, 34 + rnd() * 14, true, 13);
+          else if (v < 0.112) add('devilsClub', x, y, 22 + rnd() * 8, true, 12);
+          else if (v < 0.30) add('swordFern', x, y, 20 + rnd() * 9);
+          else if (v < 0.46) add('woodSorrel', x, y, 13 + rnd() * 6);
+          else if (v < 0.50) add('mushroom', x, y, 12 + rnd() * 5);
+
+        /* ---- the bright hole in the dark ceiling ---- */
+        } else if (b === 'glade') {
+          if (v < 0.014) add('fallenLog', x, y, 30 + rnd() * 12, true, 21);
+          else if (v < 0.040) add('sunStump', x, y, 20 + rnd() * 6, true, 15);
+          else if (v < 0.115) add('fireweed', x, y, 21 + rnd() * 7);
+          else if (v < 0.175) add('pearly', x, y, 15 + rnd() * 6);
+          else if (v < 0.245) add('bracken', x, y, 24 + rnd() * 9);
+          else if (v < 0.285) add('thimbleberry', x, y, 21 + rnd() * 7, true, 12);
+          else if (v < 0.70) add('grassTuft', x, y, 15 + rnd() * 8);
+          else if (v < 0.80) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: '#fff0a8' });
         }
       }
 
@@ -390,17 +498,24 @@
       this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
       add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
-      add('sign', 980, 700, 26, false, 0, { label: 'Meadow' });
-      add('sign', 2200, 900, 26, false, 0, { label: 'Woods' });
-      add('sign', 1050, 1900, 26, false, 0, { label: 'Pond' });
-      add('sign', 2280, 1280, 26, false, 0, { label: 'Orchard' });
-      add('sign', 420, 560, 26, false, 0, { label: 'Hills' });
-      add('sign', 1230, 1290, 26, false, 0, { label: 'Stream' });
-      add('sign', 2300, 2000, 26, false, 0, { label: 'River' });
-      add('sign', 3150, 2400, 26, false, 0, { label: 'Inlet' });
-      add('sign', 2660, 2510, 26, false, 0, { label: 'Beach' });
+      add('sign', 2580, 1660, 26, false, 0, { label: 'Meadow' });
+      add('sign', 3800, 1860, 26, false, 0, { label: 'Woods' });
+      add('sign', 2650, 2860, 26, false, 0, { label: 'Pond' });
+      add('sign', 3880, 2240, 26, false, 0, { label: 'Orchard' });
+      add('sign', 2020, 1520, 26, false, 0, { label: 'Hills' });
+      add('sign', 2830, 2250, 26, false, 0, { label: 'Stream' });
+      add('sign', 3900, 2960, 26, false, 0, { label: 'River' });
+      add('sign', 4750, 3360, 26, false, 0, { label: 'Inlet' });
+      add('sign', 4260, 3470, 26, false, 0, { label: 'Beach' });
+      /* the six new places */
+      add('sign', 430, 2000, 26, false, 0, { label: 'Desert' });
+      add('sign', 1180, 2330, 26, false, 0, { label: 'Ridge' });
+      add('sign', 3280, 760, 26, false, 0, { label: 'Taiga' });
+      add('sign', 3280, 250, 26, false, 0, { label: 'Tundra' });
+      add('sign', 4210, 1640, 26, false, 0, { label: 'Glade' });
+      add('sign', 5810, 2420, 26, false, 0, { label: 'Rainforest' });
       add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
-      add('sign', 4000, 2200, 26, false, 0, { label: 'Tidepools' });
+      add('sign', 5600, 3160, 26, false, 0, { label: 'Tidepools' });
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
       this.props.sort(function (p, q) { return p.y - q.y; });
@@ -449,6 +564,43 @@
       return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
     },
 
+    _blotch: function (c, cx, cy) {
+      var C = this.CHUNK, PS = 8, pad = 2;
+      var n = Math.ceil(C / PS) + pad * 2;
+      var lay = document.createElement('canvas');
+      lay.width = n; lay.height = n;
+      var lc = lay.getContext('2d');
+      var img = lc.createImageData(n, n), px = img.data;
+      var any = false, x, y, q;
+      for (y = 0; y < n; y++) {
+        for (x = 0; x < n; x++) {
+          var wx = cx * C + (x - pad) * PS + PS / 2;
+          var wy = cy * C + (y - pad) * PS + PS / 2;
+          var o = (y * n + x) * 4;
+          var pt = PATCH[this.biomeAt(wx, wy)];
+          if (!pt) { px[o + 3] = 0; continue; }
+          /* a wobble on the sample point, so a patch ends in a crumbly line */
+          var jx = wx + (GG.noise2(wx / 11, wy / 11, 53) - 0.5) * 26;
+          var jy = wy + (GG.noise2(wx / 11, wy / 11, 59) - 0.5) * 26;
+          var hit = null;
+          for (q = 0; q < pt.length; q++) {
+            if (GG.noise2(jx / pt[q][3], jy / pt[q][3], pt[q][5]) > pt[q][4]) { hit = pt[q]; break; }
+          }
+          if (!hit) { px[o + 3] = 0; continue; }
+          any = true;
+          px[o] = hit[0]; px[o + 1] = hit[1]; px[o + 2] = hit[2]; px[o + 3] = 255;
+        }
+      }
+      if (!any) return;
+      lc.putImageData(img, 0, 0);
+      c.save();
+      c.globalAlpha = 0.88;
+      c.imageSmoothingEnabled = true;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(lay, 0, 0, n, n, -pad * PS, -pad * PS, n * PS, n * PS);
+      c.restore();
+    },
+
     chunkCanvas: function (cx, cy) {
       var key = cx + ',' + cy;
       if (this.chunks[key]) return this.chunks[key];
@@ -468,6 +620,14 @@
           c.fillRect(x, y, step + 1, step + 1);
         }
       }
+
+      /* The big blotches of the newer places - drifts of straw between the
+         sagebrush, lichen heath on the tundra, a patch of alpine turf between
+         two slabs of talus. Painted at one pixel per eight and then blown up
+         smoothly, the same trick as the water, so they melt into each other
+         instead of stepping. Real ground is a patchwork, and one flat colour
+         per place looks like a bedsheet. */
+      this._blotch(c, cx, cy);
 
       // damp sand right at the water's edge
       for (y = 0; y < C; y += 6) {
@@ -661,7 +821,7 @@
         var p = this.props[i];
         if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
         if (p.y < cam.y - pad * 2.4 || p.y > cam.y + vh + pad) continue;
-        var isFlat = (p.type === 'lilypad' || p.type === 'wetrock' || p.type === 'pebbles' || p.type === 'kelp');
+        var isFlat = FLAT[p.type] === 1;
         if (layer === 'flat' && !isFlat) continue;
         if (layer === 'sorted' && isFlat) continue;
         var fn = P[p.type];
@@ -673,7 +833,7 @@
       var out = [], pad = 150;
       for (var i = 0; i < this.props.length; i++) {
         var p = this.props[i];
-        if (p.type === 'lilypad' || p.type === 'wetrock' || p.type === 'pebbles' || p.type === 'kelp') continue;
+        if (FLAT[p.type] === 1) continue;
         if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
         if (p.y < cam.y - pad * 2.6 || p.y > cam.y + vh + pad) continue;
         out.push(p);

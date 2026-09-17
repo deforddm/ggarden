@@ -22,20 +22,34 @@
     assign: function () {
       this.plants = [];
       var W = GG.World;
-      var orchard = [], hill = [];
+      /* A fruit goes on the kind of plant it really grows on. Apples belong in
+         a tree; a blackberry is a bramble; a strawberry lies on the ground.
+         Put a strawberry in a tree and the game has told her something false. */
+      var PROP = { appleTree: 'tree', berryBush: 'shrub', fruitPatch: 'ground', wildBush: 'shrub' };
+      var ON = { tree: 'tree', bramble: 'shrub', cane: 'shrub', bush: 'shrub',
+                 vine: 'shrub', shrub: 'shrub', ground: 'ground' };
+      var pools = {};
       GG.FRUITS.forEach(function (f) {
-        (f.where === 'hill' ? hill : orchard).push(f);
+        var key = f.where + ':' + (ON[f.on] || 'shrub');
+        (pools[key] = pools[key] || []).push(f);
       });
-      if (!orchard.length && !hill.length) return;
-      var oi = 0, hi = 0;
+      /* If nothing grows on the ground in a place, its low patches carry the
+         shrub fruit instead, so no plant is left empty. */
+      function pool(where, kind) {
+        return pools[where + ':' + kind] || pools[where + ':shrub'] || pools[where + ':tree'] || null;
+      }
+      var turn = {};
+      if (!GG.FRUITS.length) return;
       for (var i = 0; i < W.props.length; i++) {
         var p = W.props[i];
-        var def = null;
-        if (p.type === 'appleTree' && orchard.length) {
-          def = orchard[oi++ % orchard.length];
-        } else if (p.type === 'wildBush' && hill.length) {
-          def = hill[hi++ % hill.length];
-        }
+        var kind = PROP[p.type];
+        if (!kind) continue;
+        var where = (p.type === 'wildBush') ? 'hill' : 'orchard';
+        var list = pool(where, kind);
+        if (!list || !list.length) continue;
+        var key = where + ':' + kind;
+        turn[key] = (turn[key] || 0);
+        var def = list[turn[key]++ % list.length];
         if (!def) continue;
         p.fruit = def.id;
         p.ripe = 1;
