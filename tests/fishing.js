@@ -126,7 +126,7 @@ const { chromium } = require('playwright');
   });
   await p.evaluate(() => GG.Book.open('fish'));
   await p.waitForTimeout(500);
-  ok('the Fish Book lists the fish', await p.$eval('#book-grid', e => e.children.length) === 29);
+  ok('the Fish Book lists the fish', await p.$eval('#book-grid', e => e.children.length) === 36);
   ok('the book title switches', await p.$eval('#book-title', e => e.textContent) === 'Fish Book');
   await p.screenshot({ path: __dirname + '/shots/fish-book.png' });
   await p.evaluate(() => GG.Book.showDetail(GG.FISH_BY_ID.koi));

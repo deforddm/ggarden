@@ -17,12 +17,13 @@ const { chromium } = require('playwright');
   const data = await p.evaluate(() => {
     const bad = { noShape: [], noFacts: [], shortFact: [], noMeasure: [], badTime: [],
       badHab: [], dupe: [], noWater: [] };
-    const WATERS = ['pond', 'stream', 'river', 'estuary', 'sea'];
+    const WATERS = ['pond', 'stream', 'river', 'estuary', 'sea', 'swamp'];
     const seen = {};
     const TIMES = ['morning', 'day', 'evening', 'night', 'any'];
     const HABS = ['meadow', 'garden', 'forest', 'pond', 'hill', 'orchard',
       'riverbank', 'river', 'beach', 'shore', 'tidepool', 'anywhere',
-      'mountain', 'taiga', 'tundra', 'desert', 'rainforest', 'glade'];
+      'mountain', 'taiga', 'tundra', 'desert', 'rainforest', 'glade',
+      'savanna', 'swamp', 'cave', 'badlands', 'bamboo', 'cherry', 'farmyard'];
     GG.BUGS.forEach(x => {
       if (seen[x.id]) bad.dupe.push(x.id); seen[x.id] = 1;
       if (!GG.BugArt.shapes[x.art.shape]) bad.noShape.push(x.id);
@@ -67,7 +68,7 @@ const { chromium } = require('playwright');
       emptyCombos: Object.keys(combos).filter(k => combos[k] === 0) };
   });
 
-  ok('153 bugs and 29 fish (' + data.count + ' + ' + data.fish + ')', data.count === 153 && data.fish === 29);
+  ok('174 bugs and 36 fish (' + data.count + ' + ' + data.fish + ')', data.count === 174 && data.fish === 36);
   ok('every fish says which waters it lives in', data.bad.noWater.length === 0);
   ok('no duplicate ids', data.bad.dupe.length === 0);
   ok('every bug has a drawing shape', data.bad.noShape.length === 0);
@@ -84,8 +85,8 @@ const { chromium } = require('playwright');
   // the book copes with the bigger roster
   await p.evaluate(() => { GG.BUGS.forEach(x => GG.Save.addCatch(x.id)); GG.Book.open('bugs'); });
   await p.waitForTimeout(600);
-  ok('the Bug Book shows all of them', await p.$eval('#book-grid', e => e.children.length) === 153);
-  ok('the counter reads 153 / 153', (await p.$eval('#progress', e => e.textContent)).trim() === '153 / 153');
+  ok('the Bug Book shows all of them', await p.$eval('#book-grid', e => e.children.length) === 174);
+  ok('the counter reads 174 / 174', (await p.$eval('#progress', e => e.textContent)).trim() === '174 / 174');
   await p.screenshot({ path: __dirname + '/shots/book-full.png' });
 
   console.log(r.join('\n'));

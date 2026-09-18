@@ -151,10 +151,14 @@ const { chromium } = require('playwright');
     GG.Save.save();
   });
 
-  ok('the rock-pool creatures are all marked as needing water', await p.evaluate(() => {
+  ok('everything marked as needing water lives in water', await p.evaluate(() => {
+    const WET = ['tidepool', 'pond', 'swamp', 'river', 'riverbank', 'badlands'];
     const wet = GG.BUGS.filter(x => GG.isAquaticBug(x));
-    return wet.length === 8 && wet.every(x => x.habitats.indexOf('tidepool') >= 0);
+    return wet.length >= 8 && wet.every(x => x.habitats.some(h => WET.indexOf(h) >= 0));
   }));
+  ok('the eight rock-pool creatures are among them', await p.evaluate(() =>
+    GG.BUGS.filter(x => x.habitats.indexOf('tidepool') >= 0)
+      .every(x => GG.isAquaticBug(x))));
   ok('and no land bug is marked that way', await p.evaluate(() =>
     ['monarch','ladybug','grasshopper','water_strider','ghost_crab','horseshoe_crab']
       .every(id => !GG.isAquaticBug(GG.BUG_BY_ID[id]))));

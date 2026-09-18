@@ -21,7 +21,11 @@ const { chromium } = require('playwright');
       shortManners: [], noMeasure: [], badTime: [], badPlace: [], dupe: [],
       badRarity: [], badPatience: [], badKeep: [], badSize: [], noFamily: [] };
     const TIMES = ['morning', 'day', 'evening', 'night', 'any'];
-    const PLACES = ['meadow', 'garden', 'forest', 'pond', 'hill', 'orchard', 'riverbank', 'beach', 'shore'];
+    /* the biomes the world actually has, including the seven the new roster
+       reaches into: the desert, the ridge, the taiga, the tundra, the glade,
+       the rainforest and the beach */
+    const PLACES = ['meadow', 'garden', 'forest', 'pond', 'hill', 'orchard', 'riverbank',
+      'beach', 'shore', 'desert', 'mountain', 'taiga', 'tundra', 'glade', 'rainforest'];
     const FAMS = Object.keys(GG.FAMILY_NAMES);
     const seen = {};
     GG.ANIMALS.forEach(a => {
@@ -47,9 +51,10 @@ const { chromium } = require('playwright');
     return { bad, count: GG.ANIMALS.length, fams, ways: Object.keys(GG.FRIEND_WAYS).length };
   });
   Object.keys(roster.bad).forEach(k => ok('roster ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('23 animals (got ' + roster.count + ')', roster.count === 23);
-  ok('all six families present ' + JSON.stringify(roster.fams), Object.keys(roster.fams).length === 6);
-  ok('seven befriending methods', roster.ways === 7);
+  ok('54 animals (got ' + roster.count + ')', roster.count === 54);
+  ok('twenty-five families present ' + JSON.stringify(roster.fams),
+    Object.keys(roster.fams).length === 25);
+  ok('fourteen befriending methods (got ' + roster.ways + ')', roster.ways === 14);
 
   /* every method's button text and blurb exist */
   const ways = await p.evaluate(() => {
@@ -150,8 +155,8 @@ const { chromium } = require('playwright');
     row: !!document.getElementById('companion-row')
   }));
   ok('the Friends Book opens', book.title === 'Friends Book');
-  ok('it lists every animal', book.cells === 23);
-  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 23');
+  ok('it lists every animal', book.cells === 54);
+  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 54');
   ok('the companion strip is there', book.row);
 
   const detail = await p.evaluate(() => {
@@ -457,6 +462,71 @@ const { chromium } = require('playwright');
       if (GG.Friends._spawn) GG.Friends.spawnNear = GG.Friends._spawn;
       if (GG.Critters._spawn) GG.Critters.spawnNear = GG.Critters._spawn;
     };
+    /* A tree with nothing else solid within 150px, so a chase round it is a
+       chase and not an obstacle course. */
+    window.__lonelyTree = () => {
+      const W = GG.World;
+      const trees = W.props.filter(q => q.type === 'tree' || q.type === 'pine');
+      let best = trees[0], bestN = 1e9;
+      for (let i = 0; i < trees.length; i += 7) {
+        const t = trees[i];
+        if (W.isWater(t.x, t.y)) continue;
+        let n = 0;
+        for (let j = 0; j < W.solids.length; j += 3) {
+          const q = W.solids[j];
+          if (q === t) continue;
+          if (Math.abs(q.x - t.x) < 150 && Math.abs(q.y - t.y) < 150) n++;
+        }
+        if (n < bestN) { bestN = n; best = t; }
+        if (n === 0) break;
+      }
+      return best;
+    };
+
+    /* Open ground with room to walk in a straight line - the map has grown
+       twice now, and a staged spot that used to be a meadow can end up inside
+       a wall, which measures the wall and not the behaviour. */
+    window.__runway = (west, east) => {
+      const W = GG.World;
+      const clear = (x, y, dx, len) => {
+        for (let d = 0; d <= len; d += 16) {
+          const px = x + dx * d;
+          if (W.isWater(px, y) || W.blocked(px, y, 14)) return false;
+          if (W.isWater(px, y - 26) || W.blocked(px, y - 26, 14)) return false;
+        }
+        return true;
+      };
+      for (let r = 0; r < 2000; r += 40) {
+        for (let a = 0; a < Math.PI * 2; a += 0.22) {
+          const x = W.DOOR.x + Math.cos(a) * r, y = W.DOOR.y + 80 + Math.sin(a) * r;
+          if (x < 200 || y < 200 || x > W.W - 200 || y > W.H - 200) continue;
+          if (clear(x, y, -1, west) && clear(x, y, 1, east)) return { x: x, y: y };
+        }
+      }
+      return { x: W.DOOR.x, y: W.DOOR.y + 80 };
+    };
+
+    /* Water she can actually walk about in, rather than a stream she is out
+       of again in one stride. */
+    window.__wadeSpot = () => {
+      const W = GG.World;
+      const ok = (x, y) => {
+        if (!W.isWater(x, y) || W.blocked(x, y, 11)) return false;
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+          if (!W.isWater(x + Math.cos(a) * 20, y + Math.sin(a) * 20)) return false;
+          if (W.blocked(x + Math.cos(a) * 20, y + Math.sin(a) * 20, 11)) return false;
+        }
+        return true;
+      };
+      for (let r = 0; r < 2400; r += 25) {
+        for (let a = 0; a < Math.PI * 2; a += 0.2) {
+          const x = W.DOOR.x + Math.cos(a) * r, y = W.DOOR.y + Math.sin(a) * r;
+          if (ok(x, y)) return { x: x, y: y };
+        }
+      }
+      return null;
+    };
+
     window.__spot = (x, y, reach) => {
       const W = GG.World;
       for (let rr = 0; rr <= (reach || 60); rr += 8) {
@@ -487,6 +557,13 @@ const { chromium } = require('playwright');
       await new Promise(r => setTimeout(r, 50));
       if (GG.Critters.list.indexOf(prey) < 0) break;
       const d = GG.dist(hunter.x, hunter.y, prey.x, prey.y);
+      /* both of them are wandering while nothing is happening, and a beetle
+         that has pottered off out of range never picks the ant out at all -
+         so when neither is hunting the other, put them back within sight of
+         each other. The hunt itself is never touched. */
+      if (!hunter.prey && prey.flee <= 0 && d > 150) {
+        prey.x = hunter.x + 70; prey.y = hunter.y;
+      }
       if (d < closest) closest = d;
       if (hunter.prey) stalked = true;
       if (prey.flee > 0) bolted = true;
@@ -531,8 +608,13 @@ const { chromium } = require('playwright');
       if (!GG.ANIMAL_BY_ID[id]) bad.push('no such friend: ' + id);
       const seen = {};
       GG.ANIMAL_HUNTS[id].forEach(q => {
-        if (!GG.BUG_BY_ID[q] && !GG.FISH_BY_ID[q]) bad.push(id + ' -> not a real creature: ' + q);
-        if (animals[q]) bad.push(id + ' -> hunts a friend: ' + q);
+        /* David allowed exactly one friend-on-friend chase: the garter snake
+           and the chorus frog, which is real and which never ends in a catch */
+        const allowed = (id === 'garter_snake' && q === 'chorus_frog');
+        if (!GG.BUG_BY_ID[q] && !GG.FISH_BY_ID[q] && !(allowed && GG.ANIMAL_BY_ID[q])) {
+          bad.push(id + ' -> not a real creature: ' + q);
+        }
+        if (animals[q] && !allowed) bad.push(id + ' -> hunts a friend: ' + q);
         if (seen[q]) bad.push(id + ' -> listed twice: ' + q);
         seen[q] = 1;
       });
@@ -577,8 +659,10 @@ const { chromium } = require('playwright');
     };
   });
   ok('every prey list is real ' + JSON.stringify(prey.bad.slice(0, 5)), !prey.bad.length);
-  ok('five of the six families hunt ' + JSON.stringify(prey.fams),
-    Object.keys(prey.fams).length === 5);
+  ok('most of the families hunt, and the plant-eaters do not ' + JSON.stringify(prey.fams),
+    Object.keys(prey.fams).length >= 14 && !prey.fams.parrot && !prey.fams.rabbit &&
+    !prey.fams.cow && !prey.fams.horse && !prey.fams.sheep && !prey.fams.deer &&
+    !prey.fams.koala && !prey.fams.redpanda && !prey.fams.squirrel);
   ok('a hummingbird hunts aphids and spiders',
     prey.hummerTakesAnAphid && prey.hummerTakesASpider);
   ok('but never a dragonfly or a grasshopper - they are far too big',
@@ -602,7 +686,9 @@ const { chromium } = require('playwright');
   ok('each family hunts in its own way (' + prey.styles + ')',
     /cat:pounce/.test(prey.styles) && /dog:dash/.test(prey.styles) &&
     /hummingbird:hover/.test(prey.styles) && /bat:swoop/.test(prey.styles) &&
-    /frog:ambush/.test(prey.styles) && /parrot:null/.test(prey.styles));
+    /frog:ambush/.test(prey.styles) && /parrot:null/.test(prey.styles) &&
+    /snake:pounce/.test(prey.styles) && /songbird:dash/.test(prey.styles) &&
+    /turtle:ambush/.test(prey.styles));
 
   /* ---------- a hunt really happens ---------- */
   const catHunt = await p.evaluate(async () => {
@@ -738,9 +824,11 @@ const { chromium } = require('playwright');
       catAndFrog: !!GG.friendRuleFor(A.tabby, A.green_frog),
       birdAndCat: !!GG.friendRuleFor(A.annas_hummingbird, A.tabby),
       notItself: !!GG.friendRuleFor(A.tabby, A.tabby),
-      /* no friend is ever on another friend's prey list either */
-      noneInThePreyLists: GG.ANIMALS.every(a => GG.animalPrey(a.id)
-        .every(q => !GG.ANIMAL_BY_ID[q])),
+      /* the ONLY friend on any friend's prey list is the chorus frog, on the
+         garter snake's - the one exception David allowed, and it never ends
+         in a catch */
+      friendPairs: [].concat.apply([], GG.ANIMALS.map(a => GG.animalPrey(a.id)
+        .filter(q => GG.ANIMAL_BY_ID[q]).map(q => a.id + '->' + q))),
       /* and it is written down where she can read it */
       onTheCatsPage: GG.ANIMALS.filter(a => a.family === 'cat')
         .every(a => a.facts.join(' ').indexOf('friends never hunt friends') >= 0),
@@ -749,7 +837,9 @@ const { chromium } = require('playwright');
       onTheBullfrogsPage: A.bullfrog.facts.join(' ').indexOf('friends never hunt friends') >= 0
     };
   });
-  ok('no friend is on any other friend\u2019s prey list', ruleData.noneInThePreyLists);
+  ok('the garter snake and the chorus frog are the only friend-on-friend chase '
+    + JSON.stringify(ruleData.friendPairs),
+    ruleData.friendPairs.length === 1 && ruleData.friendPairs[0] === 'garter_snake->chorus_frog');
   ok('the rule knows a cat would really take a hummingbird', ruleData.catAndBird);
   ok('and that a dog would chase a cat', ruleData.dogAndCat);
   ok('and that a bullfrog would swallow a bat or a little frog',
@@ -871,6 +961,642 @@ const { chromium } = require('playwright');
   ok('the bullfrog page says it is introduced and prohibited here',
     range.bullfrogIntroduced && range.bullfrogTwiceTheSize);
   ok('and does not blame the frog for it', range.bullfrogNotBlamed);
+
+
+  /* ================= THE FOUR BEHAVIOURS AND THE THREE FIXES =================
+
+     Guin asked for four things - rideable friends, dogs chasing squirrels,
+     friends laughing together, and fish that scatter when she steps in the
+     stream - and the new roster needed three things the code could not do:
+     a friend who is met and never befriended, a ring that runs backwards for
+     the animals you befriend by going away, and one chase that crosses from
+     the bugs into the friends. */
+
+  ok('nothing is left open before the new behaviours', !(await unpause()));
+
+  /* ---------- 1. LOOK, DON'T TOUCH: the western rattlesnake ---------- */
+  const lookData = await p.evaluate(() => {
+    const A = GG.ANIMAL_BY_ID;
+    const looks = GG.ANIMALS.filter(a => a.lookOnly).map(a => a.id);
+    return {
+      looks,
+      isLookOnly: GG.animalIsLookOnly(A.western_rattlesnake),
+      worthNothing: A.western_rattlesnake.value === 0,
+      hasDanger: !!A.western_rattlesnake.danger,
+      backsAway: A.western_rattlesnake.way === 'backaway',
+      widowToo: !!(GG.BUG_BY_ID.black_widow && GG.BUG_BY_ID.black_widow.lookOnly)
+    };
+  });
+  ok('the rattlesnake is the only look-only friend ' + JSON.stringify(lookData.looks),
+    lookData.looks.length === 1 && lookData.looks[0] === 'western_rattlesnake');
+  ok('she is worth no sparkles and carries a danger line',
+    lookData.isLookOnly && lookData.worthNothing && lookData.hasDanger);
+  ok('and you make friends with her by backing away', lookData.backsAway);
+
+  const met = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    GG.Save.data.seen = {};
+    const spot = window.__runway(300, 320);
+    P.reset(spot.x, spot.y);
+    await new Promise(r => setTimeout(r, 200));
+    const before = GG.Save.data.sparkles;
+    F.add(GG.ANIMAL_BY_ID.western_rattlesnake, P.x + 210, P.y);
+    await new Promise(r => setTimeout(r, 200));
+    const cand = F.candidate(P);
+    const began = F.begin(P);
+    const rings = [];
+    GG.Input.keys['a'] = true;                 /* stepping slowly backwards */
+    for (let i = 0; i < 90 && F.busy; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      if (F.busy) rings.push(F.busy.ring);
+    }
+    GG.Input.keys['a'] = false;
+    await new Promise(r => setTimeout(r, 200));
+    /* and she is never a friend, never a companion, never at home */
+    F.setCompanion('western_rattlesnake');
+    const comp = GG.Save.data.companion;
+    F.sendHome('western_rattlesnake');
+    window.__release();
+    return { cand: !!cand, began, done: !F.busy,
+      rose: rings.length > 4 && rings[rings.length - 1] > rings[0],
+      seen: GG.Save.hasSeen('western_rattlesnake'),
+      count: GG.Save.countOfSeen('western_rattlesnake'),
+      friend: GG.Save.hasFriend('western_rattlesnake'),
+      paid: GG.Save.data.sparkles - before,
+      companion: comp,
+      home: (GG.Save.data.homeFriends || []).indexOf('western_rattlesnake') >= 0
+    };
+  });
+  ok('she can be met from a long way off', met.cand && met.began);
+  ok('backing away fills the ring', met.rose);
+  ok('and meeting her finishes it', met.done);
+  ok('she goes in the "met" list, not the friends list', met.seen && !met.friend);
+  ok('meeting her is counted (' + met.count + ')', met.count === 1);
+  ok('she is worth no sparkles at all and no new-friend bonus (' + met.paid + ')', met.paid === 0);
+  ok('she can never be asked along', met.companion !== 'western_rattlesnake');
+  ok('and never waits at the house', !met.home);
+
+  const lookBook = await p.evaluate(() => {
+    GG.Book.open(); GG.Book.tab = 'friends'; GG.Book.showGrid();
+    const cells = document.querySelectorAll('#book-grid .bugcell');
+    const idx = GG.ANIMAL_BY_ID.western_rattlesnake.index;
+    /* the grid has the companion strip first, so the cells run one behind */
+    const cell = cells[idx];
+    const opened = cell.classList.contains('got');
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.western_rattlesnake);
+    const t = document.getElementById('book-detail').textContent;
+    const along = !!document.querySelector('#book-detail .btn.primary');
+    GG.UI.close('screen-book');
+    return { opened, met: t.indexOf('Met: 1 time') >= 0,
+      tag: t.indexOf('keep away from') >= 0,
+      noNet: t.indexOf('your net will not take her') < 0,
+      danger: t.indexOf('Keep your hands to yourself') >= 0, along };
+  });
+  ok('meeting her opens her page in the Friends Book', lookBook.opened);
+  ok('the page counts the meetings, not the friendships', lookBook.met);
+  ok('the look-only tag is worded for a friend, not for a net',
+    lookBook.tag && lookBook.noNet);
+  ok('the danger box is on the page', lookBook.danger);
+  ok('and there is no "ask them along" button on it', !lookBook.along);
+
+  /* ---------- 2. THE RING THAT RUNS BACKWARDS ---------- */
+  ok('nothing is left open before the backing away', !(await unpause()));
+  const back = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const spot = window.__runway(420, 380);
+    P.reset(spot.x, spot.y);
+    await new Promise(r => setTimeout(r, 200));
+    const bear = F.add(GG.ANIMAL_BY_ID.black_bear, P.x + 220, P.y);
+    await new Promise(r => setTimeout(r, 200));
+    const began = F.begin(P);
+    /* standing still does nothing much: it is going away that counts */
+    await new Promise(r => setTimeout(r, 1200));
+    const stillRing = F.busy ? F.busy.ring : -1;
+    GG.Input.keys['a'] = true;
+    await new Promise(r => setTimeout(r, 1500));
+    GG.Input.keys['a'] = false;
+    const awayRing = F.busy ? F.busy.ring : 1;
+    /* now walk back at it: the ring slips straight back */
+    GG.Input.keys['d'] = true;
+    await new Promise(r => setTimeout(r, 900));
+    const closerRing = F.busy ? F.busy.ring : -1;
+    await new Promise(r => setTimeout(r, 900));
+    GG.Input.keys['d'] = false;
+    const stopped = !F.busy;
+    const toast = document.getElementById('toast').textContent;
+    /* and she can never end up standing next to one */
+    const nearest = F.list.length ? GG.dist(bear.x, bear.y, P.x, P.y) : -1;
+    window.__release();
+    return { began, stillRing, awayRing, closerRing, stopped, toast,
+      keep: GG.ANIMAL_BY_ID.black_bear.keep, nearest: Math.round(nearest) };
+  });
+  ok('you can start backing away from a bear a long way off', back.began);
+  ok('standing still in front of a bear does almost nothing ('
+    + back.stillRing.toFixed(2) + ')', back.stillRing < 0.35);
+  ok('walking away fills the ring (' + back.awayRing.toFixed(2) + ')',
+    back.awayRing > back.stillRing);
+  ok('walking back towards it slips the ring back (' + back.closerRing.toFixed(2) + ')',
+    back.closerRing < back.awayRing);
+  ok('and walking at it stops the whole thing', back.stopped);
+  ok('and says why (' + back.toast.slice(0, 40) + ')', /step slowly backwards/.test(back.toast));
+
+  const keepOff = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const spot = window.__runway(60, 700);
+    P.reset(spot.x, spot.y);
+    const moose = F.add(GG.ANIMAL_BY_ID.moose, P.x + 150, P.y + 4);
+    let closest = 1e9;
+    GG.Input.keys['d'] = true;            /* walk straight at it for a while */
+    for (let i = 0; i < 40; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      closest = Math.min(closest, GG.dist(moose.x, moose.y, P.x, P.y));
+    }
+    GG.Input.keys['d'] = false;
+    window.__release();
+    return { closest: Math.round(closest), keep: GG.ANIMAL_BY_ID.moose.keep };
+  });
+  ok('a moose never lets her walk up to it (' + keepOff.closest + 'px, keeps '
+    + keepOff.keep + ')', keepOff.closest > keepOff.keep * 0.55);
+
+  /* ---------- 3. THE GARTER SNAKE AND THE CHORUS FROG ---------- */
+  ok('nothing is left open before the snake', !(await unpause()));
+  const snakeFrog = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sp = window.__spot(GG.World.DOOR.x + 160, GG.World.DOOR.y + 120, 80);
+    P.reset(sp.x - 120, sp.y);
+    const snake = F.add(GG.ANIMAL_BY_ID.garter_snake, sp.x, sp.y);
+    const frog = F.add(GG.ANIMAL_BY_ID.chorus_frog, sp.x + 120, sp.y + 6);
+    const d0 = GG.dist(snake.x, snake.y, frog.x, frog.y);
+    let picked = false, closest = d0, tried = false, watched = false;
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (snake.chaseId === frog) picked = true;
+      if (snake.watch > 0) watched = true;
+      closest = Math.min(closest, GG.dist(snake.x, snake.y, frog.x, frog.y));
+      if (snake.missed > 0 || frog.bolt > 0) tried = true;
+      if (tried) break;
+    }
+    window.__release();
+    return { picked, tried, watched, d0: Math.round(d0), closest: Math.round(closest),
+      alive: F.list.indexOf(frog) >= 0,
+      hunts: GG.animalHunts('garter_snake', 'chorus_frog'),
+      notTheOtherWay: GG.animalHunts('chorus_frog', 'garter_snake'),
+      bullfrogSitsInstead: !!GG.friendRuleFor(GG.ANIMAL_BY_ID.bullfrog,
+        GG.ANIMAL_BY_ID.garter_snake) };
+  });
+  ok('the garter snake really does hunt the chorus frog', snakeFrog.hunts && !snakeFrog.notTheOtherWay);
+  ok('and it picks the frog out even though the frog is a friend', snakeFrog.picked);
+  ok('and goes after it (' + snakeFrog.d0 + ' -> ' + snakeFrog.closest + ')',
+    snakeFrog.closest < snakeFrog.d0);
+  ok('and has a go at it', snakeFrog.tried);
+  ok('and the frog always gets away', snakeFrog.alive);
+  ok('this one does not sit down and watch - it is the one exception', !snakeFrog.watched);
+  ok('but a bullfrog and a snake still stop and watch each other',
+    snakeFrog.bullfrogSitsInstead);
+
+  /* ---------- 4. DOGS CHASE SQUIRRELS ---------- */
+  ok('nothing is left open before the chase', !(await unpause()));
+  const playData = await p.evaluate(() => {
+    const A = GG.ANIMAL_BY_ID;
+    return {
+      dogAndSquirrel: !!GG.friendPlayFor(A.labrador, A.fox_squirrel),
+      notAHunt: !GG.animalHunts('labrador', 'fox_squirrel'),
+      noRule: !GG.friendRuleFor(A.labrador, A.fox_squirrel),
+      notBackwards: !GG.friendPlayFor(A.fox_squirrel, A.labrador),
+      notACat: !GG.friendPlayFor(A.tabby, A.fox_squirrel),
+      why: (GG.friendPlayFor(A.cookie, A.townsends_squirrel) || {}).why || ''
+    };
+  });
+  ok('a dog and a squirrel are a play pairing, not a hunt',
+    playData.dogAndSquirrel && playData.notAHunt && playData.noRule);
+  ok('and it only goes one way, and only for dogs',
+    playData.notBackwards && playData.notACat);
+  ok('and the book knows it is play (' + playData.why.slice(0, 36) + ')',
+    /play, not hunting/i.test(playData.why));
+
+  const chaseSquirrel = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player, W = GG.World;
+    window.__hold();
+    /* a real tree, a squirrel out in front of it, and a dog further off */
+    /* a tree with room round it: in the thick of the wood the dog spends the
+       whole chase walking into other trees, which measures the wood and not
+       the chase */
+    const tree = window.__lonelyTree();
+    P.reset(tree.x + 250, tree.y + 250);
+    const sq = F.add(GG.ANIMAL_BY_ID.fox_squirrel, tree.x + 70, tree.y + 8);
+    const dog = F.add(GG.ANIMAL_BY_ID.labrador, tree.x + 175, tree.y + 12);
+    let chased = false, scolded = false, up = 0, closest = 1e9, inSight = false;
+    let watched = false, climbed = false;
+    for (let i = 0; i < 400; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      /* both of them are wandering while they are not playing, and a dog that
+         has pottered off over the hill never sees the squirrel at all - so
+         keep the pair of them staged, as the other chase tests do */
+      if (!(dog.play > 0) && !(sq.scold > 0) &&
+          GG.dist(dog.x, dog.y, sq.x, sq.y) > 230) {
+        dog.x = sq.x + 150; dog.y = sq.y + 6;
+      }
+      if (dog.play > 0) chased = true;
+      if (dog.watch > 0 || sq.watch > 0) watched = true;
+      closest = Math.min(closest, GG.dist(dog.x, dog.y, sq.x, sq.y));
+      if (sq.scold > 0) {
+        scolded = true;
+        up = Math.max(up, sq.up || 0);
+        climbed = !!sq.climb;
+        /* in plain sight: it stays between the trunk and the dog, not round
+           the back of it */
+        if (sq.climb) {
+          const toDog = GG.dist(sq.x, sq.y, dog.x, dog.y);
+          const trunkToDog = GG.dist(sq.climb.x, sq.climb.y, dog.x, dog.y);
+          if (toDog < trunkToDog) inSight = true;
+        }
+      }
+      if (scolded && i > 120) break;
+    }
+    window.__release();
+    return { chased, scolded, up: +up.toFixed(2), climbed, inSight, watched,
+      closest: Math.round(closest), alive: F.list.indexOf(sq) >= 0 };
+  });
+  ok('a dog bounds after a squirrel', chaseSquirrel.chased);
+  ok('and nobody sits down and watches - the rule is not needed here',
+    !chaseSquirrel.watched);
+  ok('the squirrel runs to a tree', chaseSquirrel.climbed);
+  ok('and goes part way up it (' + chaseSquirrel.up + ')', chaseSquirrel.up > 0);
+  ok('and stops there in plain sight, facing the dog', chaseSquirrel.inSight);
+  ok('and scolds it', chaseSquirrel.scolded);
+  ok('the dog never lays a paw on it (' + chaseSquirrel.closest + 'px at the closest)',
+    chaseSquirrel.alive && chaseSquirrel.closest > 14);
+
+  /* the real escape sums: close to its tree a squirrel is brave, out in the
+     open it goes early. Dill & Houtman ran a model cat at grey squirrels on a
+     wire and got flight distance = 2.19 + 0.385 x distance-to-tree, in
+     metres, which is exactly the line the garden uses. */
+  const fleeSums = await p.evaluate(async () => {
+    const F = GG.Friends;
+    window.__hold();
+    const tree = window.__lonelyTree();
+    const sq = F.add(GG.ANIMAL_BY_ID.fox_squirrel, tree.x + 20, tree.y);
+    const rows = [], off = [];
+    for (let d = 14; d <= 460; d += 22) {
+      sq.x = tree.x + d; sq.y = tree.y;
+      const t = F.nearestTree(sq.x, sq.y, 420);
+      rows.push({ d: t ? Math.round(t.dist) : -1, r: Math.round(F.squirrelFlee(sq)) });
+    }
+    rows.forEach(q => { if (q.d >= 0) off.push(q); });
+    const lo = off.reduce((a, q) => (q.d < a.d ? q : a), off[0]);
+    const hi = off.reduce((a, q) => (q.d > a.d ? q : a), off[0]);
+    /* and the line itself, in this garden's pixels: thirty to the metre */
+    const line = off.every(q => Math.abs(q.r - (2.19 * 30 + 0.385 * q.d)) < 1.5);
+    window.__release();
+    F.clear();
+    return { lo, hi, line, n: off.length };
+  });
+  ok('the squirrel\u2019s escape sums are the measured ones', fleeSums.line);
+  ok('so close to its tree it lets a dog come nearer (' + fleeSums.lo.d + 'px from the '
+    + 'tree -> ' + fleeSums.lo.r + 'px) than out in the open (' + fleeSums.hi.d
+    + 'px -> ' + fleeSums.hi.r + 'px)',
+    fleeSums.hi.d - fleeSums.lo.d > 50 && fleeSums.hi.r > fleeSums.lo.r + 18);
+
+  /* ---------- 5. FRIENDS LAUGH TOGETHER ---------- */
+  ok('nothing is left open before the play signals', !(await unpause()));
+  const signals = await p.evaluate(() => {
+    const A = GG.ANIMAL_BY_ID, S = GG.FRIEND_SIGNALS;
+    return {
+      kinds: Object.keys(S).sort().join(','),
+      dogs: GG.friendSignalFor(A.labrador, A.beagle).id,
+      parrots: GG.friendSignalFor(A.budgie, A.cockatiel).id,
+      mixed: GG.friendSignalFor(A.tabby, A.green_frog).id,
+      /* nothing claims an animal laughs */
+      noLaughing: Object.keys(S).every(k => !/laugh(s|ing)? ?(out|at)?\b/i.test(S[k].does)),
+      honestAboutDogs: /not laugh/i.test(S.playbow.honest),
+      keaIsInIt: /kea/i.test(S.playcall.why),
+      honestAboutTheRest: /nobody has ever found/i.test(S.companionable.honest)
+    };
+  });
+  ok('there are three play signals and no more (' + signals.kinds + ')',
+    signals.kinds === 'companionable,playbow,playcall');
+  ok('two dogs do a play bow', signals.dogs === 'playbow');
+  ok('two parrots do the play call', signals.parrots === 'playcall');
+  ok('and everybody else just sits together', signals.mixed === 'companionable');
+  ok('nothing in the game says an animal laughs', signals.noLaughing);
+  ok('and the dog page says so out loud', signals.honestAboutDogs);
+  ok('the kea study is the one behind the parrots', signals.keaIsInIt);
+  ok('and the quiet one is honest about the empty spaces', signals.honestAboutTheRest);
+
+  const bowLive = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sp = window.__spot(GG.World.DOOR.x + 140, GG.World.DOOR.y + 160, 80);
+    P.reset(sp.x - 150, sp.y);
+    const a = F.add(GG.ANIMAL_BY_ID.labrador, sp.x, sp.y);
+    const b2 = F.add(GG.ANIMAL_BY_ID.beagle, sp.x + 40, sp.y + 8);
+    let bowed = false, bounced = false;
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      /* two dogs left to themselves wander apart, and a dog on the other side
+         of the meadow has nobody to bow to - so keep them in the same field */
+      if (!bowed && GG.dist(a.x, a.y, b2.x, b2.y) > 130) { b2.x = a.x + 46; b2.y = a.y + 8; }
+      if (a.bow > 0 || b2.bow > 0) bowed = true;
+      if (a.bounce > 0 && b2.bounce > 0) bounced = true;
+      if (bowed && bounced) break;
+    }
+    window.__release();
+    return { bowed, bounced, signal: (a.signal || {}).id };
+  });
+  ok('two dogs that meet really do bow to each other', bowLive.bowed);
+  ok('and then both of them bounce', bowLive.bounced);
+  ok('and the garden knows which signal that was', bowLive.signal === 'playbow');
+
+  const keaLive = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sp = window.__spot(GG.World.DOOR.x + 140, GG.World.DOOR.y + 180, 80);
+    P.reset(sp.x - 160, sp.y);
+    const one = F.add(GG.ANIMAL_BY_ID.budgie, sp.x, sp.y);
+    /* the second one is a long way off and cannot see the first: the call
+       alone is what sets it playing */
+    const two = F.add(GG.ANIMAL_BY_ID.cockatiel, sp.x + 380, sp.y + 220);
+    let spread = false, apart = 0;
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (GG.dist(one.x, one.y, two.x, two.y) > 480) { two.x = one.x + 380; two.y = one.y + 220; }
+      if (one.bounce > 0 && two.bounce > 0) {
+        spread = true;
+        apart = Math.round(GG.dist(one.x, one.y, two.x, two.y));
+        break;
+      }
+    }
+    window.__release();
+    return { spread, apart };
+  });
+  ok('a parrot calling sets another parrot playing, right across the garden ('
+    + keaLive.apart + 'px apart)', keaLive.spread && keaLive.apart > 200);
+
+  const signalBook = await p.evaluate(() => {
+    GG.Book.open(); GG.Book.tab = 'friends';
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.labrador);
+    const dog = document.getElementById('book-detail').textContent;
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.budgie);
+    const bird = document.getElementById('book-detail').textContent;
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.green_frog);
+    const frog = document.getElementById('book-detail').textContent;
+    GG.UI.close('screen-book');
+    return {
+      dogBow: dog.indexOf('play bow') >= 0,
+      dogHonest: dog.indexOf('Dogs do not laugh') >= 0,
+      parrotKea: bird.indexOf('kea') >= 0,
+      frogQuiet: frog.indexOf('Not every animal plays with a friend') >= 0
+    };
+  });
+  ok('the dog page explains the play bow', signalBook.dogBow);
+  ok('and says plainly that dogs do not laugh', signalBook.dogHonest);
+  ok('the parrot page has the kea and the loudspeaker', signalBook.parrotKea);
+  ok('and the frog page says some friends just sit together', signalBook.frogQuiet);
+
+  /* ---------- 6. RIDING ---------- */
+  ok('nothing is left open before the riding', !(await unpause()));
+  const rideable = await p.evaluate(() => ({
+    rideable: GG.ANIMALS.filter(a => a.rideable).map(a => a.id),
+    horseWay: GG.ANIMAL_BY_ID.horse.way
+  }));
+  ok('only the horse can be ridden ' + JSON.stringify(rideable.rideable),
+    rideable.rideable.length === 1 && rideable.rideable[0] === 'horse');
+  ok('and she is befriended at the shoulder', rideable.horseWay === 'shoulder');
+
+  const ride = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    window.__hold();
+    const sp = window.__runway(80, 640);
+    P.reset(sp.x, sp.y);
+    GG.Save.addFriend('horse');
+    F.setCompanion('horse');
+    await new Promise(r => setTimeout(r, 1200));
+    const comp = F.companion;
+    const out = {};
+    const put = (dx, dy) => { P.x = comp.x + dx; P.y = comp.y + dy; };
+
+    /* straight behind her: the one place you never stand */
+    put(comp.faceLeft ? 34 : -34, 0);
+    out.behindStance = F.rideStance(P, comp);
+    out.behind = F.rideOffer(P);
+    F.rideTap(P);
+    out.behindToast = document.getElementById('toast').textContent;
+    out.stillNotUp = !F.riding;
+
+    /* round at her shoulder, where she can see you */
+    put(6, -26);
+    out.stance = F.rideStance(P, comp);
+    out.ask = (F.rideOffer(P) || {}).stage;
+    F.rideTap(P);
+    out.asked = F.asked;
+    out.helmetStage = (F.rideOffer(P) || {}).stage;
+    /* and you cannot get up without the helmet */
+    out.noHelmetNoRide = !F.mount(P);
+    F.rideTap(P);
+    out.helmetOn = F.helmetOn;
+    out.upStage = (F.rideOffer(P) || {}).stage;
+    F.rideTap(P);
+    out.riding = !!F.riding;
+    out.lift = F.rideLift();
+
+    /* riding is faster than walking, and the horse is under her */
+    const x0 = P.x, y0 = P.y;
+    GG.Input.keys['d'] = true;
+    await new Promise(r => setTimeout(r, 1000));
+    GG.Input.keys['d'] = false;
+    out.rodeFor = Math.round(GG.dist(P.x, P.y, x0, y0));
+    out.stillUp = !!F.riding;               /* she stayed on the whole way */
+    out.horseUnder = Math.round(GG.dist(F.companion.x, F.companion.y, P.x, P.y));
+    out.noFriendButton = !F.candidate(P);
+    await new Promise(r => setTimeout(r, 400));
+
+    F.rideTap(P);
+    out.down = !F.riding;
+    out.horseBeside = Math.round(GG.dist(F.companion.x, F.companion.y, P.x, P.y));
+
+    /* and she walks slower on her own two feet */
+    P.reset(x0, y0);
+    GG.Input.keys['d'] = true;
+    await new Promise(r => setTimeout(r, 1000));
+    GG.Input.keys['d'] = false;
+    out.walkedFor = Math.round(GG.dist(P.x, P.y, x0, y0));
+    window.__release();
+    return out;
+  });
+  ok('standing behind the horse is the wrong place to be',
+    ride.behindStance === 'behind' && ride.behind.stage === 'stand');
+  ok('and it says why (' + ride.behindToast.slice(0, 40) + ')',
+    /cannot see/.test(ride.behindToast));
+  ok('you cannot get up from back there', ride.stillNotUp);
+  ok('at her shoulder the first thing you do is ask',
+    ride.stance === 'shoulder' && ride.ask === 'ask');
+  ok('then the helmet', ride.asked && ride.helmetStage === 'helmet');
+  ok('and there is no getting up without it', ride.noHelmetNoRide);
+  ok('helmet on, and then you can get up',
+    ride.helmetOn && ride.upStage === 'up' && ride.riding);
+  ok('her sprite sits up on the horse’s back (' + ride.lift + 'px)', ride.lift > 8);
+  ok('the horse carries her along (' + ride.horseUnder + 'px apart)', ride.horseUnder < 12);
+  ok('she stays up while she rides', ride.stillUp);
+  ok('riding is faster than walking (' + ride.rodeFor + ' vs ' + ride.walkedFor + ')',
+    ride.rodeFor > ride.walkedFor * 1.2 && ride.walkedFor > 60);
+  ok('nobody else is befriended from up there', ride.noFriendButton);
+  ok('and she can get down again', ride.down && ride.horseBeside > 12);
+
+  const noRide = await p.evaluate(async () => {
+    const F = GG.Friends, P = GG.Player;
+    const out = {};
+    for (const id of ['cow', 'mule_deer', 'moose']) {
+      GG.Save.addFriend(id);
+      F.setCompanion(id);
+      await new Promise(r => setTimeout(r, 500));
+      const c = F.companion;
+      P.x = c.x + 6; P.y = c.y - 26;
+      out[id] = F.rideOffer(P);
+      out[id + 'Mount'] = F.mount(P);
+    }
+    F.setCompanion(null);
+    return out;
+  });
+  ok('a cow is never offered for riding', !noRide.cow && !noRide.cowMount);
+  ok('nor a deer', !noRide.mule_deer && !noRide.mule_deerMount);
+  ok('nor a moose', !noRide.moose && !noRide.mooseMount);
+
+  const rideBook = await p.evaluate(() => {
+    GG.Book.open(); GG.Book.tab = 'friends';
+    GG.Book.showDetail(GG.ANIMAL_BY_ID.horse);
+    const t = document.getElementById('book-detail').textContent;
+    GG.UI.close('screen-book');
+    return { riding: t.indexOf('Riding her') >= 0, helmet: t.indexOf('helmet') >= 0,
+      shoulder: t.indexOf('shoulder') >= 0, behind: t.indexOf('never straight behind') >= 0 };
+  });
+  ok('the horse page says how to get on her', rideBook.riding && rideBook.shoulder);
+  ok('and about the helmet, and about never standing behind her',
+    rideBook.helmet && rideBook.behind);
+
+  /* ---------- 7. FISH AND THE STREAM ---------- */
+  ok('nothing is left open before the fish', !(await unpause()));
+  const wade = await p.evaluate(async () => {
+    const W = GG.World, Fi = GG.Fishing, P = GG.Player;
+    const spot = window.__wadeSpot();
+    if (!spot) return { noWater: true };
+    P.reset(spot.x, spot.y);
+    await new Promise(r => setTimeout(r, 1800));
+    const out = {
+      wading: Fi.wading(P),
+      place: W.placeName(P.x, P.y),
+      radiusStill: Math.round(Fi.spookRadius({ speed: 0 })),
+      radiusWalk: Math.round(Fi.spookRadius({ speed: 84 })),
+      radiusRun: Math.round(Fi.spookRadius({ speed: 168 })),
+      near: Fi.swimmers.filter(s => GG.dist(s.x, s.y, P.x, P.y) < 260).length
+    };
+    /* standing still: nothing moves, so nothing is frightened */
+    let stillFled = 0;
+    for (let i = 0; i < 24; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      stillFled = Math.max(stillFled, Fi.swimmers.filter(s => s.flee > 0).length);
+    }
+    out.fledWhileStill = stillFled;
+    /* now splash about in it, back and forth so she stays in the water */
+    let maxFled = 0, bent = 0, one = null, home = null;
+    GG.Input.keys['d'] = true;
+    for (let i = 0; i < 40; i++) {
+      await new Promise(r => setTimeout(r, 50));
+      if (i % 5 === 4) {
+        const d = GG.Input.keys['d'];
+        GG.Input.keys['d'] = !d; GG.Input.keys['a'] = d;
+      }
+      const fled = Fi.swimmers.filter(s => s.flee > 0);
+      if (fled.length > maxFled) { maxFled = fled.length; }
+      bent = Math.max(bent, fled.filter(s => s.spook > 0 || s.back).length);
+      if (!one && fled.length && fled[0].back) {
+        one = fled[0];
+        home = { x: one.back.x, y: one.back.y };      /* where it was standing */
+      }
+    }
+    GG.Input.keys['d'] = false; GG.Input.keys['a'] = false;
+    out.fledWhileWading = maxFled;
+    out.bentIntoAC = bent;
+    /* and they drift back once she stands still again */
+    if (one && home) {
+      /* let the bolt itself finish first - a fish that is still going is
+         still going away */
+      for (let i = 0; i < 40 && one.flee > 0; i++) await new Promise(r => setTimeout(r, 50));
+      const d0 = GG.dist(one.x, one.y, home.x, home.y);
+      /* a fish coming home bumps along the bank on the way, so watch the
+         whole window and take the nearest it got */
+      let d1 = d0;
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 50));
+        d1 = Math.min(d1, GG.dist(one.x, one.y, home.x, home.y));
+      }
+      out.wentBack = Math.round(d0) + ' -> ' + Math.round(d1);
+      out.driftedBack = d1 < d0 - 2 || d1 < 30;
+    }
+    return out;
+  });
+  ok('she can wade into the water', wade.noWater || wade.wading);
+  ok('there are fish about (' + wade.near + ')', wade.noWater || wade.near > 0);
+  ok('creeping disturbs almost nothing (' + wade.radiusStill + 'px) but running in '
+    + 'disturbs the lot (' + wade.radiusRun + 'px)',
+    wade.noWater || (wade.radiusStill < 60 && wade.radiusRun > 250
+      && wade.radiusWalk > wade.radiusStill && wade.radiusWalk < wade.radiusRun));
+  ok('standing still in the stream frightens nobody', wade.noWater || !wade.fledWhileStill);
+  ok('wading about scatters the fish nearby (' + wade.fledWhileWading + ')',
+    wade.noWater || wade.fledWhileWading > 0);
+  ok('and they bolt, and remember where they were',
+    wade.noWater || wade.bentIntoAC > 0);
+  ok('and drift back when she stands still again (' + wade.wentBack + ')',
+    wade.noWater || wade.driftedBack);
+
+  const fishBook = await p.evaluate(() => {
+    GG.Book.open(); GG.Book.tab = 'fish';
+    GG.Book.showDetail(GG.FISH[0]);
+    const t = document.getElementById('book-detail').textContent;
+    GG.UI.close('screen-book');
+    return { lateral: t.indexOf('lateral line') >= 0,
+      cshape: t.indexOf('C shape') >= 0,
+      upstream: t.indexOf('walk') >= 0 && t.indexOf('upstream') >= 0,
+      slow: t.indexOf('almost touch one') >= 0 };
+  });
+  ok('the fish page explains the lateral line', fishBook.lateral);
+  ok('and the C-start', fishBook.cshape);
+  ok('and how to walk in a stream if you want to see one',
+    fishBook.upstream && fishBook.slow);
+
+  /* ---------- 8. EVERY FAMILY HAS A VOICE (or is honestly silent) ---------- */
+  const voices = await p.evaluate(async () => {
+    GG.Sfx.unlock();
+    await new Promise(r => setTimeout(r, 60));
+    const proto = Object.getPrototypeOf(GG.Audio.ctx());
+    const oscs = proto.createOscillator, bufs = proto.createBufferSource;
+    let n = 0;
+    proto.createOscillator = function () { n++; return oscs.apply(this, arguments); };
+    proto.createBufferSource = function () { n++; return bufs.apply(this, arguments); };
+    const made = {};
+    Object.keys(GG.FAMILY_NAMES).forEach(fam => {
+      n = 0;
+      GG.Sfx.animalCall(fam);
+      made[fam] = n;
+    });
+    n = 0; GG.Sfx.animalCall('bear', 'giant_panda'); made.panda = n;
+    n = 0; GG.Sfx.squirrelScold(); made.scold = n;
+    n = 0; GG.Sfx.playPant(); made.pant = n;
+    n = 0; GG.Sfx.fishDart(); made.dart = n;
+    proto.createOscillator = oscs;
+    proto.createBufferSource = bufs;
+    return made;
+  });
+  const silent = Object.keys(voices).filter(k => !voices[k]);
+  ok('the snakes have a dry rattle (' + voices.snake + ' sounds)', voices.snake > 2);
+  ok('the songbirds have a two-note whistle', voices.songbird >= 2);
+  ok('and every other family has a voice too ' + JSON.stringify(silent),
+    silent.length === 2 && silent.indexOf('turtle') >= 0 && silent.indexOf('salamander') >= 0);
+  ok('a squirrel can scold, a dog can play-pant, a fish can dart',
+    voices.scold > 0 && voices.pant > 0 && voices.dart > 0);
 
   /* ---------- the friend who comes with you ---------- */
   await p.evaluate(() => {

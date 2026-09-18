@@ -1,0 +1,9 @@
+{
+  "bugs": ["propertius_duskywing","gall_wasp","filbert_weevil",
+    "diving_beetle","dragonfly_nymph","mosquito_larva","pond_snail","scud","leech",
+    "cave_cricket","cave_springtail","fungus_gnat_larva","cave_harvestman","cave_millipede",
+    "fairy_shrimp","bamboo_aphid",
+    "cherry_fruit_fly","pear_slug","black_cherry_aphid",
+    "stable_fly","mealworm_beetle"],
+  "fish": ["redside_shiner","peamouth","stickleback","sand_roller","chiselmouth","tench","pacific_lamprey"]
+}
