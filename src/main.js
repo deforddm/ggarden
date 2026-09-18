@@ -73,14 +73,19 @@
     var F = GG.Friends;
     var busy = F.busy;
     var cand = busy ? null : F.candidate(player);
-    var show = !!(busy || cand);
+    /* getting on and off a horse uses the same button */
+    var ride = (busy || cand || !F.rideOffer) ? null : F.rideOffer(player);
+    var show = !!(busy || cand || ride);
     btn.classList.toggle('hidden', !show);
     btn.classList.toggle('waiting', !!busy);
     if (!show) { _friendLabel = ''; return null; }
+    var main, sub;
+    if (ride) { main = ride.main; sub = ride.sub; } else {
     var def = busy ? busy.animal.def : cand.def;
     var way = GG.FRIEND_WAYS[def.way] || { btn: 'HELLO', sub: '', waiting: 'Keep still…' };
-    var main = busy ? 'SHHH' : (way.btn || way.verb.toUpperCase());
-    var sub = busy ? way.waiting : way.sub;
+    main = busy ? 'SHHH' : (way.btn || way.verb.toUpperCase());
+    sub = busy ? way.waiting : way.sub;
+    }
     var key = main + '|' + sub;
     if (key !== _friendLabel) {
       _friendLabel = key;
@@ -127,6 +132,14 @@
 
     var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
     var atDoor = doorD < 40;
+    /* the lava tube up on the ridge, and the boot brush at its mouth */
+    var brush = W.bootBrush;
+    if (brush && !brush.used && GG.dist(P.x, P.y, brush.x, brush.y) < 34) {
+      brush.used = true;
+      GG.Sfx.click();
+      GG.UI.toast('You wipe your boots. People carry the bat sickness in on them.', 3200);
+    }
+    var atCave = !!W.caveMouth && GG.dist(P.x, P.y, W.caveMouth.x, W.caveMouth.y + 20) < 62;
     var Fi = GG.Fishing;
 
     P.update(dt, function (x, y, r) { return W.blocked(x, y, r); });
@@ -144,6 +157,10 @@
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
     if (fishing) friendly = null;
+    if (atCave) {
+      GG.UI.prompt(brush && brush.used ? 'Into the lava tube' : 'Wipe your boots on the brush first');
+      setActionLabel(brush && brush.used ? 'GO IN' : '\u2014', brush && brush.used ? 'lava tube' : 'boots first');
+    }
 
     if (GG.Input.action3Pressed) {
       if (!GG.Friends.busy && friendly) GG.Friends.begin(P);
@@ -152,9 +169,11 @@
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
+      if (atCave) { enterCave(); return; }
       if (lookAt) { lookAtCreature(lookAt.def); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
+      else if (GG.Friends.riding) GG.UI.toast('Not from up here — get down first', 1800);
       else if (P.startSwing()) swingChecked = false;
     }
     if (P.swinging() && !swingChecked) {
@@ -214,7 +233,7 @@
     for (var j = 0; j < drawables.length; j++) {
       var d = drawables[j];
       if (d.player) {
-        P.draw(ctx, P.x - cam.x, P.y - cam.y, t);
+        P.draw(ctx, P.x - cam.x, P.y - cam.y - GG.Friends.rideLift(), t);
       } else if (d.friend) {
         GG.Friends.drawEntry(ctx, d, cam, t);
       } else {
@@ -325,6 +344,82 @@
     GG.Sfx.night();
   }
 
+  /* ---------- the lava tube ---------- */
+  function updateCave(dt) {
+    var C = GG.Cave, P = GG.Player;
+    GG.Time.update(dt);
+    P.update(dt, function (x, y, r) { return C.blocked(x, y, r); });
+
+    /* She stops herself. Nobody stops her. */
+    if (C.checkBats(P.x, P.y)) {
+      GG.UI.toast('You turn your light away. The bats are asleep \u2014 we walk quietly here.', 3400);
+    }
+
+    GG.Critters.update(dt, P);
+    var stung = GG.Critters.checkSting(P);
+    if (stung) onSting(stung);
+
+    var spot = C.nearest(P.x, P.y);
+    GG.UI.prompt(spot ? spot.label : null);
+    setActionLabel(spot ? 'GO OUT' : 'NET', spot ? 'back outside' : 'tap');
+
+    if (GG.Input.actionPressed) {
+      if (spot) { leaveCave(); return; }
+      if (P.startSwing()) swingChecked = false;
+    }
+    if (P.swinging() && !swingChecked) {
+      var pr = P.swingProgress();
+      if (pr > 0.16 && pr < 0.8) {
+        var got = GG.Critters.tryCatch(P);
+        if (got) { swingChecked = true; onCatch(got); }
+      }
+      if (pr >= 0.8) swingChecked = true;
+    }
+
+    cam.x = GG.clamp(P.x - GG.view.w / 2, 0, C.W - GG.view.w);
+    cam.y = GG.clamp(P.y - GG.view.h / 2 - 10, 0, C.H - GG.view.h);
+    if (C.W < GG.view.w) cam.x = (C.W - GG.view.w) / 2;
+    if (C.H < GG.view.h) cam.y = (C.H - GG.view.h) / 2;
+  }
+
+  function drawCave(t) {
+    var C = GG.Cave, P = GG.Player;
+    ctx.fillStyle = '#0a0908';
+    ctx.fillRect(0, 0, GG.view.w, GG.view.h);
+    C.draw(ctx, cam, t, P.x, P.y);
+    GG.Critters.draw(ctx, cam, t);
+    P.draw(ctx, P.x - cam.x, P.y - cam.y, t);
+    C.drawDark(ctx, cam, P.x, P.y);
+  }
+
+  function enterCave() {
+    GG.Sfx.door();
+    GG.Critters.clear();
+    GG.Critters.room = GG.Cave.room;
+    GG.Cave.turned = 0;
+    GG.Friends.dismount('cave');   // the horse waits outside
+    GG.Fishing.reset();
+    $('btn-fish').classList.add('hidden');
+    $('btn-friend').classList.add('hidden');
+    setScene('cave');
+    GG.Player.reset(GG.Cave.START.x, GG.Cave.START.y);
+    GG.UI.prompt(null);
+    if (!GG.Save.data.seenCaveTip) {
+      GG.Save.data.seenCaveTip = true; GG.Save.save();
+      setTimeout(function () {
+        GG.UI.toast('Nothing grows in the dark. Everything in here was carried in.', 3600);
+      }, 900);
+    }
+  }
+  function leaveCave() {
+    GG.Sfx.door();
+    GG.Critters.room = null;
+    GG.Critters.clear();
+    setScene('world');
+    GG.Player.reset(GG.World.caveMouth.x + 10, GG.World.caveMouth.y + 62);
+    GG.UI.prompt(null);
+  }
+
   /* ---------- bees ---------- */
   function onSwingMiss(P) {
     var net = P.netPoint();
@@ -427,7 +522,9 @@
     var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
       hill: '#d8d2a4', orchard: '#bfe07a', riverbank: '#8fd07f', beach: '#f0e2b8',
       shore: '#c2bcac', desert: '#cdb68c', mountain: '#9d9a93', taiga: '#3c5c3a',
-      tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a' };
+      tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a',
+      badlands: '#a2947a', savanna: '#c9b172', swamp: '#5e6b47', bamboo: '#7a9450',
+      cherry: '#c8e089', birdtown: '#9ad96f', farmyard: '#b9ac7e' };
     var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
@@ -441,12 +538,15 @@
     c.font = 'bold 15px "Trebuchet MS", sans-serif';
     c.textAlign = 'center';
     c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
-    [['Hills', 2000, 1340], ['Meadow', 2500, 1940], ['Woods', 4100, 1580], ['Orchard', 3960, 2380],
-     ['Pond', 2220, 2980], ['Garden', 3120, 2680], ['Stream', 2600, 2290],
-     ['River', 3750, 2980], ['Inlet', 4780, 3520], ['Beach', 4100, 3780],
-     ['Tidepools', 5720, 3090], ['The Sea', 5500, 4020],
-     ['Desert', 500, 2400], ['Ridge', 1120, 2800], ['Taiga', 2400, 740],
-     ['Tundra', 2400, 260], ['Glade', 4200, 1640], ['Rainforest', 5850, 2500]].forEach(function (p) {
+    [['Hills', 3600, 1340], ['Meadow', 4100, 1940], ['Woods', 5700, 1580], ['Orchard', 5560, 2380],
+     ['Pond', 3820, 2980], ['Garden', 4720, 2680], ['Stream', 4200, 2290],
+     ['River', 5350, 2980], ['Inlet', 6380, 3520], ['Beach', 5700, 3780],
+     ['Tidepools', 7320, 3090], ['The Sea', 7100, 4020],
+     ['Desert', 2100, 2400], ['Ridge', 2720, 2800], ['Taiga', 4000, 740],
+     ['Tundra', 4000, 260], ['Glade', 5800, 1640], ['Rainforest', 7450, 2500],
+     ['Scablands', 700, 1700], ['Savanna', 620, 3900], ['Marsh', 3500, 3560],
+     ['Bamboo', 4450, 1800], ['Cherry', 6300, 2800], ['Bird Town', 4380, 1380],
+     ['Farmyard', 4420, 3200]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
@@ -519,6 +619,7 @@
     if (!paused) {
       if (scene === 'world') updateWorld(dt);
       else if (scene === 'house') updateHouse(dt);
+      else if (scene === 'cave') updateCave(dt);
 
       saveTimer -= dt;
       if (saveTimer <= 0) {
@@ -533,11 +634,13 @@
     ctx.clearRect(0, 0, GG.view.w, GG.view.h);
     if (scene === 'world') drawWorld(elapsed);
     else if (scene === 'house') drawHouse(elapsed);
+    else if (scene === 'cave') drawCave(elapsed);
     ctx.restore();
 
     $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
       (GG.Time.rain ? ' ☔' : '');
-    $('chip-place').textContent = scene === 'house' ? 'Home' : GG.World.placeName(GG.Player.x, GG.Player.y);
+    $('chip-place').textContent = scene === 'house' ? 'Home'
+      : (scene === 'cave' ? 'The Lava Tube' : GG.World.placeName(GG.Player.x, GG.Player.y));
 
     /* the sound of the place she is in */
     if (GG.Audio.ready()) {
