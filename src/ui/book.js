@@ -46,14 +46,23 @@
       });
       grid.innerHTML = '';
       var list = fruit ? GG.FRUITS : (friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS));
+      /* the look-only friends are met, never befriended - but a page she has
+         opened still counts towards the book, exactly as it does for bugs */
+      var metOnly = 0;
+      if (friends) {
+        GG.ANIMALS.forEach(function (a) {
+          if (a.lookOnly && GG.Save.hasSeen(a.id)) metOnly++;
+        });
+      }
       var found = fruit ? GG.Save.totalFruit()
-        : (friends ? GG.Save.totalFriends() : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies()));
+        : (friends ? GG.Save.totalFriends() + metOnly
+          : (fish ? GG.Save.totalFish() : GG.Save.totalSpecies()));
       $('progress').textContent = found + ' / ' + list.length;
       if (friends) this.companionRow(grid);
       if (fruit) this.fruitRow(grid);
       list.forEach(function (def) {
         var got = fruit ? GG.Save.hasFruit(def.id)
-          : (friends ? GG.Save.hasFriend(def.id)
+          : (friends ? (def.lookOnly ? GG.Save.hasSeen(def.id) : GG.Save.hasFriend(def.id))
             : (fish ? GG.Save.hasFish(def.id) : GG.Save.found(def)));
         var cell = GG.el('div', 'bugcell' + (got ? ' got' : ''));
         var cv = thumb(def, 84, 54, !got);
@@ -62,9 +71,9 @@
         cell.appendChild(GG.el('div', 'nm', got ? def.name : '???'));
         if (got) {
           var n0 = fruit ? GG.Save.countOfFruit(def.id)
-            : (friends ? GG.Save.countOfFriend(def.id)
-              : (fish ? GG.Save.countOfFish(def.id)
-                : (def.lookOnly ? GG.Save.countOfSeen(def.id) : GG.Save.countOf(def.id))));
+            : (def.lookOnly ? GG.Save.countOfSeen(def.id)
+              : (friends ? GG.Save.countOfFriend(def.id)
+                : (fish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id))));
           cell.appendChild(GG.el('div', 'cnt', def.lookOnly ? '✔' : '×' + n0));
           if (!fruit) {
             var r = GG.el('div', 'rar');
@@ -80,7 +89,11 @@
         cell.addEventListener('click', function () {
           GG.Sfx.click();
           if (got) Book.showDetail(def);
-          else if (def.lookOnly) GG.UI.toast('You have not met this one yet. She is out on the hills after dark.', 2800);
+          else if (def.lookOnly) {
+            GG.UI.toast(def.isAnimal
+              ? 'You have not met this one yet. Back slowly away from her and she becomes a friend you keep your distance from.'
+              : 'You have not met this one yet. She is out on the hills after dark.', 3200);
+          }
           else GG.UI.toast(fruit ? 'You have not picked this one yet!'
             : (friends ? 'You have not made friends with this one yet!'
               : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
@@ -162,8 +175,9 @@
       var meta = GG.el('div', 'meta');
       var times = isFruit ? '' : def.times.map(function (x) { return GG.TIME_NAMES[x]; }).join(', ');
       var n = isFruit ? GG.Save.countOfFruit(def.id)
-        : (isAnimal ? GG.Save.countOfFriend(def.id)
-          : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id)));
+        : (def.lookOnly ? GG.Save.countOfSeen(def.id)
+          : (isAnimal ? GG.Save.countOfFriend(def.id)
+            : (isFish ? GG.Save.countOfFish(def.id) : GG.Save.countOf(def.id))));
       var rows;
       if (isFruit) {
         var un = GG.DECOR_BY_ID[def.unlock];
@@ -175,7 +189,7 @@
       } else if (isAnimal) {
         rows = [['Found in', GG.animalPlaces(def)], ['Out and about', times],
           ['Size', def.measure], ['Rarity', GG.RARITY_NAMES[def.rarity]],
-          ['Said hello', n + ' time' + (n === 1 ? '' : 's')]];
+          [def.lookOnly ? 'Met' : 'Said hello', n + ' time' + (n === 1 ? '' : 's')]];
       } else if (isFish) {
         var waters = (def.waters || ['pond']).map(function (w) { return GG.WATER_NAMES[w]; }).join(', ');
         rows = [['Found in', waters], ['Bites', times], ['Size', def.measure],
@@ -200,7 +214,9 @@
         meta.appendChild(warn);
       }
       if (def.lookOnly) {
-        meta.appendChild(GG.el('span', 'tag lookonly', 'Look, don\u2019t catch \u2014 your net will not take her'));
+        meta.appendChild(GG.el('span', 'tag lookonly', isAnimal
+          ? 'A friend you keep away from \u2014 she never comes along, and she is never touched'
+          : 'Look, don\u2019t catch \u2014 your net will not take her'));
       }
       if (!isFish && !isAnimal && GG.isAquaticBug(def)) {
         meta.appendChild(GG.el('span', 'tag wet', 'Needs water: keep it in a fish tank or a hybrid tank'));
@@ -261,12 +277,60 @@
         det.appendChild(line);
       });
 
+      /* What a fish feels when she steps into the water. It belongs here,
+         because this is the page she opens after one has shot away from her. */
+      if (isFish) {
+        var lat = GG.el('div', 'foodchain');
+        lat.appendChild(GG.el('b', null, 'When you step in the water'));
+        var l1 = GG.el('div', 'fcline');
+        l1.innerHTML = '🌊 A fish has a line of tiny sensors down each side of its body '
+          + 'called a <b>lateral line</b>. It works like touching — but at a distance. When '
+          + 'you step into the stream the fish <b>feels</b> your leg push the water, long before '
+          + 'it ever sees you.';
+        lat.appendChild(l1);
+        var l2 = GG.el('div', 'fcline');
+        l2.innerHTML = '⚡ A frightened fish bends into a <b>C shape</b> and shoots away. It '
+          + 'takes about one hundredth of a second — faster than you can blink.';
+        lat.appendChild(l2);
+        var l3 = GG.el('div', 'fcnote');
+        l3.innerHTML = 'Fish in a stream face <b>upstream</b>, into the water coming towards them. '
+          + 'So walk <b>up</b> the stream, behind them, and go slowly — the scientists who '
+          + 'count fish underwater say that if you move slowly enough you can almost touch one '
+          + 'before it notices.';
+        lat.appendChild(l3);
+        det.appendChild(lat);
+      }
+
       if (isAnimal) {
         var man = GG.el('div');
         man.id = 'friend-manners';
         man.style.margin = '10px 0';
         man.innerHTML = '<b>Good manners</b><span>' + def.manners + '</span>';
         det.appendChild(man);
+
+        /* what two of these do when they meet each other */
+        var sig = GG.friendSignalOf ? GG.friendSignalOf(def) : null;
+        if (sig) {
+          var sbox = GG.el('div', 'foodchain');
+          sbox.appendChild(GG.el('b', null, 'When two friends meet: ' + sig.name));
+          sbox.appendChild(GG.el('div', 'fcline', '💛 ' + sig.why));
+          sbox.appendChild(GG.el('div', 'fcnote', sig.honest));
+          det.appendChild(sbox);
+        }
+
+        /* and the one friend you can get up on */
+        if (def.rideable) {
+          var ride = GG.el('div');
+          ride.id = 'friend-riding';
+          ride.style.margin = '10px 0';
+          ride.innerHTML = '<b>Riding her</b><span>Ask the person she belongs to. Come to her '
+            + '<b>shoulder</b>, from the side, talking as you go — never straight behind '
+            + 'her, where she cannot see you, and never right under her nose, which she cannot '
+            + 'see either. Then the <b>helmet</b>: a proper riding one, done up, every single '
+            + 'time, even for a little ride. More than half of the people badly hurt around '
+            + 'horses are hurt on the head.</span>';
+          det.appendChild(ride);
+        }
 
         /* silly hats */
         var hh = GG.el('div', 'hat-head', 'Silly hats');
@@ -298,19 +362,31 @@
         });
         det.appendChild(hatRow);
 
-        var along = GG.el('button', 'btn primary');
-        along.style.width = '100%';
-        var here = GG.Save.data.companion === def.id;
-        along.textContent = here ? 'They are already with you' : 'Ask them along';
-        along.disabled = here;
-        along.addEventListener('click', function () {
-          GG.Sfx.click();
-          GG.Friends.setCompanion(def.id);
-          GG.Sfx.animalCall(def.family);
-          GG.UI.toast(def.name + ' is coming with you!', 2400);
-          Book.showDetail(def);
-        });
-        det.appendChild(along);
+        if (def.lookOnly) {
+          /* She is never asked along, and there is no button that pretends
+             otherwise - the same promise the Bug Book makes about the widow. */
+          var keep = GG.el('div');
+          keep.id = 'friend-riding';
+          keep.style.margin = '10px 0';
+          keep.innerHTML = '<b>She stays where she is</b><span>This is a friend you say hello '
+            + 'to from a long way off. She never comes with you, she never waits at your house, '
+            + 'and nobody ever picks her up.</span>';
+          det.appendChild(keep);
+        } else {
+          var along = GG.el('button', 'btn primary');
+          along.style.width = '100%';
+          var here = GG.Save.data.companion === def.id;
+          along.textContent = here ? 'They are already with you' : 'Ask them along';
+          along.disabled = here;
+          along.addEventListener('click', function () {
+            GG.Sfx.click();
+            GG.Friends.setCompanion(def.id);
+            GG.Sfx.animalCall(def.family, def.id);
+            GG.UI.toast(def.name + ' is coming with you!', 2400);
+            Book.showDetail(def);
+          });
+          det.appendChild(along);
+        }
       }
 
       var c = cv.getContext('2d');

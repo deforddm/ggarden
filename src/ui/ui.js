@@ -201,15 +201,22 @@
       this._friendDef = def;
       $('friend-new').style.display = isNew ? 'inline-block' : 'none';
       $('friend-name').textContent = def.name;
-      var count = GG.Save.countOfFriend(def.id);
+      /* the look-only friends are met, never befriended: so they are counted
+         in the "seen" list, they are worth no sparkles, and there is no
+         button asking them to come along */
+      var look = GG.animalIsLookOnly && GG.animalIsLookOnly(def);
+      var count = look ? GG.Save.countOfSeen(def.id) : GG.Save.countOfFriend(def.id);
       var fact = def.facts[Math.floor(Math.random() * def.facts.length)];
       $('friend-fact').textContent = isNew ? fact
         : ('You have said hello to ' + count + ' of these.');
       $('friend-manners').querySelector('span').textContent = def.manners;
-      $('friend-reward').innerHTML = '&#10022; ' + reward + ' sparkles' +
-        (isNew ? ' &nbsp;+&nbsp; new page in your Friends Book!' : '');
+      $('friend-reward').innerHTML = look
+        ? (isNew ? 'A new page in your Friends Book &mdash; and you both walked away.'
+          : 'You both walked away. That is exactly right.')
+        : ('&#10022; ' + reward + ' sparkles' +
+          (isNew ? ' &nbsp;+&nbsp; new page in your Friends Book!' : ''));
       var along = $('friend-along');
-      along.hidden = (GG.Save.data.companion === def.id);
+      along.hidden = look || (GG.Save.data.companion === def.id);
       along.textContent = 'Ask them along';
       $('friend-pop').classList.remove('hidden');
       this._animFriend();
