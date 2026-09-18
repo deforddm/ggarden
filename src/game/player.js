@@ -3,7 +3,7 @@
   'use strict';
 
   var Player = GG.Player = {
-    x: 3120, y: 2580, vx: 0, vy: 0,
+    x: 4720, y: 2580, vx: 0, vy: 0,
     dir: 'down', angle: Math.PI / 2,
     walk: 0, speed: 0,
     rad: 11,

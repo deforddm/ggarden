@@ -1,11 +1,38 @@
 /* Fishing in the pond, the stream, the river, the inlet and the sea.
    Fish swim about as shadows. Cast near one, wait for the bobber to go under,
-   then tap at the right moment. Every body of water holds its own fish. */
+   then tap at the right moment. Every body of water holds its own fish.
+
+   WADING IN (Guin: "make fish get scared away when you setp in the stream")
+
+   They do, and the sense they use is one Guin has not got. A fish has a line
+   of tiny sensors down each side of its body - the lateral line - that feels
+   water moving. It is not the ground shaking; a fish has no feet. Her leg
+   pushes a slug of water ahead of it and the fish feels that slug arrive, like
+   being touched from a little way off. Close up the lateral line does the
+   work; further out it is her shape against the sky and her shadow.
+
+   The lesson is the good part, and it is the same lesson the fish-counting
+   biologists follow: how fast she moves decides everything. The people who
+   snorkel a stream to count fish must stay ten metres downstream and keep off
+   the water until they are ready - but their own protocol also says that "a
+   snorkeler who moves slowly can nearly touch a fish before they are
+   frightened". So the scatter here is a function of her speed, and fish that
+   have scattered drift back the moment she stands still. Coming up the stream
+   from behind them works too: a fish in a stream faces into the current, so
+   walking upstream puts her behind its head.
+
+   And the bolt itself is faster than she can picture: a fish snaps into a C
+   shape and is gone in about a hundredth of a second, fired by a single nerve
+   cell. The animation is two or three frames on purpose. */
 (function (GG) {
   'use strict';
 
   var TARGET_FISH = 12;
   var BITE_WINDOW = 0.95;      // generous on purpose
+
+  /* Ten metres, in this garden's pixels - what a person blundering into a
+     stream disturbs. Nothing like all of it is used unless she is running. */
+  var SPOOK_FAR = 300;
 
   var F = GG.Fishing = {
     swimmers: [],
@@ -79,14 +106,73 @@
         this.swimmers.push({
           def: pick, x: p.x, y: p.y, ang: Math.random() * Math.PI * 2,
           sp: GG.rand(16, 34), timer: GG.rand(1, 3), chase: 0, t: Math.random() * 10,
-          left: Math.random() < 0.5, age: 0, water: water
+          left: Math.random() < 0.5, age: 0, water: water,
+          flee: 0, spook: 0, back: null
         });
+      }
+    },
+
+    /* ---------- wading in ---------- */
+    /* Is she standing in the water? */
+    wading: function (player) {
+      return !!(player && GG.World.isWater(player.x, player.y));
+    },
+
+    spookSaid: 0,
+
+    /* How far off a fish notices her, in pixels. Standing still it is very
+       nearly nothing; running in, it is the whole ten metres. */
+    spookRadius: function (player) {
+      var norm = GG.clamp((player.speed || 0) / 168, 0, 1);
+      return SPOOK_FAR * (0.15 + 0.85 * norm);
+    },
+
+    stepWading: function (dt, player) {
+      if (this.spookSaid > 0) this.spookSaid -= dt;
+      if (!this.wading(player)) return 0;
+      if ((player.speed || 0) < 8) return 0;      /* creeping: nothing feels it */
+      var radius = this.spookRadius(player), n = 0;
+      for (var i = 0; i < this.swimmers.length; i++) {
+        var s = this.swimmers[i];
+        if (s.flee > 0) continue;
+        var d = GG.dist(s.x, s.y, player.x, player.y);
+        /* A fish in a stream holds its head into the current, so it feels and
+           sees her sooner if she is coming at its face. Wade UP the stream,
+           behind them, and you get much closer. */
+        var facing = Math.cos(s.ang - Math.atan2(player.y - s.y, player.x - s.x));
+        if (d > radius * (facing > 0 ? 1.25 : 0.7)) continue;
+        this.spook(s, player.x, player.y);
+        n++;
+      }
+      if (n && this.spookSaid <= 0 && GG.UI && GG.UI.toast) {
+        this.spookSaid = 70;
+        GG.UI.toast('They felt your leg push the water — wade slowly and they let you come close.', 3600);
+      }
+      return n;
+    },
+
+    /* The C-start: the fish bends into a C and is gone. In a real stream that
+       takes about a hundredth of a second, so this is over in two frames. */
+    spook: function (s, x, y) {
+      s.back = { x: s.x, y: s.y };
+      s.chase = 0;
+      s.spook = 0.16;
+      s.flee = GG.rand(0.7, 1.5);
+      s.ang = Math.atan2(s.y - y, s.x - x) + GG.rand(-0.35, 0.35);
+      this.splash(s.x, s.y, 4);
+      if (GG.Sfx.fishDart) GG.Sfx.fishDart();
+      if (this.hooked === s && this.state !== 'idle' && this.state !== 'reel') {
+        this.finish('spooked');
+        if (GG.UI && GG.UI.toast) {
+          GG.UI.toast('You scared it off the line. Fish feel you long before they see you.', 2600);
+        }
       }
     },
 
     update: function (dt, player) {
       var W = GG.World;
       this.stock(dt, player);
+      this.stepWading(dt, player);
 
       var i, s;
       var gone = Math.max(GG.view.w, GG.view.h) * 0.95 + 320;
@@ -98,7 +184,30 @@
         s.t += dt; s.age += dt;
         s.timer -= dt;
 
-        if (s.chase > 0 && this.bob) {
+        if (s.flee > 0) {
+          /* gone, and fast. The first flick is the quick one. */
+          s.flee -= dt;
+          if (s.spook > 0) s.spook -= dt;
+          var fsp = s.sp * (s.spook > 0 ? 5.4 : 2.3);
+          var fx = s.x + Math.cos(s.ang) * fsp * dt;
+          var fy = s.y + Math.sin(s.ang) * fsp * dt;
+          if (this.fishable(fx, s.y)) s.x = fx; else s.ang = Math.PI - s.ang;
+          if (this.fishable(s.x, fy)) s.y = fy; else s.ang = -s.ang;
+        } else if (s.back && (!player || (player.speed || 0) < 14)) {
+          /* she is standing still again, so they drift back to where they
+             were - which is exactly what really happens, and is the whole
+             reason KEEP STILL is the right way to see anything */
+          var bd = GG.dist(s.x, s.y, s.back.x, s.back.y);
+          if (bd < 28) { s.back = null; }
+          else {
+            s.ang = GG.angLerp(s.ang, Math.atan2(s.back.y - s.y, s.back.x - s.x),
+              Math.min(1, dt * 1.6));
+            var bx = s.x + Math.cos(s.ang) * s.sp * 0.7 * dt;
+            var by = s.y + Math.sin(s.ang) * s.sp * 0.7 * dt;
+            if (this.fishable(bx, s.y)) s.x = bx; else s.ang = Math.PI - s.ang;
+            if (this.fishable(s.x, by)) s.y = by; else s.ang = -s.ang;
+          }
+        } else if (s.chase > 0 && this.bob) {
           var toAng = Math.atan2(this.bob.y - s.y, this.bob.x - s.x);
           s.ang = GG.angLerp(s.ang, toAng, Math.min(1, dt * 3));
           var d = GG.dist(s.x, s.y, this.bob.x, this.bob.y);
@@ -190,6 +299,7 @@
       var best = null, bd = 260;
       for (var i = 0; i < this.swimmers.length; i++) {
         var s = this.swimmers[i];
+        if (s.flee > 0) continue;            /* a frightened fish wants nothing */
         var d = GG.dist(s.x, s.y, this.bob.x, this.bob.y);
         if (d < bd) { bd = d; best = s; }
       }
@@ -276,16 +386,24 @@
         if (sx < -80 || sy < -80 || sx > GG.view.w + 80 || sy > GG.view.h + 80) continue;
         var len = 8 + s.def.shadow * 5.2;
         var wob = Math.sin(s.t * 4) * 0.12;
+        /* the C-start: for two frames the whole fish is bent into a C */
+        var cst = s.spook > 0 ? GG.clamp(s.spook / 0.16, 0, 1) : 0;
         c.save();
         c.translate(sx, sy);
         c.rotate(s.ang + wob);
         c.fillStyle = 'rgba(12,44,62,0.36)';
-        c.beginPath(); c.ellipse(0, 0, len, len * 0.36, 0, 0, Math.PI * 2); c.fill();
         c.beginPath();
-        c.moveTo(-len * 0.9, 0);
-        c.lineTo(-len * 1.5, -len * 0.3);
-        c.lineTo(-len * 1.5, len * 0.3);
+        c.ellipse(0, 0, len, len * (0.36 + cst * 0.16), cst * 0.5, 0, Math.PI * 2);
+        c.fill();
+        c.save();
+        c.translate(-len * 0.9, 0);
+        c.rotate(cst * 1.05);                      /* the tail whipped over */
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.lineTo(-len * 0.6, -len * 0.3);
+        c.lineTo(-len * 0.6, len * 0.3);
         c.closePath(); c.fill();
+        c.restore();
         c.restore();
         // a faint wake
         c.strokeStyle = 'rgba(255,255,255,0.16)'; c.lineWidth = 1.4;

@@ -34,12 +34,53 @@
    feature, not a hole in it.
 
    The parrots hunt nothing at all, because parrots do not hunt. They forage
-   instead - see stepForage. */
+   instead - see stepForage.
+
+   THE ONE EXCEPTION (David: "you can have the garter snakes hunt the frogs
+   but not catch them like the others")
+
+   A garter snake really does hunt the Pacific Chorus Frog, and that frog is a
+   friend. So nearestPrey looks through the other friends as well as the bugs,
+   but only for the pairs GG.ANIMAL_HUNTS actually lists - which is this one
+   and nothing else. It ends the way every chase here ends: the frog bolts and
+   the snake sits down for a while. Every other friend-on-friend meeting still
+   goes through FRIEND_RULE and ends with somebody sitting and watching.
+
+   THE ONE CHASE THAT IS NOT A HUNT (Guin: "dogs chase squirrels")
+
+   See GG.FRIEND_PLAY. A dog runs the first half of a hunt - look, creep, run -
+   and in most pet dogs the catching end was bred away long ago. The squirrel
+   is not hiding either: it goes part way up the trunk, stops in plain sight
+   facing the dog, and scolds it with a whipping tail. Scientists call that a
+   pursuit-deterrent signal, and it means "I have seen you, don't bother".
+
+   BACKING AWAY (the black bear, the moose, the rattlesnake)
+
+   These three are befriended by leaving them alone, so their ring runs
+   backwards: it fills as she puts distance between them and slips back the
+   moment she closes in. Walking towards them is the one thing that stops it.
+
+   RIDING (Guin: "rideable friends (cows horses deer moose)")
+
+   Only the horse. She asks the owner, she comes to the shoulder from the side
+   where the horse can see her - never behind, where there is a wedge of the
+   world a horse cannot see and a startled horse kicks by reflex - and she puts
+   a helmet on before she gets up. The cow, the deer and the moose are never
+   offered, and their pages say why. */
 (function (GG) {
   'use strict';
 
   var TARGET = 5;              // how many animals are about at once
   var NUDGE = 0.55;            // how much the ring slips back per second of moving
+
+  /* Roughly how many pixels make a metre out here. The horse is about a
+     hundred pixels long and about two and a half metres long, so: thirty. It
+     is only used where a real measurement in metres has to become a distance
+     on screen - the squirrel's escape sums, and the fish. */
+  var PX_PER_M = 30;
+
+  /* What a squirrel counts as a tree. */
+  var TREES = { tree: 1, pine: 1, appleTree: 1, willow: 1, snag: 1, krummholz: 1 };
 
   var F = GG.Friends = {
     list: [],
@@ -49,9 +90,17 @@
     busy: null,                // { animal, ring, need, from }
     companion: null,           // the friend tagging along today
 
+    /* up on the horse's back */
+    riding: null,              // { id, t } while she is up
+    asked: false,              // she has asked the owner this time out
+    helmetOn: false,           // and the helmet is on and buckled
+    RIDE_LIFT: 20,             // how far up her sprite sits
+    RIDE_SPEED: 1.6,           // a steady trot, in Guin-speeds
+
     clear: function () {
       this.list.length = 0; this.hearts.length = 0; this.bits.length = 0;
       this.busy = null;
+      this.riding = null;
     },
 
 
@@ -106,21 +155,33 @@
     },
 
     add: function (def, x, y) {
+      /* The look-only friends are met, never befriended - so meeting one
+         again is always worth doing, exactly as it is with the black widow in
+         the Bug Book. */
+      var look = GG.animalIsLookOnly(def);
       this.list.push({
         def: def, x: x, y: y, hx: x, hy: y,
         ang: Math.random() * Math.PI * 2,
         t: Math.random() * 100, timer: GG.rand(0.6, 2.6),
         faceLeft: Math.random() < 0.5,
         hop: 0, bob: 0, shy: 0, curious: 0,
-        friend: !!GG.Save.hasFriend(def.id)
+        lookOnly: look, met: look && !!GG.Save.hasSeen(def.id),
+        friend: !look && !!GG.Save.hasFriend(def.id)
       });
+      return this.list[this.list.length - 1];
     },
 
     /* ---------- every frame ---------- */
     update: function (dt, player, scene) {
       var W = GG.World;
       this.scene = scene;
-      if (scene !== 'world') { this.list.length = 0; this.busy = null; return; }
+      if (this._liftAsked > 0) this._liftAsked--;
+      if (scene !== 'world') {
+        /* you get off before you go indoors */
+        if (this.riding) this.dismount('indoors');
+        this.list.length = 0; this.busy = null; return;
+      }
+      this.stepRide(dt, player);
 
       /* keep a few about, and let the far-off ones wander off */
       var outer = Math.max(GG.view.w, GG.view.h) * 0.9 + 240;
@@ -137,6 +198,7 @@
       for (i = 0; i < this.list.length; i++) this.stepAnimal(dt, this.list[i], player);
       this.stepBusy(dt, player);
       this.stepCalls(dt, player);
+      this.stepSocial(dt);
 
       for (i = this.hearts.length - 1; i >= 0; i--) {
         var h = this.hearts[i];
@@ -149,6 +211,8 @@
         if (q.life <= 0) this.bits.splice(i, 1);
       }
       if (this.ruleSaid > 0) this.ruleSaid -= dt;
+      if (this.playSaid > 0) this.playSaid -= dt;
+      if (this.boltSaid > 0) this.boltSaid -= dt;
       void W;
     },
 
@@ -165,7 +229,7 @@
         var d = GG.dist(f.x, f.y, player.x, player.y);
         if (d < bd) { bd = d; best = f; }
       }
-      if (best && GG.Sfx.animalCall) GG.Sfx.animalCall(best.def.family);
+      if (best && GG.Sfx.animalCall) GG.Sfx.animalCall(best.def.family, best.def.id);
     },
 
     /* Is there water that way? Samples a ring around a point and reports the
@@ -185,16 +249,35 @@
     /* The nearest creature this one would really hunt. Anything that is not
        on its own list simply does not register, however close it comes. */
     nearestPrey: function (f, radius) {
-      var C = GG.Critters, best = null, bestD = radius;
-      if (!C || !C.list) return null;
+      var C = GG.Critters, best = null, bestD = radius, i, b, d;
       var id = f.def.id;
-      for (var i = 0; i < C.list.length; i++) {
-        var b = C.list[i];
-        if (!b.def || !GG.animalHunts(id, b.def.id)) continue;
-        var d = GG.dist(f.x, f.y, b.x, b.y);
+      if (C && C.list) {
+        for (i = 0; i < C.list.length; i++) {
+          b = C.list[i];
+          if (!b.def || !GG.animalHunts(id, b.def.id)) continue;
+          d = GG.dist(f.x, f.y, b.x, b.y);
+          if (d < bestD) { bestD = d; best = b; }
+        }
+      }
+      /* And the one friend-on-friend chase in the whole garden: the garter
+         snake and the chorus frog. Only pairs GG.ANIMAL_HUNTS really lists
+         count, so this finds that one and nothing else, ever. */
+      for (i = 0; i < this.list.length; i++) {
+        b = this.list[i];
+        if (b === f || !b.def || !GG.ANIMAL_BY_ID[b.def.id]) continue;
+        if (!GG.animalHunts(id, b.def.id)) continue;
+        d = GG.dist(f.x, f.y, b.x, b.y);
         if (d < bestD) { bestD = d; best = b; }
       }
       return best;
+    },
+
+    /* Is this chase target still out there? Bugs live in one list, friends in
+       another, and the snake's frog is in the second one. */
+    preyStillThere: function (b) {
+      if (!b) return false;
+      if (GG.Critters && GG.Critters.list.indexOf(b) >= 0) return true;
+      return this.list.indexOf(b) >= 0;
     },
 
     /* Guin's rule. Is there a friend nearby that this one really would hunt?
@@ -262,7 +345,9 @@
       }
 
       var style = GG.animalHuntStyle(f.def);
-      if (!style) return move;
+      var plays = !!(GG.FRIEND_PLAY &&
+        (GG.FRIEND_PLAY[f.def.id] || GG.FRIEND_PLAY[f.def.family]));
+      if (!style && !plays) return move;
 
       /* ---- the rule, checked before anything else ---- */
       var other = this.friendRuleNear(f);
@@ -273,9 +358,17 @@
         f.chase = 0; f.chaseId = null;
         f.chaseTimer = GG.rand(2.5, 5);
         this.sayRule(f, other.rule);
+        f.play = 0; f.playAt = null;
         return wet ? move : 0;
       }
 
+      /* ---- and then the chase that is not a hunt at all ---- */
+      if (plays) {
+        var played = this.stepPlay(dt, f, move);
+        if (played != null) return played;
+      }
+
+      if (!style) return move;
       var S = this.HUNT[style];
       if (!S) return move;
 
@@ -293,7 +386,7 @@
       /* ---- after something ---- */
       f.chase -= dt;
       var b = f.chaseId;
-      if (!b || !GG.Critters || GG.Critters.list.indexOf(b) < 0) {
+      if (!this.preyStillThere(b)) {
         f.chase = 0; f.chaseId = null;
         return move;
       }
@@ -323,7 +416,13 @@
        half of the time nothing is caught out there either. */
     strike: function (f, b, style) {
       var S = this.HUNT[style] || this.HUNT.pounce;
-      if (GG.Critters && GG.Critters.scatter) GG.Critters.scatter(b.x, b.y, 48);
+      if (b.def && GG.ANIMAL_BY_ID[b.def.id]) {
+        /* the frog the garter snake was after. It is a friend, so it is never
+           caught and never even touched: it bolts, the way a frog does. */
+        this.frogBolts(b, f);
+      } else if (GG.Critters && GG.Critters.scatter) {
+        GG.Critters.scatter(b.x, b.y, 48);
+      }
       f.chase = 0; f.chaseId = null;
       f.chaseTimer = GG.rand(S.rest[0], S.rest[1]);
       f.missed = 0.5;
@@ -336,6 +435,341 @@
           life: GG.rand(0.3, 0.6), col: 'rgba(255,255,255,0.9)', s: GG.rand(0.9, 1.7)
         });
       }
+    },
+
+    /* The frog the garter snake was after. Nothing is ever caught here, so
+       what happens is what happens in a ditch in May: the frog is gone before
+       the strike lands. */
+    boltSaid: 0,
+    frogBolts: function (prey, hunter) {
+      prey.hop = 0.34;
+      prey.bolt = GG.rand(1.1, 2.0);
+      prey.timer = GG.rand(1.6, 3.0);
+      prey.ang = Math.atan2(prey.y - hunter.y, prey.x - hunter.x) + GG.rand(-0.4, 0.4);
+      prey.shy = 1;
+      var p = GG.Player;
+      if (this.boltSaid <= 0 && p && GG.dist(prey.x, prey.y, p.x, p.y) < 300) {
+        this.boltSaid = 90;
+        if (GG.UI && GG.UI.toast) {
+          GG.UI.toast(hunter.def.name + ' goes after ' + prey.def.name
+            + ' — and the frog always gets away.', 3200);
+        }
+      }
+    },
+
+    /* ---------- "dogs chase squirrels": the chase that is not a hunt ----------
+
+       A dog runs the first half of a hunt and the squirrel wins, every single
+       time, because the squirrel is doing sums about its own tree. Nothing is
+       caught, nobody sits down and watches, and Guin's rule is not bent at
+       all - this is play, and both of them are enjoying it. */
+    PLAY_SEE: 210,
+
+    friendPlayNear: function (f) {
+      var best = null, bd = this.PLAY_SEE;
+      for (var i = 0; i < this.list.length; i++) {
+        var o = this.list[i];
+        if (o === f || o.scold > 0) continue;
+        if (!GG.friendPlayFor(f.def, o.def)) continue;
+        var d = GG.dist(f.x, f.y, o.x, o.y);
+        if (d < bd) { bd = d; best = o; }
+      }
+      return best;
+    },
+
+    /* The dog's half. Returns a movement multiplier, or null if it is not
+       playing and the ordinary hunt should carry on. */
+    playSaid: 0,
+    stepPlay: function (dt, f, move) {
+      if (!GG.FRIEND_PLAY) return null;
+      if (f.play > 0) {
+        f.play -= dt;
+        var o = f.playAt;
+        if (!o || this.list.indexOf(o) < 0) { this.playOver(f); return null; }
+        var d = GG.dist(f.x, f.y, o.x, o.y);
+        var to = Math.atan2(o.y - f.y, o.x - f.x);
+        if (o.scold > 0) {
+          /* up the tree, out of reach and telling it off. The dog circles the
+             bottom with its nose in the air, which is all it was ever going
+             to get. */
+          f.ang = GG.angLerp(f.ang, to + Math.PI / 2, Math.min(1, dt * 2.6));
+          f.lookUp = 1;
+          if (f.play < 0.8) f.play = 0.8;
+          if (o.scold < 0.35) this.playOver(f);
+          return d > 52 ? 1.5 : 0.9;
+        }
+        f.lookUp = 0;
+        f.ang = GG.angLerp(f.ang, to, Math.min(1, dt * 4));
+        f.hop = Math.max(f.hop, 0.12);          /* the bounding run */
+        /* and it never lays a paw on it. A squirrel in the open jinks, and a
+           dog that has run past has to turn round and start again - which is
+           how this goes in every garden in the world. */
+        if (d < 30) { this.playOver(f); return 0.5; }
+        return 2.2;
+      }
+
+      f.playRest = (f.playRest == null) ? GG.rand(0.5, 2) : f.playRest - dt;
+      if (f.playRest > 0) return null;
+      f.playRest = GG.rand(0.6, 1.4);
+      var other = this.friendPlayNear(f);
+      if (!other) return null;
+      f.play = GG.rand(3.5, 6);
+      f.playAt = other;
+      f.playWhy = GG.friendPlayFor(f.def, other.def);
+      f.chase = 0; f.chaseId = null; f.lookUp = 0;
+      if (GG.Sfx.animalCall) GG.Sfx.animalCall('dog');
+      var p = GG.Player;
+      if (this.playSaid <= 0 && p && GG.dist(f.x, f.y, p.x, p.y) < 320 && GG.UI && GG.UI.toast) {
+        this.playSaid = 80;
+        GG.UI.toast(f.def.name + ' ' + f.playWhy.does + '. Nobody is caught — it is a game.', 3600);
+      }
+      return 2.2;
+    },
+
+    playOver: function (f) {
+      f.play = 0; f.playAt = null; f.lookUp = 0;
+      f.playRest = GG.rand(5, 10);
+      f.missed = 0.5;                       /* the same little sulk as a miss */
+      f.chaseTimer = GG.rand(2.5, 5);
+    },
+
+    /* Dill & Houtman measured this with a model cat on a wire: a squirrel
+       lets a chaser come to 2.19 + 0.385 x (its own distance from the tree)
+       metres. Close to the trunk it is brave; out in the open it goes early. */
+    squirrelFlee: function (f) {
+      var tree = this.nearestTree(f.x, f.y, 420);
+      var toTree = tree ? tree.dist : 420;
+      return 2.19 * PX_PER_M + 0.385 * toTree;
+    },
+
+    /* The nearest thing a squirrel would call a tree. The solid props are
+       already sorted into a grid, so this only ever looks at the squares
+       round about. */
+    nearestTree: function (x, y, radius, from) {
+      var W = GG.World, best = null, bd = radius || 300;
+      if (!W || !W.grid) return null;
+      var gx = Math.floor(x / 200), gy = Math.floor(y / 200);
+      /* which way the dog is, so the squirrel does not pick a tree that is
+         on the far side of it - nobody runs a chase THROUGH the thing
+         chasing them */
+      var away = from ? Math.atan2(from.y - y, from.x - x) : null;
+      var awayD = from ? GG.dist(x, y, from.x, from.y) : 0;
+      for (var i = -2; i <= 2; i++) {
+        for (var j = -2; j <= 2; j++) {
+          var cell = W.grid[(gx + i) + ',' + (gy + j)];
+          if (!cell) continue;
+          for (var k = 0; k < cell.length; k++) {
+            var p = cell[k];
+            if (!TREES[p.type]) continue;
+            var d = GG.dist(x, y, p.x, p.y);
+            if (away != null && d > awayD * 0.8) {
+              var to = Math.atan2(p.y - y, p.x - x) - away;
+              var off = Math.abs(Math.atan2(Math.sin(to), Math.cos(to)));
+              if (off < 0.9) continue;         /* that one is past the dog */
+            }
+            if (d < bd) { bd = d; best = p; }
+          }
+        }
+      }
+      return best ? { x: best.x, y: best.y, r: best.r, rad: best.rad || 14, dist: bd } : null;
+    },
+
+    /* Where a squirrel would go. A tree if there is one within reach, and if
+       there is not - out on the sagebrush flats there often is not - then
+       whatever stands up nearest: a rock, a stump, a fence post. It is still
+       up and it can still see the dog, which is the whole point of it. */
+    nearestClimb: function (x, y, from) {
+      var tree = this.nearestTree(x, y, 420, from);
+      if (tree) return tree;
+      var W = GG.World, best = null, bd = 230;
+      if (!W || !W.grid) return null;
+      var gx = Math.floor(x / 200), gy = Math.floor(y / 200);
+      for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+          var cell = W.grid[(gx + i) + ',' + (gy + j)];
+          if (!cell) continue;
+          for (var k = 0; k < cell.length; k++) {
+            var p = cell[k];
+            var d = GG.dist(x, y, p.x, p.y);
+            if (d < bd) { bd = d; best = p; }
+          }
+        }
+      }
+      return best ? { x: best.x, y: best.y, r: best.r, rad: best.rad || 12, dist: bd, post: true } : null;
+    },
+
+    /* The squirrel's half, and the best beat in the feature. It runs for the
+       nearest tree, goes PART WAY up, and stops there facing the dog, in
+       plain sight, scolding with a whipping tail. It is not hiding: under a
+       hawk a squirrel puts the trunk between them, but under a dog it stays
+       where it can still see what it is shouting at. */
+    stepScold: function (dt, f, move) {
+      if (f.scold > 0) {
+        f.scold -= dt;
+        f.up = Math.min(1, (f.up || 0) + dt * 3.4);
+        f.tail = (f.tail || 0) + dt;
+        /* and it keeps itself on the dog's side of the trunk as the dog
+           circles: the whole message is "I can see you", so hiding would be
+           the wrong animation as well as the wrong fact */
+        var d0 = f.scoldDog, tr = f.climb;
+        if (d0 && tr && this.list.indexOf(d0) >= 0) {
+          var reach0 = (tr.rad || 14) + 11;
+          var a0 = Math.atan2(d0.y - tr.y, d0.x - tr.x);
+          var tx0 = tr.x + Math.cos(a0) * reach0;
+          var ty0 = tr.y + Math.sin(a0) * reach0 * 0.5 - 2;
+          f.x += (tx0 - f.x) * Math.min(1, dt * 2.2);
+          f.y += (ty0 - f.y) * Math.min(1, dt * 2.2);
+          f.scoldAt = { x: d0.x, y: d0.y };
+        }
+        if (f.scoldAt) f.faceLeft = f.scoldAt.x < f.x;
+        if (f.scold <= 0) {
+          f.up = 0; f.climb = null; f.scoldAt = null; f.scoldDog = null;
+          f.calm = GG.rand(4, 8);
+        }
+        return 0;
+      }
+      /* The nearest dog of any kind, and the nearest one actually playing
+         with it. A squirrel does not let a dog stand on it whether or not
+         anybody is playing, so the first of those matters all the time. */
+      var dog = null, dd = 1e9, close = null, cd = 1e9, i, o, d;
+      for (i = 0; i < this.list.length; i++) {
+        o = this.list[i];
+        if (o.def.family !== 'dog') continue;
+        d = GG.dist(o.x, o.y, f.x, f.y);
+        if (d < cd) { cd = d; close = o; }
+        if (!(o.play > 0) || o.playAt !== f) continue;
+        if (d < dd) { dd = d; dog = o; }
+      }
+
+      /* If a dog is right on top of it, the squirrel jinks: a hard turn
+         across the dog's nose. That is the move that makes a squirrel so hard
+         to catch, and it is why the dog never lays a paw on it. */
+      if ((close && cd < 38) || f.jink > 0) {
+        f.jink = (close && cd < 38) ? 0.5 : f.jink - dt;
+        var side = (f.jinkSide == null) ? (f.jinkSide = Math.random() < 0.5 ? 1 : -1) : f.jinkSide;
+        if (close) f.ang = Math.atan2(f.y - close.y, f.x - close.x) + side * 0.9;
+        f.hop = 0;
+        return 3.6;
+      }
+      f.jinkSide = null;
+
+      if (f.calm > 0) { f.calm -= dt; return move; }
+      if (!dog) { f.climb = null; return move; }
+      if (dd > this.squirrelFlee(f) && !f.climb) return move;
+
+      var tree = f.climb || this.nearestClimb(f.x, f.y, dog);
+      if (!tree) return Math.max(move, 3.2);       /* nothing to go up: just go */
+      f.climb = tree;
+      var reach = (tree.rad || 14) + 11;
+      var toTree = GG.dist(f.x, f.y, tree.x, tree.y);
+      if (toTree > reach) {
+        f.ang = GG.angLerp(f.ang, Math.atan2(tree.y - f.y, tree.x - f.x), Math.min(1, dt * 7));
+        return 3.2;                    /* and it is quicker than the dog */
+      }
+      /* Up the trunk and stop - on the side the dog is on, not the far side.
+         Under a hawk a squirrel hides round the back of the trunk; under a
+         dog it deliberately stays where it can still see what it is
+         shouting at, and where the dog can still see it. */
+      var toDog = Math.atan2(dog.y - tree.y, dog.x - tree.x);
+      f.x = tree.x + Math.cos(toDog) * reach;
+      f.y = tree.y + Math.sin(toDog) * reach * 0.5 - 2;
+      f.scold = GG.rand(3.4, 5.6);
+      f.up = 0.12;
+      f.scoldAt = { x: dog.x, y: dog.y };
+      f.scoldDog = dog;
+      if (GG.Sfx.squirrelScold) GG.Sfx.squirrelScold();
+      return 0;
+    },
+
+    /* ---------- "friends laugh together" ----------
+
+       Three honest signals, and no fourth one. A dog really does have a play
+       bow and every dog in the world understands it. A kea really can set
+       another kea playing with nothing but a call - the sound alone, through
+       a loudspeaker, on a mountain. Everybody else gets the true and quieter
+       thing: two friends notice one another, turn, and settle down together.
+       Nothing here claims an animal laughs, because only the play bow and the
+       kea call are solid enough to animate. */
+    socialTimer: 3,
+    stepSocial: function (dt) {
+      this.socialTimer -= dt;
+      if (this.socialTimer > 0) return;
+      this.socialTimer = GG.rand(2.4, 5);
+      for (var i = 0; i < this.list.length; i++) {
+        var f = this.list[i];
+        if (f.watch > 0 || f.play > 0 || f.scold > 0 || f.bow > 0 || f.settle > 0) continue;
+        if (f.social > 0) { f.social -= this.socialTimer; continue; }
+        var o = this.nearestSocial(f);
+        /* A parrot does not need company to call. That is the whole point of
+           the kea experiment: the call went out of a loudspeaker on an empty
+           mountainside and the parrots who HEARD it started playing. So a
+           parrot with another parrot anywhere in earshot may simply call. */
+        if (!o && f.def.family === 'parrot' && this.parrotInEarshot(f)) {
+          f.social = GG.rand(9, 18);
+          f.signal = GG.FRIEND_SIGNALS.playcall;
+          this.playCall(f);
+          return;
+        }
+        if (!o) continue;
+        var kind = GG.friendSignalFor(f.def, o.def);
+        if (!kind) continue;
+        f.social = GG.rand(9, 18); o.social = GG.rand(9, 18);
+        f.signal = o.signal = kind;
+        if (kind.id === 'playbow') {
+          f.bow = 1.1; o.bow = 0.8;
+          f.bounce = 2.4; o.bounce = 2.4;
+          if (GG.Sfx.playPant) GG.Sfx.playPant();
+        } else if (kind.id === 'playcall') {
+          this.playCall(f);
+        } else {
+          f.settle = GG.rand(2.6, 4.6); o.settle = GG.rand(2.6, 4.6);
+          f.settleAt = { x: o.x, y: o.y }; o.settleAt = { x: f.x, y: f.y };
+        }
+        return;                                /* one at a time, please */
+      }
+    },
+
+    /* Is there another parrot near enough to hear one? */
+    EARSHOT: 520,
+    parrotInEarshot: function (f) {
+      for (var i = 0; i < this.list.length; i++) {
+        var q = this.list[i];
+        if (q === f || q.def.family !== 'parrot') continue;
+        if (GG.dist(q.x, q.y, f.x, f.y) <= this.EARSHOT) return true;
+      }
+      return false;
+    },
+
+    /* One parrot calls, and every parrot who can hear it starts playing -
+       whether or not it can see anybody. The sound is what does it. */
+    playCall: function (f) {
+      f.bounce = 2.6;
+      f.forage = 0;
+      if (GG.Sfx.animalCall) GG.Sfx.animalCall('parrot', f.def.id);
+      for (var k = 0; k < this.list.length; k++) {
+        var q = this.list[k];
+        if (q === f || q.def.family !== 'parrot') continue;
+        if (GG.dist(q.x, q.y, f.x, f.y) > this.EARSHOT) continue;
+        q.bounce = 2.4;
+        q.social = GG.rand(9, 18);
+        q.signal = GG.FRIEND_SIGNALS.playcall;
+        q.forage = 0;
+      }
+    },
+
+    nearestSocial: function (f) {
+      var best = null, bd = 150;
+      for (var i = 0; i < this.list.length; i++) {
+        var o = this.list[i];
+        if (o === f || o.watch > 0 || o.play > 0 || o.scold > 0) continue;
+        if (GG.friendRuleFor(f.def, o.def) || GG.friendRuleFor(o.def, f.def)) continue;
+        if (GG.friendPlayFor(f.def, o.def) || GG.friendPlayFor(o.def, f.def)) continue;
+        if (GG.animalHunts(f.def.id, o.def.id) || GG.animalHunts(o.def.id, f.def.id)) continue;
+        if (!GG.friendSignalFor(f.def, o.def)) continue;
+        var d = GG.dist(f.x, f.y, o.x, o.y);
+        if (d < bd) { bd = d; best = o; }
+      }
+      return best;
     },
 
     /* The ones that do not hunt. A parrot stops, works at something with
@@ -368,7 +802,33 @@
       var busy = this.busy && this.busy.animal === f;
       var near = GG.dist(f.x, f.y, player.x, player.y);
 
-      /* while she is befriending it, it edges closer instead of wandering */
+      /* Up the tree, telling the dog off. Nothing else matters while that is
+         going on - not the wandering, not the hunt, not Guin. */
+      if (f.scold > 0) {
+        this.stepScold(dt, f, 0);
+        f.gait = 0;
+        f.bob = -(f.climb ? f.climb.r * 0.55 : 22) * (f.up || 0)
+          + Math.sin(f.t * 16) * 0.6;
+        return;
+      }
+
+      /* while she is befriending it, it edges closer instead of wandering -
+         except for the three you befriend by going away, who stay where they
+         are and keep their own distance */
+      if (busy && d.way === 'backaway') {
+        f.gait = 0;
+        f.faceLeft = player.x < f.x;
+        if (near < d.keep * 0.92) {
+          var off = Math.atan2(f.y - player.y, f.x - player.x);
+          var bx = f.x + Math.cos(off) * 30 * dt;
+          var by = f.y + Math.sin(off) * 30 * dt * 0.7;
+          if (!GG.World.blocked(bx, f.y, 10)) f.x = bx;
+          if (!GG.World.blocked(f.x, by, 10)) f.y = by;
+          f.gait = 0.55;
+        }
+        f.bob = Math.sin(f.t * 3) * 1.1;
+        return;
+      }
       if (busy) {
         var want = d.keep * 0.42;
         f.gait = 0;
@@ -425,8 +885,50 @@
       move = this.stepHunt(dt, f, move, !!wet);
       move = this.stepForage(dt, f, move);
 
-      /* too close, and it backs away rather than bolting */
-      if (near < d.keep * 0.55) {
+      /* --- the squirrel's answer to a dog, and the play signals --- */
+      if (fam === 'squirrel') move = this.stepScold(dt, f, move);
+      if (f.bolt > 0) {
+        f.bolt -= dt;
+        if (fam === 'frog' && f.hop <= 0) { f.hop = 0.34; f.timer = 0.5; }
+        move = Math.max(move, 2.4);
+      }
+      if (f.bow > 0) {
+        /* front end down, bottom up, and hold it */
+        f.bow -= dt;
+        move = 0;
+      } else if (f.bounce > 0) {
+        f.bounce -= dt;
+        if (f.hop <= 0 && Math.random() < dt * 5) { f.hop = 0.3; f.timer = GG.rand(0.4, 1); }
+        move = Math.max(move, 1.3);
+      } else if (f.settle > 0) {
+        /* not laughing, and not pretending to: two friends who have noticed
+           each other and would rather sit together */
+        f.settle -= dt;
+        if (f.settleAt) f.faceLeft = f.settleAt.x < f.x;
+        move = 0;
+      }
+
+      /* too close, and it backs away rather than bolting. The three you
+         befriend by leaving alone start doing it much further out, so she can
+         never end up standing next to a bear or a moose. */
+      if (d.way === 'backaway' && near < d.keep * 0.95) {
+        var far = Math.atan2(f.y - player.y, f.x - player.x);
+        f.ang = GG.angLerp(f.ang, far, Math.min(1, dt * 4));
+        /* and it is faster than she is. A bear runs as fast as a racehorse
+           and a moose trots all day: she is not going to catch one up, which
+           is the truth and is also the point. */
+        move = Math.max(move, 6.2);
+        f.shy = Math.min(1, f.shy + dt * 2);
+        /* and she cannot simply out-walk a bear to stand next to it: if she
+           keeps crowding it, it goes. Which is what a bear does, and what
+           she should want a bear to do. */
+        if (near < d.keep * 0.62) {
+          f.crowd = (f.crowd || 0) + dt;
+          if (f.crowd > 1.4) this.walksOff(f);
+        } else if (f.crowd > 0) {
+          f.crowd = Math.max(0, f.crowd - dt * 0.5);
+        }
+      } else if (near < d.keep * 0.55) {
         var away = Math.atan2(f.y - player.y, f.x - player.x);
         f.ang = GG.angLerp(f.ang, away, Math.min(1, dt * 3));
         move = Math.max(move, 1.3);
@@ -461,7 +963,7 @@
 
     /* ---------- can she start right now? ---------- */
     candidate: function (player) {
-      if (this.busy) return null;
+      if (this.busy || this.riding) return null;
       var best = null, bd = 1e9;
       for (var i = 0; i < this.list.length; i++) {
         var f = this.list[i];
@@ -470,7 +972,9 @@
         if (d < d0(f.def) && d < bd) { bd = d; best = f; }
       }
       return best;
-      function d0(def) { return def.keep + 46; }
+      /* The three you befriend by going away are offered from much further
+         off, because walking up to them is the whole thing you must not do. */
+      function d0(def) { return def.way === 'backaway' ? def.keep + 92 : def.keep + 46; }
     },
 
     /* ---------- the ritual ---------- */
@@ -480,16 +984,62 @@
       this.busy = {
         animal: f, ring: 0, need: f.def.patience,
         from: { x: player.x, y: player.y },
+        d0: GG.dist(player.x, player.y, f.x, f.y),
         settled: 0
       };
       GG.Sfx.befriendStart();
       return true;
     },
 
+    /* How much further away she has to get, as a share of the distance the
+       animal wants kept anyway. */
+    BACK_NEED: 0.8,
+
     stepBusy: function (dt, player) {
       var b = this.busy;
       if (!b) return;
       var f = b.animal;
+
+      /* The bear, the moose and the rattlesnake run the whole thing
+         backwards: the ring fills as she gets further away and slips back the
+         moment she closes in, because going away IS the befriending. Standing
+         still in front of a bear is not the lesson. */
+      if (f.def.way === 'backaway') {
+        var need = f.def.keep * this.BACK_NEED;
+        var away = GG.dist(player.x, player.y, f.x, f.y);
+        /* begin() already knows the distance she started at; the other two
+           are set here, and each on its own, so none of them can be left
+           undefined by a start that filled only some of them in */
+        if (b.d0 == null) b.d0 = away;
+        if (b.last == null) b.last = away;
+        if (b.best == null) b.best = away;
+        var step = away - b.last;              /* + she is going away */
+        b.last = away;
+        if (away > b.best) b.best = away;
+        var target = GG.clamp((away - b.d0) / need, 0, 1);
+
+        if (step < -0.02) {
+          /* Closing in slips it back at once, by as much ground as she just
+             took back. That is the whole lesson: the ring is a picture of the
+             distance between them. */
+          b.ring = Math.max(0, b.ring + (step / need) * 0.75);
+          b.settled = 0;
+        } else {
+          /* Going away fills it, and so does standing quietly once she is far
+             enough off - back away, then keep your distance. It never fills
+             faster than its patience allows, so running is no quicker than
+             walking, and never further than the room she has actually given
+             it, so it cannot fill without the distance being there. */
+          b.ring = Math.min(target, b.ring + dt / b.need);
+          b.settled += dt;
+        }
+
+        /* and walking at it - giving back the room she had given - stops the
+           whole thing, whatever the ring says */
+        if (away < b.best - 70) { this.cancel('closer'); return; }
+        if (b.ring >= 1) this.finish();
+        return;
+      }
 
       /* she has walked off */
       var strayed = GG.dist(player.x, player.y, b.from.x, b.from.y);
@@ -508,25 +1058,57 @@
       if (b.ring >= 1) this.finish();
     },
 
+    /* An animal that has had enough of being followed simply leaves. Nobody
+       has failed at anything: it went away, which is what it wanted. */
+    walksOff: function (f) {
+      var at = this.list.indexOf(f);
+      if (at < 0) return;
+      if (this.busy && this.busy.animal === f) this.busy = null;
+      this.list.splice(at, 1);
+      if (GG.UI && GG.UI.toast) {
+        GG.UI.toast(f.def.name + ' had enough of being followed and walked away. '
+          + 'Give her room and she will stay.', 3200);
+      }
+    },
+
     cancel: function (why) {
       if (!this.busy) return;
       var f = this.busy.animal;
       this.busy = null;
       if (why === 'moved') GG.UI.toast('You moved away — try again and keep still', 2200);
+      else if (why === 'closer') {
+        GG.UI.toast('Never walk towards ' + (f ? f.def.name : 'her')
+          + ' — stand tall and step slowly backwards.', 3000);
+      }
     },
 
     finish: function () {
       var b = this.busy;
       if (!b) return;
-      var f = b.animal, def = f.def;
+      var f = b.animal, def = f.def, i;
       this.busy = null;
       f.friend = true;
-      for (var i = 0; i < 7; i++) {
-        this.hearts.push({ x: f.x + GG.rand(-14, 14), y: f.y - 18 + GG.rand(-8, 8),
-          life: GG.rand(0.9, 1.6), s: GG.rand(0.7, 1.3) });
+      var look = GG.animalIsLookOnly(def);
+      if (look) {
+        /* You do not make friends with a rattlesnake. You meet her, from a
+           long way off, and you both go on your way - so no hearts, and no
+           new-friend bonus. Meeting her is the whole of it. */
+        f.met = true;
+        for (i = 0; i < 6; i++) {
+          this.bits.push({
+            x: f.x + GG.rand(-12, 12), y: f.y - 14 + GG.rand(-6, 6),
+            vx: GG.rand(-14, 14), vy: GG.rand(-30, -8),
+            life: GG.rand(0.5, 1.0), col: 'rgba(232,226,210,0.9)', s: GG.rand(1, 2)
+          });
+        }
+      } else {
+        for (i = 0; i < 7; i++) {
+          this.hearts.push({ x: f.x + GG.rand(-14, 14), y: f.y - 18 + GG.rand(-8, 8),
+            life: GG.rand(0.9, 1.6), s: GG.rand(0.7, 1.3) });
+        }
       }
-      var isNew = GG.Save.addFriend(def.id);
-      var reward = def.value + (isNew ? 40 : 0);
+      var isNew = look ? GG.Save.addSeen(def.id) : GG.Save.addFriend(def.id);
+      var reward = look ? def.value : def.value + (isNew ? 40 : 0);
       GG.Save.data.sparkles += reward;
       GG.Save.save();
       GG.Sfx.befriended();
@@ -536,6 +1118,15 @@
 
     /* ---------- the friend who tags along ---------- */
     setCompanion: function (id) {
+      /* the look-only friends never come along. You met her; that is all
+         either of you wanted. */
+      if (id && GG.animalIsLookOnly(GG.ANIMAL_BY_ID[id])) {
+        if (GG.UI && GG.UI.toast) {
+          GG.UI.toast('She is a friend you say hello to from far away — she stays where she is.', 3000);
+        }
+        return;
+      }
+      if (this.riding) this.dismount('swap');
       var old = GG.Save.data.companion;
 
       /* the friend who was with you goes and waits at the cottage, so she
@@ -567,6 +1158,7 @@
 
     sendHome: function (id) {
       var d = GG.Save.data;
+      if (GG.animalIsLookOnly(GG.ANIMAL_BY_ID[id])) return;
       if (!d.homeFriends) d.homeFriends = [];
       var at = d.homeFriends.indexOf(id);
       if (at >= 0) d.homeFriends.splice(at, 1);
@@ -583,6 +1175,7 @@
 
     takeFromHome: function (id) {
       var d = GG.Save.data;
+      if (GG.animalIsLookOnly(GG.ANIMAL_BY_ID[id])) return;
       if (!d.homeFriends) { d.homeFriends = []; return; }
       var at = d.homeFriends.indexOf(id);
       if (at >= 0) { d.homeFriends.splice(at, 1); GG.Save.save(); }
@@ -658,6 +1251,8 @@
       for (var i = 0; i < list.length; i++) out.push({ y: list[i].y, friend: list[i], atHome: true });
     },
     loadCompanion: function () {
+      /* a new outing: you ask again, and the helmet comes out again */
+      this.riding = null; this.asked = false; this.helmetOn = false;
       var id = GG.Save.data.companion;
       this.companion = (id && GG.ANIMAL_BY_ID[id] && GG.Save.hasFriend(id))
         ? { id: id, x: GG.Player.x - 30, y: GG.Player.y + 10, t: 0, faceLeft: false }
@@ -669,6 +1264,9 @@
     stepCompanion: function (dt, player) {
       var comp = this.companion;
       if (!comp) return;
+      /* while she is up on it, it is not following her - it is carrying her,
+         and stepRide has already put it where it belongs */
+      if (this.riding) return;
       var def = GG.ANIMAL_BY_ID[comp.id];
       if (!def) { this.companion = null; return; }
       comp.t += dt;
@@ -709,6 +1307,150 @@
             : Math.sin(comp.t * 6) * (busy ? 1.6 : 0.4);
     },
 
+    /* ---------- riding ----------
+
+       Only the horse, and only her own horse. Everything about getting on is
+       the real thing: you ask the person she belongs to, you come to her
+       SHOULDER from the side where she can see you - a horse sees nearly all
+       the way round itself but there is a wedge behind her and a patch under
+       her nose that she cannot see, and a horse startled from there kicks
+       before she has thought about it - and the helmet goes on before you do.
+       The cow, the deer and the moose are never offered at all. */
+
+    /* Which way is she standing? 'shoulder' is the right answer. */
+    rideStance: function (player, comp) {
+      var f = comp.faceLeft ? -1 : 1;
+      var ahead = (player.x - comp.x) * f;        /* + in front of her */
+      var side = Math.abs(player.y - comp.y);
+      if (ahead < -10 && side < 20) return 'behind';
+      if (ahead < -26) return 'behind';
+      if (ahead > 14 && side < 10) return 'nose';
+      return 'shoulder';
+    },
+
+    /* Which scene she is actually in. There are more than two of them now -
+       the world, the cottage and the lava tube - so ask the game rather than
+       assuming anything that is not the house is outdoors. */
+    sceneNow: function () {
+      return (GG.debugScene ? GG.debugScene() : null) || this.scene || 'world';
+    },
+
+    /* What the friend button should say right now, or null for nothing. */
+    rideOffer: function (player) {
+      if (this.riding) return { stage: 'off', main: 'GET DOWN', sub: 'on the left' };
+      var comp = this.companion;
+      if (!comp || this.busy || this.sceneNow() !== 'world') return null;
+      var def = GG.ANIMAL_BY_ID[comp.id];
+      if (!def || !def.rideable) return null;     /* a cow is not a horse */
+      if (GG.Fishing && GG.Fishing.active()) return null;
+      if (player.stun > 0) return null;
+      if (GG.dist(player.x, player.y, comp.x, comp.y) > 60) return null;
+      var stance = this.rideStance(player, comp);
+      if (stance !== 'shoulder') {
+        return { stage: 'stand', main: 'COME ROUND',
+          sub: stance === 'behind' ? 'not behind' : 'not her nose' };
+      }
+      if (!this.asked) return { stage: 'ask', main: 'ASK FIRST', sub: 'may I ride?' };
+      if (!this.helmetOn) return { stage: 'helmet', main: 'HELMET ON', sub: 'every time' };
+      return { stage: 'up', main: 'GET ON', sub: 'at her shoulder' };
+    },
+
+    /* One tap, one step of the flow. */
+    rideTap: function (player) {
+      var offer = this.rideOffer(player);
+      if (!offer) return false;
+      var comp = this.companion, def = comp ? GG.ANIMAL_BY_ID[comp.id] : null;
+      var name = def ? def.name : 'her';
+      if (offer.stage === 'stand') {
+        GG.UI.toast(this.rideStance(player, comp) === 'behind'
+          ? 'She cannot see straight behind her. Come round to her shoulder, talking as you go.'
+          : 'She cannot see right under her own nose either. Come to her shoulder, from the side.',
+          3400);
+        GG.Sfx.warn();
+        return true;
+      }
+      if (offer.stage === 'ask') {
+        this.asked = true;
+        GG.Sfx.click();
+        GG.UI.toast('You ask the person ' + name + ' belongs to. Yes — helmet first.', 3000);
+        return true;
+      }
+      if (offer.stage === 'helmet') {
+        this.helmetOn = true;
+        GG.Sfx.place();
+        GG.UI.toast('Helmet on and buckled — a proper riding one, every single time.', 3000);
+        return true;
+      }
+      if (offer.stage === 'up') { this.mount(player); return true; }
+      if (offer.stage === 'off') { this.dismount('tap'); return true; }
+      return false;
+    },
+
+    mount: function (player) {
+      var comp = this.companion;
+      if (!comp) return false;
+      var def = GG.ANIMAL_BY_ID[comp.id];
+      if (!def || !def.rideable || !this.helmetOn || !this.asked) return false;
+      this.riding = { id: comp.id, t: 0 };
+      comp.x = player.x; comp.y = player.y + 3;
+      comp.faceLeft = player.dir === 'left';
+      if (GG.Sfx.animalCall) GG.Sfx.animalCall('horse', comp.id);
+      GG.UI.toast('Up at her shoulder and away you go. Walk on!', 2600);
+      return true;
+    },
+
+    dismount: function (why) {
+      if (!this.riding) return false;
+      this.riding = null;
+      var comp = this.companion, p = GG.Player;
+      if (comp && p) { comp.x = p.x - 26; comp.y = p.y + 10; comp.faceLeft = false; }
+      if (why === 'tap') GG.UI.toast('Down on the left side, and a pat on the neck.', 2400);
+      return true;
+    },
+
+    /* How far up her sprite sits. main.js asks for this while it is drawing
+       her; if nobody asks, nothing is drawn up in the air either. */
+    rideLift: function () {
+      if (!this.riding) return 0;
+      this._liftAsked = 2;
+      return this.RIDE_LIFT;
+    },
+    _lift: function () {
+      return (this.riding && this._liftAsked > 0) ? this.RIDE_LIFT : 0;
+    },
+
+    stepRide: function (dt, player) {
+      /* the friend button is shared, so riding only ever takes the tap when
+         there is nobody new to say hello to */
+      var In = GG.Input;
+      if (In && In.action3Pressed && !this.busy && !this.candidate(player)) {
+        if (this.rideOffer(player)) {
+          In.action3Pressed = false;
+          this.rideTap(player);
+        }
+      }
+      if (!this.riding) return;
+      var comp = this.companion;
+      if (!comp || !GG.ANIMAL_BY_ID[comp.id] || player.stun > 0) { this.dismount('stop'); return; }
+      /* and a horse does not go indoors, or down a lava tube */
+      if (this.sceneNow() !== 'world') { this.dismount('indoors'); return; }
+      this.riding.t += dt;
+
+      /* she is up on the horse, so the pair of them go at a horse's pace */
+      var k = this.RIDE_SPEED - 1;
+      var nx = player.x + (player.vx || 0) * k * dt;
+      var ny = player.y + (player.vy || 0) * k * dt;
+      if (!GG.World.blocked(nx, player.y, player.rad || 11)) player.x = nx;
+      if (!GG.World.blocked(player.x, ny, player.rad || 11)) player.y = ny;
+
+      comp.x = player.x;
+      comp.y = player.y + 3;
+      comp.t += dt;
+      comp.gait = GG.clamp((player.speed || 0) / 90, 0, 1.5);
+      if (Math.abs(player.vx || 0) > 12) comp.faceLeft = player.vx < 0;
+      comp.bob = Math.sin(comp.t * 8) * (player.speed > 20 ? 1.4 : 0.3);
+    },
+
     /* ---------- drawing ---------- */
     /* The animals get sorted in with the trees and Guin herself, so she can
        walk in front of a cat and behind a dog just like anything else. */
@@ -721,7 +1463,16 @@
         out.push({ y: f.y, friend: f });
       }
       var comp = this.companion;
-      if (comp && GG.ANIMAL_BY_ID[comp.id]) out.push({ y: comp.y, friend: comp, isComp: true });
+      if (comp && GG.ANIMAL_BY_ID[comp.id]) {
+        if (this.riding && GG.Player) {
+          /* the horse goes in just behind her and the tack just in front, so
+             she is sat between the two and not standing beside her own horse */
+          out.push({ y: GG.Player.y - 1, friend: comp, isComp: true, mount: 'under' });
+          out.push({ y: GG.Player.y + 1, friend: comp, isComp: true, mount: 'over' });
+        } else {
+          out.push({ y: comp.y, friend: comp, isComp: true });
+        }
+      }
     },
 
     drawEntry: function (c, d, cam, t) {
@@ -729,10 +1480,39 @@
       var sx = f.x - cam.x, sy = f.y - cam.y;
       if (d.isComp) {
         var cdef = GG.ANIMAL_BY_ID[f.id];
-        if (cdef) this.drawOne(c, cdef, sx, sy, f.bob || 0, f.faceLeft, t, f.gait);
+        if (!cdef) return;
+        if (d.mount === 'over') { this.drawTack(c, cam, cdef); return; }
+        this.drawOne(c, cdef, sx, sy, f.bob || 0, f.faceLeft, t, f.gait);
         return;
       }
+
+      /* a squirrel part way up a trunk shivers with the telling-off */
+      if (f.scold > 0) sx += Math.sin(f.t * 26) * 0.9;
+
+      /* the play bow: front end right down, bottom up, held for a beat */
+      var bowing = f.bow > 0;
+      if (bowing) {
+        c.save();
+        c.translate(sx, sy);
+        c.rotate((f.faceLeft ? -1 : 1) * 0.30);
+        c.translate(-sx, -sy);
+      }
       this.drawOne(c, f.def, sx, sy, f.bob, f.faceLeft, t + f.t, f.gait);
+      if (bowing) c.restore();
+
+      /* the scolding itself: rapid chatter, aimed straight at the dog */
+      if (f.scold > 0) {
+        var dir = f.faceLeft ? -1 : 1;
+        c.strokeStyle = 'rgba(255,255,255,0.8)';
+        c.lineWidth = 1.4; c.lineCap = 'round';
+        for (var s = 0; s < 3; s++) {
+          var r0 = 9 + s * 5 + (Math.sin(f.t * 18 + s) * 1.4);
+          c.beginPath();
+          c.arc(sx + dir * 5, sy + (f.bob || 0) - 16, r0,
+            (f.faceLeft ? Math.PI : 0) - 0.5, (f.faceLeft ? Math.PI : 0) + 0.5);
+          c.stroke();
+        }
+      }
 
       /* Guin's rule, made visible: it has spotted a friend it really would
          hunt, and it has sat down to watch instead. */
@@ -753,10 +1533,51 @@
         c.font = 'bold 15px "Trebuchet MS", sans-serif';
         c.textAlign = 'center';
         c.fillText('!', sx, sy + (f.bob || 0) - 34);
+      } else if (f.lookOnly && f.met) {
+        /* met, not befriended - so an eye, not a heart */
+        this.eye(c, sx + 13, sy + (f.bob || 0) - 26, 4.2);
       } else if (f.friend) {
         c.fillStyle = 'rgba(255,140,170,0.85)';
         this.heart(c, sx + 13, sy + (f.bob || 0) - 26, 3.4);
       }
+    },
+
+    /* The helmet and the reins, drawn over the top of Guin once she is up. */
+    drawTack: function (c, cam, def) {
+      var p = GG.Player;
+      if (!p) return;
+      var px = p.x - cam.x, py = p.y - cam.y - this._lift();
+      var dir = (this.companion && this.companion.faceLeft) ? -1 : 1;
+
+      /* reins, from her hands forward to the horse's head */
+      c.strokeStyle = 'rgba(60,44,30,0.85)'; c.lineWidth = 1.4; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(px - 5, py - 12);
+      c.quadraticCurveTo(px + dir * 13, py - 8, px + dir * 22, py - 13 + this._lift() * 0.5);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(px + 5, py - 12);
+      c.quadraticCurveTo(px + dir * 15, py - 6, px + dir * 22, py - 11 + this._lift() * 0.5);
+      c.stroke();
+
+      /* and the helmet: proper riding one, on every single ride */
+      var hx = px, hy = py - 29;
+      c.fillStyle = '#3c4a66';
+      c.beginPath(); c.ellipse(hx, hy, 10.6, 8.4, 0, Math.PI, 0); c.fill();
+      c.beginPath(); c.ellipse(hx + dir * 3.4, hy + 0.6, 8.6, 2.4, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.22)';
+      c.beginPath(); c.ellipse(hx - dir * 2.6, hy - 4.4, 4.2, 2.2, 0, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = 'rgba(40,48,66,0.9)'; c.lineWidth = 1.1;
+      c.beginPath(); c.moveTo(hx - 8, hy + 1); c.lineTo(hx - 3, hy + 7);
+      c.lineTo(hx + 3, hy + 7); c.lineTo(hx + 8, hy + 1); c.stroke();
+      void def;
+    },
+
+    eye: function (c, x, y, s) {
+      c.fillStyle = 'rgba(255,255,255,0.85)';
+      c.beginPath(); c.ellipse(x, y, s, s * 0.62, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = 'rgba(60,54,48,0.9)';
+      c.beginPath(); c.arc(x, y, s * 0.34, 0, Math.PI * 2); c.fill();
     },
 
     drawHearts: function (c, cam) {
@@ -812,6 +1633,56 @@
       c.bezierCurveTo(x + s * 0.55, y - s * 1.3, x + s * 1.5, y - s * 0.3, x, y + s * 0.9);
       c.closePath(); c.fill();
     }
+  };
+
+  /* ------------------------------------------------------------------
+     "FRIENDS LAUGH TOGETHER" - what is actually true
+
+     Two of these are solid enough to animate and the third is the honest
+     answer for everybody else. Nothing here says an animal laughs, because
+     nothing in the research says so: the nearest real things are a dog's
+     breathy "play pant" (one small pilot study, sixteen dogs) and a rat's
+     tickling call, which is so high that no person can hear it. A play bow
+     and a kea's play call are different - those are properly documented, and
+     those are the two the garden shows.
+     ------------------------------------------------------------------ */
+  GG.FRIEND_SIGNALS = {
+    playbow: {
+      id: 'playbow', name: 'The play bow',
+      does: 'drops its front end right down with its bottom in the air',
+      why: 'Dogs say “let’s play!” by putting their front end down and their bottom up. It is called a play bow, and every dog in the world understands it — wolves and puppies do it too. It means everything after this is a game.',
+      honest: 'Dogs do not laugh. There is one thing close to it: a soft breathy panting dogs make only while playing, and almost never at any other time. Scientists have only studied sixteen dogs so far, so the garden shows it, and calls it a play pant, not a laugh.'
+    },
+    playcall: {
+      id: 'playcall', name: 'The play call',
+      does: 'calls out, and the other parrots start playing too',
+      why: 'A kea is a parrot that can start another parrot playing with nothing but a sound. Scientists played a recording of the kea play call through a loudspeaker on a mountain in New Zealand, and the wild kea who heard it began to play — even the ones who could not see anybody. It is the closest thing anyone has found to catching a laugh.',
+      honest: 'It is the sound itself that does it, not the sight of somebody playing — which is exactly how laughing works with people.'
+    },
+    companionable: {
+      id: 'companionable', name: 'Sitting together',
+      does: 'notices the other one, turns, and settles down beside them',
+      why: 'Not every animal plays with a friend. Some just like to sit near one. This one notices the other, turns to look, and settles.',
+      honest: 'Hummingbirds, bats and frogs are not shown playing together anywhere in this garden, because nobody has ever found that they do. An empty space is more honest than a made-up one.'
+    }
+  };
+
+  /* Which of the three two friends would do. */
+  GG.friendSignalFor = function (a, b) {
+    if (!a || !b || a.id === b.id) return null;
+    var S = GG.FRIEND_SIGNALS;
+    if (a.family === 'dog' && b.family === 'dog') return S.playbow;
+    if (a.family === 'parrot' && b.family === 'parrot') return S.playcall;
+    return S.companionable;
+  };
+
+  /* And what a single animal's page should say about it. */
+  GG.friendSignalOf = function (def) {
+    if (!def) return null;
+    var S = GG.FRIEND_SIGNALS;
+    if (def.family === 'dog') return S.playbow;
+    if (def.family === 'parrot') return S.playcall;
+    return S.companionable;
   };
 
   /* The books already know how to print a food chain - every page asks

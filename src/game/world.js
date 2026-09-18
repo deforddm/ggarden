@@ -3,42 +3,46 @@
 (function (GG) {
   'use strict';
 
-  var CELL = 160, COLS = 40, ROWS = 26;
+  var CELL = 160, COLS = 50, ROWS = 26;
   /* H hill  M meadow  G garden  F forest  O orchard  P pond bank
      T tundra  A taiga  N mountain  D desert  R rainforest  L forest glade
+     B scablands  V oak savanna  W marsh  Y bamboo  C cherry  E bird town
+     K farmyard
      The sea is in the south-east, so wet air comes off it, crosses the
      rainforest, climbs the mountains and drops its rain on the way up.
      What is left is dry, which is why the desert sits behind the ridge. */
   var MAP = [
-    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-    'TTTTAAAATTTTTAAAAAAAATTTTAAAAAAAAAAAATTT',
-    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    'AAAAAANNNNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    'DDDDHHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
-    'DDDDDHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
-    'DDDDDDNNNNHHHHMMMMMMFFFFFFFFFFFFFFFFFFFF',
-    'DDDDDNNNNNHHHMMMMMMMFFFFFFLLFFFFFFFFFFFF',
-    'DDDDDNNNNNHHMMMMMMMMMFFFFLLLLFFFFFFRRRRR',
-    'DDDDDNNNNHMMMMMMMMMMMMFFFLLLFFFFFFRRRRRR',
-    'DDDDDNNNNHMMMMMMMGGGGGOOOOOFFFFFFFRRRRRR',
-    'DDDDNNNNNHMMMMMMGGGGGGOOOOOOFFFFFFRRRRRR',
-    'DDDDNNNNNHPPMMMMGGGGGGGOOOOOOFFFFFRRRRRR',
-    'DDDDNNNNHHPPPMMMGGGGGGGOOOOOOFFFFFRRRRRR',
-    'DDDDNNNNHHPPPPMMGGGGGGGOOOOOMMMFFFRRRRRR',
-    'DDDNNNNNHHPPPPPMMGGGGGGOOOOMMMMMMFRRRRRR',
-    'DDDNNNNNHMPPPPPMMMGGGGMMMMMMMMMMMMMRRRRR',
-    'DDDNNNNHHMPPPPMMMMMMMMMMMMMMMMMMMMMMMRRR',
-    'DDDNNNNHHMPPPMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'DDNNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'DDNNNNHHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'DDNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'DDNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-    'DDNNNHHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+    'TTTTAAAATTTTTTAAAATTTTTAAAAAAAATTTTAAAAAAAAAAAATTT',
+    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    'AAAAAAAAAAAAAAAANNNNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    'AABBBBBBBBDDDDHHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'ABBBBBBBBBDDDDDHNNNNHHHHHMMMMFFFFFFFFFFFFFFFFFFFFF',
+    'BBBBBBBBBBDDDDDDNNNNHHHHMMEEEMFFFFFFFFFFFFFFFFFFFF',
+    'BBBBBBBBBBDDDDDNNNNNHHHMMMEEEMFFFFFFLLFFFFFFFFFFFF',
+    'BBBBBBBBBBDDDDDNNNNNHHMMMMMYYYMFFFFLLLLFFFFFFRRRRR',
+    'BBBBBBBBBBDDDDDNNNNHMMMMMMMYYYMMFFFLLLFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDDNNNNHMMMMMMMYYYGGOOOOOFFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDNNNNNHMMMMMMGGGGGGOOOOOOFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDNNNNNHPPMMMMGGGGGGGOOOOOOFFFFFRRRRRR',
+    'VBBBBBBBBBDDDDNNNNHHPPPMMMGGGGGGGOOOOOOFFFFFRRRRRR',
+    'VVBBBBBBBBDDDDNNNNHHPPPPMMGGGGGGGOOOOOCCCFFFRRRRRR',
+    'VVVBBBBBBBDDDNNNNNHHPPPPPMMGGGGGGOOOOMCCCMMFRRRRRR',
+    'VVVVBBBBBBDDDNNNNNHMPPPPPMMMGGGGMMMMMMCCCMMMMRRRRR',
+    'VVVVVBBBBBDDDNNNNHHMPPPPMMKKKKMMMMMMMMMMMMMMMMMRRR',
+    'VVVVVVBBBBDDDNNNNHHMPPPMMMKKKKMMMMMMMMMMMMMMMMMMMM',
+    'VVVVVVVBBBDDNNNNNHWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMMM',
+    'VVVVVVVVBBDDNNNNHHWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMMM',
+    'VVVVVVVVVBDDNNNNHMWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMMM',
+    'VVVVVVVVVVDDNNNNHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'VVVVVVVVVVDDNNNHHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
   ];
   var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard',
-    T: 'tundra', A: 'taiga', N: 'mountain', D: 'desert', R: 'rainforest', L: 'glade' };
+    T: 'tundra', A: 'taiga', N: 'mountain', D: 'desert', R: 'rainforest', L: 'glade',
+    B: 'badlands', V: 'savanna', W: 'swamp', Y: 'bamboo', C: 'cherry',
+    E: 'birdtown', K: 'farmyard' };
 
   /* water kinds */
   var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6;
@@ -58,7 +62,18 @@
     taiga: ['#4a6b3e', '#446238', '#527446'],
     tundra: ['#8d8a68', '#86835f', '#97946f'],
     rainforest: ['#3f6b35', '#396430', '#46743a'],
-    glade: ['#b8a85e', '#b2a256', '#c0b168']
+    glade: ['#b8a85e', '#b2a256', '#c0b168'],
+    /* pale loess over dark basalt - the flood country */
+    badlands: ['#a89a7e', '#9e9075', '#b3a58a'],
+    /* cured bunchgrass gold, and the gaps between the bunches are the point */
+    savanna: ['#c9b172', '#bea567', '#d3bc7f'],
+    /* wet organic mud at the walkable edge of the water */
+    swamp: ['#5e6b47', '#556343', '#67744f'],
+    bamboo: ['#7a9450', '#728c49', '#84a05a'],
+    cherry: ['#a3d46a', '#99cb60', '#aeda78'],
+    birdtown: ['#8ecf63', '#83c55a', '#98d76d'],
+    /* trodden dirt and dropped straw */
+    farmyard: ['#b9ac7e', '#b0a375', '#c2b68a']
   };
 
   /* The three shades above are a fine speckle, close enough together to read
@@ -74,37 +89,43 @@
     tundra: [[196, 203, 189, 88, 0.60, 103], [116, 112, 74, 64, 0.72, 109],
              [214, 211, 194, 46, 0.84, 107], [150, 158, 96, 104, 0.92, 113]],
     rainforest: [[47, 74, 40, 78, 0.60, 127], [87, 133, 60, 48, 0.74, 131], [58, 45, 34, 52, 0.90, 137]],
-    glade: [[111, 155, 61, 86, 0.56, 139], [127, 168, 74, 48, 0.72, 149], [90, 70, 48, 50, 0.92, 151]]
+    glade: [[111, 155, 61, 86, 0.56, 139], [127, 168, 74, 48, 0.72, 149], [90, 70, 48, 50, 0.92, 151]],
+    badlands: [[74, 76, 80, 82, 0.62, 157], [189, 160, 104, 54, 0.74, 163], [110, 112, 86, 46, 0.86, 167]],
+    savanna: [[155, 164, 94, 84, 0.62, 173], [168, 149, 92, 54, 0.74, 179], [141, 123, 78, 46, 0.84, 181]],
+    swamp: [[62, 74, 51, 70, 0.58, 191], [140, 160, 78, 48, 0.72, 193], [111, 106, 82, 58, 0.84, 197]],
+    bamboo: [[92, 112, 60, 74, 0.60, 199], [196, 186, 126, 52, 0.78, 211]],
+    cherry: [[236, 206, 214, 60, 0.74, 223], [150, 180, 96, 82, 0.60, 227]],
+    farmyard: [[150, 168, 92, 68, 0.58, 229], [142, 124, 86, 48, 0.80, 233]]
   };
 
-  var POND_E = { cx: 2220, cy: 2980, rx: 460, ry: 300 };
+  var POND_E = { cx: 3820, cy: 2980, rx: 460, ry: 300 };
 
   /* the stream grows into a river and then opens into the estuary */
   var FLOW = [
-    { x: 2120,  y: 1220,  w: 13, kind: STREAM },
-    { x: 2300,  y: 1520,  w: 15, kind: STREAM },
-    { x: 2500,  y: 1840,  w: 17, kind: STREAM },
-    { x: 2660,  y: 2170, w: 20, kind: STREAM },
-    { x: 2780,  y: 2520, w: 24, kind: STREAM },
-    { x: 2970,  y: 2820, w: 31, kind: RIVER },
-    { x: 3300,  y: 2990, w: 42, kind: RIVER },
-    { x: 3680,  y: 3110, w: 52, kind: RIVER },
-    { x: 4050,  y: 3190, w: 64, kind: RIVER },
-    { x: 4390,  y: 3290, w: 82, kind: RIVER },
-    { x: 4670,  y: 3480, w: 125, kind: ESTUARY },
-    { x: 4890,  y: 3730, w: 180, kind: ESTUARY },
-    { x: 5070,  y: 3870, w: 245, kind: ESTUARY }
+    { x: 3720,  y: 1220,  w: 13, kind: STREAM },
+    { x: 3900,  y: 1520,  w: 15, kind: STREAM },
+    { x: 4100,  y: 1840,  w: 17, kind: STREAM },
+    { x: 4260,  y: 2170, w: 20, kind: STREAM },
+    { x: 4380,  y: 2520, w: 24, kind: STREAM },
+    { x: 4570,  y: 2820, w: 31, kind: RIVER },
+    { x: 4900,  y: 2990, w: 42, kind: RIVER },
+    { x: 5280,  y: 3110, w: 52, kind: RIVER },
+    { x: 5650,  y: 3190, w: 64, kind: RIVER },
+    { x: 5990,  y: 3290, w: 82, kind: RIVER },
+    { x: 6270,  y: 3480, w: 125, kind: ESTUARY },
+    { x: 6490,  y: 3730, w: 180, kind: ESTUARY },
+    { x: 6670,  y: 3870, w: 245, kind: ESTUARY }
   ];
 
   /* the sea fills everything below this line */
   function shoreY(x) {
-    var u = x - 1600;
+    var u = x - 3200;
     var y = 4010 - (u / 4800) * 760
       + Math.sin(u * 0.0022) * 52
       + Math.sin(u * 0.0071 + 1.2) * 22;
     /* West of the river mouth the coast swings away south, so the dry side of
        the mountains never touches the sea. A desert with a beach would be a lie. */
-    var w = (2600 - x) / 900;
+    var w = (4200 - x) / 900;
     if (w > 0) y += w * w * 1400;
     return y;
   }
@@ -112,9 +133,9 @@
   /* [x, height above the tide line, rx, ry] - always on the shelf, never in the sea */
   var TIDEPOOLS = (function () {
     var defs = [
-      [5360, 132, 62, 40], [5520, 214, 46, 32], [5720, 118, 74, 44],
-      [5930, 196, 52, 36], [6120, 126, 64, 42], [5590, 322, 44, 30],
-      [5870, 306, 50, 34]
+      [6960, 132, 62, 40], [7120, 214, 46, 32], [7320, 118, 74, 44],
+      [7530, 196, 52, 36], [7720, 126, 64, 42], [7190, 322, 44, 30],
+      [7470, 306, 50, 34]
     ];
     var out = [], i, d;
     for (i = 0; i < defs.length; i++) {
@@ -124,14 +145,14 @@
     return out;
   })();
 
-  var SHELF = { x0: 5220, x1: 6400, pad: 210 };
+  var SHELF = { x0: 6820, x1: 8000, pad: 210 };
 
   /* The footbridge near Shell Beach. It crosses the water where the river
      opens out into Gull Inlet, so she can walk over instead of all the way
      round - and she can fish off the side of it. Everything about it is
      worked out from these five numbers. */
   var BRIDGE = {
-    x: 4457, y: 3343,        // mid-channel, where the river meets the beach
+    x: 6057, y: 3343,        // mid-channel, where the river meets the beach
     ang: 2.167,              // square across the current, in radians
     len: 258,                // end to end, with a landing on the sand each side
     w: 34                    // how wide the deck is
@@ -144,17 +165,19 @@
 
   /* Things that are part of the ground rather than standing on it. They are
      painted before anything that walks, and never sorted by depth. */
-  var FLAT = { lilypad: 1, wetrock: 1, pebbles: 1, kelp: 1, soilCrust: 1, snowPatch: 1 };
+  var FLAT = { lilypad: 1, wetrock: 1, pebbles: 1, kelp: 1, soilCrust: 1, snowPatch: 1,
+    duckweed: 1, petalDrift: 1, scabPothole: 1, currentRipple: 1, acorns: 1 };
 
   var MS = 8;   // water mask resolution, in pixels
 
   var World = GG.World = {
     CELL: CELL, COLS: COLS, ROWS: ROWS,
     W: COLS * CELL, H: ROWS * CELL,
-    HOUSE: { x: 3120, y: 2440, w: 150 },
-    DOOR: { x: 3120, y: 2446 },
+    HOUSE: { x: 4720, y: 2440, w: 150 },
+    DOOR: { x: 4720, y: 2446 },
     KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL },
     props: [], solids: [], hive: null, grid: {}, chunks: {},
+    caveMouth: null, bootBrush: null,
     CHUNK: 400,
     pond: POND_E,
     flow: FLOW,
@@ -313,7 +336,10 @@
         pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
         riverbank: 'Riverbank', beach: 'Shell Beach', shore: 'The Tidepools',
         desert: 'Sagebrush Desert', mountain: 'Cloudtop Ridge', taiga: 'Spruce Taiga',
-        tundra: 'Lichen Tundra', rainforest: 'Mossy Rainforest', glade: 'Golden Glade'
+        tundra: 'Lichen Tundra', rainforest: 'Mossy Rainforest', glade: 'Golden Glade',
+        badlands: 'The Scablands', savanna: 'Oak Savanna', swamp: 'Cattail Marsh',
+        bamboo: 'Bamboo Grove', cherry: 'Cherry Grove', birdtown: 'Bird Town',
+        farmyard: 'The Farmyard'
       }[this.biomeRaw(x, y)];
     },
 
@@ -344,7 +370,7 @@
 
       var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
 
-      for (var i = 0; i < 22500; i++) {
+      for (var i = 0; i < 28000; i++) {
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
         if (nearHouse(x, y, 40)) continue;
@@ -461,6 +487,67 @@
           else if (v < 0.46) add('woodSorrel', x, y, 13 + rnd() * 6);
           else if (v < 0.50) add('mushroom', x, y, 12 + rnd() * 5);
 
+        /* ---- the flood country: bare basalt, and ripples the size of dunes ---- */
+        } else if (b === 'badlands') {
+          if (v < 0.020) add('basaltColumn', x, y, 44 + rnd() * 16, true, 20);
+          else if (v < 0.034) add('erratic', x, y, 24 + rnd() * 16, true, 18);
+          else if (v < 0.058) add('scabRubble', x, y, 24 + rnd() * 12);
+          else if (v < 0.072) add('currentRipple', x, y, 38 + rnd() * 17);
+          else if (v < 0.086) add('scabPothole', x, y, 30 + rnd() * 16);
+          else if (v < 0.120) add('sagebrush', x, y, 24 + rnd() * 10, true, 13);
+          else if (v < 0.38) add('bunchgrass', x, y, 14 + rnd() * 8);
+          else if (v < 0.47) add('soilCrust', x, y, 16 + rnd() * 12);
+
+        /* ---- oak savanna: each tree throws its own island of shade ---- */
+        } else if (b === 'savanna') {
+          if (v < 0.022) add('garryOak', x, y, 45 + rnd() * 15, true, 17);
+          else if (v < 0.034) add('cliffOak', x, y, 24 + rnd() * 12, true, 14);
+          else if (v < 0.042) add('oakSnag', x, y, 38 + rnd() * 12, true, 12);
+          else if (v < 0.066) add('acorns', x, y, 12 + rnd() * 6);
+          else if (v < 0.080) add('oakGall', x, y, 16 + rnd() * 8);
+          else if (v < 0.44) add('bunchgrass', x, y, 15 + rnd() * 9);
+          else if (v < 0.50) add('flower', x, y, 10 + rnd() * 4, false, 0, { col: '#b9a6ff' });
+
+        /* ---- the marsh: flat straps and round pencils, and everything doubled ---- */
+        } else if (b === 'swamp') {
+          if (v < 0.016) add('muskratLodge', x, y, 38 + rnd() * 12, true, 22);
+          else if (v < 0.034) add('sunkLog', x, y, 30 + rnd() * 12, true, 20);
+          else if (v < 0.044) add('boardwalk', x, y, 40 + rnd() * 15);
+          else if (v < 0.115) add('duckweed', x, y, 28 + rnd() * 16);
+          else if (v < 0.32) add('cattail', x, y, 28 + rnd() * 12);
+          else if (v < 0.47) add('bulrush', x, y, 26 + rnd() * 12);
+          else if (v < 0.62) add('reed', x, y, 16 + rnd() * 8);
+          else if (v < 0.74) add('grassTuft', x, y, 13 + rnd() * 6);
+
+        /* ---- a planted grove that got away from somebody ---- */
+        } else if (b === 'bamboo') {
+          if (v < 0.155) add('bamboo', x, y, 40 + rnd() * 15, true, 10);
+          else if (v < 0.40) add('bambooShoot', x, y, 18 + rnd() * 8);
+          else if (v < 0.60) add('grassTuft', x, y, 12 + rnd() * 6);
+
+        /* ---- the cherry grove ---- */
+        } else if (b === 'cherry') {
+          if (v < 0.115) add('cherryTree', x, y, 44 + rnd() * 14, true, 15);
+          else if (v < 0.185) add('petalDrift', x, y, 30 + rnd() * 14);
+          else if (v < 0.60) add('grassTuft', x, y, 13 + rnd() * 6);
+          else if (v < 0.72) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: '#ffd6e4' });
+
+        /* ---- bird town: boxes people put up, and the birds that use them ---- */
+        } else if (b === 'birdtown') {
+          if (v < 0.034) add('nestBox', x, y, 22 + rnd() * 8, true, 11);
+          else if (v < 0.048) add('birdBath', x, y, 24 + rnd() * 8, true, 13);
+          else if (v < 0.064) add('feederPole', x, y, 28 + rnd() * 10, true, 11);
+          else if (v < 0.185) add('flower', x, y, 11 + rnd() * 5, false, 0, { col: '#8fd8ff' });
+          else if (v < 0.72) add('grassTuft', x, y, 13 + rnd() * 7);
+
+        /* ---- the farmyard ---- */
+        } else if (b === 'farmyard') {
+          if (v < 0.016) add('coop', x, y, 38 + rnd() * 12, true, 20);
+          else if (v < 0.036) add('strawBale', x, y, 22 + rnd() * 8, true, 14);
+          else if (v < 0.050) add('trough', x, y, 26 + rnd() * 8, true, 15);
+          else if (v < 0.082) add('farmFence', x, y, 30 + rnd() * 10, true, 16);
+          else if (v < 0.50) add('grassTuft', x, y, 11 + rnd() * 5);
+
         /* ---- the bright hole in the dark ceiling ---- */
         } else if (b === 'glade') {
           if (v < 0.014) add('fallenLog', x, y, 30 + rnd() * 12, true, 21);
@@ -498,24 +585,36 @@
       this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
       add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
-      add('sign', 2580, 1660, 26, false, 0, { label: 'Meadow' });
-      add('sign', 3800, 1860, 26, false, 0, { label: 'Woods' });
-      add('sign', 2650, 2860, 26, false, 0, { label: 'Pond' });
-      add('sign', 3880, 2240, 26, false, 0, { label: 'Orchard' });
-      add('sign', 2020, 1520, 26, false, 0, { label: 'Hills' });
-      add('sign', 2830, 2250, 26, false, 0, { label: 'Stream' });
-      add('sign', 3900, 2960, 26, false, 0, { label: 'River' });
-      add('sign', 4750, 3360, 26, false, 0, { label: 'Inlet' });
-      add('sign', 4260, 3470, 26, false, 0, { label: 'Beach' });
+      add('sign', 4180, 1660, 26, false, 0, { label: 'Meadow' });
+      add('sign', 5400, 1860, 26, false, 0, { label: 'Woods' });
+      add('sign', 4250, 2860, 26, false, 0, { label: 'Pond' });
+      add('sign', 5480, 2240, 26, false, 0, { label: 'Orchard' });
+      add('sign', 3620, 1520, 26, false, 0, { label: 'Hills' });
+      add('sign', 4430, 2250, 26, false, 0, { label: 'Stream' });
+      add('sign', 5500, 2960, 26, false, 0, { label: 'River' });
+      add('sign', 6350, 3360, 26, false, 0, { label: 'Inlet' });
+      add('sign', 5860, 3470, 26, false, 0, { label: 'Beach' });
       /* the six new places */
-      add('sign', 430, 2000, 26, false, 0, { label: 'Desert' });
-      add('sign', 1180, 2330, 26, false, 0, { label: 'Ridge' });
-      add('sign', 3280, 760, 26, false, 0, { label: 'Taiga' });
-      add('sign', 3280, 250, 26, false, 0, { label: 'Tundra' });
-      add('sign', 4210, 1640, 26, false, 0, { label: 'Glade' });
-      add('sign', 5810, 2420, 26, false, 0, { label: 'Rainforest' });
+      add('sign', 2030, 2000, 26, false, 0, { label: 'Desert' });
+      add('sign', 2780, 2330, 26, false, 0, { label: 'Ridge' });
+      add('sign', 4880, 760, 26, false, 0, { label: 'Taiga' });
+      add('sign', 4880, 250, 26, false, 0, { label: 'Tundra' });
+      add('sign', 5810, 1640, 26, false, 0, { label: 'Glade' });
+      add('sign', 7410, 2420, 26, false, 0, { label: 'Rainforest' });
       add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
-      add('sign', 5600, 3160, 26, false, 0, { label: 'Tidepools' });
+      add('sign', 7200, 3160, 26, false, 0, { label: 'Tidepools' });
+      /* the seven places from v1.14 */
+      /* The lava tube, and the boot brush that opens it. */
+      this.caveMouth = add('caveMouth', 2480, 2180, 52, true, 30);
+      this.bootBrush = add('bootBrush', 2578, 2246, 24, false, 0, {});
+      add('sign', 2352, 2250, 26, false, 0, { label: 'Lava Tube' });
+      add('sign', 620, 1900, 26, false, 0, { label: 'Scablands' });
+      add('sign', 640, 3820, 26, false, 0, { label: 'Oak Savanna' });
+      add('sign', 3500, 3520, 26, false, 0, { label: 'Cattail Marsh' });
+      add('sign', 4460, 1780, 26, false, 0, { label: 'Bamboo' });
+      add('sign', 6260, 2760, 26, false, 0, { label: 'Cherry Grove' });
+      add('sign', 4380, 1420, 26, false, 0, { label: 'Bird Town' });
+      add('sign', 4420, 3180, 26, false, 0, { label: 'Farmyard' });
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
       this.props.sort(function (p, q) { return p.y - q.y; });

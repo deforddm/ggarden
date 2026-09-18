@@ -28,11 +28,28 @@
 
     clear: function () { this.list.length = 0; this.fx.length = 0; },
 
+    /* Some of the newer places are small pockets of somewhere else - a grove
+       people planted, a nest-box trail along a meadow edge, a farmyard. They
+       have a few species of their own and they borrow the rest from next door,
+       which is also what really happens. */
+    ALSO: {
+      birdtown: ['meadow', 'garden'], farmyard: ['meadow', 'garden'],
+      cherry: ['orchard', 'meadow'], bamboo: ['garden', 'forest'],
+      savanna: ['meadow', 'hill'], badlands: ['desert', 'hill'],
+      swamp: ['pond', 'riverbank']
+    },
+
     eligible: function (biome, phase, rain) {
       var out = [];
+      var also = this.ALSO[biome] || null;
       for (var i = 0; i < GG.BUGS.length; i++) {
         var b = GG.BUGS[i];
         var okPlace = b.habitats.indexOf(biome) >= 0 || b.habitats.indexOf('anywhere') >= 0;
+        if (!okPlace && also) {
+          for (var k = 0; k < also.length; k++) {
+            if (b.habitats.indexOf(also[k]) >= 0) { okPlace = true; break; }
+          }
+        }
         if (!okPlace) continue;
         var okTime = b.times.indexOf('any') >= 0 || b.times.indexOf(phase) >= 0;
         if (!okTime) continue;
@@ -52,8 +69,30 @@
       return cands.length ? cands[cands.length - 1].b : null;
     },
 
+    /* Indoors (the lava tube) there is no world map to ask, so a room can
+       stand in for one: its own size, its own walls, and one biome. */
+    room: null,
+
     spawnNear: function (px, py, radMin, radMax) {
       var W = GG.World, phase = GG.Time.phase(), rain = GG.Time.rain;
+      var R = this.room;
+      if (R) {
+        for (var k = 0; k < 14; k++) {
+          var ra = Math.random() * Math.PI * 2, rd = GG.rand(radMin, radMax);
+          var rx = px + Math.cos(ra) * rd, ry = py + Math.sin(ra) * rd;
+          if (rx < 50 || ry < 50 || rx > R.W - 50 || ry > R.H - 50) continue;
+          if (R.blocked(rx, ry, 8)) continue;
+          var rc = this.eligible(R.biome, phase, false).filter(function (c) {
+            return c.b.behavior !== 'skim' && c.b.behavior !== 'tide';
+          });
+          if (!rc.length) return false;
+          var rdef = this.pickWeighted(rc);
+          if (!rdef) continue;
+          this.add(rdef, rx, ry);
+          return true;
+        }
+        return false;
+      }
       for (var attempt = 0; attempt < 14; attempt++) {
         var a = Math.random() * Math.PI * 2;
         var d = GG.rand(radMin, radMax);
@@ -269,7 +308,11 @@
           okx = !W.isWater(nx, b.y) && nx > 40 && nx < W.W - 40;
           oky = !W.isWater(b.x, ny) && ny > 60 && ny < W.H - 40;
         } else {
-          okx = !W.blocked(nx, b.y, 4); oky = !W.blocked(b.x, ny, 4);
+          if (this.room) {
+            okx = !this.room.blocked(nx, b.y, 4); oky = !this.room.blocked(b.x, ny, 4);
+          } else {
+            okx = !W.blocked(nx, b.y, 4); oky = !W.blocked(b.x, ny, 4);
+          }
         }
         if (okx) b.x = nx; else b.angle = Math.PI - b.angle + GG.rand(-0.3, 0.3);
         if (oky) b.y = ny; else b.angle = -b.angle + GG.rand(-0.3, 0.3);
