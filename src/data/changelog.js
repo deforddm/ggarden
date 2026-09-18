@@ -6,9 +6,26 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.13.0';
+  GG.VERSION = '1.14.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.14.0', title: 'Thirty-one new friends, seven new places, and a horse to ride',
+      lines: [
+        'The garden has grown again, west this time, and there are seven more places in it.',
+        'Out past the desert are the Scablands — bare black rock, round potholes, and ripples in the ground the size of sand dunes. A flood made those. A real one, bigger than any river on Earth, and it happened here dozens of times.',
+        'South of that is the Oak Savanna, where every tree stands on its own with gold grass all round it, and each one throws its own island of shade.',
+        'Below the pond is the Cattail Marsh, with muskrat lodges, a boardwalk to stand on, and new fish — including a lamprey, which has no jaws at all and is older than trees.',
+        'There is a Bamboo Grove somebody planted and rather regretted, a Cherry Grove, a Bird Town full of nest boxes, and a Farmyard.',
+        'And up on Cloudtop Ridge there is a hole in the rock. It is a lava tube — a pipe left behind by a river of melted stone — and you can walk into it with a lantern. Wipe your boots on the brush first: people carry a sickness that kills bats in on their boots. Nothing grows in the dark down there, so everything the cave animals eat was carried in from outside, mostly by bats coming home. The bats are not visitors. They are the farmers.',
+        'Thirty-one new friends. Rabbits, squirrels, a turtle, a raccoon, a fox, deer, a bear, a moose, cows, sheep, chickens, ducks, an otter, a burrowing owl — and six little songbirds for Bird Town, four snakes, and five animals that live a very long way from here and whose pages say so: a giant panda, a koala, an ocelot, a red panda and an axolotl.',
+        'Two of the friends you never go near. The black bear and the moose are the first ones where the ring fills as you BACK AWAY, not as you creep closer. Walk towards them and it stops. That is the real rule, and now it is the game.',
+        'There is one venomous snake in Washington and she is here: a western rattlesnake, LOOK, DON’T CATCH, like the black widow.',
+        'You can ride a horse. Come round to her shoulder — never behind her, she cannot see you there — ask her person first, put a helmet on, and up you go. You cannot ride a cow or a deer or a moose, and their pages tell you exactly why. (People really did try it with moose. It did not work.)',
+        'Dogs chase squirrels now, and it is a game, not a hunt — the squirrel runs up a tree, stops halfway, turns round to face the dog and tells it off. Garter snakes chase frogs, and the frog always gets away.',
+        'Friends who meet each other do something together — two dogs bow at each other and bounce. And if you step into the stream, the fish scatter. Wade slowly and they let you come close.'
+      ]
+    },
     {
       v: '1.13.0', title: 'Six new places, berries, and friends that hunt',
       lines: [

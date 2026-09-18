@@ -10,12 +10,38 @@
      dog         - ask its person first, offer a soft fist, stroke the shoulder
      cat         - crouch down, offer a fist, slow-blink and wait
      parrot      - millet for the tame ones, quiet watching for the wild ones
+     songbird    - fill the feeder, or put up a box, then go a long way back
+     snake       - stand still with your hands down and let it go past
+     bear, moose, rattlesnake
+                 - back away slowly. You make friends with these three by
+                   leaving them alone, because that is the only kind thing
+                   there is to do with them.
+     cow, sheep, chicken
+                 - ask the farmer, come from the side, wash your hands
+     horse       - ask the owner, speak first, come to the shoulder
+     panda, koala, ocelot, red panda, axolotl
+                 - visit them where people look after them, quietly
 
    Every fact was checked against Cornell Lab, the National Park Service, state
-   wildlife agencies, Bat Conservation International, the AKC, the Cat Fanciers'
-   Association, the Australian Museum, Animal Diversity Web and peer-reviewed
-   papers. The `manners` line on each one is the real-world advice, and it is
-   shown every single time she makes that friend.
+   wildlife agencies, the Washington Department of Fish and Wildlife, the Burke
+   Museum, the CDC, university extension services, Bat Conservation
+   International, the AKC, the Cat Fanciers' Association, the Australian
+   Museum, Animal Diversity Web and peer-reviewed papers. The `manners` line on
+   each one is the real-world advice, and it is shown every single time she
+   makes that friend.
+
+   WHERE AN ANIMAL REALLY LIVES IS PART OF THE TRUTH. Several friends in here
+   do not live anywhere near the Tri-Cities, and every one of those pages says
+   so in its first fact: the black bear (everywhere in Washington except the
+   dry middle of the Columbia Basin, which is exactly here), the moose (a
+   hundred and seventy miles away in the Selkirks), the eastern fox squirrel
+   (brought here and let loose in the early 1900s), and the five that live on
+   other continents. Nothing is quietly left out and nothing is pretended.
+
+   AND ONE FRIEND IS NEVER TOUCHED. The Western Rattlesnake is `lookOnly`,
+   exactly like the black widow in the Bug Book: `value: 0`, a `danger` line
+   shown every time, and meeting her is what opens her page. She is the only
+   venomous snake in Washington and she lives right here.
 
    At the bottom of this file are three more tables, all of them checked the
    same way:
@@ -29,7 +55,13 @@
      FRIEND_RULE   - Guin's own rule: friends never hunt friends. These are
                      the places where the truth and the rule collide, and
                      what the animal does instead. She wrote the rule; the
-                     garden keeps it, out loud. */
+                     garden keeps it, out loud.
+     FRIEND_PLAY   - the one chase that is not a hunt. Guin asked for dogs to
+                     chase squirrels, and it turns out a dog chasing a
+                     squirrel is playing: the catching end of the hunt has
+                     been bred out of most pet dogs, and the squirrel stops
+                     halfway up the tree to scold rather than to hide. Her
+                     rule survives without a scratch. */
 (function (GG) {
   'use strict';
 
@@ -76,6 +108,46 @@
       id: 'watch', verb: 'Watch quietly', btn: 'WATCH', sub: 'from afar',
       doing: 'Sitting down quietly…', waiting: 'Just watch…',
       blurb: 'Sit down quietly and watch. Some birds are for looking at, not touching.'
+    },
+
+    /* The one that runs backwards. For the bear, the moose and the
+       rattlesnake the honest answer is do not approach at all, so this is the
+       method where standing your ground is the wrong move and going away is
+       the right one. */
+    backaway: {
+      id: 'backaway', verb: 'Back slowly away', btn: 'BACK AWAY', sub: 'give it room',
+      doing: 'Stepping slowly backwards…', waiting: 'Keep backing away…',
+      blurb: 'Stop, stand tall, and step slowly backwards until it is a long way behind you. Never run towards it, and go and tell a grown-up.'
+    },
+    farmer: {
+      id: 'farmer', verb: 'Ask the farmer', btn: 'ASK FARMER', sub: 'come from the side',
+      doing: 'Asking the farmer…', waiting: 'Stand where she can see you…',
+      blurb: 'Ask the farmer first, come from the side where the animal can see you, and wash your hands afterwards.'
+    },
+    shoulder: {
+      id: 'shoulder', verb: 'Ask, then shoulder', btn: 'SHOULDER', sub: 'speak first',
+      doing: 'Asking, then talking to her…', waiting: 'Stand at her shoulder…',
+      blurb: 'Ask the owner, talk to her so she hears you coming, and walk to her shoulder from the side — never behind her, where she cannot see you.'
+    },
+    snakestill: {
+      id: 'snakestill', verb: 'Stand very still', btn: 'HANDS OFF', sub: 'let it pass',
+      doing: 'Standing very still…', waiting: 'Hands down, keep still…',
+      blurb: 'Stand still with your hands to yourself and let the snake go where it was going.'
+    },
+    seedtray: {
+      id: 'seedtray', verb: 'Fill the feeder', btn: 'FILL FEEDER', sub: 'then step back',
+      doing: 'Filling up the feeder…', waiting: 'Step back and keep still…',
+      blurb: 'Fill the feeder with black-oil sunflower seed, then walk a long way back, sit down and keep still.'
+    },
+    nestbox: {
+      id: 'nestbox', verb: 'Put up a nest box', btn: 'NEST BOX', sub: 'watch from afar',
+      doing: 'Fixing up the nest box…', waiting: 'Watch from far away…',
+      blurb: 'Put up a nest box with no perch, long before spring, and then watch it from far off — never open a box with a family inside.'
+    },
+    visit: {
+      id: 'visit', verb: 'Visit and keep quiet', btn: 'VISIT', sub: 'behind the rail',
+      doing: 'Coming in quietly…', waiting: 'Quiet voice, stay back…',
+      blurb: 'Stay behind the rail, keep your voice quiet, never tap the glass and never feed it. The rail is there for the animal as much as for you.'
     }
   };
 
@@ -251,6 +323,7 @@
         'Even though it is called a Labrador, the breed really comes from Newfoundland.',
         'It was the most popular dog in America for thirty-one years in a row.',
         'A retriever carries a bird all the way back without squashing it. That soft mouth is a hunting bite that people spent hundreds of years making gentler.',
+        'Chasing a squirrel is play, not hunting. The looking and the running are the first half of a hunt; the catching part at the end was bred out of most pet dogs long ago, which is why the chase is the whole point.',
         'Dogs really do chase cats. Not in this garden: a dog that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
       ],
       manners: 'Always ask the owner before you say hello. Turn a little sideways, do not stare, hold out a soft fist to be sniffed, and stroke the shoulder rather than the top of the head.'
@@ -267,6 +340,7 @@
         'It is small and it is brave: the rule book for the breed says it should be "bold, but kindly".',
         'Queen Elizabeth’s family got their first Corgi in the 1930s and made the breed famous.',
         'A Corgi moved cattle by darting in at their heels and dashing out again — a whole hunt boiled down to the quick bit in the middle, and nobody gets hurt.',
+        'When a Corgi bolts after a squirrel it is playing, not hunting — and the squirrel is not frightened either. It stops halfway up the trunk, in plain sight, and scolds the dog with its tail whipping about.',
         'Dogs really do chase cats. Not in this garden: a Corgi that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
       ],
       manners: 'Corgis often bark first and make friends second. Wait for the barking to stop before you put your hand out, and never bother a dog that is eating or asleep.'
@@ -283,6 +357,7 @@
         'It has three different voices: a bark, a howl, and a yodelly sound called a bay.',
         'Some Beagles have a real job sniffing luggage at airports, in a team called the Beagle Brigade.',
         'Following a smell for miles is the first part of hunting, and a Beagle is all first part. It will trail a rabbit happily for an hour and then have no idea what to do when it catches up.',
+        'A Beagle will chase a squirrel up a tree and then have no idea what to do about it. Beagles are the dogs scientists point to when they say the catching end of the hunt has been bred away: they do not kill what they chase.',
         'Dogs really do chase cats. Not in this garden: a Beagle that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
       ],
       manners: 'A Beagle will follow its nose right past you without meaning to be rude. Let it finish sniffing before you expect it to notice you at all.'
@@ -300,6 +375,7 @@
         'It is friendly with people it knows, but it can be a bit shy with strangers at first.',
         '"The eye" is a real stalk. A wolf creeping up on something does exactly the same thing — a Border Collie just stops before the last bit and moves the sheep instead.',
         'When she springs after a moth and it gets away, that is how it usually goes. Dogs and cats both miss far more often than they catch.',
+        'A squirrel that has seen a dog coming does not hide. It goes a little way up the trunk, turns round to face the dog, and tells it off out loud — which means: I can see you, do not bother. It only hides properly from a hawk.',
         'Dogs really do chase cats. Not in this garden: a Border Collie that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
       ],
       manners: 'This one is the most reserved of the four. Crouch a little, look away rather than at it, and let it make the first move in its own time.'
@@ -321,6 +397,7 @@
         'When a dog is happy to see someone it loves, its tail wags a little more to its right side than its left.',
         'Tug-of-war, shaking a toy, and bolting after a beetle are all the same set of moves a wolf uses to hunt, with the last one taken out. When she plays, she is doing something very old.',
         'Sled dogs keep more of that hunt than most dogs do, so Cookie is the quickest of them all to spot something moving and go.',
+        'Sled dogs keep more of the old hunt than most dogs, so a squirrel is very hard for Cookie to ignore. It is still play: she runs, the squirrel goes up the tree and scolds her, and neither of them is in any danger at all.',
         'Dogs really do chase cats. Not in this garden: Cookie sits down and waits instead when she spots one of your cat friends, because friends never hunt friends.'
       ],
       manners: 'Ask whoever she belongs to before you say hello, then hold out a soft fist and let her come to you. Huskies are chatty and wriggly and love to lean on people, but even the friendliest dog wants to be left alone while it is eating or sleeping.'
@@ -452,6 +529,608 @@
         'A grey parrot eats nuts, fruit, leaves, bark and flowers, and now and again an insect it happens to find. It never chases one. Working a hard shell open with that beak and tongue is the clever bit.'
       ],
       manners: 'Greys are clever and very watchful, and wild ones stay well away from people. The kindest thing is to sit still, keep quiet, and just let it look at you.'
+    },
+
+    /* ---------------- rabbits ---------------- */
+    {
+      id: 'nuttalls_cottontail', name: "Nuttall's Cottontail", family: 'rabbit',
+      way: 'watch', patience: 4.6, keep: 96, rarity: 1, value: 45,
+      times: ['morning', 'evening'], places: ['desert', 'meadow', 'hill', 'garden'],
+      measure: 'about as long as your forearm', size: 0.5,
+      art: { shape: 'rabbit', body: '#9a8b78', body2: '#b5a692', belly: '#f2efe8',
+        head: '#9a8b78', face: '#b5a692', ear: '#b5a692', leg: '#9a8b78',
+        tail: '#f2efe8', accent: '#3b322b', eye: '#231c16', nose: '#c8968f' },
+      facts: [
+        'When something chases it, it does not run in a straight line. It runs round in a curve, and the curve is the trick.',
+        'Its ears are short and rounded with black tips. The one with the enormous ears bouncing across the sagebrush is a jackrabbit, and a jackrabbit is a hare, not a rabbit.',
+        'It eats some of its own droppings — the soft ones, straight away — so the grass goes through twice and it gets more out of it.',
+        'Grass first, then sagebrush and juniper berries when the grass dries up. Carrots are a thing out of a story; no wild rabbit has ever had one.',
+        'A nest of baby rabbits with no mother anywhere is not abandoned. She is away feeding, and she is coming back.'
+      ],
+      manners: 'Look, do not pick it up. Wild rabbits can carry a germ called tularemia, so hands off and wash them afterwards. Sit down low and still and it will come back out on its own.'
+    },
+
+    /* ---------------- squirrels ---------------- */
+    {
+      id: 'fox_squirrel', name: 'Eastern Fox Squirrel', family: 'squirrel',
+      way: 'watch', patience: 4.0, keep: 88, rarity: 1, value: 40,
+      times: ['morning', 'day'], places: ['garden', 'orchard', 'forest'],
+      measure: 'as long as your arm, and half of that is tail', size: 0.52,
+      art: { shape: 'treesquirrel', body: '#8a6a45', body2: '#c08a4e', belly: '#d9a05b',
+        head: '#8a6a45', face: '#d9a05b', ear: '#8a6a45', leg: '#8a6a45',
+        tail: '#c08a4e', accent: '#e8d2ae', eye: '#1a1512', nose: '#3a2a20' },
+      facts: [
+        'This squirrel is not from here. Eastern fox squirrels and eastern gray squirrels were brought over and let loose in parks and gardens in the early 1900s, and now they are the commonest squirrels in town.',
+        'The squirrels that really belong to Washington live somewhere else. The Douglas squirrel keeps to the mountains and the west side, and the western gray squirrel is endangered — three small groups left in the whole state.',
+        'It does not forget where it buried its nuts. It remembers by landmarks, it sorts them by kind, and it digs up twice as many of its own as it does another squirrel’s.',
+        'When a dog comes, it runs up the trunk and then stops halfway, in plain sight, facing the dog, and scolds it with its tail whipping about. It is not hiding. It is saying: I can see you, do not bother.',
+        'Its tail is as long as the rest of it and it fluffs out sideways, which is how you tell a tree squirrel from a ground squirrel at a glance.'
+      ],
+      manners: 'Do not feed squirrels. A squirrel that is fed by hand stops being afraid of people and starts demanding, and then it gets into trouble. Watch it, and let it find its own dinner.'
+    },
+    {
+      id: 'townsends_squirrel', name: "Townsend's Ground Squirrel", family: 'squirrel',
+      way: 'watch', patience: 4.4, keep: 92, rarity: 3, value: 140,
+      times: ['morning', 'day'], places: ['desert', 'hill', 'meadow'],
+      measure: 'about as long as your hand and your wrist', size: 0.36,
+      art: { shape: 'groundsquirrel', body: '#a99a80', body2: '#7c6e58', belly: '#d6ccb6',
+        head: '#a99a80', face: '#d6ccb6', ear: '#a99a80', leg: '#a99a80',
+        tail: '#a99a80', accent: '#7c6e58', eye: '#1e1913', nose: '#3a3026' },
+      facts: [
+        'It is awake for only four or five months of the year. It comes up in January or February, has its babies in the spring, and is back underground asleep by May or June.',
+        'It is a ground squirrel, not a tree squirrel: short legs, a low body and a short thin tail. Its pose is standing bolt upright at the mouth of its burrow, having a look round.',
+        'This is the squirrel that truly belongs here. Benton County is written right into its range, which is more than the squirrel in the garden can say.',
+        'A burrowing owl cannot dig. It moves into a hole a ground squirrel or a badger left behind — so an owl in a hole is usually living in a squirrel’s old house.'
+      ],
+      manners: 'Watch from where you are standing. A ground squirrel dives down its hole the moment you walk at it, and that hole is the only door it has.'
+    },
+
+    /* ---------------- turtles ---------------- */
+    {
+      id: 'painted_turtle', name: 'Western Painted Turtle', family: 'turtle',
+      way: 'watch', patience: 3.6, keep: 70, rarity: 2, value: 90,
+      times: ['morning', 'day'], places: ['pond', 'riverbank'],
+      measure: 'a shell about as wide as your hand', size: 0.34,
+      art: { shape: 'turtle', shell: '#2f3a2a', shell2: '#3f4a34', plastron: '#d9532e',
+        body: '#2b3a32', head: '#2b3a32', face: '#e8c64a', leg: '#2b3a32',
+        belly: '#d9532e', tail: '#2b3a32', accent: '#c6402a', eye: '#1a1a16', nose: '#1a1a16' },
+      facts: [
+        'The red is on the edge of its shell and on its belly, not on its ears. The stripes down its head and legs are yellow. The turtle with red ears is a different one, from far away.',
+        'It starts every single day by climbing out onto a log to sit in the sun, because it cannot make any heat of its own.',
+        'A turtle cannot climb out of its shell. The shell is its backbone and its ribs, grown flat and joined together.',
+        'Washington has a turtle that nearly vanished: the western pond turtle, down to fewer than two hundred in the Columbia Gorge. Zoos now raise the hatchlings through their first year, and there are about eight hundred.'
+      ],
+      manners: 'If a turtle is crossing a path, help it the way it was already going and never turn it round. Never carry one to nicer water — it will spend the rest of its life walking home. Wash your hands afterwards.'
+    },
+
+    /* ---------------- bears ---------------- */
+    {
+      id: 'black_bear', name: 'Black Bear', family: 'bear',
+      way: 'backaway', patience: 6.5, keep: 190, rarity: 4, value: 280,
+      times: ['morning', 'evening'], places: ['forest', 'mountain', 'taiga'],
+      measure: 'taller than a grown-up when it stands up', size: 1.25,
+      art: { shape: 'bear', body: '#2a231e', body2: '#6b4327', belly: '#2a231e',
+        head: '#2a231e', face: '#9c7a52', ear: '#241d19', leg: '#231c18',
+        tail: '#2a231e', accent: '#d8cbb5', eye: '#120e0b', nose: '#9c7a52' },
+      facts: [
+        'There are no black bears in the Tri-Cities. They live in forests all over Washington except one place — the dry middle of the Columbia Basin — and that is exactly where your garden is. The nearest ones are in the Blue Mountains, sixty or seventy miles away.',
+        'A black bear is very often not black. Brown, blond, cinnamon and rust ones are all black bears. You tell one from a grizzly by its straight face, its long ears, no hump on its shoulders, and a bottom higher than its shoulders.',
+        'Nine tenths of what it eats is plants — berries, nuts and roots. It is a berry-picker with claws, and it carries the seeds in its tummy for miles and plants forests by accident.',
+        'In winter its heart slows from about forty-five beats a minute down to eight, it cools by a dozen degrees, and it goes for months without eating, drinking or going to the toilet at all.',
+        'It can run as fast as a racehorse, uphill as well as down, and it can climb a tree. That is why you never, ever run from one.'
+      ],
+      manners: 'You do not walk towards a bear, ever. If it has not seen you, go away quietly while it is not looking. If it has, back away slowly and talk to it in a low voice. Never run, and never feed one — in Washington feeding a bear is against the law, and a bear that learns to come to people nearly always ends up dead.'
+    },
+
+    /* ---------------- raccoons ---------------- */
+    {
+      id: 'raccoon', name: 'Raccoon', family: 'raccoon',
+      way: 'watch', patience: 4.2, keep: 110, rarity: 2, value: 85,
+      times: ['evening', 'night'], places: ['garden', 'riverbank', 'pond', 'forest', 'orchard'],
+      measure: 'as long as your arm, plus a stripy tail', size: 0.62,
+      art: { shape: 'raccoon', body: '#7e7768', body2: '#9c9280', belly: '#9c9280',
+        head: '#7e7768', face: '#e8e2d4', ear: '#7e7768', leg: '#6b6558',
+        tail: '#9c9280', accent: '#22201c', eye: '#141210', nose: '#3a3330' },
+      facts: [
+        'It is not washing its food. Its name means "the washer", and that was a mistake people made two hundred and fifty years ago: it handles food in water because wet hands feel far more.',
+        'Its front paws are so good at feeling that it can work out what something is without ever looking at it. Its footprints look like tiny human handprints with five fingers.',
+        'It can fall thirty-five or forty feet and walk away from it.',
+        'There are more raccoons in town than out in the woods — fewer things to be frightened of, and a great deal more dinner.',
+        'What it likes best is whatever it can feel about for in shallow water: crayfish, snails, frogs and little fish.'
+      ],
+      manners: 'Never touch a raccoon, and never touch its droppings — they can carry a worm that makes people very ill indeed. Feeding a raccoon is not kind: a fed raccoon stops being frightened and starts demanding.'
+    },
+
+    /* ---------------- foxes ---------------- */
+    {
+      id: 'red_fox', name: 'Red Fox', family: 'fox',
+      way: 'watch', patience: 5.4, keep: 140, rarity: 3, value: 170,
+      times: ['morning', 'evening', 'night'], places: ['meadow', 'hill', 'desert', 'orchard'],
+      measure: 'like a small slim dog, with a tail nearly as long as the rest of it', size: 0.72,
+      art: { shape: 'fox', body: '#c2622a', body2: '#d97c3e', belly: '#f4efe6',
+        head: '#c2622a', face: '#f4efe6', ear: '#26201c', leg: '#26201c',
+        tail: '#c2622a', accent: '#f4efe6', eye: '#c9a227', nose: '#1e1a17' },
+      facts: [
+        'The white tip on its tail never changes, whatever colour the rest of it is. Its legs and the backs of its ears are black, so a fox drawn all orange is drawn wrong.',
+        'It hears a mouse under the snow, jumps straight up in the air, and comes down nose first.',
+        'It eats berries and beetles as happily as it eats mice.',
+        'Washington has two kinds of red fox that never meet: a rare grey-and-black one high in the Cascades, and the farm foxes down in the valleys, kept apart by the wet forests in between. The one out in the fields here is a valley fox.',
+        'A fox really does hunt rabbits, ground squirrels and ducklings. Not in this garden: it sits down in the grass and watches them instead, because friends never hunt friends.'
+      ],
+      manners: 'A fox is not a pet and is never fed. A fed fox loses its fear, comes up to houses, and ends up under a car. Watch it from where you are and let it get on with its hunting.'
+    },
+
+    /* ---------------- deer ---------------- */
+    {
+      id: 'mule_deer', name: 'Mule Deer', family: 'deer',
+      way: 'watch', patience: 5.0, keep: 150, rarity: 2, value: 110,
+      times: ['morning', 'evening'], places: ['desert', 'hill', 'meadow', 'orchard', 'forest'],
+      measure: 'taller than you at the shoulder', size: 1.2,
+      art: { shape: 'deer', body: '#a97a4c', body2: '#8c8578', belly: '#ede6d8',
+        head: '#a97a4c', face: '#ede6d8', ear: '#3a322a', leg: '#a97a4c',
+        tail: '#f0ebe0', antler: '#b9a883', accent: '#1e1a16', eye: '#1a1512',
+        nose: '#2a231d', calf: false },
+      facts: [
+        'Its ears are the size of a mule’s. That is how it got its name, and they really should look too big.',
+        'When it is worried it bounces — all four feet off the ground at once, legs stiff. That looks a silly way to escape until you know what it means: look how strong I am, do not bother chasing me.',
+        'A buck’s antlers fall off every winter and grow back every summer, and they fork and fork again into equal Ys rather than branching off one main beam.',
+        'A fawn lying alone in the grass is not lost. Its mother left it there on purpose and is coming back — and it is not true that she would reject it if a person touched it. She is away feeding; the fawn is doing its job.',
+        'You cannot ride a deer, and nobody is allowed to keep one — Washington law says so plainly. A deer’s back is long and thin and built for springing away, not for carrying, and being held frightens a deer so badly it can make it ill days later. Running away is the best thing about a deer, so we let it.'
+      ],
+      manners: 'Watch from a long way off. Since May 2025 it has been against the law in Washington to feed deer, elk or moose: crowding them together spreads disease, the wrong food upsets them, and it walks them straight out into the road.'
+    },
+    {
+      id: 'moose', name: 'Moose', family: 'deer',
+      way: 'backaway', patience: 7.0, keep: 198, rarity: 5, value: 380,
+      times: ['morning', 'day', 'evening'], places: ['taiga', 'forest', 'mountain'],
+      measure: 'nearly six feet tall at the shoulder, before you get to the head', size: 1.65,
+      art: { shape: 'moose', body: '#3a2b22', body2: '#332619', belly: '#3a2b22',
+        head: '#3a2b22', face: '#241b15', ear: '#3a2b22', leg: '#9e9385',
+        tail: '#3a2b22', antler: '#b9a883', accent: '#332619', eye: '#14100d',
+        nose: '#241b15', calf: false },
+      facts: [
+        'There are no moose anywhere near the Tri-Cities. Washington’s moose live up in the far north-east corner, in the Selkirk Mountains — about a hundred and seventy miles away, which is a four-hour drive.',
+        'Washington had about sixty moose in the 1970s. It has about five thousand now, and they walked in by themselves.',
+        'It is not a big deer to look at. Its shoulders are humped and far higher than its rump, its legs are much too long, its muzzle hangs out over its mouth, and a flap of skin called a bell swings under its throat. Its antlers are flat plates, like two open hands.',
+        'In Alaska more people are hurt by moose every year than by bears. It is not that a moose is bad-tempered — it is that a moose is enormous, will not back down, and is fierce about its calf.',
+        'You can tell an angry moose: the long hairs on its hump stand up, its ears go flat back like a cross cat’s, and it licks its lips.',
+        'People really did try to use moose. In Sweden moose pulled the king’s messenger-sleighs, two hundred and thirty miles in a day, and there is a moose farm in Russia, started in 1963, where the moose walk off into the forest each day and come home to be milked. But nobody could make a moose pull a cart: it simply was not strong enough at pulling and it needed a person to help it up the hills.',
+        'The famous story about soldiers riding moose into battle is not true at all. A historian went looking and found nothing but nineteenth-century rumours, and the Soviet version began as an April Fools’ joke in a magazine that got away from everybody.'
+      ],
+      manners: 'Never walk towards a moose. Stay more than twenty-five yards away, further if you can. If you see a calf and no mother, get out of there carefully — she is close, and you may be standing between them. And this is the one animal you should run from: run, and put a tree between you.'
+    },
+
+    /* ---------------- the farm ---------------- */
+    {
+      id: 'cow', name: 'Cow', family: 'cow',
+      way: 'farmer', patience: 2.8, keep: 60, rarity: 1, value: 55,
+      times: ['morning', 'day', 'evening'], places: ['meadow', 'orchard'],
+      measure: 'taller than you at the shoulder, and twice as long', size: 1.55,
+      art: { shape: 'cow', body: '#f5f2ec', body2: '#e4e0d6', patch: '#1e1b18',
+        belly: '#f5f2ec', head: '#f5f2ec', face: '#f5f2ec', ear: '#e4e0d6',
+        leg: '#f5f2ec', tail: '#1e1b18', accent: '#3a342c', eye: '#1a1512', nose: '#c89d9c' },
+      facts: [
+        'A cow has no top front teeth at all. She wraps her tongue round a bunch of grass and tears it off against a hard pad in the roof of her mouth.',
+        'Her stomach has four rooms, and the first one on its own holds twenty-five gallons. Food takes seventy to a hundred hours to travel all the way through her.',
+        'She spends more than a third of every day chewing the cud — bringing grass back up and chewing it all over again — and makes fifty to eighty quarts of spit a day to do it.',
+        'Bulls do not hate red. Cattle cannot really tell red from green at all; what a bull charges is the cape moving about.',
+        'You do not ride a cow, and it is not because it could not be done — people have driven oxen for thousands of years. It is that this cow was never taught to carry anybody. Her back is bony and ridged where a horse’s is padded and saddle-shaped, and there is no way to ask her to turn or to stop.'
+      ],
+      manners: 'Ask the farmer first, and come at her from the side where she can see you — cattle cannot see behind themselves and turn round to keep you in sight. Never go into a field with a cow and a new calf; that is the one time a gentle animal is not. And if you have a dog with you, keep well back: if cows come over, let go of the lead and walk away, because it is the dog they are worried about.'
+    },
+    {
+      id: 'horse', name: 'Horse', family: 'horse', rideable: true,
+      way: 'shoulder', patience: 3.0, keep: 56, rarity: 2, value: 120,
+      times: ['morning', 'day', 'evening'], places: ['meadow', 'hill'],
+      measure: 'her head is well above yours', size: 1.55,
+      art: { shape: 'horse', body: '#6b4423', body2: '#7a5029', belly: '#7a5029',
+        head: '#6b4423', face: '#6b4423', ear: '#6b4423', leg: '#1c1815',
+        tail: '#1c1815', mane: '#1c1815', accent: '#3e382f', eye: '#161210',
+        nose: '#2a241e', rideable: true },
+      facts: [
+        'A horse can see nearly all the way round itself, but there are two places it cannot see: right in front of its nose, and right behind its tail. That is the whole reason you never walk up behind one — a horse surprised from behind kicks before it has time to think.',
+        'It sleeps standing up, in naps of less than two hours, because lying down for long is dangerous for an animal that size.',
+        'Every riding horse alive came from one small group of horses on the grasslands between the Volga and the Don, about four thousand two hundred years ago. The two things people picked out, over and over, were a strong back and a calm temper.',
+        'Horses read faces. Shown a photograph of an angry person, a horse looks at it with its left eye — the side wired to the alarm half of its brain — and its heart speeds up.',
+        'This is the one friend you may ride, and that is exactly what four thousand years of choosing was for.'
+      ],
+      manners: 'Ask the person she belongs to first. Talk to her as you come so she hears you before she sees you, walk to her shoulder from the side, and let her smell the back of your closed hand. Never stand right behind her. And if you get on, you wear a proper ASTM/SEI riding helmet, every single time.'
+    },
+    {
+      id: 'sheep', name: 'Sheep', family: 'sheep',
+      way: 'farmer', patience: 2.8, keep: 58, rarity: 1, value: 55,
+      times: ['morning', 'day', 'evening'], places: ['meadow', 'hill'],
+      measure: 'about as tall as your chest', size: 0.95,
+      art: { shape: 'sheep', body: '#e4dccc', body2: '#bfb5a0', patch: '#2a2520',
+        belly: '#d8cebb', head: '#2a2520', face: '#2a2520', ear: '#2a2520',
+        leg: '#2a2520', tail: '#e4dccc', accent: '#3a342c', eye: '#3a2e1e', nose: '#1e1a16' },
+      facts: [
+        'A sheep’s pupil is a wide horizontal bar, not a circle — and when she puts her head down to eat, her eyes roll to stay level with the ground, ten times further than yours can. It keeps the horizon sharp while she grazes, so she can see something coming.',
+        'Sheep know faces. Eight sheep learned to pick particular people out of photographs and got it right about eight times out of ten, then picked their own keeper out of a line-up with no training at all, doing a visible double-take first.',
+        'Wild sheep shed their coats. Farm sheep have been bred not to, so if nobody shears them the wool never stops. A sheep called Chris, found near Canberra in 2015, was carrying forty-one kilograms of fleece.',
+        'A sheep on her own is a worried sheep. They live in flocks, and one separated from hers is genuinely miserable, which is why a lone sheep comes and stands near you.',
+        'A sheep is not white. The wool is cream or grey, and the face and legs are often black or brown.'
+      ],
+      manners: 'Ask the farmer, walk up slowly from where she can see you, and never grab hold of the wool. Wash your hands afterwards.'
+    },
+    {
+      id: 'chicken', name: 'Chicken', family: 'chicken',
+      way: 'farmer', patience: 2.4, keep: 46, rarity: 1, value: 45,
+      times: ['morning', 'day', 'evening'], places: ['garden', 'orchard', 'meadow'],
+      measure: 'about as tall as a ruler is long', size: 0.44,
+      art: { shape: 'chicken', body: '#7a3a1c', body2: '#4a2010', belly: '#8a4426',
+        head: '#7a3a1c', face: '#c2302a', ear: '#c2302a', leg: '#e0b04a',
+        tail: '#4a2010', accent: '#c2302a', eye: '#c9a227', nose: '#e0b04a' },
+      facts: [
+        'Chickens can count. Chicks raised with five identical things watched two screens and worked out which one was hiding the bigger group.',
+        'A hen will wait for a better meal. Offered a small treat now or a bigger one in a moment, hens hold out on purpose.',
+        '"Pecking order" was invented for actual chickens. A Norwegian scientist watched a farmyard in 1921 and wrote that "a grave seriousness lies over the chicken yard". Everybody else — monkeys, whales, ants — borrowed the phrase afterwards.',
+        'Chickens came from red jungle fowl in the forests of south-east Asia, and it was dry rice farming that drew them down out of the trees about three and a half thousand years ago. When they first reached Europe nobody ate them at all: the earliest ones we find are buried whole and on their own, like something wonderful.',
+        'Its head stays still in the air while its body walks along underneath. That is what makes the bobbing look so mechanical.'
+      ],
+      manners: 'You are old enough to hold a chicken. Never kiss one or hold it up against your face, and always wash your hands with soap and running water afterwards — poultry can look perfectly clean and healthy and still carry germs that make people ill.'
+    },
+
+    /* ---------------- ducks ---------------- */
+    {
+      id: 'mallard', name: 'Mallard', family: 'duck',
+      way: 'watch', patience: 3.4, keep: 84, rarity: 1, value: 50,
+      times: ['any'], places: ['pond', 'riverbank'],
+      measure: 'about as long as your arm', size: 0.5,
+      art: { shape: 'duck', body: '#b9b4a8', body2: '#6e3b22', belly: '#cfcac0',
+        head: '#1f6b3f', face: '#1f6b3f', bill: '#d9b546', speculum: '#2e4fa0',
+        leg: '#d98a2a', tail: '#1a1714', accent: '#f5f2ec', eye: '#1a1512', nose: '#d9b546' },
+      facts: [
+        'A mallard almost never dives. It tips upside down instead, bottom in the air, and grazes the bottom of the pond.',
+        'The green-headed drake and the brown hen both have the same secret: a patch of blue on the wing with a white line above it and below it.',
+        'It can fly at fifty-five miles an hour.',
+        'Almost every duck on a farm is a mallard underneath — bred bigger, or whiter, or unable to fly, but a mallard.'
+      ],
+      manners: 'Bread is not duck food. It fills a duckling up with nothing at all while its wings are still growing, and a wing that grows out crooked never works again. Let them find their own dinner in the pond.'
+    },
+
+    /* ---------------- otters ---------------- */
+    {
+      id: 'river_otter', name: 'River Otter', family: 'otter',
+      way: 'watch', patience: 5.2, keep: 130, rarity: 4, value: 240,
+      times: ['any'], places: ['riverbank', 'pond'],
+      measure: 'as long as a grown-up’s leg, tail and all', size: 0.78,
+      art: { shape: 'otter', body: '#4a3a2c', body2: '#6b5544', belly: '#b9ac96',
+        head: '#4a3a2c', face: '#cfc3ac', ear: '#4a3a2c', leg: '#4a3a2c',
+        tail: '#4a3a2c', accent: '#ede7d9', eye: '#141210', nose: '#2a231c' },
+      facts: [
+        'It can hold its breath for eight minutes.',
+        'Food goes all the way through an otter in about an hour, which is why it is always, always hunting.',
+        'One male may travel a hundred and fifty miles in a year, up and down his river, going round the same circuit every one to four weeks.',
+        'Otters really do slide down muddy banks, over and over, on purpose.',
+        'The otters in the photographs holding hands are sea otters, out in the ocean. River otters do not do that. A river otter is usually a mother with her children, or a male on his own.'
+      ],
+      manners: 'An otter is not a toy. It is short-sighted, its mouth is made for cracking shells open, and a mother with pups will defend them — they have hurt people. Watch from the bank, and never feed one.'
+    },
+
+    /* ---------------- owls ---------------- */
+    {
+      id: 'burrowing_owl', name: 'Burrowing Owl', family: 'owl',
+      way: 'watch', patience: 5.0, keep: 120, rarity: 4, value: 260,
+      times: ['morning', 'day', 'evening'], places: ['desert', 'meadow', 'hill'],
+      measure: 'about as tall as a milk bottle', size: 0.38,
+      art: { shape: 'owl', body: '#8a6f4e', body2: '#6f5738', belly: '#c9b48f',
+        head: '#8a6f4e', face: '#f5efdf', disc: '#c9b48f', brow: '#f5efdf',
+        ear: '#8a6f4e', leg: '#9c8768', tail: '#6f5738', accent: '#ede4ce',
+        eye: '#f2c230', nose: '#d6d0c0' },
+      facts: [
+        'This is the owl with your address written into it. It nests in Benton, Franklin, Grant and western Adams counties, and Benton and Franklin are the Tri-Cities.',
+        'It is an owl that lives in a hole in the ground, and it cannot dig the hole. It moves into one a ground squirrel or a badger left behind, and comes back to the same one year after year.',
+        'It is out in the daytime, which most owls are not, and it has long legs for an owl and runs after grasshoppers on foot.',
+        'There are fewer of them than there used to be, so people build burrows for them out of buried pipe and boxes — and the owls move in. Washington has been doing it since 2010.',
+        'No owl can turn its head all the way round. It goes about two hundred and seventy degrees, and the reason it has to turn its head at all is that its eyes are fixed tubes that cannot move in their sockets.',
+        'A burrowing owl really does take small birds, and young ground squirrels out of the burrows it borrows. Not in this garden: it stands up tall on those long legs and watches them instead, because friends never hunt friends.'
+      ],
+      manners: 'Owls are watched from a long way off, and never from the burrow itself. Move slowly, keep quiet, do not stand over the hole — and if the owl starts bobbing up and down, that means you are too close, so go back.'
+    },
+
+    /* ---------------- friends from a long way away ----------------
+
+       None of these five live anywhere near the Tri-Cities, and none of them
+       pretend to. The first fact on every page says where it really lives, in
+       miles, the way the Blue Morpho page does. You meet them where people
+       look after them: quiet voice, behind the rail, no tapping, no feeding.
+       Those are the rules a real visitor follows at a real zoo, which is why
+       they are the rules here. */
+    {
+      id: 'giant_panda', name: 'Giant Panda', family: 'bear',
+      way: 'visit', patience: 4.4, keep: 150, rarity: 5, value: 420,
+      times: ['morning', 'day', 'evening'], places: ['mountain', 'forest'],
+      measure: 'bigger than a Labrador, and a great deal wider', size: 1.25,
+      art: { shape: 'panda', body: '#f5f1e8', body2: '#211e1c', belly: '#f5f1e8',
+        head: '#f5f1e8', face: '#f5f1e8', ear: '#211e1c', leg: '#211e1c',
+        tail: '#f5f1e8', accent: '#211e1c', eye: '#211e1c', nose: '#211e1c' },
+      facts: [
+        'A giant panda lives in cold, foggy mountain forests in central China — six mountain ranges, and nowhere else in the world. That is about seven thousand miles from your garden.',
+        'It has a sixth finger. A wrist bone grew into a sort of thumb for holding bamboo, and pandas have had it for six or seven million years. It never got any longer, because the panda has to walk on that hand as well.',
+        'A panda is a bear with a meat-eater’s insides, eating nothing but salad. More than ninety-eight parts in a hundred of what it eats is bamboo, and it digests it so badly that it has to eat for most of the day.',
+        'A newborn panda weighs about a hundred and twelve grams — less than a small apple — while its mother weighs ninety kilograms.',
+        'People say pandas are hopeless at having babies. They are not. A mother panda can only start a baby in a window of one to three days a year, which is narrow, not broken: there are about one thousand eight hundred and sixty-four wild pandas now, nearly a sixth more than twenty years ago, and two thirds of them live inside nature reserves.',
+        'Unlike every other bear it does not sleep the winter away. It walks down the mountain instead, and walks back up in the summer.'
+      ],
+      manners: 'You will never meet a giant panda in a garden. You meet one at a zoo that helps look after them, and there you keep your voice quiet, never tap the glass, never feed it, and stay behind the rail. The rail is there for the panda as much as it is for you.'
+    },
+    {
+      id: 'koala', name: 'Koala', family: 'koala',
+      way: 'visit', patience: 4.0, keep: 130, rarity: 4, value: 300,
+      times: ['day', 'evening', 'night'], places: ['forest', 'glade'],
+      measure: 'about as long as your arm', size: 0.6,
+      art: { shape: 'koala', body: '#9aa2a7', body2: '#818a90', belly: '#f1f0eb',
+        head: '#9aa2a7', face: '#f1f0eb', ear: '#c8ced1', leg: '#9aa2a7',
+        tail: '#9aa2a7', accent: '#f1f0eb', eye: '#1c1917', nose: '#241f1d' },
+      facts: [
+        'A koala lives in gum-tree forests in eastern Australia, about eight thousand miles from here, and it spends nearly its whole life up in the branches.',
+        'A koala is not a bear. It is a marsupial, and its closest living relative is the wombat.',
+        'Koalas have fingerprints — loops and whorls so like ours that under a microscope you cannot reliably tell them apart. They arrived at them completely separately from us.',
+        'It is not drunk or dozy on eucalyptus. Gum leaves are poisonous, and a koala’s liver carries piles of extra copies of the genes that make the poison-breaking enzymes. What the leaves really are is nearly empty of energy — so a koala rests up to twenty hours a day because its dinner cannot pay for anything more.',
+        'Nobody had properly written down that koalas drink at all until 2020, when scientists watched wild ones licking rainwater running down tree trunks. One of them drank for thirty-four minutes.',
+        'In some parts of Australia there are still plenty of koalas. In Queensland, New South Wales and the ACT they are listed as endangered, and that is where the forest is being cut down.'
+      ],
+      manners: 'A koala is a wild animal, not a toy, and in most of Australia it is against the law to hold one. At a sanctuary you stand still, let the koala stay in its tree, and use a quiet voice — it sleeps twenty hours a day, and you would only be waking it up.'
+    },
+    {
+      id: 'ocelot', name: 'Ocelot', family: 'cat',
+      way: 'visit', patience: 5.6, keep: 150, rarity: 5, value: 400,
+      times: ['evening', 'night'], places: ['rainforest', 'forest'],
+      measure: 'about twice the size of a house cat', size: 0.68,
+      art: { shape: 'ocelot', body: '#d6b173', body2: '#c49a5c', belly: '#f3ede2',
+        head: '#d6b173', face: '#f3ede2', ear: '#211c18', leg: '#d6b173',
+        tail: '#d6b173', accent: '#2a2118', eye: '#c9a227', nose: '#3a2a24' },
+      facts: [
+        'An ocelot is a spotted wild cat from the warm forests of South and Central America. A very few still live in thick thorny scrub in the far south of Texas — no more than about eighty in the whole of the United States.',
+        'Its spots are not scattered dots like a leopard’s. They are long open rings with black edges, joined up into chains that run in lines along its body.',
+        'It is a cat that likes water and swims well, which most cats do not.',
+        'Two thirds of everything an ocelot eats is small rodents — mice and rats — and it takes lizards, crabs and fish too. It is not a deer hunter.',
+        'Around the world the ocelot is not in trouble at all. It is only the American ones that are, which is worth knowing: where an animal lives matters as much as what it is.',
+        'About four in every ten ocelots that die at Laguna Atascosa are hit by cars, so Texas now digs tunnels for them under the roads. The real way to help an ocelot is for grown-ups to drive slowly at night where they live.',
+        'A wild cat this size really does take small birds. Not in this garden: it sits down and watches instead, because friends never hunt friends.'
+      ],
+      manners: 'You do not meet an ocelot in a garden — it comes out at night, and there are hardly any left. At a zoo you keep back, keep quiet, never tap the glass and never feed it.'
+    },
+    {
+      id: 'red_panda', name: 'Red Panda', family: 'redpanda',
+      way: 'visit', patience: 4.6, keep: 130, rarity: 5, value: 380,
+      times: ['morning', 'evening'], places: ['mountain', 'taiga'],
+      measure: 'about the size of a big house cat, with a tail nearly as long again', size: 0.55,
+      art: { shape: 'redpanda', body: '#b85c29', body2: '#8c4a24', belly: '#2b1c14',
+        head: '#b85c29', face: '#f7f3ec', ear: '#f7f3ec', leg: '#2b1c14',
+        tail: '#c4622c', accent: '#6b3a22', eye: '#1a1512', nose: '#241b16' },
+      facts: [
+        'A red panda lives high up in cold, misty mountain forests in Nepal, India, Bhutan, northern Myanmar and China, where it snows and bamboo grows under the trees.',
+        'The red panda was called a panda first. It was written up in 1825, about fifty years before anyone in Europe catalogued the giant panda — so the big one is named after the little one.',
+        'It is not a panda, not a bear and not a raccoon. It is the only living member of its whole family, and its nearest relatives are skunks, raccoons and weasels. There is nothing else like it anywhere.',
+        'It has a false thumb for holding bamboo, exactly like a giant panda — and the two of them are not related at all. Two different animals with the same problem invented the same tool.',
+        'It comes down a tree head-first, which almost nothing its size can do, and it sleeps with its tail over its face like a blanket.',
+        'About ninety-five parts in a hundred of what it eats is bamboo, and it only bothers with the tender leaf tips. It digests about a quarter of what it swallows.',
+        'There are fewer than ten thousand grown-up red pandas left, and the number is still going down.'
+      ],
+      manners: 'Red pandas live a long way up a mountain, and you would only ever see one at a zoo that helps save them: quiet voice, stay back. And here is the odd one — one of the best things anybody can do for a red panda is keep a dog on its lead, because loose dogs chase them and give them diseases.'
+    },
+    {
+      id: 'axolotl', name: 'Axolotl', family: 'salamander',
+      way: 'visit', patience: 3.0, keep: 44, rarity: 5, value: 360,
+      times: ['any'], places: ['pond', 'riverbank'],
+      measure: 'about as long as a pencil and a half', size: 0.34,
+      art: { shape: 'axolotl', body: '#e8afc0', body2: '#4a4638', belly: '#f4ceda',
+        head: '#e8afc0', face: '#f4ceda', leg: '#e8afc0', tail: '#e8afc0',
+        accent: '#d45c7a', eye: '#2b2b2b', nose: '#d45c7a' },
+      facts: [
+        'An axolotl lives in the canals of one city in Mexico, high up in the mountains, and nowhere else on Earth. There used to be two lakes; one of them, Lake Chalco, has been drained away and is gone.',
+        'An axolotl is not a fish. It is an amphibian — a salamander — and those feathery frills behind its head are gills it simply never lost.',
+        'Almost every other salamander grows up, loses its gills and walks out onto land. The axolotl just does not. It becomes a grown-up, has babies of its own, and stays a swimming larva its whole life.',
+        'The pink one is the pet-and-laboratory kind. Wild axolotls are dark mottled brown and green, and they were the top hunter of their lake: a sit-still-and-wait animal that snaps sideways and sucks its dinner in.',
+        'It can regrow a whole leg — bone, muscle, nerves and skin — and leave no scar at all. But it is not magic. If the same leg is taken off over and over it comes back less and less well, and in the end it heals over with scar tissue instead.',
+        'There may be fewer than a thousand left in the wild, while thousands more live safely in tanks all over the world. In 2025 scientists put eighteen captive-bred ones back into the water and followed them by radio: every one fed itself and put on weight, and two were later eaten by herons, which is exactly how it is supposed to go.',
+        'It is not smiling. Its mouth is a straight line that turns up at the corners because of the shape of its jaw, and it has no expression on its face at all.'
+      ],
+      manners: 'Some people keep axolotls in tanks. If you ever have one, the rule is absolute: never, ever put it in a pond or a stream or a lake. A pet let loose does not go home — it harms the animals that already live there.'
+    },
+
+    /* ---------------- bird town ----------------
+
+       Six songbirds you meet by putting food or a house out and then going a
+       long way away. Nobody is hand-fed: chickadees really will land on a
+       still hand, and it is on the chickadee's page as a fact rather than as
+       a method, because a child who learns "birds eat from my hand" will try
+       it on gulls and geese, where it does real harm. */
+    {
+      id: 'chickadee', name: 'Black-capped Chickadee', family: 'songbird',
+      way: 'seedtray', patience: 3.0, keep: 70, rarity: 1, value: 45,
+      times: ['morning', 'day'], places: ['garden', 'forest', 'orchard', 'glade'],
+      measure: 'a round little bird about as long as your thumb and palm', size: 0.3,
+      art: { shape: 'songbird', body: '#9a9e9c', body2: '#8a8e8c', wing: '#b2b6b2',
+        cap: '#1e1c1a', bib: '#1e1c1a', face: '#f6f4ec', belly: '#f1ece0',
+        head: '#1e1c1a', leg: '#3a3532', tail: '#8a8e8a', accent: '#f6f4ec',
+        eye: '#141210', nose: '#2a2724' },
+      facts: [
+        'It hides food all over the garden, one seed at a time, in a different place each time — and it can remember thousands of hiding places.',
+        'Its name is a burglar alarm. The more "dee" notes on the end of chickadee-dee-dee, the more dangerous the thing it has spotted: a little pygmy-owl, quick enough to catch a chickadee, earned as many as twenty-three dees, while a great clumsy horned owl got far fewer.',
+        'Every autumn it rebuilds part of its own brain, letting the cells holding old information die and growing new ones, so it can keep up with a flock that keeps changing.',
+        'However cold the night, a chickadee sleeps in a little hole of its own. They almost never share one.',
+        'Chickadees are so bold that people who sit very still for a very long time have had one land on their hand. The kind thing is still to let it take its seed from the feeder.'
+      ],
+      manners: 'Chickadees come close if you sit still and quiet. Let them take seed from the feeder and not from your hand, keep the feeder clean, and wash your hands afterwards.'
+    },
+    {
+      id: 'red_breasted_nuthatch', name: 'Red-breasted Nuthatch', family: 'songbird',
+      way: 'seedtray', patience: 4.0, keep: 86, rarity: 2, value: 80,
+      times: ['morning', 'day'], places: ['forest', 'taiga', 'mountain', 'garden'],
+      measure: 'smaller than a chickadee, with hardly any tail', size: 0.28,
+      art: { shape: 'songbird', body: '#6a8296', body2: '#546c80', wing: '#546c80',
+        cap: '#1e2228', bib: '#c98a5c', face: '#f4f1e8', belly: '#c98a5c',
+        head: '#1e2228', leg: '#6a6058', tail: '#546c80', accent: '#1e2228',
+        eye: '#141210', nose: '#3a3a38' },
+      facts: [
+        'It puts glue on its own front door. It gathers blobs of sticky resin from pine trees and smears them all round the entrance of its nest hole — the father does the outside, the mother the inside — most likely to keep other animals out.',
+        'It walks down a tree trunk head-first, which almost no other bird can do. It goes up, down and sideways without minding which way is up, and never props itself on its tail the way a woodpecker does.',
+        'It steals. Red-breasted nuthatches have been caught taking nest material from pygmy nuthatches and mountain chickadees.',
+        'Its bill is a little chisel for prising insects out of the cracks in bark.'
+      ],
+      manners: 'Fill the feeder, then step well back — nuthatches come when the garden is calm. Wash the feeder often so that nobody gets ill from it, and take it down altogether if you ever see a poorly bird.'
+    },
+    {
+      id: 'dark_eyed_junco', name: 'Dark-eyed Junco', family: 'songbird',
+      way: 'seedtray', patience: 2.6, keep: 66, rarity: 1, value: 40,
+      times: ['morning', 'day', 'evening'], places: ['garden', 'forest', 'meadow', 'glade'],
+      measure: 'about as long as a teaspoon and a half', size: 0.33,
+      art: { shape: 'songbird', body: '#8a6a52', body2: '#6b5546', wing: '#6b5546',
+        cap: '#3a3438', bib: '#3a3438', face: '#3a3438', belly: '#f2efe6',
+        head: '#3a3438', leg: '#c8907a', tail: '#3a3438', accent: '#d8b9a4',
+        eye: '#141210', nose: '#e8c2c8' },
+      facts: [
+        'It is one of the commonest birds on the whole continent. There are about six hundred and thirty million of them.',
+        'People call it the snowbird, because it turns up in gardens when the cold arrives and goes back up into the hills in spring.',
+        'It feeds on the ground, hopping round the bottoms of bushes after fallen seed, rather than clinging onto a feeder.',
+        'Its bill is pale pink, and the outer feathers of its tail are white — they flash like two white stripes the moment it flies.',
+        'The oldest one anybody knows of lived at least eleven years and four months.'
+      ],
+      manners: 'Juncos feed on the ground, so scatter a little seed low down and then move well away. Keeping cats indoors is the kindest thing anybody can do for them.'
+    },
+    {
+      id: 'american_goldfinch', name: 'American Goldfinch', family: 'songbird',
+      way: 'seedtray', patience: 3.6, keep: 78, rarity: 2, value: 95,
+      times: ['day'], places: ['garden', 'meadow', 'orchard', 'riverbank'],
+      measure: 'about as long as your thumb and palm', size: 0.3,
+      art: { shape: 'songbird', body: '#e8c72a', body2: '#d8b620', wing: '#1e1c19',
+        cap: '#1e1c19', bib: '#e8c72a', face: '#e8c72a', belly: '#f0e08a',
+        head: '#e8c72a', leg: '#c8a06a', tail: '#1e1c19', accent: '#f4f2ea',
+        eye: '#141210', nose: '#e08a2a' },
+      facts: [
+        'It is Washington’s state bird. In 1951 the legislature let schoolchildren choose, and they picked the willow goldfinch over the meadowlark.',
+        'It is a vegetarian — one of the strictest in the whole bird world, eating seeds and nothing else at all. It chases nothing, ever. That accidentally saves it: a cowbird chick smuggled into a goldfinch nest cannot live on a diet of seeds.',
+        'It waits. Goldfinches nest later than almost any other bird here, in June or July, when the thistledown they line the nest with is finally ready.',
+        'It changes clothes twice a year. In winter the bright yellow male turns plain streaky brown with blackish wings, and looks like a completely different bird.',
+        'Its flight is a deep bouncing dip, up and down like a skipping stone.'
+      ],
+      manners: 'Goldfinches love nyjer seed and clean water. Never give any bird bread — it fills them right up without feeding them at all.'
+    },
+    {
+      id: 'violet_green_swallow', name: 'Violet-green Swallow', family: 'songbird',
+      way: 'nestbox', patience: 5.2, keep: 104, rarity: 3, value: 150,
+      times: ['morning', 'day', 'evening'], places: ['meadow', 'riverbank', 'pond', 'hill', 'glade'],
+      measure: 'wings more than twice as wide as the bird is long', size: 0.37,
+      art: { shape: 'songbird', body: '#4a7a5c', body2: '#3a5f4a', wing: '#2f4a52',
+        cap: '#3a5a4a', bib: '#f6f4ee', face: '#f6f4ee', belly: '#f6f4ee',
+        head: '#3a5a4a', leg: '#3a3532', tail: '#2f4a52', accent: '#6b5a9c',
+        eye: '#141210', nose: '#2a2724' },
+      facts: [
+        'It eats in the air, catching flying insects in mid-air, and it has been clocked at twenty-eight miles an hour.',
+        'Its Latin name means "fast moving, of the sea".',
+        'Its wings are so long that when it perches the wingtips stick out past the end of its tail. That is how you know it.',
+        'There are white patches on both sides of its rump that nearly meet over the tail. Birdwatchers call them saddlebags, and from underneath they are the easiest thing on the bird to spot.',
+        'One pair was recorded helping a pair of western bluebirds feed their chicks — somebody else’s chicks entirely.'
+      ],
+      manners: 'Put the nest box up in early spring and then leave it alone. Once a family has moved in, watch from far away and never open it to peek — the law says so too, and so does the bird.'
+    },
+    {
+      id: 'western_bluebird', name: 'Western Bluebird', family: 'songbird',
+      way: 'nestbox', patience: 5.6, keep: 100, rarity: 3, value: 170,
+      times: ['morning', 'day'], places: ['meadow', 'orchard', 'glade', 'hill'],
+      measure: 'the biggest bird in Bird Town, and still smaller than your hand', size: 0.41,
+      art: { shape: 'songbird', body: '#2f5aa8', body2: '#26478a', wing: '#26478a',
+        cap: '#2f5aa8', bib: '#2f5aa8', face: '#2f5aa8', belly: '#f0ece0',
+        head: '#2f5aa8', leg: '#3a3532', tail: '#26478a', accent: '#b5622f',
+        eye: '#141210', nose: '#2a2724' },
+      facts: [
+        'It cannot make its own front door. Western bluebirds nest in holes but cannot cut one, so they depend on woodpeckers, dead trees, or a box somebody put up — which makes a nest box genuinely useful rather than just pretty.',
+        'Bluebird families sometimes have babysitters. Extra grown-up birds turn up and bring food to chicks that are not theirs at all.',
+        'A bluebird weighs about an ounce and needs about fifteen calories a day — and twenty-three when there is a nestful of babies to feed.',
+        'It hunts by sitting very still on a low perch and dropping straight down onto the ground. In winter it eats berries instead.'
+      ],
+      manners: 'Bluebirds want a box with no perch on the front — a perch only helps something else climb in — and a quiet garden round it. Watch from the window, and never touch the eggs or the babies.'
+    },
+
+    /* ---------------- snakes ----------------
+
+       Four snakes, and one rule that covers all four of them: stand still,
+       then step back, and let it go. She never has to work out which snake it
+       is, which matters, because the usual test does not work - a gopher
+       snake flattens its head into a triangle and buzzes its tail on purpose.
+
+       The Western Rattlesnake is `lookOnly`, the only friend that is. She is
+       venomous, she lives right here, and the whole point of her page is that
+       you back away from her and are pleased with yourself afterwards. */
+    {
+      id: 'garter_snake', name: 'Common Garter Snake', family: 'snake',
+      way: 'snakestill', patience: 3.2, keep: 55, rarity: 1, value: 50,
+      times: ['morning', 'day'], places: ['garden', 'pond', 'riverbank', 'meadow'],
+      measure: 'about as long as your arm, and thinner than a pencil', size: 0.56,
+      art: { shape: 'snake', body: '#2f3630', body2: '#1e231f', stripe: '#e0d86a',
+        pattern: 'stripes', belly: '#9ac4b4', head: '#2f3630', face: '#2f3630',
+        tail: '#2f3630', accent: '#c8503a', eye: '#141210', nose: '#c8503a' },
+      facts: [
+        'It eats the rough-skinned newt, one of the most poisonous animals in the Pacific Northwest, and lives. It is the only animal known that can carry a resistance to that poison — and where the newts are more poisonous, the snakes are more resistant.',
+        'It does not lay eggs. The mother gives birth to live baby snakes, usually ten to fifteen of them, though one litter got up to eighty-five.',
+        'Its forked tongue smells in stereo. Each fork carries its scent to its own organ in the roof of the mouth, so the snake knows instantly which side the smell is stronger on.',
+        'It is not venomous, and its bite cannot really hurt you. What a frightened one does is smear foul-smelling musk over your hands — that is the snake saying put me down, and it washes off.',
+        'A garter snake really does hunt frogs, and in this garden it is allowed to try. Like every chase here, it never catches one. It goes the other way too: a bullfrog is quite big enough to swallow a garter snake.',
+        'Garter snakes have been written down in every county in Washington except two — Benton and Franklin, which is here. They are almost certainly about; it is just that nobody has sent in a record.'
+      ],
+      manners: 'Watch garter snakes with your eyes, not your hands. Stand still, then step back, and let it go where it was going — and wash your hands afterwards if you have been poking about where snakes live.'
+    },
+    {
+      id: 'gopher_snake', name: 'Gopher Snake', family: 'snake',
+      way: 'snakestill', patience: 4.4, keep: 92, rarity: 3, value: 160,
+      times: ['day', 'evening'], places: ['desert', 'meadow', 'hill', 'orchard'],
+      measure: 'longer than you are tall', size: 0.8,
+      art: { shape: 'snake', body: '#d8c48a', body2: '#b89a62', stripe: '#4a3a24',
+        pattern: 'blotches', belly: '#f2ece0', head: '#d8c48a', face: '#d8c48a',
+        tail: '#c8b078', accent: '#2f2620', eye: '#141210', nose: '#3a3028' },
+      facts: [
+        'A gopher snake with no rattle at all can still sound exactly like one. Frightened, it hisses, puffs itself up, flattens its head into a triangle and shakes its tail hard — and in dry grass that buzzes just like a rattlesnake. It is bluffing. It has no venom whatsoever.',
+        'Look at the tail to find out the truth. A rattlesnake’s tail is blunt and ends in a rattle; a gopher snake’s tapers away to a point, and it has no heat-sensing pits on its face.',
+        'It lays some of the biggest eggs of any snake in the United States, and the babies hatch out already thirteen to seventeen inches long.',
+        'It hunts mice, rats and moles, and it kills by wrapping round them. It has no venom to bite with.',
+        'It really does raid birds’ nests for eggs. Not in this garden: it glides quietly past and leaves them be, because friends never hunt friends.'
+      ],
+      manners: 'A gopher snake puffing and buzzing at you is a harmless snake pretending to be a dangerous one. Back away anyway and let it settle down — you never have to work out which snake it is, because every snake gets the same good manners.'
+    },
+    {
+      id: 'rubber_boa', name: 'Northern Rubber Boa', family: 'snake',
+      way: 'snakestill', patience: 4.8, keep: 42, rarity: 4, value: 240,
+      times: ['evening', 'night'], places: ['forest', 'mountain', 'taiga', 'glade'],
+      measure: 'about as long as your forearm, and fat with it', size: 0.47,
+      art: { shape: 'snake', body: '#8a6a4a', body2: '#6b5238', stripe: '#8a6a4a',
+        pattern: 'plain', belly: '#e0d08a', head: '#8a6a4a', face: '#8a6a4a',
+        tail: '#8a6a4a', accent: '#c8a882', eye: '#241c16', nose: '#5a4430' },
+      facts: [
+        'It has two heads — sort of. Its tail is short and blunt and looks very like its head, with hard bone inside, and when it is frightened it rolls into a ball, hides its real head in the middle and waves the fake one at you.',
+        'The trick works. Wild rubber boas are found with scars on their tails, from animals that went for the wrong end.',
+        'It is one of the very few snakes that almost never bites. Wildlife officers call rubber boas slow and non-aggressive and say they can be safely watched — watched, not held.',
+        'It hunts baby mice inside their nest, and it fends off the mother with that decoy tail while it does it.',
+        'Its skin is loose and wrinkled and looks as soft as rubber, but no snake is slimy. Snake skin is dry, smooth and scaly.'
+      ],
+      manners: 'Rubber boas are the gentlest snakes there are, and they still belong to the wild. Look closely, keep your hands down, and let it slip away into the leaves.'
+    },
+    {
+      /* The only friend who is never touched, and the only one worth nothing
+         in sparkles. Meeting her is the whole reward. See `lookOnly` on the
+         black widow in the Bug Book: the same idea, the same `danger` line
+         shown every single time. */
+      id: 'western_rattlesnake', name: 'Western Rattlesnake', family: 'snake',
+      way: 'backaway', patience: 5.0, keep: 185, rarity: 5, value: 0,
+      lookOnly: true,
+      times: ['day', 'evening', 'night'], places: ['desert', 'hill'],
+      measure: 'about two feet long, and thick with it', size: 0.71,
+      danger: 'If you hear a buzz, or see a rattlesnake, stop. Step slowly backwards, and go and tell a grown-up. Never poke it, never chase it, never throw anything at it. And never put your hands or your feet anywhere you cannot see first — not under a rock, not into long grass.',
+      art: { shape: 'snake', body: '#b9a480', body2: '#8a7452', stripe: '#4a3a28',
+        pattern: 'diamond', belly: '#e8dcc4', head: '#b9a480', face: '#b9a480',
+        tail: '#d8cbb5', accent: '#2f2620', eye: '#e0c86a', nose: '#3a3028' },
+      facts: [
+        'This is the only venomous snake in the whole of Washington, and it lives right here. There is a mountain named after it in Benton County.',
+        'It sees warmth. There is a little pit between each eye and each nostril that picks up a difference of less than a fraction of a degree, so it can find a mouse in complete darkness.',
+        'You cannot count the rings to find out its age. A new ring is added every time it sheds its skin, a young snake sheds three or four times in one summer, and the old rings break off the end anyway.',
+        'A rattlesnake mother stays with her newborns for ten to fourteen days, until their first shed turns the silent little button on their tails into a real first rattle.',
+        'Baby rattlesnakes are not more dangerous than grown-up ones. That is a story, and a scientist took it apart properly: babies can control how much venom they use, adults carry far more of it, and adults make people far iller. Give every snake the same room, whatever size it is.',
+        'It would much rather you went away. It does not think of people as food and will not bite unless it is threatened, and it only coils up like that when it cannot get away by crawling.',
+        'It does not chase anybody. A snake coming towards you is a snake escaping towards the only cover it can see — and from where it is standing, you are the dangerous one.'
+      ],
+      manners: 'This is the one friend you never walk towards and never touch. Stop as soon as you see or hear her, step slowly backwards until she is a long way behind you, and tell a grown-up. Stay on the open path, and never put a hand or a foot anywhere you have not looked first.'
     }
   ];
 
@@ -557,9 +1236,85 @@
     tabby: CAT_PREY,
     calico: CAT_PREY,
     siamese: CAT_PREY,
-    maine_coon: CAT_PREY
+    maine_coon: CAT_PREY,
+
+    /* --- the ocelot: two thirds of what it eats is mice and rats, and after
+       that it is lizards, crabs, fish and the odd big insect. Nothing here is
+       a butterfly, because a wild cat that size does not bother with one. --- */
+    ocelot: ['crayfish', 'minnow', 'creek_chub', 'cricket', 'grasshopper',
+      'jerusalem_cricket'],
+
+    /* --- the turtle: it does not chase. It plods over and takes whatever is
+       slow enough, in the water and at the edge of it. --- */
+    painted_turtle: ['snail', 'sideband_snail', 'pillbug', 'earthworm', 'water_strider',
+      'boatman', 'backswimmer', 'mayfly', 'caddisfly', 'crayfish', 'minnow'],
+
+    /* --- the bear: nine tenths of a bear is a berry-picker, so this is the
+       other tenth - ants and grubs turned out of a rotting log, and fish in a
+       stream. --- */
+    black_bear: ['ant', 'ground_beetle', 'sap_beetle', 'stag_beetle', 'pine_beetle',
+      'click_beetle', 'minnow', 'creek_chub', 'rainbow_trout', 'chinook'],
+
+    /* --- the raccoon: WDFW's own list, which is "particularly fond of
+       creatures found in water" - crayfish, snails, frogs and little fish.
+       The frogs are friends, so see FRIEND_RULE. --- */
+    raccoon: ['crayfish', 'snail', 'sideband_snail', 'earthworm', 'minnow', 'bluegill',
+      'pumpkinseed', 'creek_chub', 'ground_beetle', 'sap_beetle'],
+
+    /* --- the fox: mice above all, and then grasshoppers, beetles, worms and
+       berries. The rabbits and squirrels are friends. --- */
+    red_fox: ['grasshopper', 'pallid_grasshopper', 'cricket', 'mormon_cricket',
+      'katydid', 'ground_beetle', 'tenlined_beetle', 'earthworm'],
+
+    /* --- the otter: "mostly fish", plus crayfish and big water beetles, and
+       food goes through it in an hour, so it never stops. --- */
+    river_otter: ['minnow', 'creek_chub', 'bluegill', 'pumpkinseed', 'perch', 'crappie',
+      'sculpin', 'carp', 'smallmouth', 'rainbow_trout', 'crayfish', 'water_bug'],
+
+    /* --- the chicken: an enthusiastic and very effective bug hunter --- */
+    chicken: ['grasshopper', 'cricket', 'katydid', 'earwig', 'pillbug', 'earthworm',
+      'snail', 'ant', 'ground_beetle', 'sap_beetle', 'click_beetle', 'housefly',
+      'caterpillar', 'cockroach', 'silverfish'],
+
+    /* --- the burrowing owl: insects come first by a long way, and it runs
+       after them on those long legs. --- */
+    burrowing_owl: ['grasshopper', 'pallid_grasshopper', 'mormon_cricket', 'cricket',
+      'jerusalem_cricket', 'ground_beetle', 'tenlined_beetle', 'tiger_beetle',
+      'pinacate_beetle', 'hawk_moth'],
+
+    /* --- the axolotl: a sit-still-and-wait hunter that snaps sideways. It
+       was the top hunter of its lake. --- */
+    axolotl: ['minnow', 'earthworm', 'water_strider', 'boatman', 'backswimmer',
+      'mayfly', 'caddisfly'],
+
+    /* --- the songbirds. Insects and spiders, gleaned off bark and leaves and
+       the ground - except the goldfinch, which chases nothing at all, ever.
+       See ANIMAL_FORAGE for that one. --- */
+    chickadee: ['caterpillar', 'aphid', 'leafhopper', 'ant', 'garden_spider',
+      'cross_orbweaver', 'crab_spider', 'lacewing', 'sap_beetle', 'weevil'],
+    red_breasted_nuthatch: ['ant', 'aphid', 'weevil', 'sap_beetle', 'pine_beetle',
+      'crab_spider', 'lacewing', 'caterpillar', 'click_beetle', 'leafhopper'],
+    dark_eyed_junco: ['ant', 'aphid', 'leafhopper', 'sap_beetle', 'caterpillar', 'pillbug'],
+    violet_green_swallow: ['crane_fly', 'housefly', 'hoverfly', 'mayfly', 'mayfly_river',
+      'kelp_fly', 'lacewing', 'aphid', 'leafhopper'],
+    western_bluebird: ['grasshopper', 'cricket', 'caterpillar', 'ground_beetle',
+      'sap_beetle', 'crab_spider', 'pillbug', 'earwig', 'click_beetle'],
+
+    /* --- the garter snake, and the one friend-on-friend chase in the whole
+       garden. Everything else that hunts a friend stops and watches; David
+       said the garter snake may chase a frog, because it truly does, and
+       because - like every chase here - it never catches one. The frog it
+       could really take is the little Pacific Chorus Frog. A bullfrog is the
+       other way round: it is big enough to swallow the snake. --- */
+    garter_snake: ['earthworm', 'banana_slug', 'minnow', 'creek_chub', 'chorus_frog']
 
     /* --- parrots: nothing at all. See ANIMAL_FORAGE. --- */
+
+    /* --- and three friends are on neither list, on purpose. The gopher
+       snake, the rubber boa and the rattlesnake hunt mice, voles, moles and
+       nestlings, mostly down inside a burrow, and there are no mice in this
+       garden - so there is nothing here for them to go after. That silence is
+       the truth, not a gap. --- */
   };
 
   /* How each family goes about it. The style drives the animation, and every
@@ -570,7 +1325,28 @@
        swoop  - a bat: a fast pass out of the dark
        ambush - a frog: do not chase at all. Sit. Wait. Tongue. */
   var HUNT_STYLE = GG.ANIMAL_HUNT_STYLE = {
-    cat: 'pounce', dog: 'dash', hummingbird: 'hover', bat: 'swoop', frog: 'ambush'
+    cat: 'pounce', dog: 'dash', hummingbird: 'hover', bat: 'swoop', frog: 'ambush',
+    /* a fox mouses: ears forward, head cocked, then a high jump and a
+       nose-first landing - which is a pounce with the volume turned up */
+    fox: 'pounce',
+    /* a raccoon feels about in the shallows and then makes a short rush */
+    raccoon: 'pounce',
+    /* a garter snake creeps and then strikes, and misses */
+    snake: 'pounce',
+    /* a bear can run as fast as a racehorse, which is the surprise of it */
+    bear: 'dash',
+    /* an otter is never still, and a chicken goes in like a small feathery
+       dog. The burrowing owl runs after grasshoppers on its long legs. */
+    otter: 'dash', chicken: 'dash', owl: 'dash', songbird: 'dash',
+    /* a turtle and an axolotl do not chase at all: they wait, and then the
+       head goes forward */
+    turtle: 'ambush', salamander: 'ambush'
+  };
+
+  /* Where one species does it differently from the rest of its family. A
+     violet-green swallow never lands on anything: it eats in the air. */
+  var HUNT_STYLE_BY_ID = GG.ANIMAL_HUNT_STYLE_BY_ID = {
+    violet_green_swallow: 'swoop'
   };
 
   /* ------------------------------------------------------------------
@@ -590,7 +1366,36 @@
     scarlet_macaw: { doing: 'working a hard nut open', bits: '#c8a06a',
       note: 'Fruit, nuts and seeds, cracked with a beak strong enough to open what nothing else can.' },
     african_grey: { doing: 'peeling the bark off a twig', bits: '#9a8a72',
-      note: 'Nuts, fruit, leaves, bark and flowers, and the odd insect it finds — never one it chased.' }
+      note: 'Nuts, fruit, leaves, bark and flowers, and the odd insect it finds — never one it chased.' },
+
+    /* --- and the grass-eaters, the leaf-eaters and the seed-eaters. None of
+       these chases anything, and that is not a gap either. --- */
+    nuttalls_cottontail: { doing: 'cropping the grass, ears up', bits: '#8fae62',
+      note: 'Grass first, then sagebrush and juniper berries when the grass dries up. More than half its time out in the open is spent eating.' },
+    fox_squirrel: { doing: 'turning a nut over in both hands', bits: '#c8a06a',
+      note: 'Nuts, seeds and buds — buried one at a time, in a different place each time, and remembered by landmarks.' },
+    townsends_squirrel: { doing: 'nibbling at the green shoots', bits: '#9ab86a',
+      note: 'Green shoots and seeds, eaten fast: it is only awake for four or five months of the year.' },
+    mule_deer: { doing: 'browsing at the shrubs', bits: '#7fa060',
+      note: 'Shrubs, sagebrush, wild flowers and windfall fruit, taken a mouthful at a time with the head up between each one.' },
+    moose: { doing: 'stripping the willow leaves', bits: '#6f9a58',
+      note: 'Willow, water plants and shrubs. A moose steps over what a deer would jump, and eats the tops of things nothing else can reach.' },
+    cow: { doing: 'tearing at the grass, then chewing the cud', bits: '#8fb05a',
+      note: 'Grass, and seventy kilograms of it on a good day — torn off with the tongue, because she has no top front teeth.' },
+    horse: { doing: 'grazing, with one hind hoof tipped up', bits: '#9ab462',
+      note: 'Grass and hay, all day long in small amounts, which is how a horse is built to eat.' },
+    sheep: { doing: 'grazing close to the ground', bits: '#a8bc72',
+      note: 'Grass, with her eyes rolled level so the horizon stays sharp while her head is down.' },
+    mallard: { doing: 'tipping bottom-up in the shallows', bits: '#7f9a6a',
+      note: 'Seeds, pond weed, snails and water insects, grazed off the bottom upside down. A mallard almost never dives.' },
+    giant_panda: { doing: 'working through a bamboo stem', bits: '#8aa860',
+      note: 'Bamboo, and nothing else worth mentioning — with a meat-eater’s insides that can barely digest it, which is why it eats nearly all day.' },
+    koala: { doing: 'picking through the gum leaves', bits: '#87a48a',
+      note: 'Gum leaves, which are poisonous and nearly empty of energy. Its liver takes the poison apart; the sleeping is because there is nothing left over.' },
+    red_panda: { doing: 'nipping off the tender leaf tips', bits: '#8aa860',
+      note: 'Bamboo leaf tips and shoots, held in a false thumb — and it digests only about a quarter of what it swallows.' },
+    american_goldfinch: { doing: 'working seeds out of a thistle head', bits: '#d8c86a',
+      note: 'Seeds, and only seeds. Goldfinches are among the strictest vegetarians in the bird world and chase nothing at all, ever.' }
   };
 
   /* ------------------------------------------------------------------
@@ -608,7 +1413,7 @@
   var FRIEND_RULE = GG.FRIEND_RULE = {
     /* by family unless a species is named */
     cat: {
-      families: ['hummingbird'],
+      families: ['hummingbird', 'songbird'],
       does: 'sits down and watches',
       why: 'Cats really do catch birds. Friends never hunt friends, so this one just sits and watches.'
     },
@@ -618,9 +1423,72 @@
       why: 'Dogs really do chase cats. Friends never hunt friends, so this one sits down and waits instead.'
     },
     bullfrog: {
-      families: ['frog', 'bat', 'hummingbird'],
+      families: ['frog', 'bat', 'hummingbird', 'snake'],
       does: 'sits still and blinks',
-      why: 'A bullfrog really would swallow a small frog, a bat, or a bird. Friends never hunt friends, so this one just sits and blinks.'
+      why: 'A bullfrog really would swallow a small frog, a bat, a bird, or even a snake. Friends never hunt friends, so this one just sits and blinks.'
+    },
+    red_fox: {
+      families: ['rabbit', 'squirrel', 'duck', 'chicken'],
+      does: 'sits down in the grass and watches',
+      why: 'A fox really does hunt rabbits, ground squirrels, ducklings and hens. Friends never hunt friends, so this one sits down in the grass and watches instead.'
+    },
+    burrowing_owl: {
+      families: ['songbird', 'squirrel'],
+      does: 'stands up tall and watches',
+      why: 'A burrowing owl really does take small birds, and young ground squirrels out of the burrows it borrows. Friends never hunt friends, so it stands up tall and watches instead.'
+    },
+    black_bear: {
+      families: ['deer'],
+      does: 'wanders off to the berries instead',
+      why: 'A black bear really would take a young deer in the spring. Friends never hunt friends, so this one goes and looks for berries instead — which is nine tenths of what a bear eats anyway.'
+    },
+    raccoon: {
+      families: ['turtle', 'duck', 'chicken', 'songbird'],
+      does: 'turns a stone over instead',
+      why: 'A raccoon really does dig up a turtle’s eggs and raid a nest. Friends never hunt friends, so this one goes and feels about under a stone instead.'
+    },
+    river_otter: {
+      families: ['turtle', 'duck'],
+      does: 'rolls over and swims off',
+      why: 'An otter really would take a duckling or a young turtle. Friends never hunt friends, so this one rolls over and swims off.'
+    },
+    gopher_snake: {
+      families: ['songbird', 'duck', 'chicken'],
+      does: 'glides quietly past',
+      why: 'A gopher snake really does raid nests for eggs. Friends never hunt friends, so this one glides quietly past and leaves them be.'
+    },
+    western_rattlesnake: {
+      families: ['squirrel', 'songbird', 'rabbit'],
+      does: 'lies still and lets them by',
+      why: 'A rattlesnake really does hunt ground squirrels, rabbits and small birds. Friends never hunt friends, so this one lies still and lets them go by.'
+    }
+  };
+
+  /* ------------------------------------------------------------------
+     THE ONE CHASE THAT IS NOT A HUNT
+
+     Guin asked for dogs to chase squirrels, and the truthful answer keeps her
+     rule completely intact, because a dog chasing a squirrel is not hunting
+     it. A hunt is a chain of moves - search, approach, chase, bite - and in
+     most pet dogs the last link has been bred away. What is left is the first
+     half, run for fun.
+
+     The squirrel is not panicking either. It goes a little way up the trunk
+     and stops there, in plain sight, facing the dog, and scolds it with rapid
+     calls and a whipping tail. Scientists call that a pursuit-deterrent
+     signal, which means: I have seen you, do not bother. Under a hawk a
+     squirrel hides on the far side of the trunk; under a dog or a cat it
+     deliberately stays where it can still see the danger.
+
+     So this pair does not go in FRIEND_RULE. Nobody sits down and nobody is
+     in any danger. The dog runs, the squirrel goes up and tells it off, and
+     both of them enjoy it enormously.
+     ------------------------------------------------------------------ */
+  var FRIEND_PLAY = GG.FRIEND_PLAY = {
+    dog: {
+      families: ['squirrel'],
+      does: 'bounds after it, and the squirrel stops halfway up and tells it off',
+      why: 'This one is play, not hunting. A dog chasing a squirrel is running the first half of a hunt — the looking, the creeping, the running — and in most pet dogs the catching part at the end was bred away long ago. The squirrel knows it: it stops in plain sight where it can still see the dog, and scolds.'
     }
   };
 
@@ -638,7 +1506,7 @@
   /* 'pounce' | 'dash' | 'hover' | 'swoop' | 'ambush' | null */
   GG.animalHuntStyle = function (def) {
     if (!def || !ANIMAL_HUNTS[def.id]) return null;
-    return HUNT_STYLE[def.family] || null;
+    return HUNT_STYLE_BY_ID[def.id] || HUNT_STYLE[def.family] || null;
   };
 
   GG.animalForage = function (id) { return ANIMAL_FORAGE[id] || null; };
@@ -652,6 +1520,19 @@
     return rule.families.indexOf(other.family) >= 0 ? rule : null;
   };
 
+  /* Would `chaser` chase `other` for fun? Only the dogs and the squirrels, and
+     it is a game both of them are playing. Returns the pairing, or null. */
+  GG.friendPlayFor = function (chaser, other) {
+    if (!chaser || !other || chaser.id === other.id) return null;
+    var play = FRIEND_PLAY[chaser.id] || FRIEND_PLAY[chaser.family];
+    if (!play) return null;
+    return play.families.indexOf(other.family) >= 0 ? play : null;
+  };
+
+  /* The look-only friends: met, never touched, worth no sparkles, and their
+     `danger` line is shown every single time. Only the rattlesnake, so far. */
+  GG.animalIsLookOnly = function (def) { return !!(def && def.lookOnly); };
+
   GG.ANIMAL_BY_ID = {};
   GG.ANIMALS.forEach(function (a, i) {
     a.index = i;
@@ -659,9 +1540,21 @@
     GG.ANIMAL_BY_ID[a.id] = a;
   });
 
+  /* The families, and they are real families wherever a real family exists.
+     A moose is a deer. A giant panda is a bear. An ocelot is a cat — which is
+     why the cat rule about birds covers it too. A red panda is the only
+     living member of its own family and so it gets one to itself, and an
+     axolotl is a salamander however much it looks like something else.
+     "Songbirds" is the honest name for six birds from six different families
+     that are all, genuinely, songbirds. */
   GG.FAMILY_NAMES = {
     hummingbird: 'Hummingbirds', frog: 'Frogs', bat: 'Bats',
-    dog: 'Dogs', cat: 'Cats', parrot: 'Parrots'
+    dog: 'Dogs', cat: 'Cats', parrot: 'Parrots',
+    rabbit: 'Rabbits', squirrel: 'Squirrels', turtle: 'Turtles', bear: 'Bears',
+    raccoon: 'Raccoons', fox: 'Foxes', deer: 'Deer and Moose', cow: 'Cows',
+    horse: 'Horses', sheep: 'Sheep', chicken: 'Chickens', duck: 'Ducks',
+    otter: 'Otters', owl: 'Owls', koala: 'Koalas', redpanda: 'Red Pandas',
+    salamander: 'Salamanders', songbird: 'Songbirds', snake: 'Snakes'
   };
 
   /* Which family lives where, for the Friends Book */

@@ -297,6 +297,88 @@
         'It mostly eats jellyfish, and a slippery lining inside keeps it from being stung.',
         'It likes to lie over on its side at the surface of the open ocean, soaking up the sun.'
       ]
+    },
+
+    /* ---------- the Cattail Marsh: slough and backwater ---------- */
+    {
+      id: 'redside_shiner', name: 'Redside Shiner', rarity: 1, value: 20, shadow: 1, size: 0.62,
+      waters: ['swamp', 'river', 'stream'], times: ['any'], measure: 'about 4 inches long',
+      art: { shape: 'shiner', back: '#5f6b4a', belly: '#f2f0e0', fin: '#98a082', accent: '#c4402f', pattern: 'line' },
+      facts: [
+        'It is a native minnow, and one of the commonest fish in Washington. Wherever there is slow water, there are shiners in it.',
+        'They go about in schools, turning together, so a shoal flashes all at once when the light catches it.',
+        'A shiner in spawning colours goes bright red along the flank, which is how it got its name.'
+      ]
+    },
+    {
+      id: 'peamouth', name: 'Peamouth', rarity: 2, value: 34, shadow: 2, size: 0.82,
+      waters: ['swamp', 'river', 'pond'], times: ['any'], measure: 'usually about 6 inches, sometimes a foot',
+      art: { shape: 'minnow', back: '#6b7263', belly: '#f0efe0', fin: '#a8ae9a', accent: '#3a3f36', pattern: 'line' },
+      facts: [
+        'It is a minnow with a very small mouth, and the name is about the mouth, not about peas.',
+        'It is native here and it is common in the lakes and the slow parts of the rivers all over Washington.',
+        'In spring the breeding males put on a red stripe along each side.'
+      ]
+    },
+    {
+      id: 'stickleback', name: 'Three-spine Stickleback', rarity: 3, value: 62, shadow: 1, size: 0.55,
+      waters: ['swamp', 'river', 'pond'], times: ['any'], measure: 'about 2 inches long',
+      art: { shape: 'stickleback', back: '#5a6b62', belly: '#eef2ea', fin: '#93a099', accent: '#c8cec6', pattern: 'plain', spine: '#3a443e', plate: '#d6dcd4' },
+      facts: [
+        'Three sharp spines stand straight up along its back, and instead of scales it wears a row of bony plates down each side like a little suit of armour.',
+        'The father builds a nest. He gathers plant fibres and glues them together with a glue his own kidneys make, and he makes a tunnel of it.',
+        'Then he guards the eggs himself and fans fresh water over them with his fins until they hatch.',
+        'It is one of the most studied fish in all of biology, because it does so much that you can watch and count.'
+      ]
+    },
+    {
+      id: 'sand_roller', name: 'Sand Roller', rarity: 4, value: 140, shadow: 1, size: 0.6,
+      waters: ['swamp'], times: ['any'], measure: 'about 3½ inches long',
+      art: { shape: 'sandroller', back: '#9a8f6e', belly: '#f0ecd8', fin: '#b8ae8c', accent: '#6b6349', pattern: 'speckle' },
+      facts: [
+        'It lives in the Columbia River drainage and nowhere else on Earth. If it stopped living here, it would stop living anywhere.',
+        'Its scientific name means “beyond the mountains”.',
+        'It is a trout-perch, and there are only two living kinds of trout-perch in the whole world.',
+        'The little fleshy nub behind its back fin is an adipose fin — the thing a trout has and a perch has not, on a fish that is halfway between the two.',
+        'It stays in quiet sandy backwaters among the plants, and eats water insects: caddisflies and little flies.'
+      ]
+    },
+    {
+      id: 'chiselmouth', name: 'Chiselmouth', rarity: 3, value: 80, shadow: 3, size: 1.0,
+      waters: ['swamp', 'river'], times: ['morning', 'day'], measure: 'up to a foot long',
+      art: { shape: 'chiselmouth', back: '#5f5442', belly: '#e8e2cc', fin: '#7a6f58', accent: '#33301f', pattern: 'speckle', chisel: '#e0d8bc' },
+      facts: [
+        'It has a hard sharp plate on its lower jaw instead of a soft lip, and it uses it to shave the algae off rocks.',
+        'A baby chiselmouth has no chisel. It catches insects off the surface until it is about half an inch long, the chisel hardens, and then it changes jobs for the rest of its life.',
+        'Most of what it actually scrapes up are diatoms — single-celled living things that build themselves shells out of glass.',
+        'It lives in the rivers east of the Cascades, and the Nez Perce used it for food.'
+      ]
+    },
+    {
+      id: 'tench', name: 'Tench', rarity: 4, value: 190, shadow: 4, size: 1.4,
+      waters: ['swamp', 'river', 'pond'], times: ['any'], measure: 'up to nearly 3 feet long',
+      art: { shape: 'tench', back: '#4a5530', belly: '#c4c47e', fin: '#3a4526', accent: '#2b331c', pattern: 'scales', eyering: '#c8482f' },
+      facts: [
+        'This one does not belong here. It comes from Europe, and the United States Fish Commission brought it to the Pacific states in 1895 on purpose, as a fish for people to catch.',
+        'Another batch was put on show at the Seattle world’s fair in 1909 and then tipped into a big pond on the university campus. From there it got into Lake Washington and Lake Union, and it has been spreading ever since.',
+        'Now it turns up in the lakes and ponds of the Columbia and Spokane river drainages, which is how it comes to be in a slough near here.',
+        'It is thick-bodied and dark olive-green with tiny scales, rounded fins, a small red eye and a whisker at each corner of its mouth.',
+        'It eats insect larvae and snails off the bottom and stirs the mud up doing it. This is the blackberry lesson again in fish form: brought here on purpose, for good reasons, by people who did not know what would happen.'
+      ]
+    },
+    {
+      id: 'pacific_lamprey', name: 'Pacific Lamprey', rarity: 5, value: 440, shadow: 4, size: 1.5,
+      waters: ['swamp', 'river', 'stream'], times: ['any'], measure: 'from a foot to nearly three feet long',
+      art: { shape: 'lamprey', back: '#5a5a52', belly: '#c8c2a8', fin: '#4a4a43', accent: '#2b2b26', pattern: 'plain', pore: '#2b2b26', teeth: '#e8e2cc' },
+      facts: [
+        'It has no jaw. Its mouth is a round sucker with rings of little teeth in it, and it works by holding on rather than by biting shut.',
+        'It has no bones, no scales and no paired fins at all. Instead of a gill cover it has seven little round holes in a row down each side.',
+        'Its family was already swimming about more than 450 million years ago, long before there were trees.',
+        'The babies are called ammocoetes. They have no eyes, and they spend several years buried in the fine mud of the river, filtering food out of the water.',
+        'Then they grow eyes and teeth, go out to sea for a few years, and come all the way home again.',
+        'It can climb. It holds on to wet vertical rock with its mouth, lets go, reaches up and grips again, and that is how it gets up a waterfall.',
+        'It is a first food of the Columbia River tribes — food, medicine and ceremony — and there are far fewer of them than there were, mostly because of the dams.'
+      ]
     }
   ];
 
@@ -316,7 +398,7 @@
 
   GG.WATER_NAMES = {
     pond: 'the Lily Pond', stream: 'Pebble Stream', river: 'the Winding River',
-    estuary: 'Gull Inlet', sea: 'the open sea'
+    estuary: 'Gull Inlet', sea: 'the open sea', swamp: 'the Cattail Marsh'
   };
 
   GG.SHADOW_NAMES = ['', 'tiny', 'small', 'medium', 'large', 'huge'];

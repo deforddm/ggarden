@@ -5,7 +5,9 @@
   'use strict';
 
   // habitats: meadow, garden, forest, pond, hill, orchard, riverbank,
-  //           river, beach, shore, tidepool, anywhere
+  //           river, beach, shore, tidepool, desert, mountain, taiga, tundra,
+  //           rainforest, glade, savanna, swamp, cave, badlands, bamboo,
+  //           cherry, farmyard, anywhere
   // times:    morning, day, evening, night, any
   // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift, tide
   // aquatic:  true means it needs water to live in, so it can only be kept in a
@@ -105,7 +107,7 @@
     },
     {
       id: 'ladybug', name: 'Ladybug',
-      habitats: ['garden', 'meadow'], times: ['morning', 'day', 'evening'], rarity: 1, value: 10,
+      habitats: ['garden', 'meadow', 'cherry', 'bamboo'], times: ['morning', 'day', 'evening'], rarity: 1, value: 10,
       behavior: 'crawl', speed: 20, shy: 30, size: 0.8,
       measure: 'as big as a pea',
       art: { shape: 'ladybug', body: '#e02f2f', wing: '#e02f2f', accent: '#1a1a1a', pattern: 'spots' },
@@ -163,18 +165,20 @@
     },
     {
       id: 'dung_beetle', name: 'Dung Beetle',
-      habitats: ['hill', 'meadow'], times: ['day', 'evening', 'night'], rarity: 3, value: 65,
+      habitats: ['hill', 'meadow', 'farmyard'], times: ['day', 'evening', 'night'], rarity: 3, value: 65,
       behavior: 'crawl', speed: 22, shy: 48, size: 0.9,
       measure: '1 inch long',
       art: { shape: 'beetle', body: '#2b2b30', wing: '#3d3d46', accent: '#15151a', pattern: 'plain' },
       facts: [
         'Some dung beetles roll animal poop into a ball and push it away, to eat and to raise their babies in. They are nature’s clean-up crew.',
-        'Some dung beetles look up at the Milky Way to keep their ball rolling in a straight line. They were the first animals we ever caught using the night sky as a map.'
+        'Some dung beetles look up at the Milky Way to keep their ball rolling in a straight line. They were the first animals we ever caught using the night sky as a map.',
+        'Washington’s are not rollers. Most of ours are dwellers, which live right inside the pat and break it down over a few weeks, and one is a tunneller, which digs it under.',
+        'The reason a pasture is not knee-deep in muck is these beetles. Burying it also buries the fly maggots growing in it, so a field with dung beetles in it has fewer flies.'
       ]
     },
     {
       id: 'honeybee', name: 'Honeybee',
-      habitats: ['garden', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 25,
+      habitats: ['garden', 'orchard', 'cherry'], times: ['morning', 'day'], rarity: 2, value: 25,
       behavior: 'hover', speed: 44, shy: 56, size: 0.85, sting: true,
       measure: 'half an inch',
       art: { shape: 'bee', body: '#e8a020', wing: '#fff0c4', accent: '#2d2216', pattern: 'stripes' },
@@ -187,7 +191,7 @@
     },
     {
       id: 'bumblebee', name: 'Bumblebee',
-      habitats: ['garden', 'meadow', 'glade'], times: ['morning', 'day'], rarity: 1, value: 15,
+      habitats: ['garden', 'meadow', 'glade', 'cherry'], times: ['morning', 'day'], rarity: 1, value: 15,
       behavior: 'hover', speed: 38, shy: 44, size: 1.0, sting: true,
       measure: '1 inch long',
       art: { shape: 'bee', body: '#f2c53d', wing: '#fff6dc', accent: '#241f1a', pattern: 'bands' },
@@ -199,7 +203,7 @@
     },
     {
       id: 'dragonfly', name: 'Blue Dasher Dragonfly',
-      habitats: ['pond', 'meadow'], times: ['morning', 'day'], rarity: 2, value: 40,
+      habitats: ['pond', 'meadow', 'swamp'], times: ['morning', 'day'], rarity: 2, value: 40,
       behavior: 'dart', speed: 78, shy: 78, size: 1.1,
       measure: '1.5 inches long',
       art: { shape: 'dragonfly', body: '#3aa0d8', wing: '#e7f6ff', accent: '#1c5f87', pattern: 'plain' },
@@ -211,7 +215,7 @@
     },
     {
       id: 'emperor_dragonfly', name: 'Emperor Dragonfly',
-      habitats: ['pond'], times: ['day'], rarity: 4, value: 180,
+      habitats: ['pond', 'swamp'], times: ['day'], rarity: 4, value: 180,
       behavior: 'dart', speed: 92, shy: 90, size: 1.4,
       measure: '3 inches long',
       art: { shape: 'dragonfly', body: '#2fd08a', wing: '#eafff5', accent: '#146b47', pattern: 'stripes' },
@@ -222,7 +226,7 @@
     },
     {
       id: 'damselfly', name: 'Damselfly',
-      habitats: ['pond'], times: ['morning', 'day', 'evening'], rarity: 2, value: 28,
+      habitats: ['pond', 'swamp'], times: ['morning', 'day', 'evening'], rarity: 2, value: 28,
       behavior: 'drift', speed: 40, shy: 52, size: 0.9,
       measure: '1.5 inches long',
       art: { shape: 'damselfly', body: '#5ad2ff', wing: '#f2fbff', accent: '#1b7fae', pattern: 'plain' },
@@ -233,7 +237,7 @@
     },
     {
       id: 'water_strider', name: 'Water Strider',
-      habitats: ['pond'], times: ['any'], rarity: 2, value: 26,
+      habitats: ['pond', 'swamp'], times: ['any'], rarity: 2, value: 26,
       behavior: 'skim', speed: 56, shy: 50, size: 0.85,
       measure: 'half an inch',
       art: { shape: 'strider', body: '#4a4f3a', wing: '#6b7150', accent: '#2b2f22', pattern: 'plain' },
@@ -244,7 +248,7 @@
     },
     {
       id: 'grasshopper', name: 'Grasshopper',
-      habitats: ['meadow', 'hill', 'glade'], times: ['morning', 'day', 'evening'], rarity: 1, value: 12,
+      habitats: ['meadow', 'hill', 'glade', 'savanna'], times: ['morning', 'day', 'evening'], rarity: 1, value: 12,
       behavior: 'hop', speed: 30, shy: 50, size: 1.0,
       measure: '1.5 inches long',
       art: { shape: 'grasshopper', body: '#7fbf3f', wing: '#a6d95f', accent: '#3f6b1f', pattern: 'plain' },
@@ -256,7 +260,7 @@
     },
     {
       id: 'cricket', name: 'Cricket',
-      habitats: ['meadow', 'garden'], times: ['evening', 'night'], rarity: 2, value: 22,
+      habitats: ['meadow', 'garden', 'savanna'], times: ['evening', 'night'], rarity: 2, value: 22,
       behavior: 'hop', speed: 28, shy: 46, size: 0.9,
       measure: '1 inch long',
       art: { shape: 'cricket', body: '#3a2f26', wing: '#544434', accent: '#1f1a14', pattern: 'plain' },
@@ -337,7 +341,7 @@
     },
     {
       id: 'garden_spider', name: 'Garden Spider',
-      habitats: ['garden', 'forest'], times: ['any'], rarity: 2, value: 30,
+      habitats: ['garden', 'forest', 'savanna', 'bamboo'], times: ['any'], rarity: 2, value: 30,
       behavior: 'cling', speed: 22, shy: 56, size: 1.0,
       measure: '1 inch across',
       art: { shape: 'spider', body: '#f0d24a', wing: '#2a2a2a', accent: '#1a1a1a', pattern: 'spots' },
@@ -349,7 +353,7 @@
     },
     {
       id: 'pillbug', name: 'Pill Bug',
-      habitats: ['forest', 'garden', 'rainforest'], times: ['any'], rarity: 1, value: 8,
+      habitats: ['forest', 'garden', 'rainforest', 'bamboo'], times: ['any'], rarity: 1, value: 8,
       behavior: 'slow', speed: 14, shy: 22, size: 0.7,
       measure: 'half an inch',
       art: { shape: 'pillbug', body: '#6b6b78', wing: '#8a8a99', accent: '#42424d', pattern: 'bands' },
@@ -361,7 +365,7 @@
     },
     {
       id: 'snail', name: 'Garden Snail',
-      habitats: ['garden', 'forest'], times: ['any'], rarity: 1, value: 12,
+      habitats: ['garden', 'forest', 'bamboo'], times: ['any'], rarity: 1, value: 12,
       behavior: 'slow', speed: 8, shy: 16, size: 0.95,
       measure: '1 inch shell',
       art: { shape: 'snail', body: '#d8c7a8', wing: '#b4864a', accent: '#7a5730', pattern: 'spiral' },
@@ -400,7 +404,7 @@
     },
     {
       id: 'millipede', name: 'Millipede',
-      habitats: ['forest', 'garden'], times: ['any'], rarity: 2, value: 24,
+      habitats: ['forest', 'garden', 'bamboo'], times: ['any'], rarity: 2, value: 24,
       behavior: 'slow', speed: 13, shy: 26, size: 1.2,
       measure: '1.5 inches long',
       art: { shape: 'millipede', body: '#3f2f28', wing: '#5a443a', accent: '#241a16', pattern: 'rings' },
@@ -412,14 +416,15 @@
     },
     {
       id: 'harvestman', name: 'Harvestman',
-      habitats: ['forest', 'garden', 'rainforest'], times: ['evening', 'night'], rarity: 2, value: 26,
+      habitats: ['forest', 'garden', 'rainforest', 'cave'], times: ['evening', 'night'], rarity: 2, value: 26,
       behavior: 'crawl', speed: 30, shy: 46, size: 1.2,
       measure: 'body the size of a pea',
       art: { shape: 'harvestman', body: '#8a6a4a', wing: '#3a2f26', accent: '#4a3a2a', pattern: 'plain' },
       facts: [
         'People call them daddy long-legs, but a harvestman is not a spider. Its body is one little blob instead of two parts, and it spins no web.',
         'Harvestmen have no venom and no fangs at all. The story that they are the most poisonous spider is completely made up.',
-        'They eat tiny bugs and bits of rotting fruit, and they walk on legs that can be ten times longer than their body.'
+        'They eat tiny bugs and bits of rotting fruit, and they walk on legs that can be ten times longer than their body.',
+        'Some kinds spend the whole winter in caves, hanging from the ceiling in a crowd with their legs tangled together.'
       ]
     },
     {
@@ -436,7 +441,7 @@
     },
     {
       id: 'hoverfly', name: 'Hoverfly',
-      habitats: ['garden', 'meadow', 'glade'], times: ['morning', 'day'], rarity: 1, value: 14,
+      habitats: ['garden', 'meadow', 'glade', 'cherry'], times: ['morning', 'day'], rarity: 1, value: 14,
       behavior: 'hover', speed: 48, shy: 46, size: 0.8,
       measure: 'half an inch',
       art: { shape: 'fly', body: '#e0a832', wing: '#f2f6ff', accent: '#2b2b20', pattern: 'bands' },
@@ -485,7 +490,7 @@
     },
     {
       id: 'lacewing', name: 'Green Lacewing',
-      habitats: ['garden', 'meadow', 'glade'], times: ['evening', 'night'], rarity: 2, value: 32,
+      habitats: ['garden', 'meadow', 'glade', 'cherry', 'bamboo'], times: ['evening', 'night'], rarity: 2, value: 32,
       behavior: 'drift', speed: 28, shy: 46, size: 0.95,
       measure: '1 inch across',
       art: { shape: 'lacewing', body: '#a8dc6a', wing: '#e6ffe0', accent: '#5f9c3a', pattern: 'veins' },
@@ -557,7 +562,7 @@
     },
     {
       id: 'tiger_beetle', name: 'Tiger Beetle',
-      habitats: ['hill', 'meadow', 'beach', 'riverbank'], times: ['day'], rarity: 3, value: 90,
+      habitats: ['hill', 'meadow', 'beach', 'riverbank', 'savanna'], times: ['day'], rarity: 3, value: 90,
       behavior: 'dart', speed: 78, shy: 82, size: 0.9,
       measure: 'three quarters of an inch long',
       art: { shape: 'tigerbeetle', body: '#2f7a5a', wing: '#3f9a6a', accent: '#f2efe0', eyes: '#e8e2c8' },
@@ -678,19 +683,23 @@
     },
     {
       id: 'water_bug', name: 'Giant Water Bug',
-      habitats: ['pond'], times: ['any'], rarity: 4, value: 170,
+      habitats: ['pond', 'swamp'], times: ['any'], rarity: 4, value: 170,
       behavior: 'skim', speed: 44, shy: 68, size: 1.35,
-      measure: '1.5 inches long',
+      measure: 'two inches or more — the biggest true bug in North America',
+      danger: 'Net it, look at it, and let it go. Do not hold it in your hand. Its other name is the toe biter, and the bite really does hurt. It is not angry and it is not poison — it is a hunter, and your finger is the wrong shape.',
       art: { shape: 'waterbug', body: '#7a6b4a', wing: '#9a8a60', accent: '#4a4030', pattern: 'plain' },
       facts: [
-        'Giant water bugs are fierce hunters. They can catch tadpoles and even small fish bigger than themselves.',
+        'Giant water bugs are fierce hunters. They hang head-down on a stem, perfectly still, and catch insects, snails, tadpoles, frogs and even small fish bigger than themselves.',
+        'It cannot chew. It gives its dinner one jab, waits ten or fifteen minutes for the inside to go soft, and drinks it.',
+        'It breathes through two short tubes at its back end, like a pair of snorkels, and carries the air under its wings.',
         'In many kinds of giant water bug the mother glues her eggs onto the father’s back, and he carries them about and keeps them wet until they hatch.',
-        'They can fly from pond to pond at night, and they head for lights, which is why some people call them electric light bugs.'
+        'They can fly from pond to pond at night, and they head for lights, which is why some people call them electric light bugs.',
+        'Picked up, it plays dead first. Biting is the thing it tries after running away has not worked.'
       ]
     },
     {
       id: 'backswimmer', name: 'Backswimmer',
-      habitats: ['pond'], times: ['any'], rarity: 2, value: 34,
+      habitats: ['pond', 'swamp'], times: ['any'], rarity: 2, value: 34,
       behavior: 'skim', speed: 58, shy: 52, size: 0.8,
       measure: 'half an inch',
       art: { shape: 'backswimmer', body: '#d8d0b0', wing: '#efe8cc', accent: '#5a4a2a', pattern: 'plain' },
@@ -726,7 +735,7 @@
     },
     {
       id: 'earwig', name: 'Earwig',
-      habitats: ['garden', 'forest'], times: ['evening', 'night'], rarity: 1, value: 14,
+      habitats: ['garden', 'forest', 'bamboo'], times: ['evening', 'night'], rarity: 1, value: 14,
       behavior: 'crawl', speed: 40, shy: 36, size: 0.9,
       measure: '0.75 inches long',
       art: { shape: 'earwig', body: '#7a4a26', wing: '#9a6133', accent: '#3a2210', pattern: 'plain' },
@@ -762,7 +771,7 @@
     },
     {
       id: 'paper_wasp', name: 'Paper Wasp',
-      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 3, value: 70,
+      habitats: ['orchard', 'garden', 'farmyard'], times: ['morning', 'day'], rarity: 3, value: 70,
       behavior: 'hover', speed: 54, shy: 60, size: 1.0, sting: true,
       measure: '0.75 inches long',
       art: { shape: 'wasp', body: '#e8a820', wing: '#f6efd8', accent: '#2b2016', pattern: 'stripes' },
@@ -824,7 +833,7 @@
     },
     {
       id: 'boatman', name: 'Water Boatman',
-      habitats: ['pond', 'river'], times: ['any'], rarity: 1, value: 18,
+      habitats: ['pond', 'river', 'swamp'], times: ['any'], rarity: 1, value: 18,
       behavior: 'skim', speed: 34, shy: 42, size: 0.66,
       measure: 'a third of an inch long',
       art: { shape: 'boatman', body: '#7a6a3c', wing: '#a89858', accent: '#3f3620', eyes: '#2b2418' },
@@ -1016,7 +1025,7 @@
     /* ---------- v1.12: the Apple Orchard ---------- */
     {
       id: 'mason_bee', name: 'Blue Orchard Mason Bee',
-      habitats: ['orchard', 'garden'], times: ['morning', 'day'], rarity: 2, value: 55,
+      habitats: ['orchard', 'garden', 'cherry'], times: ['morning', 'day'], rarity: 2, value: 55,
       behavior: 'hover', speed: 46, shy: 52, size: 0.85, sting: true,
       measure: 'half an inch long',
       art: { shape: 'bee', body: '#2a3a6e', wing: '#dfe9f6', accent: '#1a2242', pattern: 'plain' },
@@ -1029,7 +1038,7 @@
     },
     {
       id: 'yellowjacket', name: 'Western Yellowjacket',
-      habitats: ['orchard', 'meadow'], times: ['morning', 'day', 'evening'], rarity: 1, value: 26,
+      habitats: ['orchard', 'meadow', 'farmyard'], times: ['morning', 'day', 'evening'], rarity: 1, value: 26,
       behavior: 'dart', speed: 66, shy: 58, size: 0.9, sting: true,
       measure: 'half an inch long',
       art: { shape: 'wasp', body: '#f2cc2a', wing: '#efeadc', accent: '#171410', pattern: 'stripes' },
@@ -1106,7 +1115,7 @@
     },
     {
       id: 'cross_orbweaver', name: 'Cross Orbweaver',
-      habitats: ['orchard', 'garden', 'glade'], times: ['evening', 'night'], rarity: 2, value: 40,
+      habitats: ['orchard', 'garden', 'glade', 'farmyard'], times: ['evening', 'night'], rarity: 2, value: 40,
       behavior: 'cling', speed: 20, shy: 50, size: 1.0,
       measure: 'three quarters of an inch across',
       art: { shape: 'spider', body: '#b98a5e', wing: '#6a4c32', accent: '#f4ece0', pattern: 'spots' },
@@ -1147,7 +1156,7 @@
     /* ---------- v1.12: the Pebble Hills ---------- */
     {
       id: 'jerusalem_cricket', name: 'Jerusalem Cricket',
-      habitats: ['hill', 'desert'], times: ['night'], rarity: 4, value: 140,
+      habitats: ['hill', 'desert', 'badlands'], times: ['night'], rarity: 4, value: 140,
       behavior: 'slow', speed: 20, shy: 38, size: 1.35,
       measure: 'up to two inches long',
       art: { shape: 'jerusalem', body: '#e0a054', accent: '#3a2a1c', band: '#f3e2bd' },
@@ -1161,7 +1170,7 @@
     },
     {
       id: 'northern_scorpion', name: 'Northern Scorpion',
-      habitats: ['hill', 'desert'], times: ['night'], rarity: 4, value: 160,
+      habitats: ['hill', 'desert', 'badlands'], times: ['night'], rarity: 4, value: 160,
       behavior: 'crawl', speed: 30, shy: 56, size: 1.15, sting: true,
       measure: 'two inches, tail and all',
       art: { shape: 'scorpion', body: '#c9a468', claw: '#d8b478', tailCol: '#e0c07e', accent: '#7a5a2a' },
@@ -1174,7 +1183,7 @@
     },
     {
       id: 'windscorpion', name: 'Windscorpion',
-      habitats: ['hill', 'desert'], times: ['night'], rarity: 5, value: 260,
+      habitats: ['hill', 'desert', 'badlands'], times: ['night'], rarity: 5, value: 260,
       behavior: 'dart', speed: 92, shy: 78, size: 1.2,
       measure: 'an inch and a half across',
       art: { shape: 'windscorpion', body: '#b5763c', accent: '#e0cfae', jaw: '#7a4a20' },
@@ -1187,7 +1196,7 @@
     },
     {
       id: 'pinacate_beetle', name: 'Pinacate Beetle',
-      habitats: ['hill', 'meadow', 'desert'], times: ['evening', 'night'], rarity: 2, value: 44,
+      habitats: ['hill', 'meadow', 'desert', 'badlands'], times: ['evening', 'night'], rarity: 2, value: 44,
       behavior: 'crawl', speed: 24, shy: 32, size: 1.1,
       measure: 'an inch long',
       art: { shape: 'darkling', body: '#1a1a1e' },
@@ -1200,7 +1209,7 @@
     },
     {
       id: 'harvester_ant', name: 'Western Harvester Ant',
-      habitats: ['hill', 'desert'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
+      habitats: ['hill', 'desert', 'badlands'], times: ['morning', 'day', 'evening'], rarity: 1, value: 14,
       behavior: 'crawl', speed: 38, shy: 26, size: 0.7, sting: true,
       measure: 'a third of an inch',
       art: { shape: 'ant', body: '#a33a24', wing: '#c25038', accent: '#5e1c10', pattern: 'plain' },
@@ -1213,7 +1222,7 @@
     },
     {
       id: 'velvet_ant', name: 'Velvet Ant',
-      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 3, value: 120,
+      habitats: ['hill', 'meadow', 'desert', 'badlands'], times: ['day'], rarity: 3, value: 120,
       behavior: 'dart', speed: 56, shy: 46, size: 0.85, sting: true,
       measure: 'half an inch long',
       art: { shape: 'velvetant', body: '#e2562a', accent: '#171310' },
@@ -1226,7 +1235,7 @@
     },
     {
       id: 'robber_fly', name: 'Robber Fly',
-      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 2, value: 52,
+      habitats: ['hill', 'meadow', 'desert', 'badlands'], times: ['day'], rarity: 2, value: 52,
       behavior: 'dart', speed: 74, shy: 62, size: 1.0,
       measure: 'an inch long',
       art: { shape: 'robberfly', body: '#7a6a52', wing: '#eceadf', accent: '#3a3226', eyes: '#6a3a2a', beard: '#e8dcc0', tailTip: '#d8cdb4' },
@@ -1239,7 +1248,7 @@
     },
     {
       id: 'blister_beetle', name: 'Black Blister Beetle',
-      habitats: ['hill', 'meadow', 'desert'], times: ['day'], rarity: 3, value: 66,
+      habitats: ['hill', 'meadow', 'desert', 'badlands'], times: ['day'], rarity: 3, value: 66,
       behavior: 'slow', speed: 22, shy: 36, size: 0.85,
       measure: 'half an inch long',
       art: { shape: 'beetle', body: '#171820', wing: '#23242e', accent: '#0d0e14', slim: true },
@@ -1252,7 +1261,7 @@
     },
     {
       id: 'sweat_bee', name: 'Green Sweat Bee',
-      habitats: ['hill', 'meadow', 'garden'], times: ['morning', 'day'], rarity: 2, value: 48,
+      habitats: ['hill', 'meadow', 'garden', 'cherry'], times: ['morning', 'day'], rarity: 2, value: 48,
       behavior: 'hover', speed: 50, shy: 50, size: 0.7, sting: true,
       measure: 'a third of an inch',
       art: { shape: 'bee', body: '#e8cc3e', wing: '#eef4f6', accent: '#1d1a14', head: '#1f9a5a', thorax: '#1f9a5a', pattern: 'stripes' },
@@ -1321,7 +1330,7 @@
     },
     {
       id: 'ice_crawler', name: 'Ice Crawler',
-      habitats: ['mountain'], times: ['night'], rarity: 5, value: 0,
+      habitats: ['mountain', 'cave'], times: ['night'], rarity: 5, value: 0,
       behavior: 'crawl', speed: 13, shy: 40, size: 0.95,
       lookOnly: true,
       measure: 'about an inch',
@@ -1331,7 +1340,8 @@
         'It lives in a tiny window of temperature. It can walk about below freezing, and it dies if it gets warm.',
         'At night it comes out onto the snow to pick up moths and flies that the wind blew there and left too cold to move.',
         'It has no wings at all, very long feelers at the front and two long feelers at the back, so it looks the same at both ends.',
-        'It was only found by scientists in 1914, and there are still only about thirty-five kinds known in the whole world. One lives at nine thousand feet on Mount Rainier.'
+        'It was only found by scientists in 1914, and there are still only about thirty-five kinds known in the whole world. One lives at nine thousand feet on Mount Rainier.',
+        'It lives on top of the mountain and under it. A lava tube is a cold place with no summer in it, and ice crawlers are the biggest hunters in the dark part of a cave.'
       ]
     },
     {
@@ -1654,7 +1664,7 @@
     },
     {
       id: 'mormon_cricket', name: 'Mormon Cricket',
-      habitats: ['desert'], times: ['morning', 'day'], rarity: 3, value: 80,
+      habitats: ['desert', 'badlands'], times: ['morning', 'day'], rarity: 3, value: 80,
       behavior: 'crawl', speed: 30, shy: 52, size: 1.45,
       measure: 'up to 2 inches, plus the female’s spike',
       art: { shape: 'mormoncricket', body: '#3a2a3c', body2: '#241a26', shield: '#1c1520', legs: '#2c2028', antenna: '#241a26', ovi: '#5a4432' },
@@ -1694,7 +1704,7 @@
     },
     {
       id: 'pallid_grasshopper', name: 'Pallid-winged Grasshopper',
-      habitats: ['desert'], times: ['day'], rarity: 2, value: 34,
+      habitats: ['desert', 'badlands'], times: ['day'], rarity: 2, value: 34,
       behavior: 'hop', speed: 44, shy: 50, size: 1.1,
       measure: 'about 1¼ inches',
       art: { shape: 'grasshopper', body: '#b5a184', body2: '#8a785e', legs: '#9c8a6e', accent: '#4a4034', mottle: true, crossBars: '#5a4c3a' },
@@ -1708,7 +1718,7 @@
     },
     {
       id: 'ground_mantis', name: 'Agile Ground Mantis',
-      habitats: ['desert'], times: ['day'], rarity: 5, value: 240,
+      habitats: ['desert', 'badlands'], times: ['day'], rarity: 5, value: 240,
       behavior: 'dart', speed: 50, shy: 66, size: 0.85,
       measure: 'about an inch and a bit',
       art: { shape: 'mantis', body: '#6e6152', body2: '#574c40', legs: '#4c4238', eye: '#2a241e', wing: '#7a6d5c' },
@@ -1721,7 +1731,7 @@
     },
     {
       id: 'wolf_spider', name: 'Wolf Spider',
-      habitats: ['desert', 'glade'], times: ['evening', 'night'], rarity: 2, value: 42,
+      habitats: ['desert', 'glade', 'badlands'], times: ['evening', 'night'], rarity: 2, value: 42,
       behavior: 'crawl', speed: 40, shy: 50, size: 1.15,
       measure: 'her body up to nearly an inch',
       art: { shape: 'wolfspider', body: '#7a6a52', body2: '#5a4c38', stripe: '#c2b294', legs: '#57492f', eye: '#12100c', heart: '#3a3022' },
@@ -1883,7 +1893,7 @@
     },
     {
       id: 'woodland_skipper', name: 'Woodland Skipper',
-      habitats: ['glade', 'meadow', 'garden'], times: ['day'], rarity: 1, value: 18,
+      habitats: ['glade', 'meadow', 'garden', 'savanna'], times: ['day'], rarity: 1, value: 18,
       behavior: 'dart', speed: 62, shy: 48, size: 0.7,
       measure: 'about an inch across',
       art: { shape: 'skipper', body: '#8a6a34', wing: '#e08a24', wing2: '#c27418', accent: '#4a3418', dash: '#241a0e' },
@@ -1949,7 +1959,7 @@
     },
     {
       id: 'crab_spider', name: 'Goldenrod Crab Spider',
-      habitats: ['glade', 'meadow', 'garden'], times: ['day'], rarity: 2, value: 54,
+      habitats: ['glade', 'meadow', 'garden', 'savanna'], times: ['day'], rarity: 2, value: 54,
       behavior: 'cling', speed: 8, shy: 20, size: 0.7,
       measure: 'she is about a third of an inch',
       art: { shape: 'crabspider', body: '#f2ecd0', body2: '#e8dfb8', stripe: '#d8607e', legs: '#e6dcbc', eye: '#3a3428' },
@@ -1962,7 +1972,7 @@
     },
     {
       id: 'leafcutter_bee', name: 'Leafcutter Bee',
-      habitats: ['glade', 'meadow', 'garden', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 46,
+      habitats: ['glade', 'meadow', 'garden', 'orchard', 'cherry'], times: ['morning', 'day'], rarity: 2, value: 46,
       behavior: 'hover', speed: 44, shy: 40, size: 0.95,
       sting: true,
       measure: 'about the size of a honeybee',
@@ -1986,8 +1996,337 @@
         'It sleeps in a little silk sleeping bag under a rock or a piece of wood, and moults and shelters from bad weather in there.',
         'Its red and black colours look like a velvet ant — which has a fearsome sting — and that is thought to be why other things leave it alone.'
       ]
-    }
+    },
 
+    /* =================================================================
+       THE OAK SAVANNA - Garry oak standing far apart over bunchgrass.
+       The trees are the smallest part of it. Most of what lives here
+       lives in the grass, and the rest of it lives in an acorn.
+       ================================================================= */
+    {
+      id: 'propertius_duskywing', name: 'Propertius Duskywing',
+      habitats: ['savanna'], times: ['day'], rarity: 5, value: 240,
+      behavior: 'dart', speed: 52, shy: 74, size: 1.05,
+      measure: 'up to 1¾ inches across, the biggest duskywing there is',
+      art: { shape: 'duskywing', body: '#4a3b2e', wing: '#6b5a46', wing2: '#4a3b2e', accent: '#33281f', spot: '#efe9d8', fringe: '#cabfa6', marble: '#8a7a62' },
+      facts: [
+        'Its caterpillars eat Garry oak leaves and nothing else at all. Where the oak goes, this butterfly goes with it.',
+        'It spends the whole winter as a caterpillar, rolled up inside a folded oak leaf.',
+        'There is one life cycle a year. The ones flying in April and May are the only ones there will be.',
+        'It is a skipper, so it does not flutter. It flicks from perch to perch and stops dead, with its wings held flat and swept back.',
+        'It really lives on the other side of the mountains. Washington has six to ten places where it is still found, in Mason, San Juan, Skamania and Thurston counties, all west of the Cascades — so a savanna on this side of the state is a place it belongs in but no longer lives.'
+      ]
+    },
+    {
+      id: 'gall_wasp', name: 'Speckled Gall Wasp',
+      habitats: ['savanna'], times: ['morning', 'day'], rarity: 3, value: 78,
+      behavior: 'crawl', speed: 13, shy: 30, size: 0.72,
+      measure: 'a few millimetres — the ball it grew up in is far easier to find',
+      art: { shape: 'gallwasp', body: '#33292a', body2: '#4a3a38', gall: '#d6c98e', gall2: '#c2b478', freckle: '#9a5e3a', wing: 'rgba(238,244,248,0.55)', legs: '#4a3c33' },
+      facts: [
+        'The speckled ball on the underside of the oak leaf is not a fruit, and the wasp did not build it. The wasp laid an egg in the leaf and the tree grew the ball itself, around the grub.',
+        'Inside, the grub sits in a little chamber slung on threads that radiate out to the husk, like a hammock in a balloon.',
+        'This one wasp makes two different galls in a year, because it has two different generations: one on the leaves and one on the buds.',
+        'It lives only along the Pacific coast, from British Columbia down to northern California, wherever there is Oregon white oak.'
+      ]
+    },
+    {
+      id: 'filbert_weevil', name: 'Filbert Weevil',
+      habitats: ['savanna'], times: ['morning', 'day'], rarity: 3, value: 74,
+      behavior: 'slow', speed: 14, shy: 36, size: 0.78,
+      measure: 'a third of an inch, and the snout is half as long again',
+      art: { shape: 'weevil', body: '#6b4f2c', wing: '#a88450', accent: '#8a6a3c', pattern: 'plain', longSnout: 1.35, scales: '#cdb07a' },
+      facts: [
+        'In one study of Garry oak in British Columbia, up to two acorns in every three had a weevil grub inside.',
+        'The mother drills a hole in a green acorn with her snout and lays her eggs down it.',
+        'The grub eats the acorn from the inside, then chews its own round door out, drops to the ground and digs itself a little chamber.',
+        'It may stay down there for one or two whole years before it comes up as a beetle.',
+        'So a perfect acorn with one small round hole in it has already been somebody’s entire childhood.'
+      ]
+    },
+
+    /* =================================================================
+       THE SWAMP - cattail marsh and slough. A swamp is a wooded wetland
+       and a marsh is one of grasses and reeds, and what Washington
+       actually has is marsh and slough. Most of what lives here is
+       under the water or inside the reeds.
+       ================================================================= */
+    {
+      id: 'diving_beetle', name: 'Predaceous Diving Beetle',
+      habitats: ['swamp', 'pond'], times: ['any'], rarity: 3, value: 86,
+      aquatic: true,
+      behavior: 'skim', speed: 46, shy: 56, size: 1.25,
+      measure: 'up to an inch and a half',
+      art: { shape: 'divingbeetle', body: '#2e3324', shell: '#343a28', edge: '#d8b83c', legs: '#1e2218', eye: '#14160f' },
+      facts: [
+        'It is a smooth shiny oval with a thin gold line running all the way round the edge, and that gold border is how you know it.',
+        'It rows with both back legs at once, like a rowing boat, so it goes in smooth curves. The water beetle that paddles one leg at a time wobbles instead.',
+        'It carries its air under its wing cases, and comes up to the surface tail first to refill.',
+        'Its baby is called a water tiger. It has two curved jaws like hollow needles and it hunts tadpoles.',
+        'Grown-up ones fly from pond to pond at night, which is how a brand new puddle gets beetles in it.'
+      ]
+    },
+    {
+      id: 'dragonfly_nymph', name: 'Dragonfly Nymph',
+      habitats: ['swamp', 'pond'], times: ['any'], rarity: 2, value: 48,
+      aquatic: true,
+      behavior: 'crawl', speed: 16, shy: 34, size: 1.0,
+      measure: 'about an inch, and very drab on purpose',
+      art: { shape: 'dragonflynymph', body: '#5a5a42', body2: '#43432f', buds: '#6b6b4e', legs: '#3a3a2a', eye: '#1c1c14', mask: '#7a7a58' },
+      facts: [
+        'This is a dragonfly before it is a dragonfly. It can spend a year or more down here, walking about underwater, and it has no idea what it is going to be.',
+        'Its bottom lip is on a hinge and folds away under its face. It shoots out, grabs, and folds back faster than you can see it happen.',
+        'When it is ready it climbs up a reed stem into the air, splits down the back, and steps out.',
+        'It leaves the whole empty suit of armour behind, still gripping the stem. Those brown shells on the cattails are real, and you can go and find them.'
+      ]
+    },
+    {
+      id: 'mosquito_larva', name: 'Mosquito Wriggler',
+      habitats: ['swamp', 'pond'], times: ['any'], rarity: 1, value: 8,
+      aquatic: true,
+      behavior: 'drift', speed: 18, shy: 22, size: 0.72,
+      measure: 'a quarter of an inch',
+      art: { shape: 'wriggler', body: '#4a4436', body2: '#635c48', head: '#3a352a', brush: '#8a8168', siphon: '#2e2a22' },
+      facts: [
+        'It hangs upside down from the underneath of the water, breathing through a tube at its tail end like a snorkel poked up through the ceiling.',
+        'Two little brushes beside its mouth whisk scraps out of the water all day long.',
+        'Touch the surface and the whole crowd of them wriggles down to the bottom at once. That wriggle is how it got its name.',
+        'Almost everything in the marsh eats them: the diving beetle, the dragonfly nymph, the backswimmer and every small fish.'
+      ]
+    },
+    {
+      id: 'pond_snail', name: 'Pond Snail',
+      habitats: ['swamp', 'pond'], times: ['any'], rarity: 1, value: 14,
+      aquatic: true,
+      behavior: 'slow', speed: 7, shy: 14, size: 0.85,
+      measure: 'a shell about half an inch tall',
+      art: { shape: 'snail', body: '#c9bd94', wing: '#a37c46', accent: '#6b4e2a', pattern: 'spiral' },
+      facts: [
+        'It grazes the green film off a stem with a tongue like a ribbon of tiny teeth, and it leaves a clean stripe behind it, so you can read exactly where it has been.',
+        'Many pond snails breathe air. They come up to the surface, open a little hole in the side of the body, take a breath, and go back down.',
+        'Their eggs come in a clear jelly blob stuck to the underside of a leaf, and you can see the babies turning round inside it.'
+      ]
+    },
+    {
+      id: 'scud', name: 'Scud',
+      habitats: ['swamp', 'pond', 'river'], times: ['any'], rarity: 1, value: 12,
+      aquatic: true,
+      behavior: 'dart', speed: 42, shy: 26, size: 0.55,
+      measure: 'about a quarter of an inch',
+      art: { shape: 'scud', body: '#c0a06a', body2: '#8a6f42', legs: '#b09468', eye: '#2e2418' },
+      facts: [
+        'A scud swims on its side. It flicks along on one flank in short bursts and then tucks itself in under a dead leaf.',
+        'At rest it curls up into a comma shape, which is why some people call them sideswimmers or freshwater shrimp.',
+        'It is not an insect at all. It is a crustacean, a little cousin of the crab, with a shell in armoured plates.',
+        'It eats dead leaves and the film that grows on them, and nearly every fish in the marsh eats it.'
+      ]
+    },
+    {
+      id: 'leech', name: 'Leech',
+      habitats: ['swamp', 'pond'], times: ['any'], rarity: 2, value: 32,
+      aquatic: true,
+      behavior: 'slow', speed: 18, shy: 30, size: 1.1,
+      measure: 'an inch or two, and it can stretch to twice that',
+      art: { shape: 'leech', body: '#3f4432', body2: '#585f42', belly: '#9a9a6a', sucker: '#2b2f22', eye: '#1a1c14' },
+      facts: [
+        'It has a sucker at each end. It grips with the back one, reaches forward, grips with the front one, and loops along like an inchworm.',
+        'Most freshwater leeches never drink blood at all. They hunt snails, worms and insect larvae and swallow them whole.',
+        'It can stretch out long and thin or pull up short and fat, because it has no bones and no shell to stop it.',
+        'It is a worm, and a close relative of the earthworm in the garden.'
+      ]
+    },
+
+    /* =================================================================
+       THE CAVE - a lava tube. Nothing grows in the dark, so every
+       scrap of food in here walked or flew in from outside. The bats
+       are not visitors in a cave. They are the farmers.
+       ================================================================= */
+    {
+      id: 'cave_cricket', name: 'Cave Cricket',
+      habitats: ['cave'], times: ['any'], rarity: 2, value: 44,
+      behavior: 'hop', speed: 30, shy: 44, size: 1.15,
+      measure: 'a body about an inch, with legs and feelers far longer',
+      art: { shape: 'cavecricket', body: '#6e5a42', body2: '#8a7354', mottle: '#4a3a28', legs: '#5f4c37', eye: '#241c14' },
+      facts: [
+        'It is not really a cricket and it cannot chirp. It has no wings at all, so there is nothing for it to rub together.',
+        'Its feelers are longer than the whole rest of it, and it uses them the way you would use your hands in the dark.',
+        'It sleeps in the cave all day and goes outside at night to feed, so every night it carries a little of the outside world back in with it.',
+        'It sits still, and still, and still — and then makes one enormous jump.',
+        'In a lava tube it is one of the biggest animals you will meet.'
+      ]
+    },
+    {
+      id: 'cave_springtail', name: 'Cave Springtail',
+      habitats: ['cave'], times: ['any'], rarity: 1, value: 12,
+      behavior: 'hop', speed: 22, shy: 20, size: 0.48,
+      measure: 'smaller than a grain of salt',
+      art: { shape: 'springtail', body: '#c6ccbe', body2: '#8a9480', legs: '#6e7868', furcula: true },
+      facts: [
+        'This is the animal that turns bat droppings and fungus into food for everything else in the cave. Everything down here is eating it, or eating something that ate it.',
+        'It has a folded tail latched under its belly. It lets go of the latch and the tail slaps the ground and flings the whole animal away, like a mousetrap going off.',
+        'It has no eyes worth the name, and it does not need any.',
+        'Springtails that live deep in caves often have no colour left at all.'
+      ]
+    },
+    {
+      id: 'fungus_gnat_larva', name: 'Fungus Gnat Larva',
+      habitats: ['cave'], times: ['any'], rarity: 2, value: 36,
+      behavior: 'slow', speed: 6, shy: 18, size: 0.82,
+      measure: 'a glassy thread half an inch long',
+      art: { shape: 'gnatlarva', body: 'rgba(228,234,216,0.92)', body2: 'rgba(202,212,186,0.95)', gut: '#5f7040', head: '#2a2620', rim: 'rgba(110,122,96,0.8)', silk: 'rgba(222,236,216,0.6)' },
+      facts: [
+        'The glisten on a cave wall is alive. It is a film of tiny things growing on the rock, and this grub is one of the most important animals eating it.',
+        'It lays down a faint web of silk on the wet stone and slides along inside it.',
+        'You can almost see through it, and the dark line down the middle is its dinner.',
+        'It grows up into a small dark fly, the sort that looks like a tiny mosquito and cannot bite anything at all.'
+      ]
+    },
+    {
+      id: 'cave_harvestman', name: 'Cave Harvestman',
+      habitats: ['cave'], times: ['any'], rarity: 3, value: 60,
+      behavior: 'crawl', speed: 22, shy: 40, size: 1.15,
+      measure: 'a body the size of a peppercorn, on thread legs',
+      art: { shape: 'harvestman', body: '#9a8a6e', wing: '#5a5346', accent: '#6b6252', pattern: 'plain', legLen: 1.25, pale: 1 },
+      facts: [
+        'It spends every winter in a cave. Outside is too cold and too dry, and a cave stays the same temperature all year.',
+        'It hangs upside down from the ceiling in a crowd, with all their legs tangled together into one shivering mat.',
+        'A harvestman is not a spider. It has one body part instead of two, it spins no silk, and it has no venom and no fangs — none at all.',
+        'When the light finds them they bounce on their legs together, so the whole cluster shimmers.'
+      ]
+    },
+    {
+      id: 'cave_millipede', name: 'Cave Millipede',
+      habitats: ['cave'], times: ['any'], rarity: 4, value: 135,
+      behavior: 'slow', speed: 9, shy: 26, size: 1.1,
+      measure: 'about an inch, and the colour of paper',
+      art: { shape: 'cavemillipede', body: '#e6e0cc', body2: '#cdc4a8', ring: '#8a8268', legs: '#b8ae94', head: '#d2c8ac' },
+      facts: [
+        'This one is a true cave animal. It lives nowhere else on Earth, it has no eyes, and it has no colour.',
+        'One was photographed in a cave at Mount Adams, in Washington, eating tree roots that had grown down through the ceiling.',
+        'That is the strange part. A tree up on the mountain pushes its roots down through cracks in the rock, and there is an animal down in the dark eating them that has never seen the tree.',
+        'Like every millipede it has two pairs of legs on each segment, and it is in no hurry whatsoever.'
+      ]
+    },
+
+    /* =================================================================
+       THE BADLANDS - the channeled scablands. Shrub-steppe on bare rock,
+       so most of the sagebrush desert lives here too. What is new is the
+       water: pools that fill with winter snow and are gone by July.
+       ================================================================= */
+    {
+      id: 'fairy_shrimp', name: 'Fairy Shrimp',
+      habitats: ['badlands'], times: ['morning', 'day'], rarity: 4, value: 155,
+      aquatic: true,
+      behavior: 'drift', speed: 26, shy: 30, size: 0.9,
+      measure: 'about an inch, and almost see-through',
+      art: { shape: 'fairyshrimp', body: 'rgba(240,242,226,0.85)', body2: 'rgba(206,214,180,0.92)', legs: 'rgba(214,224,186,0.9)', rim: 'rgba(122,134,96,0.6)', tail: '#e0793c', eye: '#22222a', gut: '#7f9050' },
+      facts: [
+        'It swims upside down on its back, rowing with eleven pairs of flat leaf-shaped legs that beat in a wave from front to back.',
+        'It lives in pools that fill with winter rain and snow and are dry ground again by July, so its whole life happens in a puddle that will not be there in the summer.',
+        'Its eggs sit in the dust through the dry year — sometimes through several dry years — and hatch when the water comes back.',
+        'And that is the trick: nothing that eats fairy shrimp can live in a puddle that keeps disappearing. It is safe there because the water goes away.',
+        'Scientists have not studied the scabland pools much yet, so nobody can tell you for certain which kind of fairy shrimp is in them.'
+      ]
+    },
+
+    /* =================================================================
+       THE BAMBOO GROVE - a planted grove, not a wild one. There is no
+       native bamboo anywhere in the Pacific Northwest, so what lives in
+       one here is ordinary Washington garden life, plus one passenger
+       that came with the plant.
+       ================================================================= */
+    {
+      id: 'bamboo_aphid', name: 'Bamboo Aphid',
+      habitats: ['bamboo'], times: ['morning', 'day'], rarity: 1, value: 12,
+      behavior: 'slow', speed: 6, shy: 14, size: 0.58,
+      measure: 'smaller than a sesame seed',
+      art: { shape: 'aphid', body: '#b8d46a', wing: '#d8ec9c', accent: '#3a4a20', tailband: '#2a3418' },
+      facts: [
+        'It arrived here with the bamboo. Somebody shipped the plant, and the aphid came along on it, which is how most garden insects get anywhere.',
+        'It lives in crowds on the underside of the leaves, and it is a pale pear-shaped green thing with two little exhaust pipes at the back.',
+        'It drinks sap and lets the sugar out the back as honeydew, which drips onto whatever is underneath and grows a black sooty mould on it. That sticky shine on a car parked under a tree is aphids, not sap.',
+        'Ladybirds and lacewings eat them, and both of those live in this garden already.'
+      ]
+    },
+
+    /* =================================================================
+       THE CHERRY GROVE - an orchard block of pruned fruiting cherries
+       and a park corner of Japanese flowering cherries. One is grown
+       for what it makes and one for what it does, for two weeks.
+       ================================================================= */
+    {
+      id: 'cherry_fruit_fly', name: 'Western Cherry Fruit Fly',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 42,
+      behavior: 'dart', speed: 52, shy: 48, size: 0.74,
+      measure: 'about a fifth of an inch',
+      art: { shape: 'fly', body: '#17171b', wing: '#eef4f8', accent: '#f2f2ea', wingBands: '#1a1e24', pattern: 'bands', bandStyle: 'zigzag', bodyBands: '#e8e8dc' },
+      facts: [
+        'It has clear wings with a bold dark pattern painted across them, and it waves them slowly while it walks about on a cherry.',
+        'The grown-ups come up out of the ground in May, about five weeks before the cherries are ripe, as if they knew.',
+        'There is only one generation a year. Everything this fly does, it does once.',
+        'The grub eats its way in to the stone, where nothing can reach it.',
+        'Buyers will not accept one single maggot in a whole shipment of cherries, so this one small fly decides how an entire orchard is run. That is what a quarantine is: a box of fruit is also a vehicle.'
+      ]
+    },
+    {
+      id: 'pear_slug', name: 'Pear Slug',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 40,
+      behavior: 'slow', speed: 5, shy: 18, size: 0.8,
+      measure: 'about a third of an inch',
+      art: { shape: 'pearslug', body: '#38472e', body2: '#4c5c3a', head: '#2a3622', rim: '#5e7048', gloss: 'rgba(232,244,222,0.6)' },
+      facts: [
+        'It is not a slug. It is a baby sawfly — an insect with six legs under there — wearing a coat of olive-green slime it makes itself.',
+        'It eats only the top skin of the leaf and leaves the veins and the underside alone, so the leaf turns into a brown lace window you can hold up to the light and see through.',
+        'When it is nearly grown it sheds the slime, turns orange-yellow, stops looking like a slug at all, drops off the tree and burrows a couple of inches down.',
+        'It grows up into a small shiny black wasp, and that wasp has no sting.',
+        'So it is not what it looks like, and the thing it turns into is not what that looks like either.'
+      ]
+    },
+    {
+      id: 'black_cherry_aphid', name: 'Black Cherry Aphid',
+      habitats: ['cherry'], times: ['morning', 'day'], rarity: 1, value: 10,
+      behavior: 'slow', speed: 6, shy: 14, size: 0.5,
+      measure: 'smaller than a sesame seed',
+      art: { shape: 'aphid', body: '#22222a', wing: '#3a3a46', accent: '#6b6b7a', gloss: 'rgba(255,255,255,0.55)' },
+      facts: [
+        'It is glossy black, like a bead of lacquer, and it crowds onto the newest soft shoots at the ends of the branches.',
+        'A cherry leaf curled tight in spring usually has a colony folded up inside it, out of the weather and out of sight.',
+        'Ants love the sweet honeydew so much that they will guard the aphids and drive the ladybirds off them.'
+      ]
+    },
+
+    /* =================================================================
+       THE FARMYARD - Benton County is irrigated crop country: a pole
+       shed, a dozen hens, a couple of goats, a horse and a row of
+       poplars. Not a storybook barnyard.
+       ================================================================= */
+    {
+      id: 'stable_fly', name: 'Stable Fly',
+      habitats: ['farmyard'], times: ['morning', 'day', 'evening'], rarity: 2, value: 26,
+      behavior: 'dart', speed: 56, shy: 44, size: 0.8,
+      measure: 'the size of a house fly',
+      danger: 'This one bites, and both the males and the females do it. A stable fly on your ankle is a sharp nip and then it is over. It wants a drink, not a fight, and it does not carry anything to you.',
+      art: { shape: 'fly', body: '#43474e', wing: '#e8eef2', accent: '#6b7078', pattern: 'checks', beak: '#2b2f34', checks: '#2b2f34' },
+      facts: [
+        'It looks almost exactly like a house fly, and the difference is at the front. A house fly has a soft sponge for a mouth. A stable fly has a stiff black spear that sticks straight out in front of its face.',
+        'It goes for ankles, and for the legs of horses and cattle. That is why a horse standing in the sun stamps one foot and then the other.',
+        'Its babies do not grow in the muck. They grow in wet straw and spoiled hay, so a tidy yard has fewer of them.',
+        'A house fly cannot bite you. It has nothing to bite with. If something bit you in a barn, it was probably this.'
+      ]
+    },
+    {
+      id: 'mealworm_beetle', name: 'Yellow Mealworm Beetle',
+      habitats: ['farmyard'], times: ['evening', 'night'], rarity: 1, value: 18,
+      behavior: 'crawl', speed: 24, shy: 30, size: 0.9,
+      measure: 'about half an inch',
+      art: { shape: 'darkling', body: '#3a3028', slim: true, noStand: true, sheen: 'rgba(224,206,166,0.24)' },
+      facts: [
+        'The mealworms sold in tubs to feed chickens and pet lizards are its babies. This is what they grow into.',
+        'It lives in spilled grain and in the bottom of feed sacks, so one walking across the shed floor means a spill somewhere.',
+        'It is a darkling beetle, the very same family as the pinacate beetle that stands on its head out in the sagebrush.',
+        'A young one is pale gold and turns dark brown over a few days after it sheds.'
+      ]
+    }
 
   ];
 
@@ -2009,6 +2348,9 @@
     tidepool: 'the Tidepools', river: 'the river and the stream',
     desert: 'the Sagebrush Desert', mountain: 'Cloudtop Ridge', taiga: 'the Spruce Taiga',
     tundra: 'the Lichen Tundra', rainforest: 'the Mossy Rainforest', glade: 'the Golden Glade',
+    savanna: 'the Oak Savanna', swamp: 'the Cattail Marsh', cave: 'the Lava Tube',
+    badlands: 'the Scablands', bamboo: 'the Bamboo Grove', cherry: 'the Cherry Grove',
+    farmyard: 'the Farmyard',
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
