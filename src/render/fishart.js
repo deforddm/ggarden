@@ -645,6 +645,217 @@
   };
 
 
+  /* ---------- the Cattail Marsh ---------- */
+
+  /* A redside shiner: a deeper-bodied little minnow with one hot red band
+     laid down the flank last of all, so nothing washes it out. */
+  S.shiner = function (c, a, t) {
+    standard(c, a, t, { L: 16, D: 5.8, tail: 'fork', tailD: 6, hump: 1.05, dorsal: 1.7, eye: 2.3, mouth: 4 });
+    c.save();
+    c.beginPath();
+    c.ellipse(-0.5, 0, 16.6, 6.2, 0, 0, Math.PI * 2);
+    c.clip();
+    c.fillStyle = a.accent; c.globalAlpha = 0.88;
+    c.beginPath();
+    c.moveTo(-15.5, 0.6); c.quadraticCurveTo(-2, -1.3, 13.5, -0.2);
+    c.quadraticCurveTo(-2, 0.9, -15.5, 2.4);
+    c.closePath(); c.fill();
+    c.globalAlpha = 1;
+    c.restore();
+  };
+
+  /* A peamouth and friends already use S.minnow. */
+
+  /* Three-spine stickleback: a small armoured fish with a narrow waist in
+     front of the tail, bony plates down the side and three spines that
+     stand straight up out of its back. */
+  S.stickleback = function (c, a, t) {
+    var wag = Math.sin(t * 6);
+    var L = 14, D = 4.6;
+    /* narrow tail stalk and a small fan tail */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(-L * 0.55, -1.5); c.lineTo(-L - 3, -1.2);
+    c.lineTo(-L - 3, 1.2); c.lineTo(-L * 0.55, 1.5);
+    c.closePath(); c.fill();
+    tail(c, -L - 3, a, wag, 'fan', 4.4);
+    /* body: a plump teardrop, fattest just behind the head */
+    c.fillStyle = a.back;
+    c.beginPath();
+    c.moveTo(L + 3, 0);
+    c.bezierCurveTo(L * 0.5, -D * 1.25, -L * 0.2, -D * 1.05, -L * 0.62, -1.6);
+    c.lineTo(-L * 0.62, 1.6);
+    c.bezierCurveTo(-L * 0.2, D * 1.05, L * 0.5, D * 1.2, L + 3, 0);
+    c.closePath(); c.fill();
+    /* belly, kept inside the body outline */
+    c.save();
+    c.beginPath();
+    c.moveTo(L + 3, 0);
+    c.bezierCurveTo(L * 0.5, -D * 1.25, -L * 0.2, -D * 1.05, -L * 0.62, -1.6);
+    c.lineTo(-L * 0.62, 1.6);
+    c.bezierCurveTo(-L * 0.2, D * 1.05, L * 0.5, D * 1.2, L + 3, 0);
+    c.closePath(); c.clip();
+    c.fillStyle = a.belly; ell(c, 0, D * 0.75, L * 1.1, D * 0.72);
+    /* the bony plates: a single low row of short dashes along the flank,
+       not a rib cage */
+    c.fillStyle = a.plate || '#d6dcd4'; c.globalAlpha = 0.7;
+    for (var i = -3; i <= 5; i++) ell(c, i * 2.4 + 0.6, 0.4, 0.85, D * 0.34);
+    c.globalAlpha = 1;
+    c.fillStyle = 'rgba(255,255,255,0.28)'; ell(c, 4, -2.2, 4.4, 1.6, -0.12);
+    c.restore();
+    /* soft dorsal and anal fins at the back */
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(-L * 0.6, -D * 0.5); c.quadraticCurveTo(-L * 0.28, -D * 1.5, -L * 0.02, -D * 0.72);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(-L * 0.6, D * 0.5); c.quadraticCurveTo(-L * 0.3, D * 1.5, -L * 0.04, D * 0.75);
+    c.closePath(); c.fill();
+    /* the three spines, standing up, drawn last so they read */
+    c.strokeStyle = a.spine || '#3a443e'; c.lineWidth = 1.5; c.lineCap = 'round';
+    [[5.6, 3.4], [1.6, 3.8], [-2.4, 3]].forEach(function (p) {
+      c.beginPath();
+      c.moveTo(p[0], -D * 0.95);
+      c.lineTo(p[0] - p[1] * 0.55, -D * 0.95 - p[1]); c.stroke();
+    });
+    /* one spine on the belly too */
+    c.beginPath(); c.moveTo(1.8, D * 0.95); c.lineTo(0.4, D * 0.95 + 2.8); c.stroke();
+    eye(c, L * 0.72, -1.3, 2.1);
+    mouth(c, L + 2.4, 0.4, 3.4, '#2b2b33');
+  };
+
+  /* Sand roller: a small humpbacked trout-perch, pale and faintly
+     see-through, with the little fatty adipose fin that gives it away. */
+  S.sandroller = function (c, a, t) {
+    standard(c, a, t, { L: 14, D: 5.4, tail: 'fork', tailD: 5.2, hump: 1.35, dorsal: 2.0, eye: 2.6, mouth: 3.4 });
+    /* the adipose fin: a little fleshy nub behind the back fin */
+    c.fillStyle = a.fin;
+    ell(c, -9.4, -4.6, 2.1, 1.2, -0.22);
+    /* a hint of the light coming through it */
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    ell(c, 1, 1.4, 7.4, 2.4, -0.1);
+  };
+
+  /* Chiselmouth: a long dark river minnow with a hard pale plate slung
+     under the snout instead of a lower lip. */
+  S.chiselmouth = function (c, a, t) {
+    standard(c, a, t, { L: 20, D: 6.2, tail: 'fork', tailD: 7, hump: 0.92, dorsal: 1.7, eye: 2.4, mouth: 0.1 });
+    /* the chisel: a straight hard blade jutting below the snout */
+    c.fillStyle = a.chisel || '#e0d8bc';
+    c.beginPath();
+    c.moveTo(20.4, 0.4); c.lineTo(15.4, 2.6); c.lineTo(15.8, 4.2); c.lineTo(20.6, 2.2);
+    c.closePath(); c.fill();
+    c.strokeStyle = GG.shade(a.chisel || '#e0d8bc', -0.35); c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(20.4, 0.6); c.lineTo(15.5, 2.8); c.stroke();
+  };
+
+  /* Tench: thick-set and dark olive, tiny scales, every fin rounded off,
+     a small red eye and one short whisker at each corner of the mouth. */
+  S.tench = function (c, a, t) {
+    var wag = Math.sin(t * 3.4);
+    var L = 21, D = 9.4;
+    /* rounded tail, barely forked */
+    c.fillStyle = a.fin;
+    c.save(); c.translate(-L - 1, 0); c.rotate(wag * 0.3);
+    c.beginPath();
+    c.moveTo(2, 0);
+    c.quadraticCurveTo(-8, -D * 1.05, -11, -D * 0.5);
+    c.quadraticCurveTo(-9.5, 0, -11, D * 0.5);
+    c.quadraticCurveTo(-8, D * 1.05, 2, 0);
+    c.closePath(); c.fill();
+    c.restore();
+    /* rounded dorsal and anal fins */
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(-L * 0.42, -D * 0.72);
+    c.quadraticCurveTo(-L * 0.18, -D * 1.42, L * 0.08, -D * 0.78);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(-L * 0.4, D * 0.7);
+    c.quadraticCurveTo(-L * 0.16, D * 1.34, L * 0.06, D * 0.76);
+    c.closePath(); c.fill();
+    /* the thick body */
+    function outline() {
+      c.beginPath();
+      c.moveTo(L, 0);
+      c.bezierCurveTo(L * 0.6, -D * 0.92, -L * 0.45, -D, -L * 0.92, -D * 0.3);
+      c.bezierCurveTo(-L * 1.02, 0, -L * 1.02, 0, -L * 0.92, D * 0.3);
+      c.bezierCurveTo(-L * 0.45, D, L * 0.6, D * 0.9, L, 0);
+      c.closePath();
+    }
+    c.fillStyle = a.back; outline(); c.fill();
+    c.save(); outline(); c.clip();
+    c.fillStyle = a.belly; ell(c, -L * 0.05, D * 0.78, L * 1.05, D * 0.56);
+    pattern(c, a, L, D);
+    c.restore();
+    /* rounded side fin */
+    c.fillStyle = a.fin;
+    c.beginPath();
+    c.moveTo(L * 0.34, D * 0.14);
+    c.quadraticCurveTo(L * 0.02, D * 0.86, L * 0.34, D * 0.56);
+    c.closePath(); c.fill();
+    /* one short barbel at each corner of the mouth */
+    c.strokeStyle = GG.shade(a.back, 0.2); c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(19.6, 1.4); c.quadraticCurveTo(21.6, 3.2, 21, 5.2); c.stroke();
+    mouth(c, L * 0.96, 0.8, 4, '#2b2b33');
+    /* the small red eye, drawn last */
+    c.fillStyle = a.eyering || '#c8482f'; ell(c, L * 0.6, -D * 0.3, 2.5, 2.5);
+    c.fillStyle = '#22252a'; ell(c, L * 0.62, -D * 0.3, 1.25, 1.25);
+    c.fillStyle = '#ffffff'; ell(c, L * 0.66, -D * 0.38, 0.5, 0.5);
+  };
+
+  /* Pacific lamprey: a long jawless ribbon with no paired fins at all,
+     one low fin along the back half, a round sucker mouth ringed with
+     teeth, and seven gill holes in a row behind the eye. */
+  S.lamprey = function (c, a, t) {
+    var k = t * 3.4;
+    function wave(x) { return Math.sin(x * 0.17 + k) * (2.8 * (1 - (x + 24) / 54)); }
+    function depth(x) { return 2.0 + 1.2 * Math.max(0, 1 - Math.abs(x + 2) / 26); }
+    /* the low fin along the back of the rear half, drawn first */
+    c.fillStyle = a.fin;
+    c.beginPath();
+    for (var f = 2; f >= -25; f -= 3) c.lineTo(f, wave(f) - depth(f) - 2.6);
+    for (var f2 = -25; f2 <= 2; f2 += 3) c.lineTo(f2, wave(f2) - depth(f2) + 0.2);
+    c.closePath(); c.fill();
+    /* the body */
+    c.fillStyle = a.back;
+    c.beginPath();
+    for (var i = 23; i >= -25; i -= 3) c.lineTo(i, wave(i) - depth(i));
+    for (var j = -25; j <= 23; j += 3) c.lineTo(j, wave(j) + depth(j));
+    c.closePath(); c.fill();
+    /* the paler underside */
+    c.save();
+    c.beginPath();
+    for (var i2 = 23; i2 >= -25; i2 -= 3) c.lineTo(i2, wave(i2) - depth(i2));
+    for (var j2 = -25; j2 <= 23; j2 += 3) c.lineTo(j2, wave(j2) + depth(j2));
+    c.closePath(); c.clip();
+    c.fillStyle = a.belly; c.globalAlpha = 0.7;
+    c.beginPath();
+    for (var m = 23; m >= -25; m -= 3) c.lineTo(m, wave(m) + depth(m) * 0.25);
+    for (var n = -25; n <= 23; n += 3) c.lineTo(n, wave(n) + depth(n));
+    c.closePath(); c.fill();
+    c.globalAlpha = 1;
+    c.restore();
+    /* the seven gill holes, in a row, behind the eye */
+    c.fillStyle = a.pore || '#2b2b26';
+    for (var g = 0; g < 7; g++) {
+      var gx = 13.5 - g * 2.3;
+      ell(c, gx, wave(gx) - 0.1, 0.62, 0.9);
+    }
+    /* the round sucker at the front, drawn last and facing forward */
+    var hy = wave(23);
+    c.fillStyle = GG.shade(a.back, -0.2);
+    ell(c, 23.4, hy, 2.4, 3.3);
+    c.fillStyle = '#2a211c';
+    ell(c, 24.2, hy, 1.7, 2.6);
+    c.fillStyle = a.teeth || '#e8e2cc';
+    for (var d = 0; d < 9; d++) {
+      var ang = d / 9 * Math.PI * 2;
+      ell(c, 24.2 + Math.cos(ang) * 1.05, hy + Math.sin(ang) * 1.7, 0.4, 0.4);
+    }
+    eye(c, 17.4, wave(17.4) - 1.3, 1.7);
+  };
+
   GG.drawAny = function (c, def, x, y, scale, angle, t, faceLeft, gait) {
     if (def.isFruit) GG.FruitArt.draw(c, def, x, y, scale, t);
     else if (def.isAnimal) {

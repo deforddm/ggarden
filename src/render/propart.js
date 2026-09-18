@@ -1543,5 +1543,1777 @@
     ell(c, x + r * 0.31 + sway * 0.3, y - r * 1.21, r * 0.07, r * 0.05);
   };
 
+  /* =====================================================================
+     THE OAK SAVANNA - a grassland with trees standing in it far apart.
+     Every crown throws its own separate island of shade with bright grass
+     all round it, and the gap between the trees is the whole point.
+     ===================================================================== */
+
+  /* The open-grown Garry oak. With room around it the tree spends its life
+     going sideways, so it ends up a crooked black elbow of trunk under a
+     wide flat-bottomed cloud - three times as broad as it is tall. */
+  P.garryOak = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 0.55 + seed * 6) * 1.8;
+    var rnd = GG.mulberry32(Math.floor(seed * 5273));
+    var i;
+    shadow(c, x + 3, y, r * 1.22);
+    var cx = x + sway;
+    var by = y - r * 0.60;          // the flat underside of the crown
+    var hw = r * 1.45;              // half the crown's width
+
+    /* the trunk: short, thick and bent. Never a straight pole. */
+    c.fillStyle = '#8f8a80';
+    c.beginPath();
+    c.moveTo(x - r * 0.25, y);
+    c.lineTo(x - r * 0.19, y - r * 0.26);
+    c.lineTo(x - r * 0.11, y - r * 0.50);
+    c.lineTo(x - r * 0.15 + sway * 0.4, y - r * 0.76);
+    c.lineTo(x + r * 0.11 + sway * 0.4, y - r * 0.76);
+    c.lineTo(x + r * 0.16, y - r * 0.48);
+    c.lineTo(x + r * 0.23, y - r * 0.24);
+    c.lineTo(x + r * 0.27, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#a49e93';                          // the lit west face
+    c.beginPath();
+    c.moveTo(x - r * 0.25, y);
+    c.lineTo(x - r * 0.11, y - r * 0.50);
+    c.lineTo(x - r * 0.15 + sway * 0.4, y - r * 0.76);
+    c.lineTo(x - r * 0.02 + sway * 0.4, y - r * 0.76);
+    c.lineTo(x - r * 0.05, y - r * 0.40);
+    c.lineTo(x - r * 0.10, y);
+    c.closePath(); c.fill();
+    /* thick furrowed bark, near black in the cracks */
+    c.strokeStyle = '#2e2924'; c.lineWidth = Math.max(0.8, r * 0.032); c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - r * 0.04, y - r * 0.08);
+    c.quadraticCurveTo(x + r * 0.03, y - r * 0.34, x - r * 0.02 + sway * 0.3, y - r * 0.68);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(x + r * 0.13, y - r * 0.05);
+    c.quadraticCurveTo(x + r * 0.08, y - r * 0.28, x + r * 0.11 + sway * 0.3, y - r * 0.50);
+    c.stroke();
+
+    /* the big crooked limbs, elbowing out from under the crown */
+    c.strokeStyle = '#7b756b'; c.lineCap = 'round'; c.lineJoin = 'round';
+    for (i = -1; i <= 1; i += 2) {
+      c.lineWidth = Math.max(1.8, r * 0.16);
+      c.beginPath();
+      c.moveTo(x + i * r * 0.14, y - r * 0.56);
+      c.lineTo(x + i * r * 0.36 + sway * 0.4, y - r * 0.58);
+      c.lineTo(x + i * r * 0.58 + sway * 0.6, y - r * 0.76);
+      c.stroke();
+    }
+
+    /* the crown: a flat-bottomed cloud, far broader than it is tall */
+    c.fillStyle = '#3a5526';
+    c.fillRect(cx - hw * 0.94, by - r * 0.30, hw * 1.88, r * 0.30);
+    ell(c, cx - hw * 0.66, by - r * 0.30, hw * 0.46, r * 0.30);
+    ell(c, cx + hw * 0.66, by - r * 0.30, hw * 0.46, r * 0.30);
+    ell(c, cx - hw * 0.28, by - r * 0.52, hw * 0.48, r * 0.34);
+    ell(c, cx + hw * 0.34, by - r * 0.48, hw * 0.44, r * 0.32);
+    ell(c, cx, by - r * 0.64, hw * 0.48, r * 0.36);
+    c.fillStyle = '#4c6b33';
+    ell(c, cx - hw * 0.62, by - r * 0.42, hw * 0.38, r * 0.26);
+    ell(c, cx + hw * 0.58, by - r * 0.40, hw * 0.36, r * 0.25);
+    ell(c, cx - hw * 0.14, by - r * 0.60, hw * 0.44, r * 0.30);
+    ell(c, cx + hw * 0.30, by - r * 0.58, hw * 0.34, r * 0.26);
+    c.fillStyle = '#5f8440';
+    ell(c, cx - hw * 0.40, by - r * 0.68, hw * 0.30, r * 0.20);
+    ell(c, cx + hw * 0.10, by - r * 0.76, hw * 0.28, r * 0.19);
+    ell(c, cx + hw * 0.52, by - r * 0.56, hw * 0.20, r * 0.14);
+    /* the gaps an open oak always has - you can see sky through it */
+    c.fillStyle = 'rgba(46,62,32,0.45)';
+    ell(c, cx - hw * 0.34, by - r * 0.22, hw * 0.13, r * 0.08);
+    ell(c, cx + hw * 0.44, by - r * 0.26, hw * 0.10, r * 0.07);
+    /* leaves are pale and fuzzy underneath, and some of them flip over */
+    c.fillStyle = 'rgba(168,178,122,0.45)';
+    for (i = 0; i < 6; i++) {
+      ell(c, cx + (rnd() - 0.5) * hw * 1.5, by - r * (0.04 + rnd() * 0.24),
+          hw * 0.040, r * 0.026, (rnd() - 0.5) * 2);
+    }
+  };
+
+  /* The same oak, on the rock at the edge of the cliff. It is not a
+     different tree and it is not a young one - it is the identical species
+     grown where the wind never stops, and it stays knee-high forever. */
+  P.cliffOak = function (c, x, y, r, t, seed) {
+    var lean = (((seed * 41) % 1) > 0.5) ? 1 : -1;
+    var sway = Math.sin(t * 0.8 + seed * 7) * 1.0;
+    var rnd = GG.mulberry32(Math.floor(seed * 3931));
+    var i, k, bx, byy;
+    shadow(c, x + 2, y, r * 0.78);
+    /* the same thick grey bark as the big tree, on a trunk that never got
+       past your knee, leaning away from the wind */
+    c.strokeStyle = '#8f8a80'; c.lineCap = 'round'; c.lineJoin = 'round';
+    c.lineWidth = Math.max(2.4, r * 0.28);
+    c.beginPath();
+    c.moveTo(x - lean * r * 0.22, y);
+    c.lineTo(x - lean * r * 0.10, y - r * 0.30);
+    c.lineTo(x + lean * r * 0.06, y - r * 0.58);
+    c.stroke();
+    c.strokeStyle = '#a49e93'; c.lineWidth = Math.max(1, r * 0.09);
+    c.beginPath();
+    c.moveTo(x - lean * r * 0.25, y - r * 0.04);
+    c.lineTo(x - lean * r * 0.14, y - r * 0.32);
+    c.stroke();
+    /* three crooked branches, every one of them combed downwind */
+    var arm = [[0.46, -0.78, 0.98, -0.94, 0.12],
+               [0.52, -0.52, 1.14, -0.60, 0.10],
+               [0.26, -0.84, 0.62, -1.04, 0.08]];
+    c.strokeStyle = '#8f8a80';
+    for (i = 0; i < 3; i++) {
+      c.lineWidth = Math.max(1.4, r * arm[i][4]);
+      c.beginPath();
+      c.moveTo(x + lean * r * 0.02, y - r * 0.50);
+      c.lineTo(x + lean * r * arm[i][0], y + r * arm[i][1]);
+      c.lineTo(x + lean * r * arm[i][2] + sway * 0.5, y + r * arm[i][3]);
+      c.stroke();
+    }
+    /* the crown: a low wedge of foliage, all of it on the sheltered side */
+    var lumps = [[0.22, 0.72, 0.34, 0.24], [0.62, 0.86, 0.36, 0.26],
+                 [1.00, 0.70, 0.30, 0.21], [0.46, 0.52, 0.28, 0.19]];
+    for (k = 0; k < 4; k++) {
+      bx = x + lean * r * lumps[k][0] + sway * 0.4;
+      byy = y - r * lumps[k][1];
+      c.fillStyle = '#3a5526';
+      ell(c, bx, byy, r * lumps[k][2], r * lumps[k][3]);
+    }
+    for (k = 0; k < 4; k++) {
+      bx = x + lean * r * lumps[k][0] + sway * 0.4;
+      byy = y - r * lumps[k][1];
+      c.fillStyle = '#4c6b33';
+      ell(c, bx - lean * r * 0.05, byy - r * 0.05, r * lumps[k][2] * 0.72, r * lumps[k][3] * 0.70);
+      c.fillStyle = '#5f8440';
+      ell(c, bx - lean * r * 0.10, byy - r * 0.09, r * lumps[k][2] * 0.38, r * lumps[k][3] * 0.36);
+    }
+    /* bare crooked tips coming out through the leaves, downwind */
+    c.strokeStyle = '#7b756b'; c.lineWidth = Math.max(0.9, r * 0.055);
+    for (i = 0; i < 2; i++) {
+      byy = y - r * (0.62 + i * 0.26);
+      c.beginPath();
+      c.moveTo(x + lean * r * 0.90, byy);
+      c.lineTo(x + lean * r * 1.16 + sway * 0.5, byy - r * 0.06);
+      c.lineTo(x + lean * r * 1.34 + sway * 0.7, byy + r * 0.02);
+      c.stroke();
+    }
+    /* one silver wind-killed twig on the side the wind comes from */
+    c.strokeStyle = '#b6b0a4'; c.lineWidth = Math.max(0.8, r * 0.045);
+    c.beginPath();
+    c.moveTo(x - lean * r * 0.04, y - r * 0.50);
+    c.lineTo(x - lean * r * 0.34, y - r * 0.70);
+    c.stroke();
+    c.fillStyle = 'rgba(168,178,122,0.75)';
+    ell(c, x + lean * r * 0.34, y - r * 0.58, r * 0.10, r * 0.065, 0.3);
+    ell(c, x + lean * r * 0.86, y - r * 0.82, r * 0.09, r * 0.06, -0.2);
+    if (rnd() > 2) { bx = 0; }
+  };
+
+  /* Acorns on the ground in September. One of them has a small round door
+     chewed in it, which means a filbert weevil grub has already spent its
+     whole childhood inside and let itself out. */
+  P.acorns = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 6607));
+    var n = 3 + (rnd() > 0.5 ? 1 : 0);
+    for (var i = 0; i < n; i++) {
+      var aa = seed * 6.3 + i * (Math.PI * 2 / n) + (rnd() - 0.5) * 0.5;
+      var uu = 0.62 + rnd() * 0.42;
+      var px = x + Math.cos(aa) * r * 1.05 * uu;
+      var py = y + Math.sin(aa) * r * 0.46 * uu;
+      var rot = (rnd() - 0.5) * 2.4;
+      var s = r * (0.40 + rnd() * 0.10);
+      var holed = rnd() > 0.62;
+      c.fillStyle = 'rgba(40,52,26,0.20)';
+      ell(c, px + s * 0.10, py + s * 0.34, s * 0.95, s * 0.30);
+      c.save(); c.translate(px, py); c.rotate(rot);
+      /* the nut */
+      c.fillStyle = '#a87b3e';
+      ell(c, 0, 0, s * 0.92, s * 0.56);
+      c.fillStyle = '#c49660';
+      ell(c, -s * 0.10, -s * 0.17, s * 0.54, s * 0.22, -0.18);
+      c.fillStyle = '#8b6531';
+      c.beginPath();
+      c.moveTo(s * 0.80, -s * 0.17); c.lineTo(s * 1.18, 0);
+      c.lineTo(s * 0.80, s * 0.17); c.closePath(); c.fill();
+      /* the shallow scaly cup pulled down over the blunt end */
+      c.fillStyle = '#6e5432';
+      ell(c, -s * 0.44, 0, s * 0.54, s * 0.60);
+      c.fillStyle = '#83653f';
+      ell(c, -s * 0.50, -s * 0.16, s * 0.34, s * 0.30, -0.2);
+      c.fillStyle = '#57411f';
+      for (var k = 0; k < 3; k++) {
+        ell(c, -s * (0.34 + (k % 2) * 0.24), -s * 0.30 + k * s * 0.30,
+            s * 0.10, s * 0.08);
+      }
+      c.fillStyle = '#6e5432';                   // the little stalk
+      c.fillRect(-s * 1.04, -s * 0.06, s * 0.20, s * 0.12);
+      if (holed) {
+        c.fillStyle = '#2f2519';
+        ell(c, s * 0.20, s * 0.06, s * 0.13, s * 0.11);
+      }
+      c.restore();
+    }
+  };
+
+  /* The speckled oak gall. It is not a fruit and the wasp did not build it:
+     the wasp laid an egg in the leaf and the tree grew the ball itself,
+     round the grub, with the grub slung in the middle on threads. */
+  P.oakGall = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.2 + seed * 9) * 1.2;
+    var rnd = GG.mulberry32(Math.floor(seed * 2437));
+    var i, a;
+    function oakLeaf(lx, ly, ln, ang, dark) {
+      var k, u, px, rr;
+      c.save(); c.translate(lx, ly); c.rotate(ang);
+      c.fillStyle = dark ? '#3f5a2a' : '#4c6b33';
+      ell(c, 0, 0, ln, ln * 0.26);
+      for (k = 0; k < 4; k++) {
+        u = -0.72 + k * 0.48;
+        px = u * ln;
+        rr = ln * (0.30 - Math.abs(u) * 0.12);
+        ell(c, px, -rr * 0.56, rr, rr * 0.86);
+        ell(c, px, rr * 0.56, rr, rr * 0.86);
+      }
+      c.fillStyle = dark ? '#4c6b33' : '#5f8440';
+      ell(c, -ln * 0.10, -ln * 0.13, ln * 0.52, ln * 0.13, -0.10);
+      c.restore();
+    }
+    /* the twig */
+    c.strokeStyle = '#6f5b41'; c.lineWidth = Math.max(1.2, r * 0.09); c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y);
+    c.quadraticCurveTo(x + sway * 0.3, y - r * 0.55, x + sway, y - r * 1.00);
+    c.stroke();
+    c.strokeStyle = '#6f5b41'; c.lineWidth = Math.max(0.9, r * 0.055);
+    c.beginPath();
+    c.moveTo(x + sway * 0.55, y - r * 0.62);
+    c.lineTo(x - r * 0.42 + sway * 0.4, y - r * 0.72);
+    c.stroke();
+    /* three deeply lobed leaves */
+    oakLeaf(x - r * 0.52 + sway * 0.4, y - r * 0.74, r * 0.40, -0.30, 1);
+    oakLeaf(x + r * 0.42 + sway * 0.8, y - r * 0.96, r * 0.36, 0.34, 1);
+    oakLeaf(x - r * 0.06 + sway, y - r * 1.12, r * 0.44, -0.08, 0);
+    /* and slung under the big one, the gall itself */
+    var gx = x + sway * 0.95, gy = y - r * 0.86, gr = r * 0.36;
+    c.strokeStyle = '#8f7a54'; c.lineWidth = Math.max(0.8, r * 0.04);
+    c.beginPath(); c.moveTo(gx, gy - gr * 0.9); c.lineTo(gx - r * 0.02, y - r * 1.10); c.stroke();
+    c.fillStyle = '#b8a869';
+    ell(c, gx, gy, gr, gr);
+    c.fillStyle = '#d6c98e';
+    ell(c, gx - gr * 0.12, gy - gr * 0.14, gr * 0.82, gr * 0.80);
+    c.fillStyle = '#ece2b4';
+    ell(c, gx - gr * 0.34, gy - gr * 0.36, gr * 0.30, gr * 0.24, -0.4);
+    c.fillStyle = '#9a5e3a';
+    for (i = 0; i < 8; i++) {
+      a = rnd() * Math.PI * 2;
+      var rr2 = Math.sqrt(rnd()) * gr * 0.74;
+      ell(c, gx + Math.cos(a) * rr2, gy + Math.sin(a) * rr2, gr * 0.11, gr * 0.09);
+    }
+    /* a second, smaller one - there are often two or three on a leaf */
+    c.fillStyle = '#c9bb81';
+    ell(c, x - r * 0.46 + sway * 0.4, y - r * 0.60, gr * 0.44, gr * 0.44);
+    c.fillStyle = '#9a5e3a';
+    ell(c, x - r * 0.50 + sway * 0.4, y - r * 0.62, gr * 0.09, gr * 0.08);
+  };
+
+  /* A dead oak left standing. This one is a granary tree: an acorn
+     woodpecker drills a hole, hammers one acorn into it, and then does that
+     again, and again, until the trunk is a wall of little full cupboards. */
+  P.oakSnag = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 4703));
+    var i, k, hx, hy;
+    shadow(c, x + 2, y, r * 0.58);
+    var h = r * 1.90;
+    /* the silvered trunk, snapped off at the top */
+    c.fillStyle = '#8e897e';
+    c.beginPath();
+    c.moveTo(x - r * 0.30, y);
+    c.lineTo(x - r * 0.20, y - h * 0.5);
+    c.lineTo(x - r * 0.12, y - h);
+    c.lineTo(x + r * 0.13, y - h * 0.96);
+    c.lineTo(x + r * 0.21, y - h * 0.5);
+    c.lineTo(x + r * 0.31, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#b4afa3';
+    c.beginPath();
+    c.moveTo(x - r * 0.30, y);
+    c.lineTo(x - r * 0.20, y - h * 0.5);
+    c.lineTo(x - r * 0.12, y - h);
+    c.lineTo(x + r * 0.01, y - h);
+    c.lineTo(x - r * 0.06, y - h * 0.5);
+    c.lineTo(x - r * 0.13, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#635f57';
+    c.beginPath();
+    c.moveTo(x + r * 0.10, y - h * 0.96);
+    c.lineTo(x + r * 0.13, y - h * 0.96);
+    c.lineTo(x + r * 0.31, y);
+    c.lineTo(x + r * 0.22, y);
+    c.closePath(); c.fill();
+    /* the ragged splintered break */
+    c.fillStyle = '#c6c0b2';
+    c.beginPath();
+    c.moveTo(x - r * 0.12, y - h);
+    c.lineTo(x - r * 0.07, y - h - r * 0.20);
+    c.lineTo(x - r * 0.01, y - h - r * 0.03);
+    c.lineTo(x + r * 0.06, y - h - r * 0.24);
+    c.lineTo(x + r * 0.13, y - h * 0.96);
+    c.closePath(); c.fill();
+    /* two broken limbs, stubby and crooked */
+    c.fillStyle = '#9d988c';
+    c.beginPath();
+    c.moveTo(x - r * 0.14, y - h * 0.72);
+    c.lineTo(x - r * 0.40, y - h * 0.82);
+    c.lineTo(x - r * 0.38, y - h * 0.76);
+    c.lineTo(x - r * 0.14, y - h * 0.64);
+    c.closePath(); c.fill();
+    c.beginPath();
+    c.moveTo(x + r * 0.13, y - h * 0.52);
+    c.lineTo(x + r * 0.34, y - h * 0.48);
+    c.lineTo(x + r * 0.33, y - h * 0.43);
+    c.lineTo(x + r * 0.13, y - h * 0.44);
+    c.closePath(); c.fill();
+    c.fillStyle = '#7d786e';
+    c.beginPath();
+    c.moveTo(x + r * 0.13, y - h * 0.30);
+    c.lineTo(x + r * 0.24, y - h * 0.32);
+    c.lineTo(x + r * 0.13, y - h * 0.25);
+    c.closePath(); c.fill();
+    /* the granary holes, in loose rows, most of them with an acorn in */
+    for (i = 0; i < 7; i++) {
+      for (k = 0; k < 3; k++) {
+        hx = x - r * 0.13 + k * r * 0.10 + (rnd() - 0.5) * r * 0.04;
+        hy = y - h * (0.16 + i * 0.115) + (rnd() - 0.5) * r * 0.05;
+        c.fillStyle = '#1e1a16';
+        ell(c, hx, hy, r * 0.042, r * 0.036);
+        if (rnd() > 0.38) {
+          c.fillStyle = '#a87b3e';
+          ell(c, hx, hy, r * 0.030, r * 0.024);
+        }
+      }
+    }
+    /* and one proper nest hole */
+    c.fillStyle = '#1e1a16';
+    ell(c, x + r * 0.02, y - h * 0.80, r * 0.085, r * 0.095);
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    ell(c, x + r * 0.02, y - h * 0.84, r * 0.075, r * 0.026);
+  };
+
+  /* =====================================================================
+     THE SWAMP - marsh and slough. Tea-coloured water, and most of what
+     lives here is under it or inside the reeds.
+     ===================================================================== */
+
+  /* Cattail: flat straps. That is the field mark, and it is the only way
+     to tell it from the bulrush standing next to it. */
+  P.cattail = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.1 + seed * 8) * 2.2;
+    var rnd = GG.mulberry32(Math.floor(seed * 3121));
+    var i, lean, tipx, tipy, wid;
+    for (i = -2; i <= 2; i++) {
+      lean = i * 0.30 + (rnd() - 0.5) * 0.14;
+      tipx = x + lean * r * 1.05 + sway * (0.45 + Math.abs(i) * 0.22);
+      tipy = y - r * (1.72 - Math.abs(i) * 0.26);
+      wid = r * 0.085;
+      c.fillStyle = (i % 2) ? '#5e7a3e' : '#6d8c46';
+      c.beginPath();
+      c.moveTo(x + i * r * 0.05 - wid, y);
+      c.quadraticCurveTo(x + lean * r * 0.34 - wid * 0.9, y - r * 0.92, tipx, tipy);
+      c.quadraticCurveTo(x + lean * r * 0.34 + wid * 0.9, y - r * 0.92, x + i * r * 0.05 + wid, y);
+      c.closePath(); c.fill();
+      /* the crease down the middle of the strap */
+      if (i % 2 === 0) {
+        c.strokeStyle = 'rgba(146,176,104,0.6)'; c.lineWidth = Math.max(0.6, r * 0.022);
+        c.beginPath();
+        c.moveTo(x + i * r * 0.05, y - r * 0.04);
+        c.quadraticCurveTo(x + lean * r * 0.34, y - r * 0.92, tipx, tipy);
+        c.stroke();
+      }
+    }
+    /* the brown velvet sausage, with the thin bare spike above it */
+    for (i = -1; i <= 1; i += 2) {
+      var hx = x + i * r * 0.14 + sway * 0.8;
+      var hy = y - r * (1.28 + (i > 0 ? 0.20 : 0));
+      c.strokeStyle = '#6f8a44'; c.lineWidth = Math.max(1.1, r * 0.055); c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(x + i * r * 0.05, y);
+      c.quadraticCurveTo(x + i * r * 0.10 + sway * 0.4, y - r * 0.7, hx, hy + r * 0.28);
+      c.stroke();
+      c.strokeStyle = '#8a7048'; c.lineWidth = Math.max(0.8, r * 0.032);
+      c.beginPath();
+      c.moveTo(hx, hy - r * 0.26);
+      c.lineTo(hx + sway * 0.14, hy - r * 0.56);
+      c.stroke();
+      c.fillStyle = '#6b4a2a';
+      ell(c, hx, hy, r * 0.105, r * 0.30);
+      c.fillStyle = '#7e5a33';
+      ell(c, hx - r * 0.035, hy - r * 0.04, r * 0.050, r * 0.22);
+      c.fillStyle = '#523821';
+      ell(c, hx + r * 0.058, hy + r * 0.02, r * 0.036, r * 0.22);
+      /* one of them has burst and gone to grey fluff */
+      if (i > 0 && ((seed * 11) % 1) > 0.45) {
+        c.fillStyle = 'rgba(214,208,192,0.9)';
+        ell(c, hx - r * 0.05, hy - r * 0.22, r * 0.11, r * 0.09);
+        ell(c, hx + r * 0.07, hy - r * 0.12, r * 0.08, r * 0.07);
+        c.fillStyle = 'rgba(238,234,222,0.8)';
+        ell(c, hx - r * 0.02, hy - r * 0.28, r * 0.07, r * 0.055);
+      }
+    }
+  };
+
+  /* Hardstem bulrush - tule. Round pencils stood on end, no leaves at all,
+     and a small brown tassel just under the tip. */
+  P.bulrush = function (c, x, y, r, t, seed) {
+    var sway = Math.sin(t * 1.0 + seed * 7) * 1.8;
+    var rnd = GG.mulberry32(Math.floor(seed * 5417));
+    var i, k, lean, tx, ty, mx, my;
+    for (i = -3; i <= 3; i++) {
+      lean = i * 0.15 + (rnd() - 0.5) * 0.10;
+      tx = x + lean * r * 0.95 + sway * 0.7;
+      ty = y - r * (1.98 - Math.abs(i) * 0.20 - rnd() * 0.16);
+      mx = x + lean * r * 0.38 + sway * 0.3;
+      my = y - r * 1.00;
+      c.strokeStyle = (i % 2) ? '#2f6b3e' : '#37764a';
+      c.lineWidth = Math.max(1.3, r * 0.070); c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(x + i * r * 0.115, y);
+      c.quadraticCurveTo(mx, my, tx, ty);
+      c.stroke();
+      /* the highlight stripe that makes it a pencil and not a ribbon */
+      c.strokeStyle = 'rgba(152,204,122,0.55)'; c.lineWidth = Math.max(0.6, r * 0.020);
+      c.beginPath();
+      c.moveTo(x + i * r * 0.115 - r * 0.018, y - r * 0.06);
+      c.quadraticCurveTo(mx - r * 0.018, my, tx - r * 0.016, ty + r * 0.06);
+      c.stroke();
+      /* the tassel, hanging off a little below the tip */
+      if (Math.abs(i) < 3 && rnd() > 0.25) {
+        c.strokeStyle = '#7a5a2e'; c.lineWidth = Math.max(0.6, r * 0.020);
+        c.fillStyle = '#7a5a2e';
+        for (k = 0; k < 4; k++) {
+          var dx = (k - 1.5) * r * 0.045;
+          c.beginPath();
+          c.moveTo(tx, ty + r * 0.14);
+          c.lineTo(tx + dx, ty + r * 0.30);
+          c.stroke();
+          ell(c, tx + dx, ty + r * 0.31, r * 0.028, r * 0.045, dx * 3);
+        }
+        c.fillStyle = '#8e6b39';
+        ell(c, tx - r * 0.03, ty + r * 0.30, r * 0.024, r * 0.036);
+      }
+    }
+  };
+
+  /* A muskrat lodge: a shaggy haystack of cut cattail and mud shoved up out
+     of the water. The doors are underneath, where you cannot see them. */
+  P.muskratLodge = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 8237));
+    var i, a, u, bx, byy, len, ang;
+    /* the wet ring where it comes out of the water */
+    c.fillStyle = 'rgba(40,72,56,0.26)';
+    ell(c, x, y, r * 1.22, r * 0.38);
+    /* the mud core */
+    c.fillStyle = '#54452f';
+    c.beginPath(); c.ellipse(x, y - r * 0.04, r * 1.0, r * 0.76, 0, Math.PI, 0); c.fill();
+    c.fillRect(x - r, y - r * 0.12, r * 2, r * 0.12);
+    c.fillStyle = '#6a5940';
+    c.beginPath(); c.ellipse(x - r * 0.08, y - r * 0.10, r * 0.82, r * 0.62, 0, Math.PI, 0); c.fill();
+    /* cut cattail piled on every which way, some of it hanging over */
+    c.lineCap = 'round';
+    for (i = 0; i < 34; i++) {
+      a = rnd() * Math.PI * 2;
+      u = Math.sqrt(rnd());
+      bx = x + Math.cos(a) * r * 0.92 * u;
+      byy = y - r * 0.06 - Math.abs(Math.sin(a)) * r * 0.62 * u;
+      len = r * (0.32 + rnd() * 0.46);
+      ang = (rnd() - 0.5) * 1.5;
+      c.strokeStyle = ['#9a8a5c', '#b3a373', '#7e7048', '#c3b689', '#8d7d51'][i % 5];
+      c.lineWidth = Math.max(1, r * 0.05);
+      c.beginPath();
+      c.moveTo(bx - Math.cos(ang) * len * 0.5, byy - Math.sin(ang) * len * 0.4);
+      c.lineTo(bx + Math.cos(ang) * len * 0.5, byy + Math.sin(ang) * len * 0.4);
+      c.stroke();
+    }
+    /* a few long stems poking out past the edge, so it is not a smooth dome */
+    c.strokeStyle = '#b3a373'; c.lineWidth = Math.max(0.9, r * 0.042);
+    for (i = 0; i < 6; i++) {
+      a = Math.PI + rnd() * Math.PI;
+      bx = x + Math.cos(a) * r * 0.86;
+      byy = y - r * 0.06 + Math.sin(a) * r * 0.62;
+      c.beginPath();
+      c.moveTo(bx, byy);
+      c.lineTo(bx + Math.cos(a) * r * (0.22 + rnd() * 0.22),
+               byy + Math.sin(a) * r * (0.18 + rnd() * 0.16));
+      c.stroke();
+    }
+    /* mud smeared over the top, which is what actually holds it together */
+    c.fillStyle = 'rgba(92,76,52,0.55)';
+    ell(c, x + r * 0.10, y - r * 0.50, r * 0.42, r * 0.18, -0.12);
+    ell(c, x - r * 0.42, y - r * 0.30, r * 0.26, r * 0.12, 0.2);
+    c.fillStyle = 'rgba(30,50,36,0.30)';
+    ell(c, x, y - r * 0.02, r * 0.94, r * 0.16);
+  };
+
+  /* A barkless log lying at a low angle out of the slough. The top is dry
+     and pale, there is a dark wet line where the water has been, and the
+     far end just disappears into the tea. */
+  P.sunkLog = function (c, x, y, r, t, seed) {
+    var flip = (((seed * 7) % 1) > 0.5) ? -1 : 1;
+    var tilt = (-0.17 - ((seed * 13) % 1) * 0.14) * flip;
+    var i;
+    c.fillStyle = 'rgba(35,62,46,0.22)';
+    ell(c, x, y, r * 1.20, r * 0.32);
+    c.save(); c.translate(x, y - r * 0.20); c.rotate(tilt);
+    c.fillStyle = '#9b8e77';                        // barkless weathered wood
+    GG.roundRect(c, -r * 1.15, -r * 0.24, r * 2.30, r * 0.46, r * 0.11); c.fill();
+    c.fillStyle = '#bcaf94';                        // the dry sun-bleached top
+    GG.roundRect(c, -r * 1.10, -r * 0.24, r * 2.20, r * 0.17, r * 0.06); c.fill();
+    c.fillStyle = '#463f2f';                        // the dark waterline band
+    GG.roundRect(c, -r * 1.13, r * 0.03, r * 2.26, r * 0.19, r * 0.06); c.fill();
+    c.fillStyle = 'rgba(95,122,78,0.8)';            // algae right on the line
+    GG.roundRect(c, -r * 0.88, r * 0.01, r * 1.5, r * 0.07, r * 0.03); c.fill();
+    /* the sawn end, and the grain running the length of it */
+    c.fillStyle = '#c9b48c';
+    ell(c, -r * 1.12, -r * 0.02, r * 0.13, r * 0.23);
+    c.strokeStyle = '#9a8460'; c.lineWidth = Math.max(0.6, r * 0.028);
+    c.beginPath(); c.ellipse(-r * 1.12, -r * 0.02, r * 0.07, r * 0.13, 0, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.moveTo(-r * 1.20, -r * 0.02); c.lineTo(-r * 1.02, -r * 0.02); c.stroke();
+    c.strokeStyle = 'rgba(108,94,70,0.55)'; c.lineWidth = Math.max(0.6, r * 0.024);
+    for (i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(-r * 0.92, i * r * 0.050 - r * 0.08);
+      c.quadraticCurveTo(0, i * r * 0.070 - r * 0.06, r * 0.94, i * r * 0.046 - r * 0.09);
+      c.stroke();
+    }
+    c.fillStyle = 'rgba(70,58,40,0.45)';            // a knot, and a long split
+    ell(c, r * 0.38, -r * 0.10, r * 0.07, r * 0.045);
+    c.strokeStyle = 'rgba(58,48,32,0.5)'; c.lineWidth = Math.max(0.7, r * 0.030);
+    c.beginPath();
+    c.moveTo(-r * 0.30, -r * 0.20); c.lineTo(r * 0.62, -r * 0.16);
+    c.stroke();
+    c.restore();
+    /* and the end that is under the water */
+    c.fillStyle = 'rgba(69,92,74,0.62)';
+    ell(c, x + flip * r * 0.88, y + r * 0.02, r * 0.50, r * 0.26, 0);
+    c.strokeStyle = 'rgba(190,205,180,0.30)'; c.lineWidth = Math.max(0.7, r * 0.03);
+    for (i = 0; i < 2; i++) {
+      c.beginPath();
+      c.ellipse(x + flip * r * 0.72, y + r * 0.04, r * (0.42 + i * 0.24), r * (0.16 + i * 0.09),
+                0, 0, Math.PI * 2);
+      c.stroke();
+    }
+  };
+
+  /* Duckweed. Each disc is one whole plant, about the size of this full
+     stop, and a million of them make the bright green skin on still water.
+     Ground layer: it lies flat and things walk over it. */
+  P.duckweed = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 9311));
+    var i, a, rr, px, py, u;
+    var drift = Math.sin(t * 0.35 + seed * 5) * r * 0.05;
+    c.fillStyle = 'rgba(148,176,82,0.92)';
+    c.beginPath();
+    for (i = 0; i < 14; i++) {
+      a = i / 14 * Math.PI * 2;
+      rr = r * (0.80 + ((i * 7 + seed * 19) % 10) / 44);
+      px = x + drift + Math.cos(a) * rr;
+      py = y + Math.sin(a) * rr * 0.46;
+      if (!i) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath(); c.fill();
+    /* the individual fronds, thickest in the middle, crumbling at the edge */
+    for (i = 0; i < 46; i++) {
+      a = rnd() * Math.PI * 2;
+      u = 0.35 + rnd() * 0.85;
+      px = x + drift + Math.cos(a) * r * u;
+      py = y + Math.sin(a) * r * 0.48 * u;
+      c.fillStyle = rnd() > 0.45 ? '#a8c46e' : '#c2d886';
+      ell(c, px, py, r * 0.055, r * 0.044);
+    }
+    /* holes where the black water shows through the mat */
+    c.fillStyle = 'rgba(52,72,58,0.55)';
+    ell(c, x + drift + r * 0.28, y - r * 0.09, r * 0.15, r * 0.065, 0.2);
+    ell(c, x + drift - r * 0.40, y + r * 0.12, r * 0.10, r * 0.045, -0.3);
+  };
+
+  /* The refuge boardwalk, and the blind at the end of it: weathered planks
+     on posts over the water, and a wooden screen with a slot to look
+     through so the birds never find out you are there. */
+  P.boardwalk = function (c, x, y, r, t, seed) {
+    var hw = r * 1.5, i, px;
+    var dy = y - r * 0.44, dh = r * 0.30;
+    c.fillStyle = 'rgba(35,62,46,0.24)';
+    ell(c, x, y, hw * 0.96, r * 0.20);
+    /* the posts standing in the water */
+    c.fillStyle = '#5f5b51';
+    c.fillRect(x - hw * 0.84, y - r * 0.50, r * 0.15, r * 0.50);
+    c.fillRect(x + hw * 0.70, y - r * 0.50, r * 0.15, r * 0.50);
+    c.fillStyle = 'rgba(120,150,110,0.45)';
+    c.fillRect(x - hw * 0.84, y - r * 0.12, r * 0.15, r * 0.09);
+    c.fillRect(x + hw * 0.70, y - r * 0.12, r * 0.15, r * 0.09);
+    /* the deck */
+    c.fillStyle = '#9a958a';
+    c.fillRect(x - hw, dy - dh, hw * 2, dh);
+    c.fillStyle = '#7c766b';
+    c.fillRect(x - hw, dy - dh * 0.26, hw * 2, dh * 0.26);
+    c.strokeStyle = 'rgba(78,74,66,0.45)'; c.lineWidth = 1;
+    for (i = -6; i <= 6; i++) {
+      px = x + i * hw / 6.5;
+      c.beginPath(); c.moveTo(px, dy - dh); c.lineTo(px, dy); c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.18)';
+    c.fillRect(x - hw, dy - dh, hw * 2, dh * 0.16);
+    /* the handrail */
+    c.fillStyle = '#8d877c';
+    c.fillRect(x - hw * 0.94, dy - dh - r * 0.58, r * 0.10, r * 0.58);
+    c.fillRect(x - hw * 0.10, dy - dh - r * 0.58, r * 0.10, r * 0.58);
+    c.fillRect(x - hw, dy - dh - r * 0.60, hw * 1.20, r * 0.10);
+    /* the blind: a screen you stand behind, with a slot at eye height */
+    c.fillStyle = '#847e72';
+    c.fillRect(x + hw * 0.18, dy - dh - r * 0.86, hw * 0.86, r * 0.86);
+    c.fillStyle = '#726c61';
+    c.fillRect(x + hw * 0.18, dy - dh - r * 0.86, hw * 0.86, r * 0.10);
+    c.strokeStyle = 'rgba(70,66,58,0.45)'; c.lineWidth = 1;
+    for (i = 1; i < 4; i++) {
+      c.beginPath();
+      c.moveTo(x + hw * 0.18, dy - dh - r * 0.86 + i * r * 0.215);
+      c.lineTo(x + hw * 1.04, dy - dh - r * 0.86 + i * r * 0.215);
+      c.stroke();
+    }
+    c.fillStyle = '#24211b';
+    c.fillRect(x + hw * 0.28, dy - dh - r * 0.62, hw * 0.66, r * 0.15);
+  };
+
+  /* =====================================================================
+     THE CHANNELED SCABLANDS - a badland a flood made in a fortnight.
+     Flat tops, straight sides, hard shadows, almost no curves.
+     ===================================================================== */
+
+  /* Rimrock: a flat plateau cap, a band of standing basalt columns under
+     it, and a skirt of the columns that have already fallen off. */
+  P.basaltColumn = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 7817));
+    var i, cw, ch, cx, k;
+    var hw = r * 1.55;
+    var top = y - r * 1.50;                      // the underside of the cap
+    shadow(c, x + 2, y, r * 1.2);
+    /* the talus skirt of fallen columns at the foot */
+    for (i = 0; i < 7; i++) {
+      var bw = r * (0.16 + rnd() * 0.14), bh = r * (0.10 + rnd() * 0.10);
+      var bx = x + (rnd() - 0.5) * hw * 1.9, byy = y - rnd() * r * 0.22;
+      c.save(); c.translate(bx, byy); c.rotate((rnd() - 0.5) * 1.1);
+      c.fillStyle = '#35322d';
+      c.fillRect(-bw, -bh, bw * 2, bh * 2);
+      c.fillStyle = '#4e4a44';
+      c.fillRect(-bw, -bh, bw * 2, bh * 0.9);
+      c.restore();
+    }
+    /* the columns */
+    var n = 7;
+    for (i = 0; i < n; i++) {
+      cw = hw * 2 / n * 0.5;
+      cx = x - hw + (i + 0.5) * (hw * 2 / n);
+      var ctop = top + rnd() * r * 0.16;         // no two columns end level
+      ch = (y - r * 0.26) - ctop;
+      c.fillStyle = '#26241f';                   // the shadowed gap behind
+      c.fillRect(cx - cw * 1.05, ctop, cw * 2.10, ch);
+      c.fillStyle = '#4e4a44';
+      c.fillRect(cx - cw * 0.92, ctop, cw * 1.84, ch);
+      c.fillStyle = '#5d5952';                   // the lit left facet
+      c.fillRect(cx - cw * 0.92, ctop, cw * 0.62, ch);
+      c.fillStyle = '#332f2a';                   // the dark right facet
+      c.fillRect(cx + cw * 0.46, ctop, cw * 0.46, ch);
+      /* one cross-joint per column, at its own height - a colonnade,
+         not a brick wall */
+      c.strokeStyle = 'rgba(20,18,15,0.40)'; c.lineWidth = 1;
+      var yy = ctop + ch * (0.22 + rnd() * 0.56);
+      c.beginPath();
+      c.moveTo(cx - cw * 0.92, yy); c.lineTo(cx + cw * 0.92, yy + r * 0.025);
+      c.stroke();
+      /* lichen: mustard, rust, pale grey-green */
+      if (rnd() > 0.34) {
+        c.fillStyle = ['rgba(154,140,66,0.75)', 'rgba(138,74,46,0.7)',
+                       'rgba(168,176,160,0.62)'][(rnd() * 3) | 0];
+        ell(c, cx + (rnd() - 0.5) * cw * 1.2, ctop + ch * (0.15 + rnd() * 0.7),
+            cw * 0.42, r * 0.055, (rnd() - 0.5) * 0.6);
+      }
+    }
+    /* the cap: one hard flat slab across the top of the lot */
+    c.fillStyle = '#3b3833';
+    c.fillRect(x - hw * 1.08, top - r * 0.24, hw * 2.16, r * 0.24);
+    c.fillStyle = '#57534b';
+    c.fillRect(x - hw * 1.08, top - r * 0.24, hw * 2.16, r * 0.09);
+    c.fillStyle = '#6d6659';
+    c.beginPath();
+    c.moveTo(x - hw * 1.08, top - r * 0.24);
+    c.lineTo(x - hw * 0.94, top - r * 0.36);
+    c.lineTo(x + hw * 1.08, top - r * 0.34);
+    c.lineTo(x + hw * 1.08, top - r * 0.24);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(154,140,66,0.6)';
+    ell(c, x - hw * 0.5, top - r * 0.32, hw * 0.24, r * 0.035);
+    ell(c, x + hw * 0.62, top - r * 0.31, hw * 0.16, r * 0.030);
+  };
+
+  /* A pothole. A kolk - a whirlpool standing on its head in the flood -
+     drilled this into solid rock like a hand drill. Some of them still
+     hold water in July, and then they go green round the rim.
+     Ground layer. */
+  P.scabPothole = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 7411));
+    var i, a, rr, px, py;
+    /* the swept rock apron */
+    c.fillStyle = 'rgba(74,71,65,0.9)';
+    c.beginPath();
+    for (i = 0; i < 9; i++) {
+      a = i / 9 * Math.PI * 2;
+      rr = r * (0.88 + ((i * 11 + seed * 23) % 10) / 30);
+      px = x + Math.cos(a) * rr; py = y + Math.sin(a) * rr * 0.50;
+      if (!i) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(38,36,31,0.5)';
+    ell(c, x - r * 0.48, y + r * 0.20, r * 0.30, r * 0.09, -0.2);
+    /* the one green thing in the scabland, right on the rim */
+    c.fillStyle = 'rgba(110,122,82,0.92)';
+    ell(c, x, y, r * 0.70, r * 0.36);
+    c.fillStyle = 'rgba(132,146,96,0.85)';
+    ell(c, x - r * 0.10, y - r * 0.05, r * 0.58, r * 0.28);
+    /* the bowl. The lit crescent on the far wall is what makes it a hole
+       and not a coin lying on the ground. */
+    c.fillStyle = '#4b473f';
+    ell(c, x, y, r * 0.56, r * 0.28);
+    c.fillStyle = '#6e685c';
+    c.beginPath();
+    c.ellipse(x, y, r * 0.56, r * 0.28, 0, Math.PI, 0);
+    c.closePath(); c.fill();
+    c.fillStyle = '#211f1a';
+    ell(c, x, y + r * 0.035, r * 0.48, r * 0.235);
+    c.fillStyle = '#3a4c44';                 // the water still in the bottom
+    ell(c, x, y + r * 0.055, r * 0.38, r * 0.17);
+    c.fillStyle = 'rgba(158,186,172,0.32)';
+    ell(c, x - r * 0.12, y + r * 0.01, r * 0.17, r * 0.05, -0.15);
+    /* sedge round the edge */
+    c.strokeStyle = 'rgba(122,138,84,0.95)'; c.lineWidth = Math.max(0.8, r * 0.035);
+    c.lineCap = 'round';
+    for (i = 0; i < 9; i++) {
+      a = rnd() * Math.PI * 2;
+      px = x + Math.cos(a) * r * 0.66; py = y + Math.sin(a) * r * 0.33;
+      c.beginPath();
+      c.moveTo(px, py);
+      c.lineTo(px + (rnd() - 0.5) * r * 0.14, py - r * (0.14 + rnd() * 0.12));
+      c.stroke();
+    }
+  };
+
+  /* Giant current ripples. These are ripple marks, the same shape as the
+     ones in the sand at the edge of a puddle - except each one of these is
+     taller than a house, and the water that made them was a flood.
+     Ground layer. */
+  P.currentRipple = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 5813));
+    var n = 5, i, k, yy, sag, hw, th, gap, u, gx, gy;
+    /* each swell is a lens that comes to nothing at both ends, so a field
+       of them reads as ground and not as a stack of planks */
+    function band(yc, thk, sg, wid, fill) {
+      c.fillStyle = fill;
+      c.beginPath();
+      c.moveTo(x - wid, yc);
+      c.quadraticCurveTo(x, yc + sg * 2, x + wid, yc);
+      c.quadraticCurveTo(x, yc + (sg + thk) * 2, x - wid, yc);
+      c.closePath(); c.fill();
+    }
+    yy = y;
+    for (i = 0; i < n; i++) {
+      /* the far ones are smaller, closer together and paler, because they
+         are further away - otherwise a row of stripes reads as an awning */
+      u = i / (n - 1);
+      hw = r * (2.0 - u * 0.55);
+      th = r * (0.17 - u * 0.075);
+      sag = r * (0.20 - u * 0.07) + ((i * 7 + seed * 13) % 4) / 60 * r;
+      gap = r * (0.40 - u * 0.15);
+      /* the trough in front of each swell, in shadow */
+      band(yy - th * 0.35, th * 1.45, sag, hw, 'rgba(74,66,52,' + (0.42 - u * 0.10).toFixed(2) + ')');
+      /* the crest */
+      band(yy - th * 1.05, th * 0.80, sag, hw * 0.94, 'rgba(196,178,140,' + (0.90 - u * 0.16).toFixed(2) + ')');
+      band(yy - th * 1.42, th * 0.44, sag, hw * 0.78, 'rgba(228,214,182,' + (0.80 - u * 0.18).toFixed(2) + ')');
+      /* gravel on the crest - these are dunes made out of boulders */
+      for (k = 0; k < 11; k++) {
+        var v = (rnd() - 0.5) * 1.92;
+        gx = x + v * hw;
+        gy = yy - th * (0.6 + rnd() * 0.9) + sag * (1 - v * v * 0.9);
+        c.fillStyle = rnd() > 0.5 ? 'rgba(124,113,94,0.55)' : 'rgba(222,206,172,0.55)';
+        ell(c, gx, gy, r * (0.020 + rnd() * 0.020), r * 0.016);
+      }
+      yy -= gap;
+    }
+  };
+
+  /* Broken basalt pavement - the scab in scabland. The flood peeled the
+     soil off and then started prising up the rock underneath. */
+  P.scabRubble = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 6133));
+    var i, k, bw, bh, bx, byy;
+    shadow(c, x + 1, y, r * 0.95);
+    /* flat slabs lying about, hardly lifted off the ground */
+    for (i = 0; i < 6; i++) {
+      bw = r * (0.30 + rnd() * 0.26); bh = r * (0.12 + rnd() * 0.10);
+      bx = x + (rnd() - 0.5) * r * 1.7; byy = y - rnd() * r * 0.30;
+      c.save(); c.translate(bx, byy); c.rotate((rnd() - 0.5) * 0.6);
+      c.fillStyle = '#211f1a';
+      c.beginPath();
+      c.moveTo(-bw, 0); c.lineTo(-bw * 0.86, bh * 0.55);
+      c.lineTo(bw * 0.9, bh * 0.5); c.lineTo(bw, -bh * 0.1);
+      c.closePath(); c.fill();
+      c.fillStyle = '#4a4741';
+      c.beginPath();
+      c.moveTo(-bw, 0); c.lineTo(-bw * 0.62, -bh);
+      c.lineTo(bw * 0.7, -bh * 0.88); c.lineTo(bw, -bh * 0.1);
+      c.closePath(); c.fill();
+      c.fillStyle = '#5d5951';
+      c.beginPath();
+      c.moveTo(-bw * 0.72, -bh * 0.3); c.lineTo(-bw * 0.5, -bh * 0.9);
+      c.lineTo(bw * 0.4, -bh * 0.8); c.lineTo(bw * 0.5, -bh * 0.3);
+      c.closePath(); c.fill();
+      c.restore();
+      if (rnd() > 0.45) {
+        c.fillStyle = ['rgba(154,140,66,0.7)', 'rgba(138,74,46,0.65)',
+                       'rgba(168,176,160,0.6)'][(rnd() * 3) | 0];
+        ell(c, bx + (rnd() - 0.5) * bw, byy - bh * 0.6, bw * 0.34, bh * 0.28,
+            (rnd() - 0.5) * 0.8);
+      }
+    }
+    /* one slab levered up on its edge, which is a thing a flood does */
+    var lx = x + (((seed * 17) % 1) - 0.5) * r * 0.9;
+    c.fillStyle = 'rgba(20,18,15,0.35)';
+    ell(c, lx + r * 0.12, y - r * 0.04, r * 0.34, r * 0.10);
+    c.fillStyle = '#3a3731';
+    c.beginPath();
+    c.moveTo(lx - r * 0.30, y - r * 0.02);
+    c.lineTo(lx - r * 0.18, y - r * 0.58);
+    c.lineTo(lx + r * 0.10, y - r * 0.62);
+    c.lineTo(lx + r * 0.16, y - r * 0.04);
+    c.closePath(); c.fill();
+    c.fillStyle = '#56524a';
+    c.beginPath();
+    c.moveTo(lx - r * 0.26, y - r * 0.06);
+    c.lineTo(lx - r * 0.16, y - r * 0.54);
+    c.lineTo(lx - r * 0.01, y - r * 0.56);
+    c.lineTo(lx - r * 0.04, y - r * 0.06);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(154,140,66,0.6)';
+    ell(c, lx - r * 0.10, y - r * 0.40, r * 0.07, r * 0.10, 0.1);
+  };
+
+  /* =====================================================================
+     THE BAMBOO GROVE - a planted thing, and the only place in the world
+     that is a forest of dead straight lines.
+     ===================================================================== */
+
+  /* A bamboo culm: straight, hollow, ringed, and branching only in the top
+     half. It came up out of the ground this thick and it will never get
+     any thicker - a bamboo shoot is not a sapling. */
+  P.bamboo = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 4001));
+    var culms = [[-0.36, 0.78, 0.84], [0.32, 0.88, 0.90], [0, 1.0, 1.0]];
+    var ci, i, k, h, w, cxb, lean, nodes, ny, nx, half, bw;
+    shadow(c, x + 2, y, r * 0.40);
+    for (ci = 0; ci < culms.length; ci++) {
+      cxb = x + culms[ci][0] * r;
+      h = r * 3.1 * culms[ci][1];
+      w = r * 0.075 * culms[ci][2];
+      lean = Math.sin(t * 0.85 + seed * 6 + ci * 2.1) * r * 0.045 + (culms[ci][0] * r * 0.10);
+      /* the culm */
+      c.fillStyle = '#7e8c4a';
+      c.beginPath();
+      c.moveTo(cxb - w, y);
+      c.lineTo(cxb - w * 0.74 + lean, y - h);
+      c.lineTo(cxb + w * 0.74 + lean, y - h);
+      c.lineTo(cxb + w, y);
+      c.closePath(); c.fill();
+      c.fillStyle = '#98a862';                     // the lit side
+      c.beginPath();
+      c.moveTo(cxb - w, y);
+      c.lineTo(cxb - w * 0.74 + lean, y - h);
+      c.lineTo(cxb - w * 0.18 + lean, y - h);
+      c.lineTo(cxb - w * 0.30, y);
+      c.closePath(); c.fill();
+      c.fillStyle = '#5e6c33';                     // the shaded side
+      c.beginPath();
+      c.moveTo(cxb + w * 0.42, y);
+      c.lineTo(cxb + w * 0.34 + lean, y - h);
+      c.lineTo(cxb + w * 0.74 + lean, y - h);
+      c.lineTo(cxb + w, y);
+      c.closePath(); c.fill();
+      /* the nodes: a pale ring every so often, with a dark line under it */
+      nodes = 7;
+      for (i = 1; i <= nodes; i++) {
+        var u = i / (nodes + 0.4);
+        ny = y - h * u;
+        nx = cxb + lean * u;
+        half = w * (1 - u * 0.26);
+        c.fillStyle = '#c0c884';
+        c.fillRect(nx - half * 1.10, ny - h * 0.012, half * 2.20, h * 0.019);
+        c.fillStyle = 'rgba(58,68,30,0.75)';
+        c.fillRect(nx - half * 1.06, ny + h * 0.007, half * 2.12, h * 0.008);
+        /* branches, only in the upper half, in small forked pairs */
+        if (u > 0.54) {
+          for (k = -1; k <= 1; k += 2) {
+            bw = r * (0.30 + rnd() * 0.24);
+            c.strokeStyle = '#71803f'; c.lineWidth = Math.max(0.8, r * 0.028);
+            c.lineCap = 'round';
+            c.beginPath();
+            c.moveTo(nx + k * half, ny);
+            c.quadraticCurveTo(nx + k * bw * 0.6, ny - r * 0.06,
+                               nx + k * bw, ny - r * 0.16);
+            c.stroke();
+            /* the fan of narrow lance blades */
+            for (var j = 0; j < 4; j++) {
+              var a = -0.55 + j * 0.34;
+              var lx = nx + k * bw, ly = ny - r * 0.16;
+              c.fillStyle = (j % 2) ? '#6f8c3c' : '#88a44e';
+              ell(c, lx + k * Math.cos(a) * r * 0.20, ly + Math.sin(a) * r * 0.16,
+                  r * 0.20, r * 0.042, k > 0 ? a : Math.PI - a);
+            }
+          }
+        }
+      }
+      /* the leafy tuft at the very top */
+      c.fillStyle = '#6f8c3c';
+      for (k = 0; k < 5; k++) {
+        var aa = -1.5 + k * 0.62;
+        ell(c, cxb + lean + Math.cos(aa) * r * 0.22, y - h + Math.sin(aa) * r * 0.16 - r * 0.04,
+            r * 0.21, r * 0.045, aa * 0.6);
+      }
+      c.fillStyle = '#88a44e';
+      ell(c, cxb + lean - r * 0.14, y - h - r * 0.10, r * 0.18, r * 0.04, -0.5);
+    }
+  };
+
+  /* A new shoot. As thick as your arm and only knee-high, wrapped in furry
+     brown sheaths - and it will be thirty feet tall by autumn, without ever
+     getting any fatter than it is right now. */
+  P.bambooShoot = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 2711));
+    var i, k, u, yb, halfw, tipx;
+    var h = r * 1.10, w = r * 0.50;
+    shadow(c, x, y, r * 0.58);
+    function widthAt(v) { return w * (1 - v * v * 0.80); }
+    /* the blunt cone */
+    c.fillStyle = '#8a6b42';
+    c.beginPath();
+    c.moveTo(x - w, y);
+    for (i = 0; i <= 10; i++) { u = i / 10; c.lineTo(x - widthAt(u), y - h * u); }
+    c.quadraticCurveTo(x, y - h * 1.07, x + widthAt(1), y - h);
+    for (i = 10; i >= 0; i--) { u = i / 10; c.lineTo(x + widthAt(u), y - h * u); }
+    c.closePath(); c.fill();
+    /* the overlapping sheaths, each one pointed at the top */
+    for (k = 0; k < 5; k++) {
+      u = 0.05 + k * 0.185;
+      yb = y - h * u;
+      halfw = widthAt(u);
+      tipx = x + (k % 2 ? 0.22 : -0.22) * halfw;
+      c.fillStyle = (k % 2) ? '#a08051' : '#7d5f39';
+      c.beginPath();
+      c.moveTo(x - halfw, yb);
+      c.quadraticCurveTo(x - halfw * 0.7, yb - h * 0.20, tipx, yb - h * 0.26);
+      c.quadraticCurveTo(x + halfw * 0.7, yb - h * 0.20, x + halfw, yb);
+      c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(56,40,22,0.75)'; c.lineWidth = Math.max(0.8, r * 0.030);
+      c.beginPath();
+      c.moveTo(x - halfw, yb);
+      c.quadraticCurveTo(x - halfw * 0.7, yb - h * 0.20, tipx, yb - h * 0.26);
+      c.quadraticCurveTo(x + halfw * 0.7, yb - h * 0.20, x + halfw, yb);
+      c.stroke();
+    }
+    /* the lit left face, over the lot */
+    c.fillStyle = 'rgba(214,180,128,0.30)';
+    c.beginPath();
+    c.moveTo(x - w, y);
+    for (i = 0; i <= 10; i++) { u = i / 10; c.lineTo(x - widthAt(u), y - h * u); }
+    c.lineTo(x - widthAt(1) * 0.1, y - h);
+    for (i = 10; i >= 0; i--) { u = i / 10; c.lineTo(x - widthAt(u) * 0.34, y - h * u); }
+    c.closePath(); c.fill();
+    /* dark speckles all over the sheaths */
+    c.fillStyle = 'rgba(60,44,24,0.75)';
+    for (i = 0; i < 16; i++) {
+      u = rnd();
+      ell(c, x + (rnd() - 0.5) * widthAt(u) * 1.7, y - h * u, r * 0.026, r * 0.020);
+    }
+    /* the first two blades, just splitting out of the top */
+    c.fillStyle = '#5c7a34';
+    ell(c, x - r * 0.09, y - h * 1.10, r * 0.15, r * 0.045, -1.0);
+    ell(c, x + r * 0.10, y - h * 1.13, r * 0.14, r * 0.042, 1.1);
+    c.fillStyle = '#6f8c3c';
+    ell(c, x + r * 0.02, y - h * 1.16, r * 0.11, r * 0.035, -0.2);
+    c.strokeStyle = 'rgba(206,182,140,0.7)'; c.lineWidth = Math.max(0.6, r * 0.018);
+    c.lineCap = 'round';
+    for (i = -1; i <= 1; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.08, y - h * 0.96);
+      c.lineTo(x + i * r * 0.15, y - h * 1.06);
+      c.stroke();
+    }
+    /* the litter it shoved aside on the way up */
+    c.fillStyle = 'rgba(150,134,94,0.55)';
+    ell(c, x, y - r * 0.02, r * 0.66, r * 0.14);
+  };
+
+  /* =====================================================================
+     THE CHERRY GROVE - the prettiest place in the garden, and the one that
+     is only like this for a week.
+     ===================================================================== */
+
+  /* A cherry tree. In blossom it is solid flower with no leaves at all,
+     which is the trick that makes it look unreal. Out of blossom it is the
+     pruned orchard tree, an open vase of limbs with the fruit hanging on
+     long stalks. Pass p.bloom (or col) to choose. */
+  P.cherryTree = function (c, x, y, r, t, seed, col, p) {
+    var bloom = true;
+    if (p && p.bloom != null) bloom = !!p.bloom;
+    else if (col === false || col === 'fruit') bloom = false;
+    else if (col === true || col === 'bloom') bloom = true;
+    var sway = Math.sin(t * 0.7 + seed * 6) * 2.0;
+    var rnd = GG.mulberry32(Math.floor(seed * 9209));
+    var i, k, a, lx, ly;
+    shadow(c, x + 3, y, r * 0.95);
+
+    /* the trunk, the same in both: glossy red-brown, with the pale
+       horizontal dashes that tell you it is a cherry and nothing else */
+    var th = bloom ? r * 0.50 : r * 0.44;
+    c.fillStyle = '#5a3a2c';
+    c.beginPath();
+    c.moveTo(x - r * 0.19, y);
+    c.lineTo(x - r * 0.13, y - th);
+    c.lineTo(x + r * 0.13, y - th);
+    c.lineTo(x + r * 0.19, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#6b4030';
+    c.fillRect(x - r * 0.11, y - th, r * 0.16, th);
+    c.strokeStyle = 'rgba(196,168,142,0.85)'; c.lineWidth = Math.max(0.7, r * 0.022);
+    for (i = 0; i < 3; i++) {
+      var dy2 = y - th * (0.22 + i * 0.29);
+      var ox2 = (i % 2) ? r * 0.02 : -r * 0.06;
+      c.beginPath();
+      c.moveTo(x + ox2 - r * 0.07, dy2);
+      c.lineTo(x + ox2 + r * 0.05, dy2 - r * 0.005);
+      c.stroke();
+    }
+
+    if (bloom) {
+      /* branches spreading out almost horizontally, near black */
+      c.strokeStyle = '#3a2e28'; c.lineCap = 'round'; c.lineJoin = 'round';
+      for (i = -2; i <= 2; i++) {
+        c.lineWidth = Math.max(1.4, r * (0.10 - Math.abs(i) * 0.015));
+        c.beginPath();
+        c.moveTo(x + i * r * 0.03, y - th * 0.9);
+        c.quadraticCurveTo(x + i * r * 0.34, y - r * 0.80,
+                           x + i * r * 0.56 + sway * 0.4, y - r * (1.02 + (2 - Math.abs(i)) * 0.14));
+        c.stroke();
+      }
+      /* the blossom: broad, rounded, wider than tall */
+      var cx = x + sway, cy = y - r * 1.10, hw = r * 1.32;
+      c.fillStyle = '#d9a9bc';
+      ell(c, cx - hw * 0.62, cy + r * 0.24, hw * 0.52, r * 0.34);
+      ell(c, cx + hw * 0.62, cy + r * 0.24, hw * 0.52, r * 0.34);
+      ell(c, cx, cy + r * 0.30, hw * 0.60, r * 0.32);
+      c.fillStyle = '#e3bccb';
+      ell(c, cx - hw * 0.56, cy + r * 0.06, hw * 0.50, r * 0.34);
+      ell(c, cx + hw * 0.58, cy + r * 0.04, hw * 0.48, r * 0.32);
+      ell(c, cx - hw * 0.08, cy + r * 0.12, hw * 0.58, r * 0.36);
+      c.fillStyle = '#f0d5df';
+      ell(c, cx - hw * 0.34, cy - r * 0.16, hw * 0.46, r * 0.32);
+      ell(c, cx + hw * 0.36, cy - r * 0.18, hw * 0.44, r * 0.30);
+      ell(c, cx + hw * 0.02, cy - r * 0.26, hw * 0.48, r * 0.32);
+      c.fillStyle = '#f6e3ea';
+      ell(c, cx - hw * 0.44, cy - r * 0.34, hw * 0.30, r * 0.20);
+      ell(c, cx + hw * 0.10, cy - r * 0.44, hw * 0.34, r * 0.22);
+      ell(c, cx + hw * 0.56, cy - r * 0.30, hw * 0.22, r * 0.15);
+      /* small puffs round the rim, so the edge is flowers and not a balloon */
+      for (i = 0; i < 12; i++) {
+        a = Math.PI + i / 11 * Math.PI * 1.34 - 0.18;
+        lx = cx + Math.cos(a) * hw * 0.92;
+        ly = cy + Math.sin(a) * r * 0.50 + r * 0.06;
+        c.fillStyle = (i % 3) ? '#eed0dc' : '#f6e3ea';
+        ell(c, lx, ly, hw * 0.17, r * 0.15);
+      }
+      c.fillStyle = '#e3bccb';
+      for (i = 0; i < 5; i++) {
+        lx = cx + (i - 2) * hw * 0.44;
+        ell(c, lx, cy + r * 0.40, hw * 0.19, r * 0.13);
+      }
+      /* twigs showing through, because a real bloom is not a cloud of icing */
+      c.strokeStyle = 'rgba(58,46,40,0.42)'; c.lineWidth = Math.max(0.6, r * 0.015);
+      for (i = 0; i < 5; i++) {
+        a = 0.35 + rnd() * (Math.PI - 0.7);
+        lx = cx + Math.cos(a) * hw * 0.78; ly = cy + Math.sin(a) * r * 0.40;
+        c.beginPath();
+        c.moveTo(lx, ly);
+        c.lineTo(lx + (rnd() - 0.5) * r * 0.20, ly + rnd() * r * 0.16);
+        c.stroke();
+      }
+      /* a few single flowers on the outside, five petals and a yellow tuft */
+      for (i = 0; i < 6; i++) {
+        a = rnd() * Math.PI * 2;
+        lx = cx + Math.cos(a) * hw * 0.88;
+        ly = cy + Math.sin(a) * r * 0.46;
+        c.fillStyle = '#fdf2f6';
+        for (k = 0; k < 5; k++) {
+          var pa = k / 5 * Math.PI * 2 + seed;
+          ell(c, lx + Math.cos(pa) * r * 0.055, ly + Math.sin(pa) * r * 0.055,
+              r * 0.048, r * 0.044);
+        }
+        c.fillStyle = '#e8c860';
+        ell(c, lx, ly, r * 0.028, r * 0.026);
+      }
+      /* and the petals coming down, which they do the whole time */
+      for (i = 0; i < 4; i++) {
+        var ph = (t * 11 + i * 37 + seed * 90) % (r * 1.5);
+        var px = cx + Math.sin(t * 1.4 + i * 2.1) * r * 0.30 + (i - 1.5) * r * 0.46;
+        c.fillStyle = 'rgba(246,227,234,0.92)';
+        ell(c, px, cy + r * 0.40 + ph, r * 0.055, r * 0.032, Math.sin(t * 3 + i) * 1.2);
+      }
+    } else {
+      /* the pruned fruiting tree: an open vase, kept low on purpose */
+      c.fillStyle = '#7a5442';                       // the hard pruning cut
+      ell(c, x, y - th, r * 0.16, r * 0.055);
+      c.strokeStyle = '#3a2e28'; c.lineCap = 'round';
+      for (i = -1; i <= 1; i++) {
+        c.lineWidth = Math.max(1.6, r * 0.09);
+        c.beginPath();
+        c.moveTo(x + i * r * 0.08, y - th);
+        c.quadraticCurveTo(x + i * r * 0.44, y - r * 0.9,
+                           x + i * r * 0.70 + sway * 0.4, y - r * 1.20);
+        c.stroke();
+      }
+      c.lineWidth = Math.max(1.4, r * 0.07);
+      c.beginPath();
+      c.moveTo(x, y - th);
+      c.lineTo(x + sway * 0.4, y - r * 1.26);
+      c.stroke();
+      var fy = y - r * 1.22, fw = r * 1.05;
+      c.fillStyle = '#3f6a2b';
+      ell(c, x - fw * 0.60 + sway * 0.4, fy + r * 0.18, fw * 0.52, r * 0.32);
+      ell(c, x + fw * 0.60 + sway * 0.4, fy + r * 0.16, fw * 0.50, r * 0.30);
+      ell(c, x + sway * 0.4, fy - r * 0.02, fw * 0.62, r * 0.36);
+      c.fillStyle = '#4e7a33';
+      ell(c, x - fw * 0.36 + sway * 0.4, fy - r * 0.10, fw * 0.44, r * 0.28);
+      ell(c, x + fw * 0.40 + sway * 0.4, fy - r * 0.12, fw * 0.40, r * 0.26);
+      c.fillStyle = '#61933f';
+      ell(c, x - fw * 0.10 + sway * 0.4, fy - r * 0.30, fw * 0.40, r * 0.24);
+      ell(c, x + fw * 0.46 + sway * 0.4, fy - r * 0.26, fw * 0.22, r * 0.14);
+      /* the fruit: in pairs and threes, on long stalks */
+      for (i = 0; i < 6; i++) {
+        var sx = x + (rnd() - 0.5) * fw * 1.7 + sway * 0.4;
+        var sy = fy + r * (0.18 + rnd() * 0.20);
+        var m = 2 + (rnd() > 0.6 ? 1 : 0);
+        for (k = 0; k < m; k++) {
+          var ox = (k - (m - 1) / 2) * r * 0.075;
+          c.strokeStyle = '#41651f'; c.lineWidth = Math.max(0.7, r * 0.018);
+          c.beginPath();
+          c.moveTo(sx, sy + r * 0.06); c.lineTo(sx + ox, sy + r * 0.15);
+          c.stroke();
+          c.fillStyle = '#8e1b2c';
+          ell(c, sx + ox, sy + r * 0.205, r * 0.078, r * 0.074);
+          c.fillStyle = '#c4364a';
+          ell(c, sx + ox - r * 0.026, sy + r * 0.185, r * 0.030, r * 0.024, -0.4);
+        }
+      }
+    }
+  };
+
+  /* A drift of fallen petals, gathered up against the foot of a trunk and
+     in the lee of things. It is only there for about a week.
+     Ground layer. */
+  P.petalDrift = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 1277));
+    var i, a, rr, px, py, u;
+    c.fillStyle = 'rgba(233,211,222,0.62)';
+    c.beginPath();
+    for (i = 0; i < 10; i++) {
+      a = i / 10 * Math.PI * 2;
+      rr = r * (0.64 + ((i * 13 + seed * 29) % 10) / 26);
+      px = x + Math.cos(a) * rr; py = y + Math.sin(a) * rr * 0.44;
+      if (!i) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(242,228,234,0.62)';
+    ell(c, x - r * 0.14, y - r * 0.04, r * 0.50, r * 0.19, -0.1);
+    /* the individual petals, thinning out and crumbling at the edges */
+    for (i = 0; i < 52; i++) {
+      a = rnd() * Math.PI * 2;
+      u = 0.18 + rnd() * 1.05;
+      px = x + Math.cos(a) * r * u;
+      py = y + Math.sin(a) * r * 0.46 * u;
+      c.fillStyle = rnd() > 0.45 ? 'rgba(249,232,239,0.95)' : 'rgba(222,190,206,0.95)';
+      ell(c, px, py, r * 0.062, r * 0.036, rnd() * Math.PI);
+    }
+    /* one or two still with their yellow middle */
+    c.fillStyle = 'rgba(232,200,96,0.85)';
+    ell(c, x + r * 0.22, y + r * 0.10, r * 0.030, r * 0.024);
+    ell(c, x - r * 0.40, y - r * 0.12, r * 0.026, r * 0.021);
+  };
+
+  /* =====================================================================
+     BIRD TOWN - a meadow where the houses were put up by people, for
+     birds that would not be here otherwise.
+     ===================================================================== */
+
+  /* A bluebird box on a pole, with the predator guard under it. Note what
+     is NOT on it: there is no perch below the hole, and that is deliberate,
+     because a perch is an invitation to a house sparrow. */
+  P.nestBox = function (c, x, y, r, t, seed) {
+    var i;
+    shadow(c, x + 1, y, r * 0.30);
+    /* the pole */
+    c.fillStyle = '#8e9298';
+    c.fillRect(x - r * 0.055, y - r * 2.02, r * 0.11, r * 2.02);
+    c.fillStyle = '#b0b4b8';
+    c.fillRect(x - r * 0.055, y - r * 2.02, r * 0.040, r * 2.02);
+    /* the predator guard: a smooth cone nothing can climb past */
+    c.fillStyle = '#a9adaf';
+    c.beginPath();
+    c.moveTo(x - r * 0.42, y - r * 0.86);
+    c.lineTo(x, y - r * 1.24);
+    c.lineTo(x + r * 0.42, y - r * 0.86);
+    c.closePath(); c.fill();
+    c.fillStyle = '#c6cacb';
+    c.beginPath();
+    c.moveTo(x - r * 0.42, y - r * 0.86);
+    c.lineTo(x, y - r * 1.24);
+    c.lineTo(x - r * 0.04, y - r * 0.88);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(70,78,80,0.35)';
+    ell(c, x, y - r * 0.86, r * 0.42, r * 0.09);
+    /* the box: untreated wood gone silver-grey */
+    var bx = x - r * 0.36, by = y - r * 2.06, bw = r * 0.72, bh = r * 0.86;
+    c.fillStyle = '#948f86';
+    c.fillRect(bx, by, bw, bh);
+    c.fillStyle = '#a8a49a';
+    c.fillRect(bx, by, bw * 0.66, bh);
+    c.fillStyle = '#bdb9ae';
+    c.fillRect(bx, by, bw * 0.16, bh);
+    c.strokeStyle = 'rgba(96,92,84,0.55)'; c.lineWidth = 1;
+    for (i = 1; i < 3; i++) {
+      c.beginPath();
+      c.moveTo(bx + bw * i / 3, by + bh * 0.06);
+      c.lineTo(bx + bw * i / 3, by + bh);
+      c.stroke();
+    }
+    /* the side that swings open when you check it, and its pivot nail */
+    c.strokeStyle = 'rgba(80,76,68,0.75)'; c.lineWidth = Math.max(0.8, r * 0.025);
+    c.beginPath();
+    c.moveTo(bx + bw * 0.74, by); c.lineTo(bx + bw * 0.74, by + bh);
+    c.stroke();
+    c.fillStyle = '#6d6961';
+    ell(c, bx + bw * 0.87, by + bh * 0.24, r * 0.030, r * 0.030);
+    /* the roof, overhanging front and back so the rain misses the hole */
+    c.fillStyle = '#7f7a71';
+    c.beginPath();
+    c.moveTo(bx - r * 0.13, by + r * 0.06);
+    c.lineTo(bx + bw * 0.5, by - r * 0.17);
+    c.lineTo(bx + bw + r * 0.13, by + r * 0.06);
+    c.lineTo(bx + bw + r * 0.13, by + r * 0.15);
+    c.lineTo(bx - r * 0.13, by + r * 0.15);
+    c.closePath(); c.fill();
+    c.fillStyle = '#9a958b';
+    c.beginPath();
+    c.moveTo(bx - r * 0.13, by + r * 0.06);
+    c.lineTo(bx + bw * 0.5, by - r * 0.17);
+    c.lineTo(bx + bw * 0.5, by - r * 0.08);
+    c.lineTo(bx - r * 0.13, by + r * 0.13);
+    c.closePath(); c.fill();
+    /* the hole, and nothing at all underneath it */
+    c.fillStyle = '#241f1a';
+    ell(c, bx + bw * 0.46, by + bh * 0.33, r * 0.115, r * 0.115);
+    c.fillStyle = 'rgba(255,255,255,0.14)';
+    ell(c, bx + bw * 0.46, by + bh * 0.28, r * 0.095, r * 0.030);
+    /* the drainage holes in the floor */
+    c.fillStyle = 'rgba(60,56,50,0.7)';
+    ell(c, bx + bw * 0.28, by + bh * 0.95, r * 0.026, r * 0.020);
+    ell(c, bx + bw * 0.62, by + bh * 0.95, r * 0.026, r * 0.020);
+  };
+
+  /* A bird bath. Shallow on purpose - a bird wants to stand in it, not
+     swim in it. */
+  P.birdBath = function (c, x, y, r, t, seed) {
+    var ripple = (Math.sin(t * 1.3 + seed * 8) * 0.5 + 0.5);
+    var i;
+    shadow(c, x + 1, y, r * 0.66);
+    /* the plinth and the pedestal */
+    c.fillStyle = '#9a948a';
+    ell(c, x, y - r * 0.04, r * 0.44, r * 0.16);
+    c.fillStyle = '#b3ada1';
+    c.beginPath();
+    c.moveTo(x - r * 0.26, y - r * 0.02);
+    c.lineTo(x - r * 0.16, y - r * 0.88);
+    c.lineTo(x + r * 0.16, y - r * 0.88);
+    c.lineTo(x + r * 0.26, y - r * 0.02);
+    c.closePath(); c.fill();
+    c.fillStyle = '#c6c0b4';
+    c.beginPath();
+    c.moveTo(x - r * 0.26, y - r * 0.02);
+    c.lineTo(x - r * 0.16, y - r * 0.88);
+    c.lineTo(x - r * 0.05, y - r * 0.88);
+    c.lineTo(x - r * 0.11, y - r * 0.02);
+    c.closePath(); c.fill();
+    c.fillStyle = '#8e887d';
+    c.beginPath();
+    c.moveTo(x + r * 0.09, y - r * 0.02);
+    c.lineTo(x + r * 0.11, y - r * 0.88);
+    c.lineTo(x + r * 0.16, y - r * 0.88);
+    c.lineTo(x + r * 0.26, y - r * 0.02);
+    c.closePath(); c.fill();
+    /* the basin: wide, and no deeper than a bird's knee */
+    c.fillStyle = '#8e887d';
+    ell(c, x, y - r * 0.82, r * 0.96, r * 0.34);
+    c.fillStyle = '#c6c0b4';
+    ell(c, x, y - r * 0.90, r * 0.96, r * 0.34);
+    c.fillStyle = '#a49e92';
+    ell(c, x, y - r * 0.90, r * 0.80, r * 0.26);
+    /* the water */
+    c.fillStyle = '#7ba3ae';
+    ell(c, x, y - r * 0.895, r * 0.72, r * 0.225);
+    c.fillStyle = 'rgba(206,232,236,0.55)';
+    ell(c, x - r * 0.22, y - r * 0.94, r * 0.26, r * 0.070, -0.12);
+    c.strokeStyle = 'rgba(232,246,248,0.45)'; c.lineWidth = Math.max(0.7, r * 0.025);
+    for (i = 0; i < 2; i++) {
+      var rr = r * (0.16 + i * 0.20 + ripple * 0.14);
+      c.beginPath();
+      c.ellipse(x + r * 0.12, y - r * 0.885, rr, rr * 0.31, 0, 0, Math.PI * 2);
+      c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.32)';
+    ell(c, x - r * 0.62, y - r * 0.925, r * 0.22, r * 0.055, -0.1);
+  };
+
+  /* A pole feeder: the crook, the tube of seed, and the small change
+     underneath where the sparrows and the ground-feeders clear up. */
+  P.feederPole = function (c, x, y, r, t, seed) {
+    var swing = Math.sin(t * 1.0 + seed * 7) * 0.05;
+    var i;
+    shadow(c, x + 1, y, r * 0.44);
+    /* the pole, and the shepherd's crook at the top */
+    c.strokeStyle = '#4a4a46'; c.lineWidth = Math.max(1.6, r * 0.075);
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x, y);
+    c.lineTo(x, y - r * 1.92);
+    c.quadraticCurveTo(x, y - r * 2.16, x + r * 0.34, y - r * 2.14);
+    c.stroke();
+    c.strokeStyle = '#75756e'; c.lineWidth = Math.max(0.7, r * 0.026);
+    c.beginPath();
+    c.moveTo(x - r * 0.020, y - r * 0.2);
+    c.lineTo(x - r * 0.020, y - r * 1.88);
+    c.stroke();
+    /* the hanger */
+    var fx = x + r * 0.34 + swing * r, fy = y - r * 2.10;
+    c.strokeStyle = '#4a4a46'; c.lineWidth = Math.max(1, r * 0.03);
+    c.beginPath(); c.moveTo(x + r * 0.34, y - r * 2.13); c.lineTo(fx, fy + r * 0.10); c.stroke();
+    /* the tube */
+    c.fillStyle = '#6b7a52';                             // the cap
+    GG.roundRect(c, fx - r * 0.24, fy + r * 0.06, r * 0.48, r * 0.14, r * 0.05); c.fill();
+    c.fillStyle = '#cdd6d0';                             // the clear tube
+    GG.roundRect(c, fx - r * 0.19, fy + r * 0.18, r * 0.38, r * 0.86, r * 0.08); c.fill();
+    c.fillStyle = '#c8a85e';                             // the seed inside
+    GG.roundRect(c, fx - r * 0.155, fy + r * 0.40, r * 0.31, r * 0.62, r * 0.06); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.45)';
+    GG.roundRect(c, fx - r * 0.165, fy + r * 0.20, r * 0.09, r * 0.80, r * 0.04); c.fill();
+    c.fillStyle = '#6b7a52';                             // the base tray
+    GG.roundRect(c, fx - r * 0.28, fy + r * 1.00, r * 0.56, r * 0.13, r * 0.05); c.fill();
+    /* the ports, and the perches - which a feeder does want */
+    c.fillStyle = '#2f2a24';
+    for (i = 0; i < 2; i++) {
+      ell(c, fx + (i ? r * 0.10 : -r * 0.10), fy + r * (0.56 + i * 0.28), r * 0.045, r * 0.042);
+    }
+    c.strokeStyle = '#4a4a46'; c.lineWidth = Math.max(0.8, r * 0.025);
+    for (i = 0; i < 2; i++) {
+      var py = fy + r * (0.60 + i * 0.28);
+      c.beginPath();
+      c.moveTo(fx + (i ? r * 0.10 : -r * 0.10), py);
+      c.lineTo(fx + (i ? r * 0.34 : -r * 0.34), py);
+      c.stroke();
+    }
+    /* spilled seed at the foot of the pole */
+    var rnd = GG.mulberry32(Math.floor(seed * 3313));
+    for (i = 0; i < 9; i++) {
+      c.fillStyle = rnd() > 0.5 ? 'rgba(200,168,94,0.9)' : 'rgba(150,124,70,0.9)';
+      ell(c, x + (rnd() - 0.5) * r * 1.0, y + (rnd() - 0.5) * r * 0.22,
+          r * 0.030, r * 0.022, rnd() * 3);
+    }
+  };
+
+  /* =====================================================================
+     THE BIRD FARM - irrigated crop country with a dozen hens in it, not a
+     storybook barnyard.
+     ===================================================================== */
+
+  /* The coop and its run. The truest detail here is the hard line where the
+     wire is: bare scratched dirt inside it, and grass right up to the
+     outside. Chickens do that in about a week. */
+  P.coop = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 7013));
+    var i, px;
+    /* the scratched-out dirt inside the run */
+    c.fillStyle = 'rgba(146,124,88,0.92)';
+    ell(c, x + r * 0.78, y - r * 0.04, r * 0.90, r * 0.30);
+    c.fillStyle = 'rgba(120,100,70,0.45)';
+    ell(c, x + r * 0.58, y - r * 0.02, r * 0.30, r * 0.10, 0.2);
+    shadow(c, x + 2, y, r * 0.82);
+    /* the coop: a shed the size of a garden shed */
+    var bw = r * 0.82, bh = r * 0.92;
+    c.fillStyle = '#a4977c';
+    c.fillRect(x - bw, y - bh, bw * 1.7, bh);
+    c.fillStyle = '#b6a98c';
+    c.fillRect(x - bw, y - bh, bw * 0.7, bh);
+    c.strokeStyle = 'rgba(112,98,74,0.55)'; c.lineWidth = 1;
+    for (i = 1; i < 6; i++) {
+      px = x - bw + i * bw * 1.7 / 6;
+      c.beginPath(); c.moveTo(px, y - bh); c.lineTo(px, y); c.stroke();
+    }
+    /* the mono-pitch corrugated roof, sloping and overhanging */
+    c.fillStyle = '#8a9490';
+    c.beginPath();
+    c.moveTo(x - bw * 1.14, y - bh * 0.90);
+    c.lineTo(x + bw * 0.86, y - bh * 1.20);
+    c.lineTo(x + bw * 0.86, y - bh * 1.09);
+    c.lineTo(x - bw * 1.14, y - bh * 0.79);
+    c.closePath(); c.fill();
+    c.fillStyle = '#9ea7a3';
+    c.beginPath();
+    c.moveTo(x - bw * 1.14, y - bh * 0.90);
+    c.lineTo(x + bw * 0.86, y - bh * 1.20);
+    c.lineTo(x + bw * 0.86, y - bh * 1.15);
+    c.lineTo(x - bw * 1.14, y - bh * 0.85);
+    c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(96,108,104,0.5)'; c.lineWidth = 1;
+    for (i = 1; i < 7; i++) {
+      var u = i / 7;
+      c.beginPath();
+      c.moveTo(x - bw * 1.14 + u * bw * 2.0, y - bh * 0.90 - u * bh * 0.30);
+      c.lineTo(x - bw * 1.14 + u * bw * 2.0, y - bh * 0.79 - u * bh * 0.30);
+      c.stroke();
+    }
+    /* the pop-hole and its little ramp with cleats */
+    c.fillStyle = '#8b7a5e';
+    GG.roundRect(c, x - bw * 0.30, y - bh * 0.40, bw * 0.30, bh * 0.36, bw * 0.05); c.fill();
+    c.fillStyle = '#241f18';
+    GG.roundRect(c, x - bw * 0.27, y - bh * 0.37, bw * 0.24, bh * 0.33, bw * 0.04); c.fill();
+    c.fillStyle = '#a08a63';
+    c.beginPath();
+    c.moveTo(x - bw * 0.26, y - bh * 0.06);
+    c.lineTo(x + bw * 0.44, y + bh * 0.05);
+    c.lineTo(x + bw * 0.44, y + bh * 0.12);
+    c.lineTo(x - bw * 0.26, y + bh * 0.01);
+    c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(96,78,52,0.7)'; c.lineWidth = Math.max(0.7, r * 0.02);
+    for (i = 1; i < 4; i++) {
+      var v = i / 4;
+      c.beginPath();
+      c.moveTo(x - bw * 0.26 + v * bw * 0.70, y - bh * 0.06 + v * bh * 0.11);
+      c.lineTo(x - bw * 0.26 + v * bw * 0.70, y + bh * 0.01 + v * bh * 0.11);
+      c.stroke();
+    }
+    /* the nest-box bump on the end, with its lid */
+    c.fillStyle = '#9a8d73';
+    c.fillRect(x + bw * 0.70, y - bh * 0.78, bw * 0.36, bh * 0.44);
+    c.fillStyle = '#7e7258';
+    c.fillRect(x + bw * 0.66, y - bh * 0.82, bw * 0.44, bh * 0.08);
+    /* the run: posts and wire, and the hard line at the bottom of it */
+    c.strokeStyle = '#8a7f66'; c.lineWidth = Math.max(1.1, r * 0.045);
+    for (i = 0; i < 3; i++) {
+      px = x + bw * (0.9 + i * 0.68);
+      c.beginPath(); c.moveTo(px, y + r * 0.02); c.lineTo(px, y - r * 0.74); c.stroke();
+    }
+    c.strokeStyle = 'rgba(146,152,142,0.55)'; c.lineWidth = Math.max(0.6, r * 0.018);
+    for (i = 0; i < 9; i++) {
+      px = x + bw * 0.9 + i * (bw * 1.36 / 8);
+      c.beginPath(); c.moveTo(px, y + r * 0.02); c.lineTo(px, y - r * 0.72); c.stroke();
+    }
+    for (i = 0; i < 5; i++) {
+      var wy = y + r * 0.02 - i * r * 0.185;
+      c.beginPath();
+      c.moveTo(x + bw * 0.9, wy); c.lineTo(x + bw * 2.26, wy); c.stroke();
+    }
+    c.strokeStyle = '#8a7f66'; c.lineWidth = Math.max(0.9, r * 0.032);
+    c.beginPath();
+    c.moveTo(x + bw * 0.9, y - r * 0.74); c.lineTo(x + bw * 2.26, y - r * 0.74);
+    c.stroke();
+    /* a couple of feathers in the dirt */
+    c.fillStyle = 'rgba(238,230,214,0.8)';
+    for (i = 0; i < 3; i++) {
+      ell(c, x + r * (0.5 + rnd() * 1.0), y + (rnd() - 0.5) * r * 0.22,
+          r * 0.085, r * 0.030, (rnd() - 0.5) * 2.4);
+    }
+  };
+
+  /* A straw bale. Straw is the stalk left over after the grain has gone,
+     which is why it is pale and hollow and hay is not. */
+  P.strawBale = function (c, x, y, r, t, seed) {
+    var stacked = ((seed * 23) % 1) > 0.55;
+    var rnd = GG.mulberry32(Math.floor(seed * 4177));
+    var i;
+    shadow(c, x + 1, y, r * 1.0);
+    function bale(bx, by, bw, bh) {
+      var k;
+      c.fillStyle = '#c4a95c';                       // the front, cut ends out
+      c.fillRect(bx - bw, by - bh, bw * 2, bh);
+      c.fillStyle = '#d8bd6e';
+      c.fillRect(bx - bw, by - bh, bw * 1.15, bh);
+      c.fillStyle = '#e8d089';                       // the top face
+      c.beginPath();
+      c.moveTo(bx - bw, by - bh);
+      c.lineTo(bx - bw * 0.80, by - bh - bw * 0.28);
+      c.lineTo(bx + bw * 1.20, by - bh - bw * 0.28);
+      c.lineTo(bx + bw, by - bh);
+      c.closePath(); c.fill();
+      c.fillStyle = '#b39a52';                       // the shaded end
+      c.beginPath();
+      c.moveTo(bx + bw, by - bh);
+      c.lineTo(bx + bw * 1.20, by - bh - bw * 0.28);
+      c.lineTo(bx + bw * 1.20, by - bw * 0.28);
+      c.lineTo(bx + bw, by);
+      c.closePath(); c.fill();
+      /* the sawn-off look of a thousand cut stalks */
+      c.strokeStyle = 'rgba(150,126,62,0.5)'; c.lineWidth = Math.max(0.6, r * 0.018);
+      for (k = 0; k < 11; k++) {
+        var sx = bx - bw + rnd() * bw * 2;
+        var sy = by - bh + rnd() * bh * 0.9;
+        c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + (rnd() - 0.5) * r * 0.06, sy + bh * 0.18);
+        c.stroke();
+      }
+      /* the two baling strings */
+      c.strokeStyle = 'rgba(232,226,204,0.9)'; c.lineWidth = Math.max(0.8, r * 0.026);
+      for (k = -1; k <= 1; k += 2) {
+        c.beginPath();
+        c.moveTo(bx + k * bw * 0.44, by - bh);
+        c.lineTo(bx + k * bw * 0.44, by);
+        c.moveTo(bx + k * bw * 0.44, by - bh);
+        c.lineTo(bx + k * bw * 0.44 + bw * 0.20, by - bh - bw * 0.28);
+        c.stroke();
+      }
+      /* wisps sticking out, so it is not a cardboard box */
+      c.strokeStyle = 'rgba(224,200,132,0.9)'; c.lineWidth = Math.max(0.6, r * 0.018);
+      for (k = 0; k < 6; k++) {
+        var wx = bx - bw + rnd() * bw * 2, wy = by - bh - bw * 0.28 + rnd() * bw * 0.2;
+        c.beginPath();
+        c.moveTo(wx, wy);
+        c.lineTo(wx + (rnd() - 0.5) * r * 0.24, wy - r * (0.05 + rnd() * 0.10));
+        c.stroke();
+      }
+    }
+    bale(x, y, r * 0.78, r * 0.56);
+    if (stacked) bale(x + r * 0.10, y - r * 0.60, r * 0.70, r * 0.50);
+  };
+
+  /* A galvanised stock trough. The mud round it is not everywhere - it is
+     exactly where the animals stand, which is on one side of it. */
+  P.trough = function (c, x, y, r, t, seed) {
+    var i, a;
+    /* the churned mud, on the near side where they put their feet */
+    c.fillStyle = 'rgba(110,95,73,0.85)';
+    ell(c, x + r * 0.06, y + r * 0.10, r * 1.30, r * 0.36);
+    c.fillStyle = 'rgba(88,74,56,0.55)';
+    ell(c, x - r * 0.30, y + r * 0.16, r * 0.46, r * 0.14, 0.1);
+    ell(c, x + r * 0.42, y + r * 0.12, r * 0.34, r * 0.11, -0.2);
+    shadow(c, x + 1, y, r * 0.92);
+    /* the body */
+    c.fillStyle = '#8b9597';
+    c.beginPath();
+    c.moveTo(x - r, y - r * 0.74);
+    c.lineTo(x - r * 0.94, y - r * 0.12);
+    c.quadraticCurveTo(x, y + r * 0.22, x + r * 0.94, y - r * 0.12);
+    c.lineTo(x + r, y - r * 0.74);
+    c.closePath(); c.fill();
+    /* the corrugations */
+    for (i = -4; i <= 4; i++) {
+      c.fillStyle = (i % 2) ? '#9aa4a6' : '#7b8587';
+      c.fillRect(x + i * r * 0.20 - r * 0.09, y - r * 0.74, r * 0.18,
+                 r * 0.84 - Math.abs(i) * r * 0.048);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.16)';
+    c.fillRect(x - r * 0.92, y - r * 0.74, r * 0.34, r * 0.66);
+    c.fillStyle = 'rgba(40,52,52,0.35)';
+    c.beginPath();
+    c.moveTo(x - r * 0.94, y - r * 0.16);
+    c.quadraticCurveTo(x, y + r * 0.20, x + r * 0.94, y - r * 0.16);
+    c.quadraticCurveTo(x, y + r * 0.06, x - r * 0.94, y - r * 0.16);
+    c.fill();
+    /* the rim, and the water sitting in it */
+    c.fillStyle = '#b6c0c1';
+    ell(c, x, y - r * 0.74, r, r * 0.34);
+    c.fillStyle = '#8b9597';
+    ell(c, x, y - r * 0.72, r * 0.88, r * 0.28);
+    c.fillStyle = '#4a5a50';
+    ell(c, x, y - r * 0.71, r * 0.82, r * 0.255);
+    c.fillStyle = 'rgba(160,190,178,0.35)';
+    ell(c, x - r * 0.22, y - r * 0.77, r * 0.34, r * 0.075, -0.1);
+    c.strokeStyle = 'rgba(206,220,216,0.5)'; c.lineWidth = Math.max(0.7, r * 0.025);
+    c.beginPath();
+    c.ellipse(x, y - r * 0.71, r * 0.82, r * 0.255, 0, 0, Math.PI * 2);
+    c.stroke();
+    /* the bright waterline ring the galvanising goes at */
+    c.fillStyle = 'rgba(226,234,234,0.55)';
+    ell(c, x, y - r * 0.74, r * 0.97, r * 0.31);
+    c.fillStyle = '#4a5a50';
+    ell(c, x, y - r * 0.71, r * 0.82, r * 0.255);
+    c.fillStyle = 'rgba(178,206,196,0.30)';
+    ell(c, x - r * 0.24, y - r * 0.78, r * 0.30, r * 0.065, -0.12);
+    /* the float valve on one end */
+    c.fillStyle = '#6f7a78';
+    c.fillRect(x + r * 0.62, y - r * 0.98, r * 0.09, r * 0.24);
+    c.fillStyle = '#b8bcb4';
+    ell(c, x + r * 0.52, y - r * 0.74, r * 0.11, r * 0.085);
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    ell(c, x + r * 0.49, y - r * 0.77, r * 0.043, r * 0.030);
+  };
+
+  /* The fence line: weathered posts and four strands of wire, running off
+     to the horizon. It is the most useful thing in bird town, because a
+     bluebird hunts by sitting on a wire and then dropping on things. */
+  P.farmFence = function (c, x, y, r, t, seed) {
+    var rnd = GG.mulberry32(Math.floor(seed * 8419));
+    var hw = r * 1.9;
+    var i, k, px, ph;
+    shadow(c, x + 1, y, r * 0.40);
+    /* the wires first, so the posts sit in front of them */
+    for (i = 0; i < 4; i++) {
+      var wy = y - r * (0.42 + i * 0.30);
+      c.strokeStyle = i === 3 ? 'rgba(168,172,168,0.9)' : 'rgba(146,150,146,0.9)';
+      c.lineWidth = Math.max(0.8, r * 0.026);
+      c.beginPath();
+      c.moveTo(x - hw, wy);
+      c.quadraticCurveTo(x - r * 0.55, wy + r * 0.07, x - r * 0.10, wy);
+      c.quadraticCurveTo(x + r * 0.7, wy + r * 0.08, x + hw, wy - r * 0.02);
+      c.stroke();
+      /* barbs, a few of them, on two of the strands */
+      if (i === 1 || i === 3) {
+        c.lineWidth = Math.max(0.6, r * 0.018);
+        for (k = -2; k <= 2; k++) {
+          px = x + k * r * 0.62 + (rnd() - 0.5) * r * 0.1;
+          var by2 = wy + (px < x - r * 0.1 ? r * 0.05 : r * 0.05);
+          c.beginPath();
+          c.moveTo(px - r * 0.035, by2 - r * 0.035);
+          c.lineTo(px + r * 0.035, by2 + r * 0.035);
+          c.moveTo(px - r * 0.035, by2 + r * 0.035);
+          c.lineTo(px + r * 0.035, by2 - r * 0.035);
+          c.stroke();
+        }
+      }
+    }
+    /* two posts: the near one, and one further along the line */
+    for (i = 0; i < 2; i++) {
+      px = x + (i ? r * 1.32 : 0);
+      ph = r * (i ? 1.30 : 1.52);
+      var w = r * (i ? 0.09 : 0.12);
+      c.fillStyle = '#7d7059';
+      c.beginPath();
+      c.moveTo(px - w, y);
+      c.lineTo(px - w * 0.86, y - ph);
+      c.lineTo(px + w * 0.86, y - ph);
+      c.lineTo(px + w, y);
+      c.closePath(); c.fill();
+      c.fillStyle = '#968869';
+      c.fillRect(px - w, y - ph, w * 0.80, ph);
+      c.fillStyle = '#5f553f';
+      c.fillRect(px + w * 0.44, y - ph, w * 0.56, ph);
+      c.fillStyle = '#a89a7a';                       // the sawn top
+      ell(c, px, y - ph, w, w * 0.34);
+      /* grey weathering cracks down the post */
+      c.strokeStyle = 'rgba(60,52,38,0.45)'; c.lineWidth = Math.max(0.6, r * 0.016);
+      for (k = 0; k < 2; k++) {
+        var cx2 = px - w * 0.4 + k * w * 0.7;
+        c.beginPath();
+        c.moveTo(cx2, y - ph * 0.9);
+        c.quadraticCurveTo(cx2 + (rnd() - 0.5) * r * 0.05, y - ph * 0.5, cx2, y - ph * 0.12);
+        c.stroke();
+      }
+      /* the staples holding each wire on */
+      c.fillStyle = '#5a5a52';
+      for (k = 0; k < 4; k++) {
+        ell(c, px + w * 0.5, y - r * (0.42 + k * 0.30), r * 0.022, r * 0.026);
+      }
+    }
+    /* a tuft of grass the mower never reaches at the foot of the post */
+    c.strokeStyle = 'rgba(160,150,96,0.85)'; c.lineWidth = Math.max(0.8, r * 0.028);
+    c.lineCap = 'round';
+    for (i = -2; i <= 2; i++) {
+      c.beginPath();
+      c.moveTo(x + i * r * 0.06, y);
+      c.quadraticCurveTo(x + i * r * 0.14, y - r * 0.16, x + i * r * 0.22, y - r * 0.26);
+      c.stroke();
+    }
+  };
+
+  /* The mouth of the lava tube, up on the ridge. A tube is a pipe, so the
+     opening is a lopsided arch in a low basalt face, not a cathedral door. */
+  P.caveMouth = function (c, x, y, r, t, seed) {
+    shadow(c, x + 2, y, r * 1.0);
+    /* the rock face */
+    c.fillStyle = '#4a443e';
+    c.beginPath();
+    c.moveTo(x - r * 1.05, y);
+    c.lineTo(x - r * 0.92, y - r * 0.86);
+    c.lineTo(x - r * 0.3, y - r * 1.16);
+    c.lineTo(x + r * 0.46, y - r * 1.08);
+    c.lineTo(x + r * 1.0, y - r * 0.7);
+    c.lineTo(x + r * 1.1, y);
+    c.closePath(); c.fill();
+    c.fillStyle = '#5a534b';
+    c.beginPath();
+    c.moveTo(x - r * 0.92, y - r * 0.86);
+    c.lineTo(x - r * 0.3, y - r * 1.16);
+    c.lineTo(x + r * 0.2, y - r * 0.9);
+    c.lineTo(x - r * 0.5, y - r * 0.72);
+    c.closePath(); c.fill();
+    /* the opening, and it really is black in there */
+    c.fillStyle = '#100e0d';
+    c.beginPath();
+    c.moveTo(x - r * 0.46, y);
+    c.quadraticCurveTo(x - r * 0.5, y - r * 0.68, x + r * 0.04, y - r * 0.76);
+    c.quadraticCurveTo(x + r * 0.5, y - r * 0.62, x + r * 0.42, y);
+    c.closePath(); c.fill();
+    /* blunt lavacicle drips round the top of the arch */
+    c.fillStyle = '#1c1917';
+    for (var i = -2; i <= 2; i++) {
+      var lx = x + i * r * 0.16, ly = y - r * (0.70 - Math.abs(i) * 0.05);
+      c.beginPath();
+      c.moveTo(lx - r * 0.05, ly);
+      c.quadraticCurveTo(lx, ly + r * 0.13, lx + r * 0.05, ly);
+      c.closePath(); c.fill();
+    }
+    /* orange-brown glaze where the rock was baked, and a little grey lichen */
+    c.fillStyle = 'rgba(138,79,46,0.45)';
+    ell(c, x - r * 0.62, y - r * 0.4, r * 0.18, r * 0.1, -0.3);
+    ell(c, x + r * 0.66, y - r * 0.32, r * 0.15, r * 0.09, 0.25);
+    c.fillStyle = 'rgba(182,178,166,0.5)';
+    ell(c, x + r * 0.34, y - r * 0.92, r * 0.16, r * 0.08, 0.2);
+  };
+
+  /* A boot brush at the cave mouth. People carry the white-nose fungus into
+     caves on their boots, so wiping them is the thing that opens the door. */
+  P.bootBrush = function (c, x, y, r, t, seed, col, p) {
+    shadow(c, x + 1, y, r * 0.6);
+    c.fillStyle = '#6b563c';
+    GG.roundRect(c, x - r * 0.62, y - r * 0.22, r * 1.24, r * 0.24, r * 0.05); c.fill();
+    c.fillStyle = '#8a7048';
+    GG.roundRect(c, x - r * 0.56, y - r * 0.26, r * 1.12, r * 0.07, r * 0.03); c.fill();
+    /* the bristles */
+    c.strokeStyle = (p && p.used) ? '#3e4a2c' : '#2f3a24';
+    c.lineWidth = Math.max(1, r * 0.06); c.lineCap = 'round';
+    for (var i = -5; i <= 5; i++) {
+      var bx = x + i * r * 0.1;
+      c.beginPath();
+      c.moveTo(bx, y - r * 0.26);
+      c.lineTo(bx + (i % 2 ? 1 : -1) * r * 0.02, y - r * 0.44);
+      c.stroke();
+    }
+    /* a little sign on a post */
+    c.fillStyle = '#7a6142';
+    c.fillRect(x + r * 0.52, y - r * 0.9, r * 0.09, r * 0.9);
+    c.fillStyle = '#d9c9a4';
+    GG.roundRect(c, x + r * 0.2, y - r * 1.24, r * 0.74, r * 0.4, r * 0.06); c.fill();
+    c.fillStyle = '#5d4a33';
+    for (var k = 0; k < 3; k++) c.fillRect(x + r * 0.28, y - r * 1.14 + k * r * 0.1, r * 0.56, r * 0.04);
+  };
+
   GG.Props = P;
 })(window.GG = window.GG || {});

@@ -1066,19 +1066,26 @@
   };
 
   S.harvestman = function (c, a, t) {
-    c.strokeStyle = a.wing; c.lineWidth = 1; c.lineCap = 'round';
+    /* legLen stretches the threads for the cave one, which hangs from a
+       ceiling rather than walking about a garden */
+    var LL = a.legLen || 1;
+    c.strokeStyle = a.wing; c.lineWidth = 1 / (LL > 1 ? 1.25 : 1); c.lineCap = 'round';
     for (var s = -1; s <= 1; s += 2) {
       for (var i = 0; i < 4; i++) {
         var k = Math.sin(t * 3 + i * 1.3 + (s > 0 ? 0 : 1.5)) * 2;
-        var knee = 11 + i * 2;
+        var knee = (11 + i * 2) * LL;
         c.beginPath();
         c.moveTo(s * 1.6, -1 + i * 1.4);
-        c.quadraticCurveTo(s * knee, -10 - i * 1.5 + k, s * (knee - 3), 6 + i * 3 + k);
+        var arch = 1 + (LL - 1) * 0.35;
+        c.quadraticCurveTo(s * knee, (-10 - i * 1.5) * arch + k, s * (knee - 3), (6 + i * 3) * LL + k);
         c.stroke();
       }
     }
     c.fillStyle = a.body; ell(c, 0, 0, 3.4, 4.2);
     c.fillStyle = GG.shade(a.body, -0.2); ell(c, 0, -1.6, 2.6, 2);
+    if (a.pale) {
+      c.fillStyle = 'rgba(255,255,255,0.22)'; ell(c, -1.1, 0.6, 1.4, 2.2, -0.2);
+    }
     c.fillStyle = '#20202a';
     ell(c, -1.1, -2.4, 0.9, 0.9); ell(c, 1.1, -2.4, 0.9, 0.9);
   };
@@ -1139,9 +1146,21 @@
         c.save();
         c.translate(sgn * 4.6, 0.6); c.rotate(sgn * -0.32);
         c.beginPath(); c.ellipse(0, 0, 3.4, 6, 0, 0, Math.PI * 2); c.clip();
-        [-4.2, -1.4, 1.4, 4.2].forEach(function (by, i) {
-          c.fillRect(-3.6 + (i % 2 ? 1.6 : 0), by - 0.75, 5.4, 1.5);
-        });
+        if (a.bandStyle === 'zigzag') {
+          /* the cherry fruit fly's wing: one bold dark zigzag, not four bars */
+          c.lineWidth = 1.5; c.lineCap = 'round';
+          c.strokeStyle = a.wingBands;
+          c.beginPath();
+          c.moveTo(-3.6, -5.2); c.lineTo(1.6, -3.4); c.lineTo(-3.6, -1);
+          c.lineTo(2.4, 1.2); c.lineTo(-3, 3.6); c.lineTo(2.2, 5.4);
+          c.stroke();
+          c.fillStyle = a.wingBands;
+          c.fillRect(-3.6, -6.4, 7.2, 1.3);
+        } else {
+          [-4.2, -1.4, 1.4, 4.2].forEach(function (by, i) {
+            c.fillRect(-3.6 + (i % 2 ? 1.6 : 0), by - 0.75, 5.4, 1.5);
+          });
+        }
         c.restore();
       }
     }
@@ -1149,8 +1168,17 @@
     legs(c, a.accent, 3, 3, 5, t * 10, 1);
     c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
     if (a.pattern === 'bands') {
-      c.fillStyle = a.accent;
+      c.fillStyle = a.bodyBands || a.accent;
       ell(c, 0, 0.6, 3.1, 0.9); ell(c, 0, 3.2, 2.9, 0.9); ell(c, 0, 5.4, 2.2, 0.8);
+    } else if (a.pattern === 'checks') {
+      /* the stable fly's grey chequerboard */
+      c.fillStyle = a.checks || a.accent;
+      for (var cr = 0; cr < 4; cr++) {
+        for (var cc = -1; cc <= 1; cc += 2) {
+          ell(c, cc * 1.5, -0.6 + cr * 2.1, 1, 0.85);
+        }
+      }
+      c.fillStyle = GG.shade(a.body, -0.3); ell(c, 0, 1.4, 0.45, 4.6);
     } else {
       c.fillStyle = a.accent;
       ell(c, -1.1, 1.4, 0.55, 4.4); ell(c, 1.1, 1.4, 0.55, 4.4);
@@ -1160,6 +1188,16 @@
     ell(c, -1.9, -5, 2, 2.3); ell(c, 1.9, -5, 2, 2.3);
     c.fillStyle = 'rgba(255,255,255,0.4)';
     ell(c, -2.3, -5.6, 0.6, 0.6); ell(c, 2.3, -5.6, 0.6, 0.6);
+    if (a.beak) {
+      /* a stiff spear held straight out in front - the one thing that tells
+         a biting fly from a house fly */
+      c.strokeStyle = a.beak; c.lineWidth = 1.5; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(0, -5.6); c.lineTo(0, -10.6); c.stroke();
+      c.fillStyle = a.beak;
+      c.beginPath();
+      c.moveTo(-0.9, -9.6); c.lineTo(0.9, -9.6); c.lineTo(0, -11.8);
+      c.closePath(); c.fill();
+    }
   };
 
   S.mayfly = function (c, a, t) {
@@ -1309,21 +1347,50 @@
   };
 
   S.weevil = function (c, a, t) {
+    /* longSnout stretches the drinking-straw snout for the acorn weevils
+       whose snout really is longer than the rest of them */
+    var sn = a.longSnout || 1;
     legs(c, GG.shade(a.body, -0.3), 3, 3.2, 5.6, t * 7, 1.2);
     c.fillStyle = a.wing; ell(c, 0, 2.4, 4.6, 6);
     c.fillStyle = GG.shade(a.wing, -0.22); ell(c, 0, 2.4, 0.5, 5.6);
     c.fillStyle = 'rgba(255,255,255,0.2)'; ell(c, -1.9, 0.4, 1.5, 2.2, -0.3);
+    if (a.scales) {
+      /* the dusting of pale scales a live weevil is covered in */
+      c.fillStyle = a.scales; c.globalAlpha = 0.55;
+      [[-2.6, -0.6], [2.4, 0.4], [-1.4, 3.4], [2.8, 4.4], [0.4, 6.6], [-3, 5.2]]
+        .forEach(function (p) { ell(c, p[0], p[1], 0.9, 0.7); });
+      c.globalAlpha = 1;
+    }
     c.fillStyle = a.body; ell(c, 0, -3.4, 2.6, 2.6);
     // the long snout
-    c.strokeStyle = a.body; c.lineWidth = 1.5; c.lineCap = 'round';
-    c.beginPath();
-    c.moveTo(0, -5); c.quadraticCurveTo(1.4, -10, -0.6, -13.6);
-    c.stroke();
-    c.fillStyle = '#20202a'; ell(c, -1.6, -4.2, 0.8, 0.8); ell(c, 1.6, -4.2, 0.8, 0.8);
-    // elbowed antennae halfway down the snout
-    c.strokeStyle = a.accent; c.lineWidth = 0.8;
-    c.beginPath(); c.moveTo(0.5, -8.6); c.lineTo(4, -10.4); c.lineTo(5, -13.4); c.stroke();
-    c.beginPath(); c.moveTo(0.2, -8.6); c.lineTo(-3.2, -10.4); c.lineTo(-4.2, -13.4); c.stroke();
+    if (sn > 1) {
+      /* the long-snouted acorn weevils: a thicker straw of a snout with the
+         elbowed antennae set partway along it */
+      c.strokeStyle = a.body; c.lineWidth = 1.9; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(0, -5);
+      c.quadraticCurveTo(1.5 * sn, -5 - 5 * sn, -0.8 * sn, -5 - 8.8 * sn);
+      c.stroke();
+      c.fillStyle = '#20202a'; ell(c, -1.6, -4.2, 0.8, 0.8); ell(c, 1.6, -4.2, 0.8, 0.8);
+      var ay = -5 - 3.4 * sn;
+      c.strokeStyle = a.accent; c.lineWidth = 0.75;
+      c.beginPath();
+      c.moveTo(0.6, ay); c.lineTo(3.8, ay - 1.2); c.lineTo(4.8, ay - 3.6); c.stroke();
+      c.beginPath();
+      c.moveTo(0.1, ay); c.lineTo(-3.1, ay - 1.2); c.lineTo(-4.1, ay - 3.6); c.stroke();
+      c.fillStyle = a.accent;
+      ell(c, 5, ay - 4.2, 0.65, 0.8); ell(c, -4.3, ay - 4.2, 0.65, 0.8);
+    } else {
+      c.strokeStyle = a.body; c.lineWidth = 1.5; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(0, -5); c.quadraticCurveTo(1.4, -10, -0.6, -13.6);
+      c.stroke();
+      c.fillStyle = '#20202a'; ell(c, -1.6, -4.2, 0.8, 0.8); ell(c, 1.6, -4.2, 0.8, 0.8);
+      // elbowed antennae halfway down the snout
+      c.strokeStyle = a.accent; c.lineWidth = 0.8;
+      c.beginPath(); c.moveTo(0.5, -8.6); c.lineTo(4, -10.4); c.lineTo(5, -13.4); c.stroke();
+      c.beginPath(); c.moveTo(0.2, -8.6); c.lineTo(-3.2, -10.4); c.lineTo(-4.2, -13.4); c.stroke();
+    }
   };
 
   S.shieldbug = function (c, a, t) {
@@ -1417,6 +1484,8 @@
     c.fillStyle = '#2b2b33'; ell(c, -1.2, -3.8, 0.6, 0.6); ell(c, 1.2, -3.8, 0.6, 0.6);
     line(c, -0.9, -4.6, -2.6, -8.4, 0.7, a.accent);
     line(c, 0.9, -4.6, 2.6, -8.4, 0.7, a.accent);
+    if (a.tailband) { c.fillStyle = a.tailband; ell(c, 0, 4.8, 2.6, 0.9); }
+    if (a.gloss) { c.fillStyle = a.gloss; ell(c, -1.3, -0.6, 1.1, 1.5, -0.3); }
   };
 
   S.leafhopper = function (c, a, t) {
@@ -2424,7 +2493,10 @@
   /* A pinacate beetle: matte black, held high on long legs, and when it is
      startled it stands on its head. */
   S.darkling = function (c, a, t) {
-    var stand = a.headstand ? 1 : Math.max(0, Math.sin(t * 0.9) - 0.86) * 7;
+    /* noStand: only the pinacate beetle stands on its head.
+       slim: the stored-grain beetles are narrower and shorter-legged. */
+    var stand = a.noStand ? 0 : (a.headstand ? 1 : Math.max(0, Math.sin(t * 0.9) - 0.86) * 7);
+    var bw = a.slim ? 0.8 : 1;
     c.save();
     c.translate(0, stand * 1.6);
     c.rotate(stand * 0.34);
@@ -2445,14 +2517,15 @@
     line(c, 1.4, -8, 3.2, -11, 0.85, GG.shade(a.body, 0.2));
     c.fillStyle = GG.shade(a.body, 0.06); ell(c, 0, -3.2, 3.4, 2.6);
     /* the fused, unopenable wing cases */
-    c.fillStyle = a.body; ell(c, 0, 2.4, 5.2, 7.4);
-    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, 2.4, 4.6, 6.8);
+    c.fillStyle = a.body; ell(c, 0, 2.4, 5.2 * bw, 7.4);
+    c.fillStyle = GG.shade(a.body, 0.08); ell(c, 0, 2.4, 4.6 * bw, 6.8);
     c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.45;
     for (var r = -2; r <= 2; r++) {
       c.beginPath();
-      c.moveTo(r * 1.5, -3.4); c.lineTo(r * 1.9, 8.6); c.stroke();
+      c.moveTo(r * 1.5 * bw, -3.4); c.lineTo(r * 1.9 * bw, 8.6); c.stroke();
     }
-    c.fillStyle = 'rgba(255,255,255,0.14)'; ell(c, -2, -0.6, 1.5, 3, -0.3);
+    c.fillStyle = a.sheen || 'rgba(255,255,255,0.14)';
+    ell(c, -2 * bw, -0.6, 1.5 * bw, 3, -0.3);
     c.restore();
   };
 
@@ -3437,6 +3510,717 @@
     c.fillStyle = a.rust; ell(c, 0, 9.8, 1.4, 1.1);
     curve(c, -1.1, -9.8, -4.6, -13, -4.2, -17.6, 0.8, a.body);
     curve(c, 1.1, -9.8, 4.6, -13, 4.2, -17.6, 0.8, a.body);
+  };
+
+
+  /* =====================================================================
+     The seven new places.
+     ===================================================================== */
+
+  /* Propertius duskywing: a stubby, broad-shouldered skipper. It does not
+     hold its wings up in a V like a butterfly - it holds them out flat and
+     swept back into a shallow triangle, and then it stops dead. Marbled
+     grey over brown, with a few small glassy spots near each tip and a
+     pale fringe all round the outer edge. */
+  S.duskywing = function (c, a, t) {
+    var flick = 0.9 + 0.1 * Math.abs(Math.cos(t * 5));
+    for (var s = -1; s <= 1; s += 2) {
+      c.save(); c.scale(flick, 1);
+      /* hindwing, lying under and behind the forewing */
+      c.fillStyle = a.wing2 || GG.shade(a.wing, -0.25);
+      c.beginPath();
+      c.moveTo(s * 1.8, 2.2);
+      c.lineTo(s * 10, 5.2); c.lineTo(s * 7.6, 10.2); c.lineTo(s * 1.4, 8.4);
+      c.closePath(); c.fill();
+      c.fillStyle = a.fringe || '#cabfa6'; c.globalAlpha = 0.5;
+      c.beginPath();
+      c.moveTo(s * 10, 5.2); c.lineTo(s * 7.6, 10.2); c.lineTo(s * 8.4, 10.6);
+      c.lineTo(s * 10.9, 5.6); c.closePath(); c.fill();
+      c.globalAlpha = 1;
+      /* forewing: a flat triangle, swept back */
+      function fw() {
+        c.beginPath();
+        c.moveTo(s * 2.2, -7.4);
+        c.lineTo(s * 13.6, -2.4);
+        c.lineTo(s * 10.8, 3.4);
+        c.lineTo(s * 2.6, 4.6);
+        c.closePath();
+      }
+      c.fillStyle = a.wing; fw(); c.fill();
+      c.save(); fw(); c.clip();
+      /* the marbling: a dark bar near the body, a paler band outside it */
+      c.fillStyle = a.accent; c.globalAlpha = 0.8;
+      c.beginPath();
+      c.moveTo(s * 4.4, -6.6); c.lineTo(s * 7.2, -5.2);
+      c.lineTo(s * 6.2, 5); c.lineTo(s * 3.6, 5.2);
+      c.closePath(); c.fill();
+      c.globalAlpha = 0.55;
+      c.beginPath();
+      c.moveTo(s * 8.4, -4.6); c.lineTo(s * 10.2, -3.8);
+      c.lineTo(s * 8.8, 4.2); c.lineTo(s * 7.4, 4.4);
+      c.closePath(); c.fill();
+      c.fillStyle = a.marble || GG.shade(a.wing, 0.34); c.globalAlpha = 0.3;
+      c.beginPath();
+      c.moveTo(s * 5.4, -6.8); c.lineTo(s * 8.6, -5.2);
+      c.lineTo(s * 7.6, 4.8); c.lineTo(s * 5.2, 5);
+      c.closePath(); c.fill();
+      c.globalAlpha = 1;
+      c.restore();
+      /* the pale fringe: a thin line on the outer margin, no more */
+      c.strokeStyle = a.fringe || '#cabfa6'; c.lineWidth = 0.7; c.lineCap = 'butt';
+      c.globalAlpha = 0.85;
+      c.beginPath();
+      c.moveTo(s * 13.5, -2.4); c.lineTo(s * 10.7, 3.4); c.stroke();
+      c.globalAlpha = 1;
+      /* the glassy spots, last of all, sitting on the dark of the wing */
+      c.fillStyle = a.spot || '#efe9d8';
+      ell(c, s * 10.6, -2.6, 0.6, 0.5); ell(c, s * 10.1, -0.8, 0.56, 0.48);
+      ell(c, s * 9.2, 1.1, 0.5, 0.44);
+      c.restore();
+    }
+    /* thick furry body */
+    c.fillStyle = a.body; ell(c, 0, 0.6, 2.5, 6.4);
+    c.strokeStyle = GG.shade(a.body, 0.26); c.lineWidth = 0.5; c.lineCap = 'round';
+    c.globalAlpha = 0.6;
+    for (var h = 0; h < 14; h++) {
+      var ang = h / 14 * Math.PI * 2;
+      var hx = Math.cos(ang) * 2.5, hy = Math.sin(ang) * 6;
+      c.beginPath();
+      c.moveTo(hx * 0.9, 0.6 + hy * 0.9);
+      c.lineTo(hx * 1.14, 0.6 + hy * 1.04); c.stroke();
+    }
+    c.globalAlpha = 1;
+    c.fillStyle = GG.shade(a.body, 0.18); ell(c, 0, -5.8, 2.3, 2.3);
+    c.fillStyle = '#17110a'; ell(c, -1.4, -6.3, 0.8, 0.85); ell(c, 1.4, -6.3, 0.8, 0.85);
+    /* short blunt antennae, forward and out and no further */
+    c.strokeStyle = GG.shade(a.body, 0.24); c.lineWidth = 0.95; c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.beginPath();
+      c.moveTo(s2 * 1.1, -7.4);
+      c.quadraticCurveTo(s2 * 2.8, -9.8, s2 * 4, -11.4);
+      c.stroke();
+      c.fillStyle = GG.shade(a.body, 0.24);
+      ell(c, s2 * 4.2, -11.7, 0.75, 0.7, s2 * 0.5);
+    }
+  };
+
+  /* Speckled gall wasp: drawn the way you actually meet it - the pale
+     freckled ball the oak grew round the grub, with the tiny humpbacked
+     wasp standing on top of it. */
+  S.gallwasp = function (c, a, t) {
+    var step = Math.sin(t * 4) * 0.6;
+    /* the gall */
+    c.fillStyle = GG.shade(a.gall, -0.28); ell(c, 0.4, 4.4, 7.4, 7.1);
+    c.fillStyle = a.gall; ell(c, 0, 4, 7, 6.7);
+    c.fillStyle = a.gall2 || GG.shade(a.gall, 0.16);
+    ell(c, -2.4, 0.6, 4, 3.4, -0.3);
+    c.fillStyle = a.freckle;
+    [[-3.6, 1.2, 1], [1.4, -1.4, 0.8], [4.2, 2.6, 1.1], [-1.6, 5.4, 0.9],
+     [2.6, 7.2, 0.8], [-4.6, 5.6, 0.7], [0.2, 2.2, 0.6], [5.2, 6, 0.7]].forEach(function (p) {
+      ell(c, p[0], p[1] + 1.4, p[2], p[2] * 0.9);
+    });
+    /* the wasp, standing on the front of it */
+    c.strokeStyle = a.legs; c.lineWidth = 0.8; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -8.6 + i * 2.4;
+        c.beginPath();
+        c.moveTo(s * 1.2, y);
+        c.quadraticCurveTo(s * 3.4, y + 1 + step, s * 3.8, y + 3.4 + step);
+        c.stroke();
+      }
+    }
+    c.save(); c.globalAlpha = 0.6;
+    c.fillStyle = a.wing;
+    ell(c, -2.8, -4.4, 1.5, 3.4, -0.35); ell(c, 2.8, -4.4, 1.5, 3.4, 0.35);
+    c.restore();
+    /* humpbacked thorax and the flat seed of an abdomen */
+    c.fillStyle = a.body2 || GG.shade(a.body, 0.18);
+    c.beginPath();
+    c.moveTo(-2, -5.6);
+    c.quadraticCurveTo(0, -10.2, 2, -5.6);
+    c.quadraticCurveTo(0, -4.2, -2, -5.6);
+    c.closePath(); c.fill();
+    c.fillStyle = a.body; ell(c, 0, -7.6, 2.2, 2.6);
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -5.4);
+    c.quadraticCurveTo(2.1, -3.6, 1.5, -0.8);
+    c.quadraticCurveTo(0, 0.6, -1.5, -0.8);
+    c.quadraticCurveTo(-2.1, -3.6, 0, -5.4);
+    c.closePath(); c.fill();
+    c.fillStyle = GG.shade(a.body, 0.35); ell(c, 0, -2.6, 0.5, 2);
+    c.fillStyle = a.body; ell(c, 0, -10.2, 1.6, 1.5);
+    c.fillStyle = '#0e0c0c';
+    ell(c, -0.9, -10.6, 0.5, 0.55); ell(c, 0.9, -10.6, 0.5, 0.55);
+    c.strokeStyle = a.legs; c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(-0.7, -11.4); c.lineTo(-2.4, -14.4); c.stroke();
+    c.beginPath(); c.moveTo(0.7, -11.4); c.lineTo(2.4, -14.4); c.stroke();
+  };
+
+  /* Predaceous diving beetle: a smooth hard shiny oval with a thin gold
+     line running right round the edge, and two flattened, fringed hind
+     legs that row together like the oars of a rowing boat. */
+  S.divingbeetle = function (c, a, t) {
+    var row = Math.sin(t * 4.5);
+    /* the paddles, both together */
+    for (var s = -1; s <= 1; s += 2) {
+      c.strokeStyle = GG.shade(a.legs, 0.2); c.lineWidth = 1.5; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(s * 3.6, 3.2);
+      c.quadraticCurveTo(s * 8.4, 6 + row * 2, s * 11.4, 9.4 + row * 3);
+      c.stroke();
+      /* the fringe of stiff swimming hairs on the blade */
+      c.strokeStyle = GG.shade(a.legs, 0.45); c.lineWidth = 0.5;
+      for (var f = 0; f < 5; f++) {
+        var bx = s * (8.4 + f * 0.8), by = 6.4 + f * 0.9 + row * 2.6;
+        c.beginPath();
+        c.moveTo(bx, by); c.lineTo(bx + s * 1.2, by + 2); c.stroke();
+      }
+      /* middle legs, shorter */
+      c.strokeStyle = GG.shade(a.legs, 0.1); c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(s * 3.4, -0.6);
+      c.quadraticCurveTo(s * 7, 1 - row, s * 8.4, 3.6 - row);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(s * 2.6, -5.2); c.quadraticCurveTo(s * 5.4, -6.4, s * 6.6, -8.8); c.stroke();
+    }
+    /* the gold rim is the body, one size larger */
+    c.fillStyle = a.edge; ell(c, 0, 0.6, 6.5, 11.4);
+    c.fillStyle = a.body; ell(c, 0, 0.6, 5.8, 10.7);
+    c.fillStyle = a.shell || GG.shade(a.body, 0.12); ell(c, 0, 2, 5.4, 9.2);
+    /* the seam down the back */
+    c.fillStyle = GG.shade(a.body, -0.3); ell(c, 0, 2.4, 0.4, 8.8);
+    /* one small wet highlight, well away from the rim */
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    ell(c, -2.2, -2.6, 1.5, 3.2, -0.2);
+    /* pronotum and head, with the gold edge carried round */
+    c.fillStyle = a.edge; ell(c, 0, -7.2, 5.2, 3.2);
+    c.fillStyle = a.body; ell(c, 0, -7.2, 4.6, 2.6);
+    c.fillStyle = a.body; ell(c, 0, -10, 3, 2.2);
+    c.fillStyle = a.eye || '#14160f';
+    ell(c, -2.2, -10.4, 1, 1.1); ell(c, 2.2, -10.4, 1, 1.1);
+    c.strokeStyle = GG.shade(a.legs, 0.3); c.lineWidth = 0.7; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.2, -11.6); c.lineTo(-3, -14.6); c.stroke();
+    c.beginPath(); c.moveTo(1.2, -11.6); c.lineTo(3, -14.6); c.stroke();
+  };
+
+  /* A dragonfly nymph: squat, drab and six-legged, with a wide flat head,
+     two stubby wing buds lying on its back and three little paddles at the
+     tail. Ugly on purpose - that is the whole point of it. */
+  S.dragonflynymph = function (c, a, t) {
+    var creep = Math.sin(t * 3);
+    c.strokeStyle = a.legs; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      for (var i = 0; i < 3; i++) {
+        var y = -5 + i * 2.6;
+        var k = Math.sin(t * 5 + i * 1.5 + (s > 0 ? 0 : 1.9)) * 1.1;
+        c.beginPath();
+        c.moveTo(s * 2.4, y);
+        c.quadraticCurveTo(s * 6.6, y - 1.4 + k, s * 7.4, y + 3 + k);
+        c.stroke();
+      }
+    }
+    /* the three tail paddles */
+    c.strokeStyle = GG.shade(a.body, -0.15); c.lineWidth = 1.5; c.lineCap = 'round';
+    for (var q = -1; q <= 1; q++) {
+      c.beginPath();
+      c.moveTo(q * 0.9, 9.4);
+      c.lineTo(q * 2.4 + creep * 0.4, 12.8);
+      c.stroke();
+    }
+    /* the fat tapering abdomen */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -2);
+    c.quadraticCurveTo(4.4, 0.4, 3.4, 7);
+    c.quadraticCurveTo(1.8, 10, 0, 10);
+    c.quadraticCurveTo(-1.8, 10, -3.4, 7);
+    c.quadraticCurveTo(-4.4, 0.4, 0, -2);
+    c.closePath(); c.fill();
+    c.strokeStyle = a.body2; c.lineWidth = 0.55;
+    for (var r = 0; r < 5; r++) {
+      c.beginPath();
+      c.moveTo(-3.6 + r * 0.2, 0.4 + r * 1.9);
+      c.lineTo(3.6 - r * 0.2, 0.4 + r * 1.9); c.stroke();
+    }
+    /* the stubby wing buds lying back over the shoulders */
+    c.fillStyle = a.buds;
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.beginPath();
+      c.moveTo(s2 * 1, -4.6);
+      c.quadraticCurveTo(s2 * 4.4, -2.4, s2 * 3, 2.6);
+      c.quadraticCurveTo(s2 * 1.4, 0.4, s2 * 0.8, -4.2);
+      c.closePath(); c.fill();
+    }
+    /* thorax */
+    c.fillStyle = a.body2; ell(c, 0, -3.8, 3.8, 3.6);
+    /* the wide flat head, eyes out at the corners */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(-4.6, -6.4); c.lineTo(4.6, -6.4);
+    c.lineTo(3.6, -10.2); c.lineTo(-3.6, -10.2);
+    c.closePath(); c.fill();
+    /* the hinged lower lip, folded away under the face */
+    c.fillStyle = a.mask || GG.shade(a.body, 0.22);
+    c.beginPath();
+    c.moveTo(-2.6, -9.6); c.lineTo(2.6, -9.6); c.lineTo(1.8, -12.4); c.lineTo(-1.8, -12.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.eye;
+    ell(c, -3.6, -8.6, 1.6, 1.5); ell(c, 3.6, -8.6, 1.6, 1.5);
+    c.fillStyle = 'rgba(255,255,255,0.28)';
+    ell(c, -4, -9.2, 0.55, 0.5); ell(c, 3.2, -9.2, 0.55, 0.5);
+    c.strokeStyle = a.legs; c.lineWidth = 0.7; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1.4, -10.4); c.lineTo(-2.6, -13.4); c.stroke();
+    c.beginPath(); c.moveTo(1.4, -10.4); c.lineTo(2.6, -13.4); c.stroke();
+  };
+
+  /* A mosquito wriggler, hanging head-down from the underside of the
+     water with its breathing tube poked up through the surface film.
+     Drawn with the head at the front, the way every bug here is. */
+  S.wriggler = function (c, a, t) {
+    var wig = Math.sin(t * 9);
+    function bend(y) { return Math.sin(y * 0.28 + t * 9) * (1 + (y + 10) * 0.16); }
+    /* the segmented abdomen, thin and curling */
+    c.strokeStyle = a.body; c.lineWidth = 4.4; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(bend(-5), -5);
+    for (var y = -5; y <= 8; y += 1.5) c.lineTo(bend(y), y);
+    c.stroke();
+    c.strokeStyle = a.body2; c.lineWidth = 2.6;
+    c.beginPath();
+    c.moveTo(bend(-5), -5);
+    for (var y0 = -5; y0 <= 7; y0 += 1.5) c.lineTo(bend(y0), y0);
+    c.stroke();
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.6;
+    for (var r = -4; r <= 7; r += 1.7) {
+      c.beginPath();
+      c.moveTo(bend(r) - 2.1, r); c.lineTo(bend(r) + 2.1, r); c.stroke();
+    }
+    /* the breathing siphon at the tail, and its little fan of hairs */
+    c.strokeStyle = a.siphon; c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(bend(8), 8);
+    c.quadraticCurveTo(bend(8) + wig * 0.8, 11, bend(8) + wig * 1.6, 13.4);
+    c.stroke();
+    c.strokeStyle = a.brush; c.lineWidth = 0.6;
+    for (var q = -1; q <= 1; q++) {
+      c.beginPath();
+      c.moveTo(bend(8) + wig * 1.6, 13.4);
+      c.lineTo(bend(8) + wig * 1.6 + q * 2, 15.8); c.stroke();
+    }
+    /* the fat thorax */
+    c.fillStyle = GG.shade(a.body, -0.2); ell(c, bend(-6.5), -7, 4.4, 3.9);
+    c.fillStyle = a.body2; ell(c, bend(-6.5), -7, 3.8, 3.4);
+    c.fillStyle = 'rgba(255,255,255,0.16)'; ell(c, bend(-6.5) - 1.2, -8, 1.2, 1.2);
+    /* the round head and the two feeding brushes */
+    c.fillStyle = a.head; ell(c, bend(-10), -10.8, 3.1, 2.8);
+    c.fillStyle = a.brush;
+    ell(c, bend(-10) - 2, -13.2 + wig * 0.3, 1.5, 1.7, -0.4);
+    ell(c, bend(-10) + 2, -13.2 - wig * 0.3, 1.5, 1.7, 0.4);
+    c.strokeStyle = GG.shade(a.brush, -0.2); c.lineWidth = 0.4;
+    for (var b = -1; b <= 1; b += 2) {
+      for (var h = 0; h < 3; h++) {
+        c.beginPath();
+        c.moveTo(bend(-10) + b * 2, -13.4);
+        c.lineTo(bend(-10) + b * (2.6 + h * 0.7), -15.4 + h * 0.5); c.stroke();
+      }
+    }
+    c.fillStyle = '#16140f';
+    ell(c, bend(-10) - 1.3, -11.2, 0.7, 0.7); ell(c, bend(-10) + 1.3, -11.2, 0.7, 0.7);
+  };
+
+  /* A scud, curled into its comma and lying on one side, which is how it
+     swims and how you always find it. Legs fan out along the inner curve. */
+  S.scud = function (c, a, t) {
+    var kick = Math.sin(t * 12);
+    /* the legs, in a running wave down the inside of the curve */
+    c.strokeStyle = a.legs; c.lineWidth = 0.9; c.lineCap = 'round';
+    for (var i = 0; i < 8; i++) {
+      var p = i / 7;
+      var ang = -1.5 + p * 2.5;
+      var bx = Math.cos(ang) * 5.6, by = Math.sin(ang) * 8.4 + 1;
+      var k = Math.sin(t * 12 - i * 0.7) * 1.4;
+      c.beginPath();
+      c.moveTo(bx, by);
+      c.quadraticCurveTo(bx - 3.4, by + 1.6 + k, bx - 5.2, by + 3.2 + k);
+      c.stroke();
+    }
+    /* the arched, flattened body */
+    function body() {
+      c.beginPath();
+      c.moveTo(1.4, -10.2);
+      c.quadraticCurveTo(9.6, -4, 6.8, 7);
+      c.quadraticCurveTo(4.6, 12, 0.6, 12.8);
+      c.quadraticCurveTo(2.4, 8.4, 2.6, 4.2);
+      c.quadraticCurveTo(3.2, -3.4, -1.8, -9.4);
+      c.closePath();
+    }
+    c.fillStyle = GG.shade(a.body, -0.4); body(); c.fill();
+    c.save(); c.translate(-0.3, 0); c.scale(0.9, 0.97);
+    c.fillStyle = a.body; body(); c.fill();
+    c.restore();
+    /* the plates of its armour */
+    c.strokeStyle = a.body2; c.lineWidth = 0.6; c.lineCap = 'round';
+    for (var j = 0; j < 7; j++) {
+      var q = -1.35 + j * 0.38;
+      c.beginPath();
+      c.moveTo(Math.cos(q) * 2.6, Math.sin(q) * 8 + 0.6);
+      c.lineTo(Math.cos(q) * 6.6, Math.sin(q) * 9.4 + 0.6);
+      c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.2)';
+    ell(c, 3.4, -3.4, 1.4, 3.4, -0.4);
+    /* head end, with one dark eye and two pairs of feelers */
+    c.fillStyle = a.body2; ell(c, 0.4, -9.4, 2.8, 2.6, -0.3);
+    c.fillStyle = a.eye; ell(c, 1.2, -10.2, 0.9, 1);
+    c.strokeStyle = a.body2; c.lineWidth = 0.7;
+    c.beginPath();
+    c.moveTo(0.4, -11.4); c.quadraticCurveTo(-1.4, -14.4, -3.4, -15.4 + kick * 0.6); c.stroke();
+    c.beginPath();
+    c.moveTo(1.6, -11.2); c.quadraticCurveTo(3.4, -14, 4.4, -16 - kick * 0.6); c.stroke();
+    /* the little tail spikes it pushes off with */
+    c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(1.6, 11.6); c.lineTo(0.4, 14.4); c.stroke();
+    c.beginPath(); c.moveTo(2.6, 11); c.lineTo(2.6, 14); c.stroke();
+  };
+
+  /* A leech: a flat ribbon with a sucker at each end, looping along.
+     It is stretching and gathering, which is the whole of how it moves. */
+  S.leech = function (c, a, t) {
+    var pull = (Math.sin(t * 2.4) + 1) * 0.5;      /* 0 stretched, 1 gathered */
+    var len = 13 - pull * 4.5;
+    var fat = 2.4 + pull * 1.5;
+    function bend(y) { return Math.sin(y * 0.2 + t * 2.4) * 1.8; }
+    /* the body, wide at the back and narrow at the front */
+    c.fillStyle = a.body;
+    c.beginPath();
+    for (var y = -len; y <= len; y += 1.6) {
+      var w = fat * (0.55 + 0.45 * ((y + len) / (len * 2)));
+      c.lineTo(bend(y) - w, y);
+    }
+    for (var y2 = len; y2 >= -len; y2 -= 1.6) {
+      var w2 = fat * (0.55 + 0.45 * ((y2 + len) / (len * 2)));
+      c.lineTo(bend(y2) + w2, y2);
+    }
+    c.closePath(); c.fill();
+    /* the paler mid-stripe down the back */
+    c.fillStyle = a.body2; c.globalAlpha = 0.85;
+    c.beginPath();
+    for (var m = -len + 1; m <= len - 1; m += 1.6) c.lineTo(bend(m) - 0.7, m);
+    for (var m2 = len - 1; m2 >= -len + 1; m2 -= 1.6) c.lineTo(bend(m2) + 0.7, m2);
+    c.closePath(); c.fill();
+    c.globalAlpha = 1;
+    /* the rings */
+    c.strokeStyle = GG.shade(a.body, -0.3); c.lineWidth = 0.45;
+    for (var r = -len + 1.4; r < len - 1; r += 1.8) {
+      var wr = fat * (0.55 + 0.45 * ((r + len) / (len * 2)));
+      c.beginPath();
+      c.moveTo(bend(r) - wr, r); c.lineTo(bend(r) + wr, r); c.stroke();
+    }
+    /* the big rear sucker, gripping */
+    c.fillStyle = a.sucker; ell(c, bend(len), len + 1.4, fat * 1.25, fat * 0.95);
+    c.fillStyle = GG.shade(a.sucker, 0.3); ell(c, bend(len), len + 1.4, fat * 0.6, fat * 0.45);
+    /* the small front sucker and the eye spots */
+    c.fillStyle = a.sucker; ell(c, bend(-len), -len - 1, fat * 0.8, fat * 0.7);
+    c.fillStyle = a.eye;
+    ell(c, bend(-len) - 0.8, -len - 0.4, 0.45, 0.45);
+    ell(c, bend(-len) + 0.8, -len - 0.4, 0.45, 0.45);
+    /* the pale belly showing at the edge */
+    c.fillStyle = a.belly; c.globalAlpha = 0.5;
+    ell(c, bend(0) + fat * 0.7, 1, 0.5, len * 0.7);
+    c.globalAlpha = 1;
+  };
+
+  /* A cave cricket: humpbacked, wingless, the colour of wet cardboard,
+     with a cage of long angular legs and feelers longer than the whole
+     animal, sweeping forward and out - never arched over its own back. */
+  S.cavecricket = function (c, a, t) {
+    var sweep = Math.sin(t * 1.6);
+    var crouch = Math.max(0, Math.sin(t * 0.8) - 0.9) * 6;
+    /* the two front pairs of legs, long and angular */
+    c.strokeStyle = a.legs; c.lineWidth = 1.1; c.lineCap = 'round';
+    for (var s = -1; s <= 1; s += 2) {
+      c.beginPath();
+      c.moveTo(s * 2.2, -2.6);
+      c.lineTo(s * 7.4, -6.4); c.lineTo(s * 8.8, -1.4);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(s * 2.4, 0.6);
+      c.lineTo(s * 8.4, -0.6); c.lineTo(s * 10.2, 4.4);
+      c.stroke();
+      /* the huge hind leg: femur up, then a long thin shin down and out */
+      c.lineWidth = 2.6;
+      c.beginPath();
+      c.moveTo(s * 2.2, 4.4);
+      c.lineTo(s * 6.2, -2.4 - crouch);
+      c.stroke();
+      c.lineWidth = 1.1;
+      c.beginPath();
+      c.moveTo(s * 6.2, -2.4 - crouch);
+      c.lineTo(s * 9.4, 8.4 + crouch * 0.5);
+      c.lineTo(s * 7.4, 12.4 + crouch * 0.5);
+      c.stroke();
+    }
+    /* the high arched, wingless back */
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -7.4);
+    c.quadraticCurveTo(5.4, -5.4, 5, 3.4);
+    c.quadraticCurveTo(3.4, 9.4, 0, 10);
+    c.quadraticCurveTo(-3.4, 9.4, -5, 3.4);
+    c.quadraticCurveTo(-5.4, -5.4, 0, -7.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.body2; ell(c, -1.3, -1.4, 2, 4.4, -0.1);
+    /* the mottling, drawn over the hump */
+    c.fillStyle = a.mottle; c.globalAlpha = 0.55;
+    ell(c, 2.2, -2.4, 1.9, 1.3, 0.4); ell(c, -2.4, 2.6, 1.7, 1.2, -0.3);
+    ell(c, 1.4, 5.4, 2.2, 1.1, 0.2); ell(c, -1.4, -4.6, 1.5, 1, 0.3);
+    c.globalAlpha = 1;
+    /* the two short tail feelers */
+    c.strokeStyle = a.legs; c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(-1.4, 9.4); c.quadraticCurveTo(-3, 12.4, -3.4, 15.4); c.stroke();
+    c.beginPath(); c.moveTo(1.4, 9.4); c.quadraticCurveTo(3, 12.4, 3.4, 15.4); c.stroke();
+    /* the head, tucked under the hump */
+    c.fillStyle = GG.shade(a.body, -0.1); ell(c, 0, -8.2, 3.2, 2.8);
+    c.fillStyle = a.eye; ell(c, -1.8, -9.2, 0.85, 0.9); ell(c, 1.8, -9.2, 0.85, 0.9);
+    /* the whips - long, forward and out, tapering */
+    c.strokeStyle = GG.shade(a.legs, -0.1); c.lineCap = 'round';
+    for (var s2 = -1; s2 <= 1; s2 += 2) {
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(s2 * 1.2, -10.4);
+      c.quadraticCurveTo(s2 * (4 + sweep), -16, s2 * (7.4 + sweep * 2), -20.4);
+      c.stroke();
+      c.lineWidth = 0.6;
+      c.beginPath();
+      c.moveTo(s2 * (7.4 + sweep * 2), -20.4);
+      c.quadraticCurveTo(s2 * (9.6 + sweep * 2.6), -23.4, s2 * (12.4 + sweep * 3), -25.4);
+      c.stroke();
+    }
+  };
+
+  /* A fungus gnat larva: a glassy thread of a grub on a wet cave wall,
+     lying in the faint web of silk it laid down to slide along. */
+  S.gnatlarva = function (c, a, t) {
+    var glide = Math.sin(t * 1.4);
+    function bend(y) { return Math.sin(y * 0.16 + t * 1.4) * 1.5; }
+    /* the silk, first, so the grub sits on it */
+    c.strokeStyle = a.silk; c.lineWidth = 0.5; c.lineCap = 'round';
+    for (var q = -1; q <= 1; q += 2) {
+      c.beginPath();
+      c.moveTo(q * 1.4, -13);
+      c.quadraticCurveTo(q * 4.4, 0, q * 2, 13.4);
+      c.stroke();
+    }
+    c.beginPath(); c.moveTo(-3.4, -6.4); c.lineTo(3.4, -4.4); c.stroke();
+    c.beginPath(); c.moveTo(-3, 4.4); c.lineTo(3.4, 6.4); c.stroke();
+    /* the body */
+    c.strokeStyle = a.rim || 'rgba(96,106,86,0.75)'; c.lineWidth = 4.2; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(bend(-10), -10);
+    for (var yr = -10; yr <= 12; yr += 1.5) c.lineTo(bend(yr), yr);
+    c.stroke();
+    c.strokeStyle = a.body; c.lineWidth = 3.4;
+    c.beginPath();
+    c.moveTo(bend(-10), -10);
+    for (var y = -10; y <= 12; y += 1.5) c.lineTo(bend(y), y);
+    c.stroke();
+    c.strokeStyle = a.body2; c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(bend(-9), -9);
+    for (var y2 = -9; y2 <= 11; y2 += 1.5) c.lineTo(bend(y2), y2);
+    c.stroke();
+    /* the dark line of its dinner, running down inside it */
+    c.strokeStyle = a.gut; c.lineWidth = 1.6;
+    c.beginPath();
+    c.moveTo(bend(-6), -6);
+    for (var y3 = -6; y3 <= 9; y3 += 1.5) c.lineTo(bend(y3), y3);
+    c.stroke();
+    /* the segment creases */
+    c.strokeStyle = 'rgba(96,106,86,0.7)'; c.lineWidth = 0.5;
+    for (var r = -8; r <= 10; r += 2.2) {
+      c.beginPath();
+      c.moveTo(bend(r) - 1.7, r); c.lineTo(bend(r) + 1.7, r); c.stroke();
+    }
+    /* the hard black head capsule */
+    c.fillStyle = a.head; ell(c, bend(-11.6) + glide * 0.3, -11.8, 2, 2.4);
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    ell(c, bend(-11.6) + glide * 0.3 - 0.5, -12.6, 0.5, 0.6);
+  };
+
+  /* A true cave millipede: pale as paper, no eyes, slender, with legs far
+     longer than a garden millipede's and feelers held out in front. */
+  S.cavemillipede = function (c, a, t) {
+    var n = 13;
+    c.strokeStyle = a.legs; c.lineWidth = 0.75; c.lineCap = 'round';
+    for (var i = 0; i < n; i++) {
+      var y = 13 - i * 2.2;
+      var wob = Math.sin(t * 2 - i * 0.5) * 1.5;
+      for (var s = -1; s <= 1; s += 2) {
+        var k = Math.sin(t * 7 + i * 0.9) * 1;
+        c.beginPath();
+        c.moveTo(wob + s * 1.6, y);
+        c.quadraticCurveTo(wob + s * 4.4, y + 0.8 + k, wob + s * 5.4, y + 3 + k);
+        c.stroke();
+      }
+    }
+    for (var j = 0; j < n; j++) {
+      var yy = 13 - j * 2.2;
+      var w2 = Math.sin(t * 2 - j * 0.5) * 1.5;
+      var rw = 2.5 - Math.abs(j - 6) * 0.08;
+      c.fillStyle = a.ring; ell(c, w2, yy, rw + 0.35, 1.7);
+      c.fillStyle = (j % 2) ? a.body : a.body2;
+      ell(c, w2, yy, rw, 1.35);
+      c.fillStyle = a.ring; ell(c, w2, yy + 1.1, rw * 0.92, 0.3);
+      c.fillStyle = 'rgba(255,255,255,0.28)';
+      ell(c, w2 - 0.9, yy - 0.5, 0.9, 0.6);
+    }
+    var hx = Math.sin(t * 2 - n * 0.5) * 1.5;
+    c.fillStyle = a.head || a.body2; ell(c, hx, -15.6, 2.4, 2);
+    /* no eyes at all - just the two feelers, out in front */
+    c.strokeStyle = a.legs; c.lineWidth = 0.75; c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(hx - 1, -17);
+    c.quadraticCurveTo(hx - 3.4, -19.4, hx - 3.8, -22.4); c.stroke();
+    c.beginPath();
+    c.moveTo(hx + 1, -17);
+    c.quadraticCurveTo(hx + 3.4, -19.4, hx + 3.8, -22.4); c.stroke();
+  };
+
+  /* A fairy shrimp, upside down on its back as it always is, rowing with
+     eleven pairs of flat leaf-shaped legs that beat in a wave from front
+     to back. Almost see-through, with an orange fork of a tail. */
+  S.fairyshrimp = function (c, a, t) {
+    /* the legs, in their travelling wave */
+    for (var i = 0; i < 11; i++) {
+      var y = -5.4 + i * 1.35;
+      var ph = Math.sin(t * 7 - i * 0.55);
+      for (var s = -1; s <= 1; s += 2) {
+        c.fillStyle = a.legs;
+        c.save();
+        c.translate(s * 1.9, y);
+        c.rotate(s * (0.5 + ph * 0.45));
+        c.beginPath();
+        c.ellipse(s * 2.4, 0, 2.6, 1, 0, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+    }
+    /* the long soft body */
+    function shrimpBody(g) {
+      c.beginPath();
+      c.moveTo(0, -11.4 - g);
+      c.quadraticCurveTo(3.2 + g, -9, 2.6 + g, -4.4);
+      c.quadraticCurveTo(2.2 + g, 4, 1.5 + g, 9.4);
+      c.quadraticCurveTo(0, 11 + g, -1.5 - g, 9.4);
+      c.quadraticCurveTo(-2.2 - g, 4, -2.6 - g, -4.4);
+      c.quadraticCurveTo(-3.2 - g, -9, 0, -11.4 - g);
+      c.closePath();
+    }
+    c.fillStyle = a.rim || 'rgba(120,132,96,0.55)'; shrimpBody(0.7); c.fill();
+    c.fillStyle = a.body;
+    c.beginPath();
+    c.moveTo(0, -11.4);
+    c.quadraticCurveTo(3.2, -9, 2.6, -4.4);
+    c.quadraticCurveTo(2.2, 4, 1.5, 9.4);
+    c.quadraticCurveTo(0, 11, -1.5, 9.4);
+    c.quadraticCurveTo(-2.2, 4, -2.6, -4.4);
+    c.quadraticCurveTo(-3.2, -9, 0, -11.4);
+    c.closePath(); c.fill();
+    c.fillStyle = a.body2; ell(c, 0, -7.6, 2.5, 3.4);
+    /* the gut, a faint green line down the middle */
+    c.fillStyle = a.gut; c.globalAlpha = 0.55;
+    ell(c, 0, 0, 0.55, 8.6);
+    c.globalAlpha = 1;
+    /* segment creases */
+    c.strokeStyle = 'rgba(150,160,130,0.45)'; c.lineWidth = 0.4;
+    for (var r = 0; r < 8; r++) {
+      var ry = -4.4 + r * 1.7;
+      var rw = 2.4 - r * 0.14;
+      c.beginPath(); c.moveTo(-rw, ry); c.lineTo(rw, ry); c.stroke();
+    }
+    /* the orange forked tail, drawn last so it always reads */
+    c.fillStyle = a.tail;
+    c.save(); c.translate(0, 9.6); c.rotate(Math.sin(t * 7) * 0.12);
+    c.beginPath();
+    c.moveTo(0, -1); c.quadraticCurveTo(-3.4, 2.4, -3, 5.8);
+    c.quadraticCurveTo(-0.8, 3, 0, 1.4);
+    c.quadraticCurveTo(0.8, 3, 3, 5.8);
+    c.quadraticCurveTo(3.4, 2.4, 0, -1);
+    c.closePath(); c.fill();
+    c.restore();
+    /* the two stalked eyes */
+    c.strokeStyle = a.body2; c.lineWidth = 1.1; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-1, -10.4); c.lineTo(-2.6, -13); c.stroke();
+    c.beginPath(); c.moveTo(1, -10.4); c.lineTo(2.6, -13); c.stroke();
+    c.fillStyle = a.eye;
+    ell(c, -2.8, -13.4, 1.15, 1.15); ell(c, 2.8, -13.4, 1.15, 1.15);
+    c.fillStyle = 'rgba(255,255,255,0.5)';
+    ell(c, -3.2, -13.8, 0.4, 0.4); ell(c, 2.4, -13.8, 0.4, 0.4);
+  };
+
+  /* A pear slug: a baby sawfly under a coat of its own olive-green slime.
+     Wide and blunt at the head end, tapering to a point at the back, and
+     wet-looking all over. */
+  S.pearslug = function (c, a, t) {
+    var creep = Math.sin(t * 1.8);
+    /* the slime trail it is sitting in */
+    c.fillStyle = 'rgba(200,220,190,0.14)';
+    ell(c, 0, 5.4 + creep * 0.4, 4.4, 8);
+    /* the body: fat at the head, tapering to a tail point */
+    function slug(g) {
+      c.beginPath();
+      c.moveTo(0, -11.6 - g);
+      c.quadraticCurveTo(6.4 + g, -10.4, 6.2 + g, -5);
+      c.quadraticCurveTo(5.2 + g, 2.4, 3.2 + g, 8);
+      c.quadraticCurveTo(2, 11.6 + g, 0, 11.8 + g);
+      c.quadraticCurveTo(-2, 11.6 + g, -3.2 - g, 8);
+      c.quadraticCurveTo(-5.4 - g, 2, -6.2 - g, -5);
+      c.quadraticCurveTo(-6.4 - g, -10.4, 0, -11.6 - g);
+      c.closePath();
+    }
+    c.fillStyle = a.rim || GG.shade(a.body, 0.55); slug(0.8); c.fill();
+    c.fillStyle = a.body; slug(0); c.fill();
+    /* the folds of slime, which are the only markings there are */
+    /* the two soft creases in the slime, and nothing else - it is smooth */
+    c.strokeStyle = a.body2; c.lineWidth = 0.9; c.lineCap = 'round';
+    c.globalAlpha = 0.6;
+    [[-4.4, 5.2], [-0.6, 5]].forEach(function (q) {
+      c.beginPath();
+      c.moveTo(-q[1], q[0]);
+      c.quadraticCurveTo(0, q[0] + 1.6, q[1], q[0]);
+      c.stroke();
+    });
+    c.globalAlpha = 1;
+    /* the head end: wider than the rest of it, and darker */
+    c.fillStyle = a.head;
+    c.beginPath();
+    c.moveTo(0, -11.8);
+    c.quadraticCurveTo(6.4, -10.6, 6, -6);
+    c.quadraticCurveTo(3, -4.6, 0, -4.8);
+    c.quadraticCurveTo(-3, -4.6, -6, -6);
+    c.quadraticCurveTo(-6.4, -10.6, 0, -11.8);
+    c.closePath(); c.fill();
+    if (a.ripe) {
+      /* an almost-grown one loses the slime and goes orange-yellow */
+      c.fillStyle = a.ripe; c.globalAlpha = 0.22;
+      ell(c, 0, 4.4, 3.6, 6.4);
+      c.globalAlpha = 1;
+    }
+    /* one restrained wet highlight, off to the side, drawn last */
+    /* the wet look: one broad soft sheen over the shoulder, and a narrow
+       specular streak beside it */
+    c.fillStyle = a.gloss; c.globalAlpha = 0.28;
+    ell(c, -1.6, -6.4, 3.4, 3.2, -0.2);
+    c.globalAlpha = 1;
+    c.beginPath();
+    c.moveTo(-3.2, -6.4);
+    c.quadraticCurveTo(-4.2, -2, -2.8, 2.8);
+    c.quadraticCurveTo(-2, -2, -2.2, -6.2);
+    c.closePath(); c.fill();
+
   };
 
   GG.BugArt = {
