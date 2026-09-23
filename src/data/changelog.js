@@ -6,9 +6,15 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.15.0';
+  GG.VERSION = '1.15.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.15.1', title: 'A new sign on the bookshelf',
+      lines: [
+        'The bookshelf at home says Collections now, because it holds all four of your books \u2014 bugs, fish, friends and fruit.'
+      ]
+    },
     {
       v: '1.15.0', title: 'The Critter Compendium, fishing in the marsh, and Cookie',
       lines: [
