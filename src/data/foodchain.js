@@ -139,6 +139,25 @@
     halibut: ['cod']
   };
 
+  /* v1.15 - the cherry and bamboo grove newcomers (WSU Tree Fruit, PNW
+     Handbooks, BugGuide, Penn State, Colorado State Extension) */
+  [
+    ['earwig', ['spotted_wing_drosophila']],          // eats the pupae in the soil
+    ['paper_wasp', ['tent_caterpillar', 'leafroller', 'lorquins_admiral']],
+    ['yellowjacket', ['tent_caterpillar']],
+    ['crab_spider', ['lorquins_admiral', 'mining_bee']],
+    ['lacewing', ['bamboo_mite', 'leafroller']],
+    ['ground_beetle', ['leopard_slug', 'garden_springtail']],
+    ['centipede', ['garden_springtail']],
+    ['harvestman', ['garden_springtail']],
+    ['grass_carrying_wasp', ['cricket', 'katydid']],
+    ['woodlouse_spider', ['pillbug', 'earwig', 'millipede']],
+    ['zebra_jumper', ['bamboo_aphid', 'housefly', 'aphid']]
+  ].forEach(function (row) {
+    var list = EATS[row[0]] = EATS[row[0]] || [];
+    row[1].forEach(function (prey) { if (list.indexOf(prey) < 0) list.push(prey); });
+  });
+
   GG.EATS = EATS;
 
   /* The other way round, worked out once. The friends' own prey lists live in

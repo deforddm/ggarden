@@ -6,9 +6,22 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.14.0';
+  GG.VERSION = '1.15.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.15.0', title: 'The Critter Compendium, fishing in the marsh, and Cookie',
+      lines: [
+        'Your Bug Book has grown into the Critter Compendium. Open it and there are four books on the shelf \u2014 the Bug Book, the Fish Book, the Friends Book and the Fruit Book \u2014 each with how far you have got.',
+        'You can fish in the Cattail Marsh now. It had no water in it before, which is a funny sort of marsh. There are dark open pools between the cattails, with duckweed floating on them and seven fish to find.',
+        'The lava tube has a proper GO IN button, and it is on the map as a little dark arch. The footbridge is on the map too.',
+        'Only a honeybee dies after she stings you, because her stinger is barbed and stays in your skin. Every other bee and wasp flies off afterwards, and now they really do. Each one also tells you the true thing about her own sting \u2014 and a thatching ant has no stinger at all. That was a bite.',
+        'Each look-don\u2019t-catch creature can be looked at once. After that she goes back to what she was doing.',
+        'Hybrid tanks hold 8 bugs and 6 fish, and fish tanks hold 8 rock-pool creatures. The sea grass, shells and treasure chest go down on the sand under the water. And crabs climb up onto the bank for a walk, because shore crabs and hermit crabs really do.',
+        'Thirteen new creatures in the Cherry Grove and the Bamboo Grove \u2014 including a butterfly that looks dipped in paint, a moth dressed as a wasp, a wasp that flies home with a blade of grass, a spider with six eyes, and a Japanese beetle, which really was found near Pasco.',
+        'There is only one Cookie. Wherever she is \u2014 walking with you, waiting at home, or visiting a habitat \u2014 that is the only place she is.'
+      ]
+    },
     {
       v: '1.14.0', title: 'Thirty-one new friends, seven new places, and a horse to ride',
       lines: [

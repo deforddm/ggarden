@@ -1881,14 +1881,15 @@
        ================================================================= */
     {
       id: 'lorquins_admiral', name: 'Lorquin’s Admiral',
-      habitats: ['glade', 'forest'], times: ['day'], rarity: 2, value: 56,
+      habitats: ['glade', 'forest', 'cherry'], times: ['day'], rarity: 2, value: 56,
       behavior: 'flutter', speed: 40, shy: 56, size: 1.15,
       measure: 'about 2¼ inches across',
       art: { shape: 'butterfly', body: '#2a231e', wing: '#2e2620', wing2: '#33291f', accent: '#f4f2ea', pattern: 'whiteband', tip: '#c86a28' },
       facts: [
         'The males spend the whole day perched at the bottom of a clearing, watching for a female to go past.',
         'Its caterpillars spend the winter half grown, rolled up inside a leaf they have made into a shelter.',
-        'It does not only drink from flowers. It feeds at bird droppings too, which is true and which eight-year-olds find excellent.'
+        'It does not only drink from flowers. It feeds at bird droppings too, which is true and which eight-year-olds find excellent.',
+        'Its mums lay their eggs on cherry, willow and chokecherry leaves, which is why it turns up in the Cherry Grove. And its caterpillar looks exactly like a bird dropping, so hungry animals leave it alone.'
       ]
     },
     {
@@ -2326,7 +2327,174 @@
         'It is a darkling beetle, the very same family as the pinacate beetle that stands on its head out in the sagebrush.',
         'A young one is pale gold and turns dark brown over a few days after it sheds.'
       ]
+    },
+    /* =================================================================
+       v1.15 - more for the Cherry Grove and the Bamboo Grove.
+       Guin: "New bugs for the cherry grove and bammo forest". Every one
+       checked against WSU Tree Fruit, WSU Hortsense, PNW Insect
+       Management Handbook, UC IPM, USDA APHIS, the Washington Butterfly
+       Association, Colorado State and Penn State Extension, BugGuide and
+       the Burke Museum.
+       ================================================================= */
+    {
+      id: 'spotted_wing_drosophila', name: 'Spotted Wing Drosophila',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 44,
+      behavior: 'dart', speed: 54, shy: 46, size: 0.52,
+      measure: 'about as long as this dash –',
+      art: { shape: 'fly', body: '#c8a06a', wing: '#e8f1f5', accent: '#5a3a1e', pattern: 'bands', bodyBands: '#6b4524', eyeCol: '#d0382a', wingSpot: '#1a1a1a' },
+      facts: [
+        'It is a tiny tan fruit fly with big, bright red eyes.',
+        'Most little fruit flies wait for fruit to go rotten. This one has a tiny saw on the end of her tail, so she can slice into a perfect ripe cherry and lay her eggs inside it.',
+        'The boys have one dark spot near the tip of each wing. The spots take most of a day to show up after he hatches.',
+        'It came from Asia and reached eastern Washington around 2010. It spends the winter as a grown-up fly.'
+      ]
+    },
+    {
+      id: 'peachtree_borer', name: 'Peachtree Borer',
+      habitats: ['cherry', 'orchard'], times: ['day'], rarity: 4, value: 140,
+      behavior: 'dart', speed: 58, shy: 70, size: 0.95,
+      measure: 'wings about as wide as a quarter, or a little more',
+      art: { shape: 'clearwing', body: '#1c2340', wing: '#26305a', accent: '#1c2340', rim: '#3a4c8c', belt: '#f28c28' },
+      facts: [
+        'It is a moth dressed up as a wasp, and it zips about in the daytime, which most moths never do.',
+        'The mums and dads look different. He has see-through wings and thin yellow stripes. She has dark wings and one bright orange belt.',
+        'Its creamy caterpillar lives inside the cherry trunk, right down by the ground, chewing under the bark.',
+        'Where a caterpillar is tunnelling, the tree oozes sticky gum full of crumbs. That blob is a clue for tree detectives.'
+      ]
+    },
+    {
+      id: 'tent_caterpillar', name: 'Western Tent Caterpillar',
+      habitats: ['cherry', 'orchard'], times: ['any'], rarity: 2, value: 34,
+      behavior: 'slow', speed: 9, shy: 18, size: 1.0,
+      measure: 'about 2 inches long',
+      art: { shape: 'caterpillar', body: '#7c8da6', body2: '#9aa9be', fur: '#b98a58', legs: '#3e4a5c', woolly: true, back: '#f2ead3', spots: '#3e6fb0' },
+      facts: [
+        'Brothers and sisters spin a silk tent together in a fork of the branches, and they make it bigger as they grow.',
+        'A grown one is soft and fuzzy, with blue spots down its sides and a pale stripe along its back.',
+        'One mum moth lays up to 400 eggs in a single clump, and covers them with a grey-brown coat that works like a raincoat all winter.',
+        'After four to six weeks the caterpillars wander off to spin cocoons, and plain brown moths come out in the middle of summer.'
+      ]
+    },
+    {
+      id: 'japanese_beetle', name: 'Japanese Beetle',
+      habitats: ['cherry', 'garden'], times: ['day'], rarity: 4, value: 120,
+      behavior: 'cling', speed: 16, shy: 60, size: 0.8,
+      measure: 'a little less than half an inch',
+      art: { shape: 'beetle', body: '#1e8c5a', wing: '#b8733a', accent: '#43c38a', pattern: 'tufts', shell: '#b8733a', shell2: '#d08a4c' },
+      facts: [
+        'It has a shiny green head, copper wing covers, and little white fuzzy tufts along its sides.',
+        'It munches leaves until only the veins are left, like a lacy leaf skeleton. Cherry trees are on its menu.',
+        'It spends about ten months of every year underground as a fat white grub, eating grass roots.',
+        'It is not from here. Scientists found it near Pasco in 2023 and have been trapping it ever since to stop it spreading. If you ever see one, a grown-up can report it to the state.'
+      ]
+    },
+    {
+      id: 'mining_bee', name: 'Mining Bee',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 38,
+      behavior: 'hover', speed: 44, shy: 50, size: 0.7,
+      measure: 'somewhere between a pea and a jellybean',
+      art: { shape: 'bee', body: '#2b2b2b', wing: '#eee8dc', accent: '#b08a5a', pattern: 'plain', thorax: '#b08a5a', stripe: '#e8dcc0' },
+      facts: [
+        'Mum digs her very own tunnel in the ground to raise her babies in.',
+        'Each mum works alone, but lots of them dig side by side, like a little bee neighbourhood.',
+        'It is one of the first bees of spring, out and about while the cherry trees are in flower.',
+        'About 400 different kinds of mining bee live in North America.'
+      ]
+    },
+    {
+      id: 'leafroller', name: 'Obliquebanded Leafroller',
+      habitats: ['cherry', 'orchard'], times: ['evening', 'night'], rarity: 3, value: 56,
+      behavior: 'flutter', speed: 30, shy: 48, size: 0.85,
+      measure: 'about an inch across',
+      art: { shape: 'moth', body: '#a0673a', wing: '#a0673a', wing2: '#e8d8b0', accent: '#6b3e1f', pattern: 'bands', bands: '#6b3e1f' },
+      facts: [
+        'Its caterpillar rolls a leaf into a tube and ties it shut with silk, to make a hideout.',
+        'If you bother the caterpillar, it wriggles backwards very fast and can drop down on a silk thread.',
+        'It spends the winter as a tiny caterpillar tucked into a silk sleeping bag on a branch.',
+        'The moth has dark slanting bands across its wings. Oblique is a long word for slanted.'
+      ]
+    },
+
+    /* ---- the bamboo grove ---- */
+    {
+      id: 'bamboo_mite', name: 'Bamboo Spider Mite',
+      habitats: ['bamboo'], times: ['any'], rarity: 4, value: 110,
+      behavior: 'slow', speed: 4, shy: 12, size: 0.5,
+      measure: 'smaller than a grain of salt',
+      art: { shape: 'spider', body: '#d9d48a', wing: '#2f4a2a', accent: '#2f4a2a', pattern: 'spots', legs: '#b9b46a', eye: '#7a2a1a' },
+      facts: [
+        'It is so tiny you need a magnifying glass. It lives on the underside of bamboo leaves.',
+        'A whole family lives together under a thick, shiny silk roof that they weave.',
+        'The family keeps one spot as a shared toilet, and it shows up as neat little rows of dark dots.',
+        'Mums look after their young and push away strange mites. It goes wherever people carry bamboo, and leaves pale speckles on the leaves.'
+      ]
+    },
+    {
+      id: 'grass_carrying_wasp', name: 'Grass-carrying Wasp',
+      habitats: ['bamboo', 'garden'], times: ['day'], rarity: 3, value: 66,
+      behavior: 'dart', speed: 56, shy: 56, size: 0.9,
+      measure: 'about two-thirds of an inch',
+      art: { shape: 'wasp', body: '#151515', wing: '#5a4e44', accent: '#c8963e', pattern: 'plain', grass: '#7fb24a' },
+      facts: [
+        'It flies home carrying a long blade of grass that trails out behind it like a streamer.',
+        'It does not dig. It moves into holes that are already there — hollow stems, the cut ends of bamboo, even window tracks — and stuffs them full of grass.',
+        'Mum hunts tree crickets and katydids. She stings them so they keep still, and packs them in as food for her babies.',
+        'The grown-ups sip nectar from flowers. It is calm, and only stings if it is grabbed.'
+      ]
+    },
+    {
+      id: 'woodlouse_spider', name: 'Woodlouse Hunter',
+      habitats: ['bamboo', 'garden'], times: ['evening', 'night'], rarity: 3, value: 60,
+      behavior: 'crawl', speed: 30, shy: 40, size: 0.85,
+      measure: 'about half an inch, not counting its legs',
+      art: { shape: 'spider', body: '#e3cfa4', body2: '#c0461e', wing: '#c0461e', accent: '#d8c294', legs: '#c0461e', eye: '#1a0a06', stocky: true },
+      facts: [
+        'It has six eyes, not eight like most spiders.',
+        'Its huge fangs are made for getting through a roly-poly’s armour.',
+        'It hunts at night without a web. In the day it rests in a little silk tent under a stone or a log.',
+        'It came from round the Mediterranean Sea. Its bite is only a pinch, but it is one to watch rather than hold.'
+      ]
+    },
+    {
+      id: 'leopard_slug', name: 'Leopard Slug',
+      habitats: ['bamboo', 'garden'], times: ['evening', 'night'], rarity: 3, value: 58,
+      behavior: 'slow', speed: 6, shy: 14, size: 1.3,
+      measure: 'about as long as your hand',
+      art: { shape: 'slug', body: '#bfb4a5', body2: '#a89c8a', keel: '#8a7e6c', spot: '#2a2a2a', tent: '#8a7e6c' },
+      facts: [
+        'It is spotted like a leopard, and it can grow as long as your hand.',
+        'It mostly eats mushrooms, mould and dead leaves, so it is part of the clean-up crew. Sometimes it even eats other slugs.',
+        'It comes out at night, and afterwards it goes home to the very same hiding place.',
+        'Two leopard slugs can spin slowly round each other hanging from a thick rope of their own slime. It first came from Europe.'
+      ]
+    },
+    {
+      id: 'garden_springtail', name: 'Garden Springtail',
+      habitats: ['bamboo', 'garden'], times: ['any'], rarity: 1, value: 14,
+      behavior: 'hop', speed: 26, shy: 34, size: 0.5,
+      measure: 'about the size of a pinhead',
+      art: { shape: 'springtail', body: '#7a6e8a', body2: '#998ea8', legs: '#5a506a', furcula: true },
+      facts: [
+        'It has a spring folded up under its tummy. When it lets go, it flips itself into the air.',
+        'Thousands can live in one square foot of damp leaves.',
+        'It breathes through its skin, so it needs damp places, like the thick pile of fallen bamboo leaves.',
+        'It has six legs but it is not quite an insect — it is a close cousin. It eats mould, and it cannot bite.'
+      ]
+    },
+    {
+      id: 'zebra_jumper', name: 'Zebra Jumping Spider',
+      habitats: ['bamboo', 'garden'], times: ['day'], rarity: 2, value: 40,
+      behavior: 'hop', speed: 30, shy: 44, size: 0.6,
+      measure: 'about a quarter of an inch',
+      art: { shape: 'jumper', body: '#1a1a1a', back: '#f2f2ee', stripe: '#f2f2ee', bars: '#1a1a1a', jaw: '#3a3a3a', legs: '#2a2a2a', eye: '#0c0c0c' },
+      facts: [
+        'It is striped black and white, like a very small zebra.',
+        'It does not catch its dinner in a web. It creeps up and pounces.',
+        'Before it jumps, it fastens a silk safety line, like a rock climber’s rope.',
+        'Its big front eyes see very well, so it may turn round and look right at you. It loves sunny walls, fences and bamboo stems. It came from Europe.'
+      ]
     }
+
 
   ];
 

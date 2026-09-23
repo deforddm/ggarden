@@ -383,7 +383,7 @@
 
     /* ---------------- cats ---------------- */
     {
-      id: 'cookie', name: 'Cookie', family: 'dog',
+      id: 'cookie', name: 'Cookie', family: 'dog', unique: true,
       way: 'ask', patience: 2.5, keep: 52, rarity: 2, value: 110,
       times: ['morning', 'day', 'evening', 'night'],
       places: ['garden', 'meadow', 'forest', 'hill'],
@@ -1532,6 +1532,13 @@
   /* The look-only friends: met, never touched, worth no sparkles, and their
      `danger` line is shown every single time. Only the rattlesnake, so far. */
   GG.animalIsLookOnly = function (def) { return !!(def && def.lookOnly); };
+  /* A unique friend is one particular animal, not a kind of animal. There is
+     only one Cookie, so she is only ever in one place at a time: out in the
+     garden, walking with Guin, waiting at the cottage, or visiting one Garden
+     Habitat. (v1.15 - David: "Make certain friends unique so there is only
+     one of them in the game at a time. Cookie will be the only unique for
+     now.") */
+  GG.animalIsUnique = function (def) { return !!(def && def.unique); };
 
   GG.ANIMAL_BY_ID = {};
   GG.ANIMALS.forEach(function (a, i) {
