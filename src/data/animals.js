@@ -314,7 +314,7 @@
     {
       id: 'labrador', name: 'Labrador Retriever', family: 'dog',
       way: 'ask', patience: 2.4, keep: 48, rarity: 1, value: 60,
-      times: ['morning', 'day', 'evening'], places: ['garden', 'meadow', 'beach'],
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'garden', 'meadow', 'beach'],
       measure: 'comes up past your knee', size: 0.87,
       art: { shape: 'dog', body: '#e0c48a', ear: '#c8a86a', accent: '#8a6a3a',
         muzzle: '#f2e2ba', nose: '#3a2f28', collar: '#3f8ad0', build: 'big' },
@@ -331,7 +331,7 @@
     {
       id: 'corgi', name: 'Welsh Corgi', family: 'dog',
       way: 'ask', patience: 2.6, keep: 46, rarity: 2, value: 85,
-      times: ['morning', 'day', 'evening'], places: ['garden', 'meadow'],
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'garden', 'meadow'],
       measure: 'only as tall as a ruler is long', size: 0.59,
       art: { shape: 'dog', body: '#d88a48', ear: '#c07030', accent: '#8a4f1f',
         muzzle: '#f6ece0', nose: '#332a24', collar: '#d04a70', build: 'short' },
@@ -348,7 +348,7 @@
     {
       id: 'beagle', name: 'Beagle', family: 'dog',
       way: 'ask', patience: 2.8, keep: 50, rarity: 1, value: 65,
-      times: ['morning', 'day', 'evening'], places: ['meadow', 'forest', 'orchard'],
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'meadow', 'forest', 'orchard'],
       measure: 'comes up to your shin', size: 0.67,
       art: { shape: 'dog', body: '#f0ead8', ear: '#8a5730', accent: '#3f342c',
         muzzle: '#f8f4e8', nose: '#2f2620', collar: '#5aa84f', build: 'mid', patch: 'saddle' },
@@ -365,7 +365,7 @@
     {
       id: 'border_collie', name: 'Border Collie', family: 'dog',
       way: 'ask', patience: 3.6, keep: 62, rarity: 2, value: 100,
-      times: ['morning', 'day', 'evening'], places: ['meadow', 'hill'],
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'meadow', 'hill'],
       measure: 'comes up to your thigh', size: 0.79,
       art: { shape: 'dog', body: '#2f2a28', ear: '#221e1c', accent: '#f4f0e6',
         muzzle: '#f4f0e6', nose: '#2a2320', collar: '#e0a03a', build: 'big', patch: 'ruff' },
@@ -378,7 +378,108 @@
         'A squirrel that has seen a dog coming does not hide. It goes a little way up the trunk, turns round to face the dog, and tells it off out loud — which means: I can see you, do not bother. It only hides properly from a hawk.',
         'Dogs really do chase cats. Not in this garden: a Border Collie that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
       ],
-      manners: 'This one is the most reserved of the four. Crouch a little, look away rather than at it, and let it make the first move in its own time.'
+      manners: 'This one is one of the most reserved dogs about. Crouch a little, look away rather than at it, and let it make the first move in its own time.'
+    },
+
+    /* ---------------- Dog's Paradise (v1.18) ----------------
+       Six more breeds, who are mostly found at the dog park. Checked
+       against the AKC breed standards and histories, LSU's work on
+       Dalmatian deafness, and the AVMA's dog-bite-prevention advice. */
+    {
+      id: 'golden_retriever', name: 'Golden Retriever', family: 'dog',
+      way: 'ask', patience: 2.2, keep: 46, rarity: 1, value: 65,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'meadow'],
+      measure: 'the top of its back comes up to your hip', size: 0.9,
+      art: { shape: 'dog', body: '#d9a44a', ear: '#c88f3a', accent: '#8a5a24',
+        muzzle: '#f0d49a', nose: '#3a2a22', collar: '#d04a4a', build: 'big', feather: '#e8bc6a' },
+      facts: [
+        'The first Golden Retrievers were bred in Scotland in the 1860s.',
+        'Goldens were bred to fetch birds for hunters, and their mouths are so gentle that one can carry a raw egg without cracking it.',
+        'Their thick golden coat keeps the water out, so they can swim in cold lakes.',
+        'Goldens work as guide dogs, therapy dogs and search-and-rescue dogs.',
+        'Dogs really do chase cats. Not in this garden: a Golden that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'Goldens are very friendly and often jump up to say hello. Ask the owner first, and stand still like a tree until the dog is calm.'
+    },
+    {
+      id: 'german_shepherd', name: 'German Shepherd', family: 'dog',
+      way: 'ask', patience: 3.8, keep: 64, rarity: 2, value: 95,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'hill'],
+      measure: 'the top of its back comes up to your hip, or a bit higher', size: 0.95,
+      art: { shape: 'dog', body: '#b8864a', ear: '#2a2420', accent: '#2a2420',
+        muzzle: '#c89a5e', nose: '#1a1614', collar: '#3f8ad0', build: 'big', ears: 'up',
+        patch: 'saddle', mask: '#2a2420' },
+      facts: [
+        'German Shepherds were bred to herd sheep. The very first one, a dog called Horand, was chosen in Germany in 1899.',
+        'In 1928 a German Shepherd called Buddy became the first Seeing Eye guide dog in America.',
+        'A German Shepherd called Rin Tin Tin, rescued in the First World War, starred in twenty-three films.',
+        'Today they work as police dogs, search-and-rescue dogs and sniffer dogs.',
+        'Dogs really do chase cats. Not in this garden: a German Shepherd that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'A German Shepherd may be on the job, looking after its family or working as a helper dog. Always ask first, and never pet a dog that is working.'
+    },
+    {
+      id: 'dachshund', name: 'Dachshund', family: 'dog',
+      way: 'ask', patience: 2.8, keep: 44, rarity: 2, value: 80,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'garden'],
+      measure: 'not even up to your knee', size: 0.62,
+      art: { shape: 'dog', body: '#9a4a24', ear: '#7a3618', accent: '#5a2a14',
+        muzzle: '#b0643a', nose: '#2a1a14', collar: '#e0a03a', long: true },
+      facts: [
+        'Dachshund is German for badger dog. The short legs and the long body let it crawl right down into a badger’s hole.',
+        'Dachshunds come in three coats, smooth, wiry and long-haired, and in two sizes, standard and miniature.',
+        'A Dachshund called Waldi was the very first Olympic mascot, at the 1972 Olympics in Munich.',
+        'Dogs really do chase cats. Not in this garden: a Dachshund that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'Never pick a Dachshund up: its long back is easy to hurt. Let the owner lift it, and sit down on the ground to say hello.'
+    },
+    {
+      id: 'dalmatian', name: 'Dalmatian', family: 'dog',
+      way: 'ask', patience: 3.2, keep: 56, rarity: 3, value: 120,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'farmyard'],
+      measure: 'the top of its back comes up to the top of your leg', size: 0.9,
+      art: { shape: 'dog', body: '#f4f2ec', ear: '#f4f2ec', accent: '#1a1a1a',
+        muzzle: '#f8f6f0', nose: '#1a1a1a', collar: '#d0343a', build: 'big', spots: '#1a1a1a' },
+      facts: [
+        'Dalmatian puppies are born pure white. Their spots only come as they grow.',
+        'No two Dalmatians have the same spots.',
+        'Dalmatians used to run alongside horse-drawn fire wagons, and lots of fire stations kept one as a mascot after fire engines came along.',
+        'Their spots are either black or liver-brown.',
+        'Dogs really do chase cats. Not in this garden: a Dalmatian that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'Quite a lot of Dalmatians cannot hear well in one ear or both. Come from the front, where it can see you, and never sneak up on one.'
+    },
+    {
+      id: 'standard_poodle', name: 'Standard Poodle', family: 'dog',
+      way: 'ask', patience: 3.4, keep: 54, rarity: 2, value: 90,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'pond'],
+      measure: 'many come up as tall as your hip', size: 0.9,
+      art: { shape: 'dog', body: '#e8c49a', ear: '#e0b888', accent: '#b8885a',
+        muzzle: '#f0d4b0', nose: '#3a2a22', collar: '#e060a0', build: 'big', curly: true },
+      facts: [
+        'Poodles were bred to fetch ducks out of the water. The name comes from a German word that means to splash about.',
+        'The fancy haircut had a job: hunters trimmed the legs and tail so the dog could swim, and left fur on the chest and joints to keep it warm.',
+        'France calls the Poodle its national dog, even though the breed probably started in Germany.',
+        'Dogs really do chase cats. Not in this garden: a Poodle that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'Poodles are clever and sensitive, so move slowly and talk softly. Ask first, and let the dog come to you.'
+    },
+    {
+      id: 'australian_shepherd', name: 'Australian Shepherd', family: 'dog',
+      way: 'ask', patience: 3.6, keep: 60, rarity: 3, value: 115,
+      times: ['morning', 'day', 'evening'], places: ['dogpark', 'farmyard'],
+      measure: 'the top of its back comes up to your thigh', size: 0.85,
+      art: { shape: 'dog', body: '#9aa4b0', ear: '#3a3f48', accent: '#f4f2ee',
+        muzzle: '#f4f2ee', nose: '#2a2420', collar: '#5aa84f', build: 'big', patch: 'ruff',
+        merle: '#3a3f48', points: '#b86a3a', bob: true },
+      facts: [
+        'Despite its name, the Australian Shepherd was made in the western United States, to herd sheep. It was named after sheepdogs that came over with sheep from Australia.',
+        'Aussies got famous at rodeos, herding bulls and doing tricks.',
+        'Their eyes can be brown, blue, amber, or even two colours in one eye!',
+        'About one in five is born with a short little tail.',
+        'Dogs really do chase cats. Not in this garden: a Aussie that spots one of your cat friends sits down and waits instead, because friends never hunt friends.'
+      ],
+      manners: 'Herding dogs may chase running feet or give them a nip. Do not run: stand still like a tree, and ask the owner first.'
     },
 
     /* ---------------- cats ---------------- */
@@ -386,7 +487,7 @@
       id: 'cookie', name: 'Cookie', family: 'dog', unique: true,
       way: 'ask', patience: 2.5, keep: 52, rarity: 2, value: 110,
       times: ['morning', 'day', 'evening', 'night'],
-      places: ['garden', 'meadow', 'forest', 'hill'],
+      places: ['dogpark', 'garden', 'meadow', 'forest', 'hill'],
       measure: 'comes up past your knee', size: 0.8,
       art: { shape: 'dog', body: '#2f2b29', ear: '#241f1d', accent: '#f4f2ee',
         muzzle: '#f4f2ee', nose: '#171412', collar: '#b0322c', build: 'big',

@@ -6,9 +6,20 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.17.0';
+  GG.VERSION = '1.18.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.18.0', title: 'Dog\u2019s Paradise, and a garden full of things to pick',
+      lines: [
+        'There is a dog park now! Dog\u2019s Paradise is on the lawn west of the Flower Garden, with jumps, weave poles, a tunnel, kennels, benches, water bowls, and tennis balls everywhere. The notice board tells you something new about dogs each time you go in.',
+        'Six new dogs come to play there: a Golden Retriever, a German Shepherd, a Dachshund, a Dalmatian, a Standard Poodle and an Australian Shepherd. Your other dogs visit the park too.',
+        'Forty-two new things to pick. Peaches, apricots, plums, Rainier cherries and grapes in the orchard. Carrots, radishes, potatoes, Walla Walla onions, corn, snap peas, tomatoes, zucchini, pumpkins, watermelons and asparagus in vegetable beds in the Farmyard and the Flower Garden.',
+        'Wild berries grow where they really grow: huckleberries, salmonberries, thimbleberries, salal, crowberries and more, out in the woods, the rainforest, the mountains and the tundra. And there are flowers to pick, from sunflowers and tulips to fireweed and lupines.',
+        'Some of them are poisonous, like baneberry, foxglove and daffodils. Every page says clearly whether it is food, and what to be careful of.',
+        'The Fruit Book is now the Garden Book, with shelves for fruit, berries, vegetables and flowers. Every new kind you pick unlocks a basket, a punnet, a crate or a jar of it for your tanks.'
+      ]
+    },
     {
       v: '1.17.0', title: 'Walk anywhere, or just tap where you want to go',
       lines: [

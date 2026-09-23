@@ -2518,7 +2518,7 @@
     tundra: 'the Lichen Tundra', rainforest: 'the Mossy Rainforest', glade: 'the Golden Glade',
     savanna: 'the Oak Savanna', swamp: 'the Cattail Marsh', cave: 'the Lava Tube',
     badlands: 'the Scablands', bamboo: 'the Bamboo Grove', cherry: 'the Cherry Grove',
-    farmyard: 'the Farmyard',
+    farmyard: 'the Farmyard', dogpark: 'Dog\u2019s Paradise',
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };
