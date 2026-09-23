@@ -1,4 +1,17 @@
-/* Touch joystick + keyboard. Works on a phone or a laptop. */
+/* Touch joystick, tap-to-walk and keyboard. Works on a phone or a laptop.
+
+   v1.17 (David): "currently we only allow movement by pressing the left side
+   of the screen. Let's change that up to allow it across the full screen and
+   also allow the player to click to move to locations seamlessly."
+
+   So a finger (or the mouse) anywhere on the game - not on a button - does
+   one of two things, decided by what it does next:
+     - it slides more than a few pixels: that is the floating joystick,
+       centred where the finger first landed, exactly as before;
+     - it lifts again quickly without sliding: that is a TAP, and Guin walks
+       to the spot she tapped, steering round nothing but stopping politely
+       when she arrives or when something is in the way.
+   Any stick or key movement takes over from a tap straight away. */
 (function (GG) {
   'use strict';
 
@@ -11,6 +24,16 @@
     keys: {},
     stick: { active: false, id: null, ox: 0, oy: 0, cx: 0, cy: 0 },
     _actionQueued: false,
+    pending: null,       // a finger that is down but has not slid yet
+    moveTarget: null,    // { x, y } in the current scene's coordinates
+    TAP_SLOP: 12,        // px a finger may wander and still count as a tap
+    TAP_TIME: 450,       // ms: longer than this and it is not a tap
+
+    /* Walk to (x, y) in the current scene. */
+    walkTo: function (x, y) {
+      this.moveTarget = { x: x, y: y, t: 0, best: 1e9, since: 0 };
+    },
+    clearTarget: function () { this.moveTarget = null; },
 
     init: function (rootEl, stickEl, knobEl, actionEl, action2El, action3El) {
       this.action2El = action2El;
@@ -59,50 +82,85 @@
         return false;
       }
 
+      /* ---- one finger, two gestures: slide = joystick, tap = walk there ---- */
+      function down(id, px, py) {
+        if (self.stick.active || self.pending) return false;
+        self.pending = { id: id, x: px, y: py, t: Date.now() };
+        return true;
+      }
+      function slide(id, px, py) {
+        var pd = self.pending;
+        if (pd && pd.id === id) {
+          if (Math.abs(px - pd.x) + Math.abs(py - pd.y) > self.TAP_SLOP) {
+            /* it is a drag: the stick appears where the finger first landed */
+            self.pending = null;
+            self.moveTarget = null;
+            startStick(id, pd.x, pd.y);
+            moveStick(px, py);
+          }
+          return true;
+        }
+        if (self.stick.active && self.stick.id === id) { moveStick(px, py); return true; }
+        return false;
+      }
+      function up(id, px, py) {
+        var pd = self.pending;
+        if (pd && pd.id === id) {
+          self.pending = null;
+          if (Date.now() - pd.t <= self.TAP_TIME && GG.screenToWorld) {
+            var w = GG.screenToWorld(px, py);
+            if (w) self.walkTo(w.x, w.y);
+          }
+          return true;
+        }
+        if (self.stick.active && self.stick.id === id) { endStick(); return true; }
+        return false;
+      }
+
       rootEl.addEventListener('touchstart', function (e) {
         if (GG.UI && GG.UI.anyOpen()) return;
         var grabbed = false;
         for (var i = 0; i < e.changedTouches.length; i++) {
           var t = e.changedTouches[i];
           if (onUI(t.target)) continue;
-          if (!self.stick.active && t.clientX < window.innerWidth * 0.62) {
-            startStick(t.identifier, t.clientX, t.clientY);
-            grabbed = true;
-          }
+          if (down(t.identifier, t.clientX, t.clientY)) grabbed = true;
         }
         if (grabbed) e.preventDefault();
       }, { passive: false });
 
       rootEl.addEventListener('touchmove', function (e) {
-        if (!self.stick.active) return;
         var mine = false;
         for (var i = 0; i < e.changedTouches.length; i++) {
           var t = e.changedTouches[i];
-          if (t.identifier === self.stick.id) { moveStick(t.clientX, t.clientY); mine = true; }
+          if (slide(t.identifier, t.clientX, t.clientY)) mine = true;
         }
         if (mine) e.preventDefault();
       }, { passive: false });
 
       function touchEnd(e) {
         for (var i = 0; i < e.changedTouches.length; i++) {
-          if (self.stick.active && e.changedTouches[i].identifier === self.stick.id) endStick();
+          var t = e.changedTouches[i];
+          up(t.identifier, t.clientX, t.clientY);
         }
       }
       rootEl.addEventListener('touchend', touchEnd);
-      rootEl.addEventListener('touchcancel', touchEnd);
+      rootEl.addEventListener('touchcancel', function (e) {
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          var id = e.changedTouches[i].identifier;
+          if (self.pending && self.pending.id === id) self.pending = null;
+          if (self.stick.active && self.stick.id === id) endStick();
+        }
+      });
 
-      // Mouse, for playing on a computer.
+      // Mouse, for playing on a computer: click to walk there, drag to steer.
       rootEl.addEventListener('mousedown', function (e) {
         if (GG.UI && GG.UI.anyOpen()) return;
         if (onUI(e.target)) return;
-        startStick('mouse', e.clientX, e.clientY);
+        if (e.button !== undefined && e.button !== 0) return;
+        down('mouse', e.clientX, e.clientY);
       });
-      window.addEventListener('mousemove', function (e) {
-        if (self.stick.active && self.stick.id === 'mouse') moveStick(e.clientX, e.clientY);
-      });
-      window.addEventListener('mouseup', function () {
-        if (self.stick.active && self.stick.id === 'mouse') endStick();
-      });
+      window.addEventListener('mousemove', function (e) { slide('mouse', e.clientX, e.clientY); });
+      window.addEventListener('mouseup', function (e) { up('mouse', e.clientX, e.clientY); });
 
       function press(e) { e.preventDefault(); self._actionQueued = true; actionEl.classList.add('down'); }
       function release() { actionEl.classList.remove('down'); }
@@ -140,7 +198,28 @@
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
       });
       window.addEventListener('keyup', function (e) { self.keys[e.key.toLowerCase()] = false; });
-      window.addEventListener('blur', function () { self.keys = {}; endStick(); });
+      window.addEventListener('blur', function () { self.keys = {}; self.pending = null; endStick(); });
+    },
+
+    /* Walking to a tapped spot: head straight for it, ease off at the end,
+       and give up quietly if she stops getting any closer (a tree, the
+       river, the edge of the room) rather than treading on the spot. */
+    steer: function () {
+      var T = this.moveTarget, P = GG.Player;
+      var dx = T.x - P.x, dy = T.y - P.y;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 3) {
+        /* arrived: settle on the spot rather than skidding past it */
+        this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0;
+        P.vx *= 0.25; P.vy *= 0.25;
+        return;
+      }
+      var now = Date.now();
+      if (!T.at) T.at = now;
+      if (d < T.best - 2) { T.best = d; T.at = now; }
+      else if (now - T.at > 450) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
+      this.x = dx / d; this.y = dy / d;
+      this.mag = GG.clamp(d / 48, 0.18, 1);   // full speed, easing off over the last few steps
     },
 
     // Called once per frame, after the stick values are read.
@@ -155,7 +234,12 @@
         var l = Math.sqrt(kx * kx + ky * ky);
         this.x = kx / l; this.y = ky / l;
         this.mag = (k['shift']) ? 0.42 : 1;   // hold shift to tiptoe
-      } else if (!this.stick.active) {
+        this.moveTarget = null;               // the keys take over from a tap
+      } else if (this.stick.active) {
+        this.moveTarget = null;
+      } else if (this.moveTarget && GG.Player) {
+        this.steer();
+      } else {
         this.x = 0; this.y = 0; this.mag = 0;
       }
       this.actionPressed = this._actionQueued;
