@@ -69,7 +69,15 @@
     var n = parseInt(col.slice(1), 16);
     return ((n >> 8) & 255) >= Math.max((n >> 16) & 255, n & 255);
   }
+  /* worked out once per flower def - the defs never change while playing */
+  var colMemo = typeof WeakMap === 'function' ? new WeakMap() : null;
   function colours(a) {
+    if (!colMemo || !a || typeof a !== 'object') return coloursRaw(a);
+    var C = colMemo.get(a);
+    if (!C) { C = coloursRaw(a); colMemo.set(a, C); }
+    return C;
+  }
+  function coloursRaw(a) {
     var p = a.petal || a.skin || '#e0608a';
     var sc = a.stemCol || '#4f8a3a';
     return {

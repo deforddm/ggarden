@@ -509,7 +509,7 @@
     }
   }
 
-  P.vegPatch = function (c, x, y, r, t, seed, col, p) {
+  function vegPatchLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = ripeOf(p);
     seed = seed || 0;
@@ -525,7 +525,7 @@
     else if (grp === 'sprawl') sprawlPatch(c, def, x, y, r, t, seed, ripe);
     else if (grp === 'spear') spearPatch(c, def, x, y, r, t, seed, ripe);
     else rootRow(c, def, x, y, r, t, seed, ripe);
-  };
+  }
 
   /* =====================================================================
      WILD BERRY - a native shrub, cane or groundcover
@@ -604,7 +604,7 @@
     }
   }
 
-  P.wildBerry = function (c, x, y, r, t, seed, col, p) {
+  function wildBerryLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = def ? ripeOf(p) : 0;
     seed = seed || 0;
@@ -894,12 +894,12 @@
         berry(c, def, hx, hy, r * 0.065 * g);
       }
     });
-  };
+  }
 
   /* =====================================================================
      PICK FLOWER - a clump of 3 to 5 blooms of one flower
      ===================================================================== */
-  P.pickFlower = function (c, x, y, r, t, seed, col, p) {
+  function pickFlowerLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = ripeOf(p);
     seed = seed || 0;
@@ -933,5 +933,64 @@
       });
       c.restore();
     });
-  };
+  }
+
+  /* =====================================================================
+     SPRITES - each of these clumps costs 50 to 190 microseconds to draw
+     from scratch, and a garden screen has dozens. So each plant is drawn
+     once into its own little offscreen canvas at the screen's real
+     resolution, and after that it is just stamped. It is redrawn only when
+     its crop changes (picked, then growing back in tenths), its size or the
+     screen scale changes. The price is the flowers' gentle sway.
+     ===================================================================== */
+  var SPR_CAP = 72;               // at most this many plants keep a sprite
+  var sprUsed = new Map();        // prop -> true, oldest use first
+  function spriteScale(c) {
+    if (GG.PROP_DPR) return GG.PROP_DPR * ((GG.view && GG.view.zoom) || 1);
+    var m = c.getTransform ? c.getTransform() : null;
+    var s = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 0;
+    if (!(s > 0)) s = ((GG.view && GG.view.zoom) || 1) * Math.min(window.devicePixelRatio || 1, 2.5);
+    return Math.round(s * 8) / 8;
+  }
+  function sprited(live, box) {
+    return function (c, x, y, r, t, seed, col, p) {
+      if (!p || typeof p !== 'object' || !c.drawImage) { live(c, x, y, r, t, seed, col, p); return; }
+      var ripe = p.ripe == null ? 1 : Math.max(0, Math.min(1, p.ripe));
+      /* in tenths, rounded DOWN: a plant never looks ready before it is */
+      var rq = ripe >= 1 ? 1 : Math.floor(ripe * 10) / 10;
+      var S = spriteScale(c);
+      var cv = p._spr;
+      if (!cv || p._sprFruit !== p.fruit || p._sprRipe !== rq || p._sprS !== S || p._sprR !== r || p._sprCol !== col) {
+        var side = r * box[0] + 4, up = r * box[1] + 6, down = r * box[2] + 4;
+        cv = cv || document.createElement('canvas');
+        cv.width = Math.max(1, Math.ceil((side * 2) * S));
+        cv.height = Math.max(1, Math.ceil((up + down) * S));
+        var g = cv.getContext('2d');
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.clearRect(0, 0, cv.width, cv.height);
+        g.setTransform(S, 0, 0, S, 0, 0);
+        /* draw it as it is now, still: t = 0 and the crop at rq */
+        var q = Object.create(p);
+        q.ripe = rq;
+        live(g, side, up, r, 0, seed, col, q);
+        p._spr = cv; p._sprFruit = p.fruit; p._sprRipe = rq; p._sprS = S; p._sprR = r; p._sprCol = col;
+        p._sprO = side; p._sprU = up;
+        if (sprUsed.size >= SPR_CAP && !sprUsed.has(p)) {
+          var old = sprUsed.keys().next().value;
+          sprUsed.delete(old);
+          if (old) old._spr = null;
+        }
+      }
+      sprUsed.delete(p); sprUsed.set(p, true);
+      /* land on whole device pixels, so the stamp is never resampled soft */
+      var dx = Math.round((x - p._sprO) * S) / S, dy = Math.round((y - p._sprU) * S) / S;
+      c.drawImage(cv, dx, dy, cv.width / S, cv.height / S);
+    };
+  }
+  /* [half width, height above the base, depth below it], in units of r */
+  P.vegPatch = sprited(vegPatchLive, [1.3, 2.35, 0.6]);
+  P.wildBerry = sprited(wildBerryLive, [1.35, 2.4, 0.5]);
+  P.pickFlower = sprited(pickFlowerLive, [1.5, 2.05, 0.4]);
+  /* the unsprited versions, for anything that wants them moving */
+  GG.PlantLive = { vegPatch: vegPatchLive, wildBerry: wildBerryLive, pickFlower: pickFlowerLive };
 })(window.GG = window.GG || {});

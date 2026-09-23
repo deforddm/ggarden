@@ -354,15 +354,27 @@
     c.closePath(); c.fill();
   };
 
+  /* The board grows to fit its words ("Dog's Paradise" ran off both ends
+     of the old fixed-width board). Text widths are remembered per label. */
+  var signTextW = {};
   P.sign = function (c, x, y, r, t, seed, label) {
+    var font = 'bold ' + Math.round(r * 0.36) + 'px "Trebuchet MS", sans-serif';
+    var w = r * 1.8;
+    if (label) {
+      c.font = font;
+      var key = label + '|' + font;
+      var tw = signTextW[key];
+      if (tw == null) tw = signTextW[key] = c.measureText(label).width;
+      w = Math.max(w, tw + r * 0.5);
+    }
     c.fillStyle = '#9a7247';
     c.fillRect(x - r * 0.1, y - r * 1.1, r * 0.2, r * 1.1);
     c.fillStyle = '#d9b982';
-    GG.roundRect(c, x - r * 0.9, y - r * 1.9, r * 1.8, r * 0.9, r * 0.12); c.fill();
+    GG.roundRect(c, x - w / 2, y - r * 1.9, w, r * 0.9, r * 0.12); c.fill();
     c.strokeStyle = '#9a7247'; c.lineWidth = 1.5; c.stroke();
     if (label) {
       c.fillStyle = '#5b432a';
-      c.font = 'bold ' + Math.round(r * 0.36) + 'px "Trebuchet MS", sans-serif';
+      c.font = font;
       c.textAlign = 'center'; c.textBaseline = 'middle';
       c.fillText(label, x, y - r * 1.45);
     }
