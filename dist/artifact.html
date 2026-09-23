@@ -150,6 +150,19 @@ ul.tips li{margin-bottom:3px}
   animation:bitepulse .45s infinite alternate}
 @keyframes bitepulse{from{transform:scale(1)}to{transform:scale(1.09)}}
 #book-tabs{margin-top:0}
+#book-tabs .tab[data-book="home"]{flex:0 0 46px}
+#book-kicker{font-size:10.5px;font-weight:bold;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-bottom:1px}
+#book-kicker.hide{display:none}
+.shelf{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shelfbook{position:relative;border-radius:16px;padding:10px 10px 12px;color:#fff;cursor:pointer;
+  box-shadow:inset 7px 0 0 rgba(0,0,0,.16),0 3px 0 rgba(0,0,0,.14);min-height:150px;display:flex;flex-direction:column}
+.shelfbook canvas{width:100%;height:78px;display:block;background:rgba(255,255,255,.2);border-radius:10px;margin:6px 0 8px}
+.shelfbook .bk{font-weight:bold;font-size:16px;line-height:1.1}
+.shelfbook .bn{font-size:12px;opacity:.95;margin-top:2px}
+.shelfbook .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.35);margin-top:auto;overflow:hidden}
+.shelfbook .bar i{display:block;height:100%;background:#fff6c8;border-radius:5px}
+.shelfbook:active{transform:translateY(2px)}
+.shelfnote{grid-column:1/-1;background:var(--cream2);border:2px solid #eaddc0;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.35}
 
 #deltank-art{width:100%;display:block;border-radius:16px;background:#cfe9f5}
 #deltank-name{font-size:17px;font-weight:bold;text-align:center;margin:8px 0 2px}
@@ -288,6 +301,9 @@ ul.tips li{margin-bottom:3px}
 #warn-danger b{display:block;color:#b22b2b;margin-bottom:3px}
 #warn-fact{font-size:14px;line-height:1.45;background:var(--cream2);border-radius:14px;padding:10px;margin:8px 0}
 .tag.lookonly{background:#fdeaea;color:#b22b2b}
+#friend-unique,#friend-riding{font-size:13.5px;line-height:1.45;background:#fff4e6;border:2px solid #f0d2a8;border-radius:14px;padding:9px 12px}
+#friend-unique b,#friend-riding b{display:block;color:#a8642a;margin-bottom:3px}
+#friend-unique span,#friend-riding span{display:block}
 
 </style>
 <div id="app">
@@ -451,8 +467,8 @@ ul.tips li{margin-bottom:3px}
           <div class="grow"><b id="menu-progress">0 of 31 bugs found</b><div class="note" id="menu-place"></div></div>
         </div>
         <canvas id="minimap" width="640" height="480"></canvas>
-        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house.</div>
-        <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Bug Book</button>
+        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
+        <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Critter Compendium</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
         <button class="btn grow" id="menu-settings" style="width:100%;margin-bottom:8px">Settings</button>
         <button class="btn grow pink" id="menu-endguest" style="width:100%" hidden>Finish the visit</button>
@@ -461,12 +477,13 @@ ul.tips li{margin-bottom:3px}
     </div>
   </div>
 
-  <!-- bug book -->
+  <!-- the Critter Compendium: the Bug, Fish, Friends and Fruit books under one cover -->
   <div class="panel hidden" id="screen-book">
     <div class="sheet">
-      <header><h2 id="book-title">Bug Book</h2><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
+      <header><div class="grow"><div id="book-kicker">Critter Compendium</div><h2 id="book-title">Critter Compendium</h2></div><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
       <div class="body">
         <div class="tabs" id="book-tabs">
+          <div class="tab" data-book="home" title="All the books">&#128218;</div>
           <div class="tab on" data-book="bugs">Bugs</div>
           <div class="tab" data-book="fish">Fish</div>
           <div class="tab" data-book="friends">Friends</div>
@@ -864,6 +881,7 @@ ul.tips li{margin-bottom:3px}
       (this.data.terrariums || []).forEach(function (t) {
         if (!t.friends) t.friends = [];
       });
+      this.tidyUnique();
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
       }
@@ -954,6 +972,27 @@ ul.tips li{margin-bottom:3px}
       if (!c) c = this.data.fruit[id] = { count: 0, first: Date.now() };
       c.count++;
       return isNew;
+    },
+    /* A unique friend (Cookie) is in one place only. An older save could have
+       her walking along AND waiting indoors AND in two habitats; keep the
+       first of those and let the rest go. */
+    tidyUnique: function () {
+      var d = this.data;
+      if (!GG.ANIMALS) return;
+      GG.ANIMALS.forEach(function (def) {
+        if (!def.unique) return;
+        var id = def.id, placed = false;
+        if (d.companion === id) placed = true;
+        var at = (d.homeFriends || []).indexOf(id);
+        if (at >= 0) { if (placed) d.homeFriends.splice(at, 1); else placed = true; }
+        (d.terrariums || []).forEach(function (t) {
+          if (!t.friends) return;
+          for (var i = t.friends.length - 1; i >= 0; i--) {
+            if (t.friends[i].id !== id) continue;
+            if (placed) t.friends.splice(i, 1); else placed = true;
+          }
+        });
+      });
     },
     hatOf: function (id) { return (this.data.hats || {})[id] || null; },
     setHat: function (id, hatId) {
@@ -1853,9 +1892,22 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.14.0';
+  GG.VERSION = '1.15.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.15.0', title: 'The Critter Compendium, fishing in the marsh, and Cookie',
+      lines: [
+        'Your Bug Book has grown into the Critter Compendium. Open it and there are four books on the shelf \u2014 the Bug Book, the Fish Book, the Friends Book and the Fruit Book \u2014 each with how far you have got.',
+        'You can fish in the Cattail Marsh now. It had no water in it before, which is a funny sort of marsh. There are dark open pools between the cattails, with duckweed floating on them and seven fish to find.',
+        'The lava tube has a proper GO IN button, and it is on the map as a little dark arch. The footbridge is on the map too.',
+        'Only a honeybee dies after she stings you, because her stinger is barbed and stays in your skin. Every other bee and wasp flies off afterwards, and now they really do. Each one also tells you the true thing about her own sting \u2014 and a thatching ant has no stinger at all. That was a bite.',
+        'Each look-don\u2019t-catch creature can be looked at once. After that she goes back to what she was doing.',
+        'Hybrid tanks hold 8 bugs and 6 fish, and fish tanks hold 8 rock-pool creatures. The sea grass, shells and treasure chest go down on the sand under the water. And crabs climb up onto the bank for a walk, because shore crabs and hermit crabs really do.',
+        'Thirteen new creatures in the Cherry Grove and the Bamboo Grove \u2014 including a butterfly that looks dipped in paint, a moth dressed as a wasp, a wasp that flies home with a blade of grass, a spider with six eyes, and a Japanese beetle, which really was found near Pasco.',
+        'There is only one Cookie. Wherever she is \u2014 walking with you, waiting at home, or visiting a habitat \u2014 that is the only place she is.'
+      ]
+    },
     {
       v: '1.14.0', title: 'Thirty-one new friends, seven new places, and a horse to ride',
       lines: [
@@ -3888,14 +3940,15 @@ ul.tips li{margin-bottom:3px}
        ================================================================= */
     {
       id: 'lorquins_admiral', name: 'Lorquin’s Admiral',
-      habitats: ['glade', 'forest'], times: ['day'], rarity: 2, value: 56,
+      habitats: ['glade', 'forest', 'cherry'], times: ['day'], rarity: 2, value: 56,
       behavior: 'flutter', speed: 40, shy: 56, size: 1.15,
       measure: 'about 2¼ inches across',
       art: { shape: 'butterfly', body: '#2a231e', wing: '#2e2620', wing2: '#33291f', accent: '#f4f2ea', pattern: 'whiteband', tip: '#c86a28' },
       facts: [
         'The males spend the whole day perched at the bottom of a clearing, watching for a female to go past.',
         'Its caterpillars spend the winter half grown, rolled up inside a leaf they have made into a shelter.',
-        'It does not only drink from flowers. It feeds at bird droppings too, which is true and which eight-year-olds find excellent.'
+        'It does not only drink from flowers. It feeds at bird droppings too, which is true and which eight-year-olds find excellent.',
+        'Its mums lay their eggs on cherry, willow and chokecherry leaves, which is why it turns up in the Cherry Grove. And its caterpillar looks exactly like a bird dropping, so hungry animals leave it alone.'
       ]
     },
     {
@@ -4333,7 +4386,174 @@ ul.tips li{margin-bottom:3px}
         'It is a darkling beetle, the very same family as the pinacate beetle that stands on its head out in the sagebrush.',
         'A young one is pale gold and turns dark brown over a few days after it sheds.'
       ]
+    },
+    /* =================================================================
+       v1.15 - more for the Cherry Grove and the Bamboo Grove.
+       Guin: "New bugs for the cherry grove and bammo forest". Every one
+       checked against WSU Tree Fruit, WSU Hortsense, PNW Insect
+       Management Handbook, UC IPM, USDA APHIS, the Washington Butterfly
+       Association, Colorado State and Penn State Extension, BugGuide and
+       the Burke Museum.
+       ================================================================= */
+    {
+      id: 'spotted_wing_drosophila', name: 'Spotted Wing Drosophila',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 44,
+      behavior: 'dart', speed: 54, shy: 46, size: 0.52,
+      measure: 'about as long as this dash –',
+      art: { shape: 'fly', body: '#c8a06a', wing: '#e8f1f5', accent: '#5a3a1e', pattern: 'bands', bodyBands: '#6b4524', eyeCol: '#d0382a', wingSpot: '#1a1a1a' },
+      facts: [
+        'It is a tiny tan fruit fly with big, bright red eyes.',
+        'Most little fruit flies wait for fruit to go rotten. This one has a tiny saw on the end of her tail, so she can slice into a perfect ripe cherry and lay her eggs inside it.',
+        'The boys have one dark spot near the tip of each wing. The spots take most of a day to show up after he hatches.',
+        'It came from Asia and reached eastern Washington around 2010. It spends the winter as a grown-up fly.'
+      ]
+    },
+    {
+      id: 'peachtree_borer', name: 'Peachtree Borer',
+      habitats: ['cherry', 'orchard'], times: ['day'], rarity: 4, value: 140,
+      behavior: 'dart', speed: 58, shy: 70, size: 0.95,
+      measure: 'wings about as wide as a quarter, or a little more',
+      art: { shape: 'clearwing', body: '#1c2340', wing: '#26305a', accent: '#1c2340', rim: '#3a4c8c', belt: '#f28c28' },
+      facts: [
+        'It is a moth dressed up as a wasp, and it zips about in the daytime, which most moths never do.',
+        'The mums and dads look different. He has see-through wings and thin yellow stripes. She has dark wings and one bright orange belt.',
+        'Its creamy caterpillar lives inside the cherry trunk, right down by the ground, chewing under the bark.',
+        'Where a caterpillar is tunnelling, the tree oozes sticky gum full of crumbs. That blob is a clue for tree detectives.'
+      ]
+    },
+    {
+      id: 'tent_caterpillar', name: 'Western Tent Caterpillar',
+      habitats: ['cherry', 'orchard'], times: ['any'], rarity: 2, value: 34,
+      behavior: 'slow', speed: 9, shy: 18, size: 1.0,
+      measure: 'about 2 inches long',
+      art: { shape: 'caterpillar', body: '#7c8da6', body2: '#9aa9be', fur: '#b98a58', legs: '#3e4a5c', woolly: true, back: '#f2ead3', spots: '#3e6fb0' },
+      facts: [
+        'Brothers and sisters spin a silk tent together in a fork of the branches, and they make it bigger as they grow.',
+        'A grown one is soft and fuzzy, with blue spots down its sides and a pale stripe along its back.',
+        'One mum moth lays up to 400 eggs in a single clump, and covers them with a grey-brown coat that works like a raincoat all winter.',
+        'After four to six weeks the caterpillars wander off to spin cocoons, and plain brown moths come out in the middle of summer.'
+      ]
+    },
+    {
+      id: 'japanese_beetle', name: 'Japanese Beetle',
+      habitats: ['cherry', 'garden'], times: ['day'], rarity: 4, value: 120,
+      behavior: 'cling', speed: 16, shy: 60, size: 0.8,
+      measure: 'a little less than half an inch',
+      art: { shape: 'beetle', body: '#1e8c5a', wing: '#b8733a', accent: '#43c38a', pattern: 'tufts', shell: '#b8733a', shell2: '#d08a4c' },
+      facts: [
+        'It has a shiny green head, copper wing covers, and little white fuzzy tufts along its sides.',
+        'It munches leaves until only the veins are left, like a lacy leaf skeleton. Cherry trees are on its menu.',
+        'It spends about ten months of every year underground as a fat white grub, eating grass roots.',
+        'It is not from here. Scientists found it near Pasco in 2023 and have been trapping it ever since to stop it spreading. If you ever see one, a grown-up can report it to the state.'
+      ]
+    },
+    {
+      id: 'mining_bee', name: 'Mining Bee',
+      habitats: ['cherry', 'orchard'], times: ['morning', 'day'], rarity: 2, value: 38,
+      behavior: 'hover', speed: 44, shy: 50, size: 0.7,
+      measure: 'somewhere between a pea and a jellybean',
+      art: { shape: 'bee', body: '#2b2b2b', wing: '#eee8dc', accent: '#b08a5a', pattern: 'plain', thorax: '#b08a5a', stripe: '#e8dcc0' },
+      facts: [
+        'Mum digs her very own tunnel in the ground to raise her babies in.',
+        'Each mum works alone, but lots of them dig side by side, like a little bee neighbourhood.',
+        'It is one of the first bees of spring, out and about while the cherry trees are in flower.',
+        'About 400 different kinds of mining bee live in North America.'
+      ]
+    },
+    {
+      id: 'leafroller', name: 'Obliquebanded Leafroller',
+      habitats: ['cherry', 'orchard'], times: ['evening', 'night'], rarity: 3, value: 56,
+      behavior: 'flutter', speed: 30, shy: 48, size: 0.85,
+      measure: 'about an inch across',
+      art: { shape: 'moth', body: '#a0673a', wing: '#a0673a', wing2: '#e8d8b0', accent: '#6b3e1f', pattern: 'bands', bands: '#6b3e1f' },
+      facts: [
+        'Its caterpillar rolls a leaf into a tube and ties it shut with silk, to make a hideout.',
+        'If you bother the caterpillar, it wriggles backwards very fast and can drop down on a silk thread.',
+        'It spends the winter as a tiny caterpillar tucked into a silk sleeping bag on a branch.',
+        'The moth has dark slanting bands across its wings. Oblique is a long word for slanted.'
+      ]
+    },
+
+    /* ---- the bamboo grove ---- */
+    {
+      id: 'bamboo_mite', name: 'Bamboo Spider Mite',
+      habitats: ['bamboo'], times: ['any'], rarity: 4, value: 110,
+      behavior: 'slow', speed: 4, shy: 12, size: 0.5,
+      measure: 'smaller than a grain of salt',
+      art: { shape: 'spider', body: '#d9d48a', wing: '#2f4a2a', accent: '#2f4a2a', pattern: 'spots', legs: '#b9b46a', eye: '#7a2a1a' },
+      facts: [
+        'It is so tiny you need a magnifying glass. It lives on the underside of bamboo leaves.',
+        'A whole family lives together under a thick, shiny silk roof that they weave.',
+        'The family keeps one spot as a shared toilet, and it shows up as neat little rows of dark dots.',
+        'Mums look after their young and push away strange mites. It goes wherever people carry bamboo, and leaves pale speckles on the leaves.'
+      ]
+    },
+    {
+      id: 'grass_carrying_wasp', name: 'Grass-carrying Wasp',
+      habitats: ['bamboo', 'garden'], times: ['day'], rarity: 3, value: 66,
+      behavior: 'dart', speed: 56, shy: 56, size: 0.9,
+      measure: 'about two-thirds of an inch',
+      art: { shape: 'wasp', body: '#151515', wing: '#5a4e44', accent: '#c8963e', pattern: 'plain', grass: '#7fb24a' },
+      facts: [
+        'It flies home carrying a long blade of grass that trails out behind it like a streamer.',
+        'It does not dig. It moves into holes that are already there — hollow stems, the cut ends of bamboo, even window tracks — and stuffs them full of grass.',
+        'Mum hunts tree crickets and katydids. She stings them so they keep still, and packs them in as food for her babies.',
+        'The grown-ups sip nectar from flowers. It is calm, and only stings if it is grabbed.'
+      ]
+    },
+    {
+      id: 'woodlouse_spider', name: 'Woodlouse Hunter',
+      habitats: ['bamboo', 'garden'], times: ['evening', 'night'], rarity: 3, value: 60,
+      behavior: 'crawl', speed: 30, shy: 40, size: 0.85,
+      measure: 'about half an inch, not counting its legs',
+      art: { shape: 'spider', body: '#e3cfa4', body2: '#c0461e', wing: '#c0461e', accent: '#d8c294', legs: '#c0461e', eye: '#1a0a06', stocky: true },
+      facts: [
+        'It has six eyes, not eight like most spiders.',
+        'Its huge fangs are made for getting through a roly-poly’s armour.',
+        'It hunts at night without a web. In the day it rests in a little silk tent under a stone or a log.',
+        'It came from round the Mediterranean Sea. Its bite is only a pinch, but it is one to watch rather than hold.'
+      ]
+    },
+    {
+      id: 'leopard_slug', name: 'Leopard Slug',
+      habitats: ['bamboo', 'garden'], times: ['evening', 'night'], rarity: 3, value: 58,
+      behavior: 'slow', speed: 6, shy: 14, size: 1.3,
+      measure: 'about as long as your hand',
+      art: { shape: 'slug', body: '#bfb4a5', body2: '#a89c8a', keel: '#8a7e6c', spot: '#2a2a2a', tent: '#8a7e6c' },
+      facts: [
+        'It is spotted like a leopard, and it can grow as long as your hand.',
+        'It mostly eats mushrooms, mould and dead leaves, so it is part of the clean-up crew. Sometimes it even eats other slugs.',
+        'It comes out at night, and afterwards it goes home to the very same hiding place.',
+        'Two leopard slugs can spin slowly round each other hanging from a thick rope of their own slime. It first came from Europe.'
+      ]
+    },
+    {
+      id: 'garden_springtail', name: 'Garden Springtail',
+      habitats: ['bamboo', 'garden'], times: ['any'], rarity: 1, value: 14,
+      behavior: 'hop', speed: 26, shy: 34, size: 0.5,
+      measure: 'about the size of a pinhead',
+      art: { shape: 'springtail', body: '#7a6e8a', body2: '#998ea8', legs: '#5a506a', furcula: true },
+      facts: [
+        'It has a spring folded up under its tummy. When it lets go, it flips itself into the air.',
+        'Thousands can live in one square foot of damp leaves.',
+        'It breathes through its skin, so it needs damp places, like the thick pile of fallen bamboo leaves.',
+        'It has six legs but it is not quite an insect — it is a close cousin. It eats mould, and it cannot bite.'
+      ]
+    },
+    {
+      id: 'zebra_jumper', name: 'Zebra Jumping Spider',
+      habitats: ['bamboo', 'garden'], times: ['day'], rarity: 2, value: 40,
+      behavior: 'hop', speed: 30, shy: 44, size: 0.6,
+      measure: 'about a quarter of an inch',
+      art: { shape: 'jumper', body: '#1a1a1a', back: '#f2f2ee', stripe: '#f2f2ee', bars: '#1a1a1a', jaw: '#3a3a3a', legs: '#2a2a2a', eye: '#0c0c0c' },
+      facts: [
+        'It is striped black and white, like a very small zebra.',
+        'It does not catch its dinner in a web. It creeps up and pounces.',
+        'Before it jumps, it fastens a silk safety line, like a rock climber’s rope.',
+        'Its big front eyes see very well, so it may turn round and look right at you. It loves sunny walls, fences and bamboo stems. It came from Europe.'
+      ]
     }
+
 
   ];
 
@@ -5156,7 +5376,7 @@ ul.tips li{margin-bottom:3px}
 
     /* ---------------- cats ---------------- */
     {
-      id: 'cookie', name: 'Cookie', family: 'dog',
+      id: 'cookie', name: 'Cookie', family: 'dog', unique: true,
       way: 'ask', patience: 2.5, keep: 52, rarity: 2, value: 110,
       times: ['morning', 'day', 'evening', 'night'],
       places: ['garden', 'meadow', 'forest', 'hill'],
@@ -6305,6 +6525,13 @@ ul.tips li{margin-bottom:3px}
   /* The look-only friends: met, never touched, worth no sparkles, and their
      `danger` line is shown every single time. Only the rattlesnake, so far. */
   GG.animalIsLookOnly = function (def) { return !!(def && def.lookOnly); };
+  /* A unique friend is one particular animal, not a kind of animal. There is
+     only one Cookie, so she is only ever in one place at a time: out in the
+     garden, walking with Guin, waiting at the cottage, or visiting one Garden
+     Habitat. (v1.15 - David: "Make certain friends unique so there is only
+     one of them in the game at a time. Cookie will be the only unique for
+     now.") */
+  GG.animalIsUnique = function (def) { return !!(def && def.unique); };
 
   GG.ANIMAL_BY_ID = {};
   GG.ANIMALS.forEach(function (a, i) {
@@ -6477,6 +6704,25 @@ ul.tips li{margin-bottom:3px}
     cod: ['mackerel', 'flounder'],
     halibut: ['cod']
   };
+
+  /* v1.15 - the cherry and bamboo grove newcomers (WSU Tree Fruit, PNW
+     Handbooks, BugGuide, Penn State, Colorado State Extension) */
+  [
+    ['earwig', ['spotted_wing_drosophila']],          // eats the pupae in the soil
+    ['paper_wasp', ['tent_caterpillar', 'leafroller', 'lorquins_admiral']],
+    ['yellowjacket', ['tent_caterpillar']],
+    ['crab_spider', ['lorquins_admiral', 'mining_bee']],
+    ['lacewing', ['bamboo_mite', 'leafroller']],
+    ['ground_beetle', ['leopard_slug', 'garden_springtail']],
+    ['centipede', ['garden_springtail']],
+    ['harvestman', ['garden_springtail']],
+    ['grass_carrying_wasp', ['cricket', 'katydid']],
+    ['woodlouse_spider', ['pillbug', 'earwig', 'millipede']],
+    ['zebra_jumper', ['bamboo_aphid', 'housefly', 'aphid']]
+  ].forEach(function (row) {
+    var list = EATS[row[0]] = EATS[row[0]] || [];
+    row[1].forEach(function (prey) { if (list.indexOf(prey) < 0) list.push(prey); });
+  });
 
   GG.EATS = EATS;
 
@@ -7636,6 +7882,12 @@ ul.tips li{margin-bottom:3px}
       var sy = 7 - i * 2.5;
       c.fillStyle = (i % 2) ? alt : a.body;
       ell(c, wob, sy, r, r);
+      if (a.spots) {
+        /* the tent caterpillar's blue spots down each side */
+        c.fillStyle = a.spots;
+        ell(c, wob - r * 0.62, sy, 0.8, 0.8); ell(c, wob + r * 0.62, sy, 0.8, 0.8);
+      }
+      if (a.back) { c.fillStyle = a.back; ell(c, wob, sy, 0.75, r * 0.95); }
       if (a.woolly) {
         /* thick fur all over, and a tuft of longer hairs near the tail */
         var tail = (i <= 1);
@@ -7965,6 +8217,11 @@ ul.tips li{margin-bottom:3px}
         c.restore();
       }
     }
+    if (a.wingSpot) {
+      /* the spotted wing drosophila boy's one dark dot near each wing tip */
+      c.globalAlpha = 1; c.fillStyle = a.wingSpot;
+      ell(c, -6.2, -3.4, 1.3, 1.3); ell(c, 6.2, -3.4, 1.3, 1.3);
+    }
     c.restore();
     legs(c, a.accent, 3, 3, 5, t * 10, 1);
     c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
@@ -7985,7 +8242,7 @@ ul.tips li{margin-bottom:3px}
       ell(c, -1.1, 1.4, 0.55, 4.4); ell(c, 1.1, 1.4, 0.55, 4.4);
     }
     c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -3.4, 3, 2.6);
-    c.fillStyle = '#8a3a2a';
+    c.fillStyle = a.eyeCol || '#8a3a2a';
     ell(c, -1.9, -5, 2, 2.3); ell(c, 1.9, -5, 2, 2.3);
     c.fillStyle = 'rgba(255,255,255,0.4)';
     ell(c, -2.3, -5.6, 0.6, 0.6); ell(c, 2.3, -5.6, 0.6, 0.6);
@@ -8099,17 +8356,21 @@ ul.tips li{margin-bottom:3px}
       c.fillStyle = '#ffffff';
       ell(c, s * 8.4, -2.4, 7.6, 3.2, s * 0.14);
       c.globalAlpha = 1;
-      c.strokeStyle = a.accent; c.lineWidth = 1.1;
+      c.strokeStyle = a.rim || a.accent; c.lineWidth = 1.1;
       c.beginPath(); c.ellipse(s * 8.4, -2.4, 7.6, 3.2, s * 0.14, 0, Math.PI * 2); c.stroke();
       c.globalAlpha = 0.3; c.fillStyle = '#ffffff';
       ell(c, s * 5.4, 2.6, 4.4, 2.4, -s * 0.2);
       c.globalAlpha = 1;
-      c.strokeStyle = a.accent; c.lineWidth = 0.9;
+      c.strokeStyle = a.rim || a.accent; c.lineWidth = 0.9;
       c.beginPath(); c.ellipse(s * 5.4, 2.6, 4.4, 2.4, -s * 0.2, 0, Math.PI * 2); c.stroke();
     }
     c.restore();
     c.fillStyle = a.wing; ell(c, 0, -1, 2.6, 5.4);
     c.fillStyle = a.accent; ell(c, 0, 4.2, 2.4, 3.4);
+    if (a.belt) {
+      /* the peachtree borer's one bright belt */
+      c.fillStyle = a.belt; ell(c, 0, 3.6, 2.45, 1.05);
+    }
     c.fillStyle = GG.shade(a.accent, -0.2);
     c.beginPath();
     c.moveTo(-3.4, 7); c.lineTo(0, 5.4); c.lineTo(3.4, 7); c.lineTo(0, 9.6);
@@ -10249,6 +10510,11 @@ ul.tips li{margin-bottom:3px}
     }
     c.fillStyle = a.back; ell(c, 0, 4.6, 4.2, 5.9);
     c.fillStyle = a.stripe; ell(c, 0, 4.6, 1.1, 5.5);
+    if (a.bars) {
+      /* the zebra jumper's black and white stripes, across the back */
+      c.fillStyle = a.bars;
+      ell(c, 0, 2.2, 3.7, 0.95); ell(c, 0, 5, 3.9, 0.95); ell(c, 0, 7.8, 3.1, 0.9);
+    }
     c.fillStyle = a.body; ell(c, 0, -3.8, 4.4, 4.8);
     c.strokeStyle = GG.shade(a.body, 0.45); c.lineWidth = 0.55; c.lineCap = 'round';
     for (var f = 0; f < 12; f++) {
@@ -20191,9 +20457,9 @@ ul.tips li{margin-bottom:3px}
       maxBugs: 8, maxFish: 0, maxDecor: 12, creatures: 'land' },
     { id: 'aquarium', name: 'Fish Tank', short: 'Fish Tank',
       blurb: 'All water, for fish and rock-pool creatures.',
-      maxBugs: 4, maxFish: 6, maxDecor: 8, creatures: 'water' },
+      maxBugs: 8, maxFish: 6, maxDecor: 8, creatures: 'water' },
     { id: 'hybrid', name: 'Hybrid Tank', short: 'Hybrid', blurb: 'A grassy bank above, water below. Bugs and fish together.',
-      maxBugs: 5, maxFish: 4, maxDecor: 10, creatures: 'any' },
+      maxBugs: 8, maxFish: 6, maxDecor: 10, creatures: 'any' },
     { id: 'habitat', name: 'Garden Habitat', short: 'Habitat',
       blurb: 'A corner of the garden your friends come and visit.',
       maxBugs: 0, maxFish: 0, maxFriends: 5, maxDecor: 12, creatures: 'none' }
@@ -20855,7 +21121,7 @@ ul.tips li{margin-bottom:3px}
     E: 'birdtown', K: 'farmyard' };
 
   /* water kinds */
-  var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6;
+  var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6, MARSH = 7;
 
   var GROUND = {
     meadow: ['#8ecf63', '#83c55a', '#98d76d'],
@@ -20909,6 +21175,19 @@ ul.tips li{margin-bottom:3px}
   };
 
   var POND_E = { cx: 3820, cy: 2980, rx: 460, ry: 300 };
+
+  /* The Cattail Marsh's open water. A marsh is not one pond: it is a lot of
+     small dark leads between the stands of cattail, and you fish from the
+     edges of them. (v1.15 - Guin: "I cant fish in the marsh". She could not,
+     because v1.14 built the marsh as land and forgot to put any water in it.) */
+  var MARSH_POOLS = [
+    { x: 3090, y: 3470, rx: 150, ry: 72 },
+    { x: 3420, y: 3540, rx: 200, ry: 92 },
+    { x: 3790, y: 3480, rx: 150, ry: 76 },
+    { x: 4000, y: 3650, rx: 118, ry: 62 },
+    { x: 3260, y: 3740, rx: 136, ry: 56 },
+    { x: 3640, y: 3740, rx: 170, ry: 62 }
+  ];
 
   /* the stream grows into a river and then opens into the estuary */
   var FLOW = [
@@ -20985,7 +21264,8 @@ ul.tips li{margin-bottom:3px}
     W: COLS * CELL, H: ROWS * CELL,
     HOUSE: { x: 4720, y: 2440, w: 150 },
     DOOR: { x: 4720, y: 2446 },
-    KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL },
+    KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL, MARSH: MARSH },
+    marshPools: MARSH_POOLS,
     props: [], solids: [], hive: null, grid: {}, chunks: {},
     caveMouth: null, bootBrush: null,
     CHUNK: 400,
@@ -21033,6 +21313,13 @@ ul.tips li{margin-bottom:3px}
       var dx = (x - POND_E.cx) / POND_E.rx, dy = (y - POND_E.cy) / POND_E.ry;
       var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
       if (dx * dx + dy * dy < wob) return POND;
+      // the marsh leads, with ragged reedy edges
+      for (i = 0; i < MARSH_POOLS.length; i++) {
+        var m = MARSH_POOLS[i];
+        var mx = (x - m.x) / m.rx, my = (y - m.y) / m.ry;
+        var mw = 1 + (GG.noise2(x / 46, y / 46, 29) - 0.5) * 0.42;
+        if (mx * mx + my * my < mw) return MARSH;
+      }
       // and the sea fills everything below the tide line
       if (y > shoreY(x)) return SEA;
       return NONE;
@@ -21110,6 +21397,7 @@ ul.tips li{margin-bottom:3px}
         if (this.mask[i] === TIDEPOOL) return 'shore';
         if (this.mask[i] === SEA || this.mask[i] === ESTUARY) return 'beach';
         if (this.mask[i] === POND) return 'pond';
+        if (this.mask[i] === MARSH) return 'swamp';
         return 'riverbank';
       }
       /* The inland edges of the sand and the rock wander about a bit, so the
@@ -21141,6 +21429,7 @@ ul.tips li{margin-bottom:3px}
       if (k === STREAM) return 'Pebble Stream';
       if (k === TIDEPOOL) return 'The Tidepools';
       if (k === POND) return 'Lily Pond';
+      if (k === MARSH) return 'Cattail Marsh';
       return {
         meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
         pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
@@ -21414,13 +21703,21 @@ ul.tips li{margin-bottom:3px}
       add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
       add('sign', 7200, 3160, 26, false, 0, { label: 'Tidepools' });
       /* the seven places from v1.14 */
+      // duckweed rafts floating on the marsh leads (after everything else, so
+      // the rest of the map's random layout is exactly what it was)
+      for (var k3 = 0; k3 < 60; k3++) {
+        var mp = MARSH_POOLS[Math.floor(rnd() * MARSH_POOLS.length)];
+        var ma = rnd() * Math.PI * 2, mr = Math.sqrt(rnd()) * 0.8;
+        var dxw = mp.x + Math.cos(ma) * mp.rx * mr, dyw = mp.y + Math.sin(ma) * mp.ry * mr;
+        if (this.waterKind(dxw, dyw) === MARSH) add('duckweed', dxw, dyw, 22 + rnd() * 14);
+      }
       /* The lava tube, and the boot brush that opens it. */
       this.caveMouth = add('caveMouth', 2480, 2180, 52, true, 30);
       this.bootBrush = add('bootBrush', 2578, 2246, 24, false, 0, {});
       add('sign', 2352, 2250, 26, false, 0, { label: 'Lava Tube' });
       add('sign', 620, 1900, 26, false, 0, { label: 'Scablands' });
       add('sign', 640, 3820, 26, false, 0, { label: 'Oak Savanna' });
-      add('sign', 3500, 3520, 26, false, 0, { label: 'Cattail Marsh' });
+      add('sign', 3250, 3392, 26, false, 0, { label: 'Cattail Marsh' });
       add('sign', 4460, 1780, 26, false, 0, { label: 'Bamboo' });
       add('sign', 6260, 2760, 26, false, 0, { label: 'Cherry Grove' });
       add('sign', 4380, 1420, 26, false, 0, { label: 'Bird Town' });
@@ -21461,6 +21758,7 @@ ul.tips li{margin-bottom:3px}
       else if (kind === RIVER) { shallow = [126, 198, 214]; deep = [58, 134, 168]; }
       else if (kind === STREAM) { shallow = [160, 220, 228]; deep = [96, 176, 200]; }
       else if (kind === TIDEPOOL) { shallow = [150, 214, 216]; deep = [86, 168, 178]; }
+      else if (kind === MARSH) { shallow = [122, 150, 112]; deep = [52, 82, 66]; }   // tea-dark marsh water
       else { shallow = [126, 200, 214]; deep = [61, 147, 184]; }
       var t = GG.clamp(depth, 0, 1);
       return [shallow[0] + (deep[0] - shallow[0]) * t,
@@ -21597,7 +21895,9 @@ ul.tips li{margin-bottom:3px}
       for (var cy = y0; cy <= y1; cy++) {
         for (var cx = x0; cx <= x1; cx++) {
           if (cx < 0 || cy < 0 || cx * C >= this.W || cy * C >= this.H) continue;
-          c.drawImage(this.chunkCanvas(cx, cy), cx * C - cam.x, cy * C - cam.y);
+          /* one pixel of overlap, so a chunk edge that lands between two
+             screen pixels never shows a hairline of the dark canvas behind */
+          c.drawImage(this.chunkCanvas(cx, cy), cx * C - cam.x, cy * C - cam.y, C + 1, C + 1);
         }
       }
     },
@@ -21655,8 +21955,8 @@ ul.tips li{margin-bottom:3px}
               c.arc(sx, sy, 5 + Math.sin(t * 1.6 + h * 8) * 1.6, 0.3, 2.4);
               c.stroke();
             }
-          } else if (k === POND) {
-            if (h > 0.7) {
+          } else if (k === POND || k === MARSH) {
+            if (h > (k === MARSH ? 0.82 : 0.7)) {
               c.strokeStyle = 'rgba(255,255,255,0.28)';
               c.lineWidth = 2.2;
               var o2 = Math.sin(t * 0.9 + h * 9) * 7;
@@ -22010,7 +22310,38 @@ ul.tips li{margin-bottom:3px}
   var TARGET = 16;
 
   /* water kind -> which habitat name the roster uses */
-  var WATER_BIOME = { 1: 'pond', 2: 'river', 3: 'river', 4: 'sea', 5: 'sea', 6: 'tidepool' };
+  var WATER_BIOME = { 1: 'pond', 2: 'river', 3: 'river', 4: 'sea', 5: 'sea', 6: 'tidepool', 7: 'swamp' };
+
+  /* What happens after a sting, species by species. Of everything that stings
+     in this garden, the honeybee worker is the one that dies of it: her
+     stinger is strongly barbed, it catches in our skin and tears away from
+     her. The others pull theirs back out and go on with their day (a few
+     harvester ants elsewhere lose theirs too, but that has not been shown for
+     ours). A stinger is a changed egg-laying tube, so only the girls have one.
+     Checked: UC IPM, Virginia Tech ENTO-49, Visscher et al. Lancet 1996,
+     Burke Museum, WSU, Clemson HGIC, Utah State. */
+  GG.stingDies = function (def) { return !!def && def.id === 'honeybee'; };
+  GG.STING_LINES = {
+    honeybee: 'Ouch! A honeybee stung you. Her stinger is barbed and stays in your skin, so she only ever gets one sting - she really did not want to. Get the stinger out as fast as you can.',
+    bumblebee: 'Ouch! A bumblebee stung you. Her stinger has hardly any barbs, so she can sting again - but she only does it when she is squashed or scared. Give her some room.',
+    polar_bumblebee: 'Ouch! A polar bumble bee stung you. Unlike a honeybee, she flew off fine. Give her room - it is cold up here and she is busy.',
+    paper_wasp: 'Ouch! A paper wasp stung you. They sting to guard their nest. Walk slowly away - no swatting.',
+    sand_wasp: 'Ouch! A sand wasp stung you. They almost never sting people, so you must have really bothered her. Only the girls can sting.',
+    mason_bee: 'Ouch! A mason bee stung you. They almost never do, and it is a small sting - she must have been squashed.',
+    yellowjacket: 'Ouch! A yellowjacket stung you. She can sting again and again, so step away calmly. Never swat - a squashed yellowjacket calls her sisters.',
+    baldfaced_hornet: 'Ouch! A bald-faced hornet stung you. She is really a kind of yellowjacket, and she guards her paper nest hard. Back away slowly.',
+    northern_scorpion: 'Ouch! A northern scorpion stung you. It hurts about as much as a bee sting, or less, and it fades. Tell a grown-up, and always shake out your shoes.',
+    harvester_ant: 'Ouch! A harvester ant stung you - they really do have stingers, and it hurts. Keep off the bare dirt round their mound.',
+    velvet_ant: 'Ouch! A velvet ant stung you. She is really a wasp with no wings, and her sting is famous for hurting a lot. Look, but leave her be.',
+    sweat_bee: 'Ouch! A sweat bee stung you. They only sting when they get trapped against your skin, and it is a small one.',
+    thatching_ant: 'Ouch! A thatching ant got you. They have no stinger at all - that was a bite, with a squirt of acid in it.',
+    leafcutter_bee: 'Ouch! A leafcutter bee stung you. They hardly ever sting and it is a mild one - she must have been squeezed.'
+  };
+  GG.stingLine = function (def) {
+    if (!def) return 'Ouch!';
+    return GG.STING_LINES[def.id] ||
+      ('Ouch! A ' + def.name.toLowerCase() + ' stung you. Give her some space and she will calm down.');
+  };
 
   /* The little red cross that means "this bee is cross with you". */
   function angerMark(c, x, y, r) {
@@ -22356,7 +22687,7 @@ ul.tips li{margin-bottom:3px}
       var n = player.netPoint();
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
-        if (!b.def.lookOnly) continue;
+        if (!b.def.lookOnly || b.looked) continue;
         var reach = n.r + 10 * (b.def.size || 1);
         if (GG.dist(b.x, b.y, n.x, n.y) < reach) return b;
       }
@@ -22368,7 +22699,7 @@ ul.tips li{margin-bottom:3px}
       var best = null, bestD = (radius || 74) * (radius || 74);
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
-        if (!b.def.lookOnly) continue;
+        if (!b.def.lookOnly || b.looked) continue;
         var dx = player.x - b.x, dy = (player.y - b.y) * 1.15;
         var d = dx * dx + dy * dy;
         if (d < bestD) { bestD = d; best = b; }
@@ -22413,8 +22744,15 @@ ul.tips li{margin-bottom:3px}
         if (b.angry <= 0 || !b.def.sting) continue;
         if (GG.dist(b.x, b.y - b.z * 0.4, player.x, player.y - 14) < 18) {
           var def = b.def;
-          this.list.splice(i, 1);
-          this.puff(b.x, b.y - b.z);
+          /* Only a honeybee dies of stinging someone: her stinger is barbed,
+             it stays in the skin and tears away from her. Every other stinger
+             in the garden is smooth - she pulls it out and flies off, and she
+             is still here. (v1.15 - Guin: "Bees that are not honeybees
+             disapaer when you get stung".) */
+          if (GG.stingDies(def)) {
+            this.list.splice(i, 1);
+            this.puff(b.x, b.y - b.z);
+          }
           this.scatter(player.x, player.y, 170);
           return def;
         }
@@ -22563,7 +22901,7 @@ ul.tips li{margin-bottom:3px}
     },
 
     /* ---------- which water is this, and who lives in it? ---------- */
-    WATER_NAMES: { 1: 'pond', 2: 'stream', 3: 'river', 4: 'estuary', 5: 'sea' },
+    WATER_NAMES: { 1: 'pond', 2: 'stream', 3: 'river', 4: 'estuary', 5: 'sea', 7: 'swamp' },
 
     waterAt: function (x, y) {
       return this.WATER_NAMES[GG.World.waterKind(x, y)] || null;
@@ -23130,6 +23468,9 @@ ul.tips li{margin-bottom:3px}
         /* never two of the same kind on screen at once, and never a second
            copy of the friend who is already walking with her */
         if (this.companion && this.companion.id === def.id) continue;
+        /* and a unique friend who is indoors or visiting a habitat is not
+           also out here */
+        if (GG.animalIsUnique(def) && this.uniqueWhere(def.id)) continue;
         for (var j = 0; j < this.list.length; j++) {
           if (this.list[j].def.id === def.id) { def = null; break; }
         }
@@ -24102,6 +24443,61 @@ ul.tips li{margin-bottom:3px}
       if (this.onFriend) this.onFriend(def, isNew, reward);
     },
 
+    /* ---------- one-of-a-kind friends ---------- */
+    /* Where is this unique friend right now? 'companion', 'home', a habitat
+       tank, or null for "out in the garden". */
+    uniqueWhere: function (id) {
+      var d = GG.Save.data;
+      if (d.companion === id) return 'companion';
+      if ((d.homeFriends || []).indexOf(id) >= 0) return 'home';
+      var tanks = d.terrariums || [];
+      for (var i = 0; i < tanks.length; i++) {
+        var fr = tanks[i].friends || [];
+        for (var j = 0; j < fr.length; j++) if (fr[j].id === id) return tanks[i];
+      }
+      return null;
+    },
+    /* Put a unique friend in exactly one place, taking her out of every other.
+       `keepTank` is the habitat she is going into, if that is where. Returns
+       a sentence saying where she came from, or '' if she was out in the
+       garden. */
+    claimUnique: function (id, where, keepTank) {
+      var def = GG.ANIMAL_BY_ID[id];
+      if (!GG.animalIsUnique(def)) return '';
+      var d = GG.Save.data, from = '';
+      if (where !== 'companion' && d.companion === id) {
+        d.companion = null;
+        this.companion = null;
+        if (this.riding) this.dismount('swap');
+        from = 'She stops walking with you';
+      }
+      if (where !== 'home' && d.homeFriends) {
+        var at = d.homeFriends.indexOf(id);
+        if (at >= 0) { d.homeFriends.splice(at, 1); from = 'She leaves the cottage'; }
+        if (this.homeList) {
+          this.homeList = this.homeList.filter(function (f) { return f.def.id !== id; });
+        }
+      }
+      (d.terrariums || []).forEach(function (t) {
+        if (t === keepTank || !t.friends) return;
+        for (var i = t.friends.length - 1; i >= 0; i--) {
+          if (t.friends[i].id === id) {
+            t.friends.splice(i, 1);
+            from = 'She hops out of ' + (t.name || 'her habitat');
+          }
+        }
+      });
+      /* and nobody else who looks just like her wanders the garden */
+      for (var k = this.list.length - 1; k >= 0; k--) {
+        if (this.list[k].def.id === id) {
+          if (this.busy && this.busy.animal === this.list[k]) this.busy = null;
+          this.list.splice(k, 1);
+        }
+      }
+      GG.Save.save();
+      return from;
+    },
+
     /* ---------- the friend who tags along ---------- */
     setCompanion: function (id) {
       /* the look-only friends never come along. You met her; that is all
@@ -24121,6 +24517,10 @@ ul.tips li{margin-bottom:3px}
       /* and the new one is coming with you, so they leave the house */
       if (id) this.takeFromHome(id);
 
+      var moved = id ? this.claimUnique(id, 'companion') : '';
+      if (moved && GG.UI && GG.UI.toast) {
+        GG.UI.toast(moved + ' to come with you. There is only one ' + GG.ANIMAL_BY_ID[id].name + '!', 3000);
+      }
       GG.Save.data.companion = id || null;
       GG.Save.save();
       this.companion = id
@@ -24148,6 +24548,7 @@ ul.tips li{margin-bottom:3px}
       if (!d.homeFriends) d.homeFriends = [];
       var at = d.homeFriends.indexOf(id);
       if (at >= 0) d.homeFriends.splice(at, 1);
+      this.claimUnique(id, 'home');
       d.homeFriends.push(id);
       /* the cottage only holds so many - the one who has been there longest
          wanders back out to the garden */
@@ -24832,7 +25233,7 @@ ul.tips li{margin-bottom:3px}
     START: { x: 415, y: 580 },
 
     spots: [
-      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Bug Book' },
+      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Critter Compendium' },
       { id: 'terrarium', x: 410, y: 186, w: 186, h: 84, label: 'Terrariums' },
       { id: 'shop', x: 675, y: 200, w: 116, h: 84, label: 'Decoration Box' },
       { id: 'bed', x: 730, y: 430, w: 150, h: 250, label: 'Bed' },
@@ -25536,7 +25937,10 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/ui/book.js ==== */
-/* The Bug Book: every bug Guin has met, with real facts. */
+/* The Critter Compendium (v1.15): one big book with four books inside it -
+   the Bug Book, the Fish Book, the Friends Book and the Fruit Book - every
+   creature and fruit Guin has met, with real facts. Opening it with no book
+   named shows the contents page, a shelf of the four. */
 (function (GG) {
   'use strict';
   var $ = GG.$;
@@ -25559,20 +25963,99 @@ ul.tips li{margin-bottom:3px}
     return cv;
   }
 
+  /* The books on the shelf, in shelf order. */
+  var BOOKS = [
+    { id: 'bugs', name: 'Bug Book', blurb: 'bugs and mini-beasts', col: '#5f9f4a',
+      show: function () { return GG.BUG_BY_ID.monarch || GG.BUGS[0]; },
+      list: function () { return GG.BUGS; },
+      found: function () { return GG.Save.totalSpecies(); } },
+    { id: 'fish', name: 'Fish Book', blurb: 'fish and river creatures', col: '#3f8fb8',
+      show: function () { return GG.FISH_BY_ID.bluegill || GG.FISH[0]; },
+      list: function () { return GG.FISH; },
+      found: function () { return GG.Save.totalFish(); } },
+    { id: 'friends', name: 'Friends Book', blurb: 'animal friends', col: '#c9728a',
+      show: function () { return GG.ANIMAL_BY_ID.cookie || GG.ANIMALS[0]; },
+      list: function () { return GG.ANIMALS; },
+      found: function () {
+        var met = 0;
+        GG.ANIMALS.forEach(function (a) { if (a.lookOnly && GG.Save.hasSeen(a.id)) met++; });
+        return GG.Save.totalFriends() + met;
+      } },
+    { id: 'fruit', name: 'Fruit Book', blurb: 'fruit and berries', col: '#d0813a',
+      show: function () { return GG.FRUIT_BY_ID && (GG.FRUIT_BY_ID.apple || GG.FRUITS[0]); },
+      list: function () { return GG.FRUITS; },
+      found: function () { return GG.Save.totalFruit(); } }
+  ];
+  var BOOK_BY_ID = {};
+  BOOKS.forEach(function (b) { BOOK_BY_ID[b.id] = b; });
+
   var Book = GG.Book = {
     tab: 'bugs',
+    BOOKS: BOOKS,
 
+    /* open() with no book named shows the contents page */
     open: function (tab) {
-      if (tab) this.tab = tab;
+      this.tab = tab || 'home';
       GG.UI.open('screen-book');
       this.showGrid();
+    },
+
+    /* The contents page: a shelf of the four books, each with how far she
+       has got through it. */
+    showContents: function () {
+      var grid = $('book-grid'), det = $('book-detail');
+      grid.style.display = 'grid'; det.style.display = 'none';
+      $('book-back').style.display = 'none';
+      $('book-tabs').style.display = '';
+      $('book-title').textContent = 'Critter Compendium';
+      $('book-kicker').classList.add('hide');
+      document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
+        el.classList.toggle('on', el.getAttribute('data-book') === 'home');
+      });
+      grid.innerHTML = '';
+      var all = 0, got = 0;
+      BOOKS.forEach(function (b) { all += b.list().length; got += Math.min(b.found(), b.list().length); });
+      $('progress').textContent = got + ' / ' + all;
+
+      var note = GG.el('div', 'shelfnote');
+      note.innerHTML = '<b>Your Critter Compendium.</b> Four books in one. Everything you catch, '
+        + 'meet, befriend or pick gets its own page. You have found <b>' + got + '</b> of <b>'
+        + all + '</b> so far.';
+      grid.appendChild(note);
+
+      var shelf = GG.el('div', 'shelf');
+      BOOKS.forEach(function (b) {
+        var n = b.list().length, f = Math.min(b.found(), n);
+        var card = GG.el('div', 'shelfbook');
+        card.setAttribute('data-open', b.id);
+        card.style.background = b.col;
+        card.appendChild(GG.el('div', 'bk', b.name));
+        var def = b.show();
+        var cv = document.createElement('canvas');
+        cv.width = 280; cv.height = 156;
+        var c = cv.getContext('2d'); c.scale(2, 2);
+        if (def) {
+          if (def.isAnimal) GG.AnimalArt.draw(c, def, 70, 64, GG.animalFit(def, 58), false, 1.2);
+          else GG.drawAny(c, def, 70, 39, def.isFish ? 2.2 : 2.1, def.isFish ? 0 : -Math.PI / 2, 1.1);
+        }
+        card.appendChild(cv);
+        card.appendChild(GG.el('div', 'bn', f + ' of ' + n + ' ' + b.blurb));
+        var bar = GG.el('div', 'bar'), fill = GG.el('i');
+        fill.style.width = (n ? Math.round(f / n * 100) : 0) + '%';
+        bar.appendChild(fill); card.appendChild(bar);
+        card.addEventListener('click', function () { GG.Sfx.click(); Book.setTab(b.id); });
+        shelf.appendChild(card);
+      });
+      grid.appendChild(shelf);
     },
 
     setTab: function (tab) { this.tab = tab; this.showGrid(); },
 
     showGrid: function () {
+      if (!BOOK_BY_ID[this.tab]) { this.showContents(); return; }
       var grid = $('book-grid'), det = $('book-detail');
       var tab = this.tab;
+      $('book-kicker').classList.remove('hide');
       var fish = tab === 'fish', friends = tab === 'friends', fruit = tab === 'fruit';
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
@@ -25924,6 +26407,20 @@ ul.tips li{margin-bottom:3px}
             Book.showDetail(def);
           });
           det.appendChild(along);
+          if (GG.animalIsUnique(def)) {
+            /* there is only one of her, and the page says where she is */
+            var w = GG.Friends.uniqueWhere(def.id), wtxt;
+            if (w === 'companion') wtxt = 'She is out walking with you.';
+            else if (w === 'home') wtxt = 'She is waiting for you at the cottage.';
+            else if (w) wtxt = 'She is visiting ' + (w.name || 'one of your habitats') + '.';
+            else wtxt = 'She is out in the garden somewhere.';
+            var one = GG.el('div');
+            one.id = 'friend-unique';
+            one.style.margin = '10px 0';
+            one.innerHTML = '<b>There is only one ' + def.name + '</b><span>She is one particular '
+              + 'dog, not a kind of dog, so she can only be in one place at a time. ' + wtxt + '</span>';
+            det.appendChild(one);
+          }
         }
       }
 
@@ -25994,6 +26491,25 @@ ul.tips li{margin-bottom:3px}
     return b.ground || b.floor || b.water;                           // walking
   }
 
+  /* Where does this decoration stand? In a hybrid tank the water pieces -
+     sea grass, shells, coral, the treasure chest - go down on the sand under
+     the water, and everything else stands on the bank. (v1.15 - Guin: "You
+     cant put fish tank items in the water in hibirid tanks".) */
+  function decorBand(dec, b) {
+    if (b.id === 'hybrid' && dec && dec.for === 'water') return [CH - 64, CH - 44];
+    return b.decor;
+  }
+
+  /* Crabs are the rock-pool creatures that really do walk out of the water:
+     a shore crab forages over wet rock at low tide and a hermit crab will
+     clamber out of a pool. So in a hybrid tank they go for walks on the bank
+     and come back down again. (v1.15 - Guin: "Crabs can walk on land if its
+     a hybird tank".) */
+  GG.walksAshore = function (def) {
+    return !!def && GG.isAquaticBug(def) && !!def.art &&
+      (def.art.shape === 'crab' || def.art.shape === 'hermitcrab');
+  };
+
   var T = GG.Terrarium = {
     index: 0,
     tab: 'bugs',
@@ -26055,6 +26571,17 @@ ul.tips li{margin-bottom:3px}
     },
     close: function () { cancelAnimationFrame(this._raf); },
 
+    /* Water pieces put on a hybrid's bank before v1.15 go down into the water. */
+    tidyDecor: function (tk) {
+      if (!tk || tk.type !== 'hybrid') return;
+      var b = this.bands(tk), moved = false;
+      (tk.decor || []).forEach(function (x) {
+        var db = decorBand(GG.DECOR_BY_ID[x.id], b);
+        if (x.y < db[0] || x.y > db[1] + 10) { x.y = GG.rand(db[0], db[1]); moved = true; }
+      });
+      if (moved) GG.Save.save();
+    },
+
     /* Which tray tabs does this kind of tank have, and is the current one one
        of them? */
     tabAllowed: function (ty, k) {
@@ -26073,6 +26600,7 @@ ul.tips li{margin-bottom:3px}
 
     refresh: function () {
       var tk = this.tank(), d = GG.Save.data, ty = this.typeOf(tk);
+      this.tidyDecor(tk);
       var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
@@ -26230,10 +26758,18 @@ ul.tips li{margin-bottom:3px}
           : 'This tank is full! (' + max + ' is the limit)');
         return;
       }
+      /* There is only one Cookie: if she is walking with Guin, waiting at
+         the cottage or visiting another habitat, she comes here instead. */
+      if (kind === 'friend' && GG.animalIsUnique(GG.ANIMAL_BY_ID[id]) && GG.Friends) {
+        var moved = GG.Friends.claimUnique(id, 'habitat', tk);
+        if (moved) {
+          GG.UI.toast(moved + ' and comes here. There is only one ' + GG.ANIMAL_BY_ID[id].name + '!', 3000);
+        }
+      }
 
       var y;
       if (kind === 'fish') y = GG.rand(b.water[0] + 10, b.water[1] - 10);
-      else if (kind === 'decor') y = GG.rand(b.decor[0], b.decor[1]);
+      else if (kind === 'decor') { var db = decorBand(GG.DECOR_BY_ID[id], b); y = GG.rand(db[0], db[1]); }
       else if (kind === 'friend') {
         var fb = this.friendBand(GG.ANIMAL_BY_ID[id], b);
         y = GG.rand(fb[0] + 4, fb[1] - 4);
@@ -26414,15 +26950,34 @@ ul.tips li{margin-bottom:3px}
         var vx = Math.cos(m.ang) * speed * move;
         var vy = Math.sin(m.ang) * speed * move * (air ? 0.7 : 0.4);
         m.ox += vx * dt; m.oy += vy * dt;
-        var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
+        var crabOut = b.id === 'hybrid' && GG.walksAshore(def);
+        var away = Math.sqrt(m.ox * m.ox + (crabOut ? 0 : m.oy * m.oy));
         if (away > radius) {
-          m.ox = m.ox / away * radius; m.oy = m.oy / away * radius;
+          m.ox = m.ox / away * radius; if (!crabOut) m.oy = m.oy / away * radius;
           m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.6, 0.6);
         }
+        if (crabOut) m.oy -= vy * dt;   // the crab's up-and-down is its walk to the bank, below
 
         var band = bandFor(def, b);
         var lo = band[0], hi = band[1];
         void skim;
+
+        /* a crab's walk up onto the bank and back down again */
+        if (b.id === 'hybrid' && b.ground && GG.walksAshore(def)) {
+          m.outT = (m.outT == null ? GG.rand(3, 8) : m.outT) - dt;
+          if (m.outT <= 0) {
+            m.ashore = !m.ashore;
+            m.outT = m.ashore ? GG.rand(7, 13) : GG.rand(8, 16);
+            m.goalY = m.ashore ? GG.rand(b.ground[0] + 6, b.ground[1] - 4) : it.y;
+          }
+          var goal = m.goalY == null ? it.y : m.goalY;
+          var cur = it.y + m.oy;
+          var stepY = GG.clamp(goal - cur, -34 * dt, 34 * dt);
+          m.oy += stepY;
+          if (Math.abs(goal - cur) > 3) m.face = GG.angLerp(m.face, stepY < 0 ? -Math.PI / 2 : Math.PI / 2, Math.min(1, dt * 4));
+          lo = b.ground[0]; hi = b.floor ? b.floor[1] : hi;
+          m.oy = GG.clamp(m.oy, lo - it.y, hi - it.y);
+        }
 
         var wx = it.x + m.ox, wy = it.y + m.oy;
         var lx = GG.clamp(wx, 40, CW - 40);
@@ -26752,7 +27307,7 @@ ul.tips li{margin-bottom:3px}
     dragLimits: function (e) {
       var tk = this.tank(), b = this.bands(tk);
       if (e.kind === 'fish') return b.water;
-      if (e.kind === 'decor') return [b.decor[0], b.decor[1] + 10];
+      if (e.kind === 'decor') { var db = decorBand(GG.DECOR_BY_ID[e.it.id], b); return [db[0], db[1] + 10]; }
       if (e.kind === 'friend') return this.friendBand(GG.ANIMAL_BY_ID[e.it.id], b);
       return bandFor(GG.BUG_BY_ID[e.it.id], b);
     },
@@ -26864,7 +27419,7 @@ ul.tips li{margin-bottom:3px}
       tk.bugs.forEach(function (x) { self.reseat(x, bandFor(GG.BUG_BY_ID[x.id], b)); });
       tk.fish.forEach(function (x) { self.reseat(x, b.water); });
       tk.friends.forEach(function (x) { self.reseat(x, self.friendBand(GG.ANIMAL_BY_ID[x.id], b)); });
-      tk.decor.forEach(function (x) { self.reseat(x, b.decor); });
+      tk.decor.forEach(function (x) { self.reseat(x, decorBand(GG.DECOR_BY_ID[x.id], b)); });
 
       this.sel = null; this.drag = null;
       GG.Save.save();
@@ -27409,10 +27964,6 @@ ul.tips li{margin-bottom:3px}
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
     if (fishing) friendly = null;
-    if (atCave) {
-      GG.UI.prompt(brush && brush.used ? 'Into the lava tube' : 'Wipe your boots on the brush first');
-      setActionLabel(brush && brush.used ? 'GO IN' : '\u2014', brush && brush.used ? 'lava tube' : 'boots first');
-    }
 
     if (GG.Input.action3Pressed) {
       if (!GG.Friends.busy && friendly) GG.Friends.begin(P);
@@ -27421,8 +27972,14 @@ ul.tips li{margin-bottom:3px}
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
-      if (atCave) { enterCave(); return; }
-      if (lookAt) { lookAtCreature(lookAt.def); return; }
+      if (atCave) {
+        if (brush && !brush.used) {
+          GG.UI.toast('Wipe your boots on the brush first \u2014 it is just down the path.', 2600);
+          return;
+        }
+        enterCave(); return;
+      }
+      if (lookAt) { lookAtCreature(lookAt); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (GG.Friends.riding) GG.UI.toast('Not from up here — get down first', 1800);
@@ -27452,13 +28009,19 @@ ul.tips li{margin-bottom:3px}
     if (W.W < GG.view.w) cam.x = (W.W - GG.view.w) / 2;
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
+    /* The door and the lava tube both get a proper button - v1.15, Guin:
+       "Button for enrty". The cave's label used to be set and then written
+       straight over by NET a few lines later, every frame. */
+    var caveReady = atCave && !(brush && !brush.used);
     GG.UI.prompt(atDoor ? 'Tap to go inside'
-      : (lookAt ? 'Look \u2014 but this one is not for catching'
-        : (pickable ? 'Tap to pick the fruit' : null)));
+      : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
+        : (lookAt ? 'Look \u2014 but this one is not for catching'
+          : (pickable ? 'Tap to pick the fruit' : null))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
     else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
@@ -27612,11 +28175,15 @@ ul.tips li{margin-bottom:3px}
     if (stung) onSting(stung);
 
     var spot = C.nearest(P.x, P.y);
-    GG.UI.prompt(spot ? spot.label : null);
-    setActionLabel(spot ? 'GO OUT' : 'NET', spot ? 'back outside' : 'tap');
+    var lookC = spot ? null : GG.Critters.nearestLookOnly(P, 78);
+    GG.UI.prompt(spot ? spot.label : (lookC ? 'Look \u2014 but this one is not for catching' : null));
+    if (spot) setActionLabel('GO OUT', 'back outside');
+    else if (lookC) setActionLabel('LOOK', 'don\u2019t catch');
+    else setActionLabel('NET', 'tap');
 
     if (GG.Input.actionPressed) {
       if (spot) { leaveCave(); return; }
+      if (lookC) { lookAtCreature(lookC); return; }
       if (P.startSwing()) swingChecked = false;
     }
     if (P.swinging() && !swingChecked) {
@@ -27677,7 +28244,7 @@ ul.tips li{margin-bottom:3px}
     var net = P.netPoint();
     /* swinging at the one she must not catch teaches, it does not punish */
     var forbidden = GG.Critters.lookOnlyUnderNet(P);
-    if (forbidden) { lookAtCreature(forbidden.def); return; }
+    if (forbidden) { lookAtCreature(forbidden); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
     if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
@@ -27702,10 +28269,7 @@ ul.tips li{margin-bottom:3px}
     GG.Sfx.ouch();
     GG.Save.data.stings = (GG.Save.data.stings || 0) + 1;
     GG.Save.save();
-    var line = def.id === 'honeybee'
-      ? 'Ouch! A honeybee stung you. She only gets one sting in her whole life, so she really did not want to.'
-      : 'Ouch! A bumblebee stung you. Give her some space and she will calm down.';
-    GG.UI.toast(line, 3400);
+    GG.UI.toast(GG.stingLine(def), 4200);
   }
 
   /* ---------- fishing ---------- */
@@ -27737,7 +28301,13 @@ ul.tips li{margin-bottom:3px}
   /* ---------- look, don't catch ---------- */
   /* One creature in the whole garden is never caught. Meeting her is what
      opens her page in the Bug Book, and the warning comes with it. */
-  function lookAtCreature(def) {
+  /* Once per creature: after she has looked, that one goes back to what it
+     was doing and the LOOK button stops offering it (v1.15 - Guin: "You can
+     spam look at uncatchable bugs make it so you can only do it once for
+     each bug"). A new one of the same kind can still be met. */
+  function lookAtCreature(b) {
+    var def = b.def || b;
+    if (b.def) b.looked = true;
     var isNew = GG.Save.addSeen(def.id);
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.warn(); else GG.Sfx.click();
@@ -27777,7 +28347,7 @@ ul.tips li{margin-bottom:3px}
       tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a',
       badlands: '#a2947a', savanna: '#c9b172', swamp: '#5e6b47', bamboo: '#7a9450',
       cherry: '#c8e089', birdtown: '#9ad96f', farmyard: '#b9ac7e' };
-    var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4' };
+    var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4', 7: '#4f7f73' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
       for (var x = 0; x < W.W; x += step) {
@@ -27807,6 +28377,29 @@ ul.tips li{margin-bottom:3px}
     c.fillRect(W.HOUSE.x * sx - 7, W.HOUSE.y * sy - 10, 14, 11);
     c.fillStyle = '#f4e7cf';
     c.fillRect(W.HOUSE.x * sx - 5, W.HOUSE.y * sy - 5, 10, 6);
+    /* landmarks - the places you go INTO, or across, drawn as little
+       pictures so she can find them again (v1.15) */
+    var cm = W.caveMouth;
+    if (cm) {
+      var cx0 = cm.x * sx, cy0 = cm.y * sy + 4;
+      c.fillStyle = '#7a746a';
+      c.beginPath(); c.ellipse(cx0, cy0, 19, 15, 0, Math.PI, 0); c.lineTo(cx0 + 19, cy0 + 5); c.lineTo(cx0 - 19, cy0 + 5); c.closePath(); c.fill();
+      c.strokeStyle = '#3d3a34'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = '#120f0c';
+      c.beginPath(); c.ellipse(cx0, cy0 + 3, 10, 10, 0, Math.PI, 0); c.lineTo(cx0 + 10, cy0 + 5); c.lineTo(cx0 - 10, cy0 + 5); c.closePath(); c.fill();
+      c.font = 'bold 15px "Trebuchet MS", sans-serif';
+      c.fillStyle = '#fff6c8'; c.strokeStyle = 'rgba(40,30,20,0.85)'; c.lineWidth = 3;
+      c.strokeText('Lava Tube', cx0, cy0 - 20); c.fillText('Lava Tube', cx0, cy0 - 20);
+    }
+    var br = W.bridge;
+    if (br) {
+      c.save();
+      c.translate(br.x * sx, br.y * sy);
+      c.rotate(Math.atan2(br.dy, br.dx));
+      c.fillStyle = '#b07a44'; c.fillRect(-14, -6, 28, 12);
+      c.strokeStyle = '#6e4622'; c.lineWidth = 2; c.strokeRect(-14, -6, 28, 12);
+      c.restore();
+    }
     // guin
     c.fillStyle = '#ff5f92';
     c.beginPath(); c.arc(GG.Player.x * sx, GG.Player.y * sy, 7, 0, Math.PI * 2); c.fill();
