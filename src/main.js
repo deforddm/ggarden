@@ -27,6 +27,15 @@
     ctx.restore();
   }
   var lastTime = 0, elapsed = 0;
+  /* reused every frame, so drawing the world makes no garbage */
+  var _drawables = [], _pool = [], _playerEntry = { y: 0, player: true };
+  function byY(a, b) { return a.y - b.y; }
+  var TALL = { tree: 1, pine: 1, willow: 1, appleTree: 1, blackSpruce: 1, subalpineFir: 1, mossyTrunk: 1,
+    cherryTree: 1, bamboo: 1, basaltColumn: 1, garryOak: 1, oakSnag: 1, snag: 1, vineMaple: 1,
+    krummholz: 1, cliffOak: 1, sagebrush: 1 };
+  var _pausedDrawn = false;
+  /* write to the page only when the words change - every write costs a layout */
+  function setText(el, s) { if (el && el._t !== s) { el._t = s; el.textContent = s; } }
   var swingChecked = false;
   var saveTimer = 0;
   var hurtFlash = 0;
@@ -36,7 +45,10 @@
   GG.view = { w: 480, h: 320, cssW: 480, cssH: 320, zoom: 1 };
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    /* 2 is plenty for a phone held at arm's length, and draws about a third
+       faster than 2.5 (v1.19) */
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    _pausedDrawn = false;
     var w = window.innerWidth, h = window.innerHeight;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
@@ -53,8 +65,12 @@
     ctx.setTransform(dpr * z, 0, 0, dpr * z, 0, 0);
   }
 
+  var sceneLock = 0;   // a moment after going through a door when the button does nothing
   function setScene(s) {
     scene = s;
+    sceneLock = 0.8;
+    _pausedDrawn = false;
+    GG.Orchard.wanted = null;
     GG.Input.clearTarget();
     applyZoom();
     if (s === 'world') {
@@ -78,7 +94,7 @@
     var main = 'FISH', sub = 'cast', ready = false;
     if (st === 'bite') { main = 'CATCH'; sub = 'now!'; ready = true; }
     else if (st === 'nibble') { main = 'WAIT'; sub = 'nibble\u2026'; }
-    else if (st === 'wait') { main = 'WAIT'; sub = 'reel in'; }
+    else if (st === 'wait') { main = 'WAIT'; sub = 'for the !'; }
     else if (st === 'cast' || st === 'reel') { main = '\u2026'; sub = ''; }
     btn.classList.toggle('ready', ready);
     var key = main + '|' + sub;
@@ -149,15 +165,31 @@
   }
 
   /* ---------- world scene ---------- */
+  var _blockedWorld = function (x, y, r) { return GG.World.blocked(x, y, r); };
+  var lastPickable = null, swingPeak = null;
+  var lastCamX = null, lastCamY = null;
+
+  /* A tap on the cottage walks her to the door step, not into the wall. */
+  function onHouse(x, y) {
+    var H = GG.World.HOUSE;
+    return x > H.x - H.w / 2 - 6 && x < H.x + H.w / 2 + 6 && y > H.y - H.w * 1.3 && y < H.y + 4;
+  }
+
   function updateWorld(dt) {
     var W = GG.World, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedWorld;
+    var tap = GG.Input.tapPressed;
+    if (tap && !GG.Fishing.active()) {
+      if (onHouse(tap.x, tap.y)) GG.Input.walkTo(W.DOOR.x, W.DOOR.y + 40);
+      else GG.Orchard.want(tap.x, tap.y);
+    }
 
     var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
     var atDoor = doorD < 40;
     /* the lava tube up on the ridge, and the boot brush at its mouth */
     var brush = W.bootBrush;
-    if (brush && !brush.used && GG.dist(P.x, P.y, brush.x, brush.y) < 34) {
+    if (brush && !brush.used && GG.dist(P.x, P.y, brush.x, brush.y) < 52) {
       brush.used = true;
       GG.Sfx.click();
       GG.UI.toast('You wipe your boots. People carry the bat sickness in on them.', 3200);
@@ -165,6 +197,13 @@
     var atCave = !!W.caveMouth && GG.dist(P.x, P.y, W.caveMouth.x, W.caveMouth.y + 20) < 62;
     var Fi = GG.Fishing;
 
+    /* On the footbridge, push the stick roughly along it and she walks
+       along it, rather than bumping into the rail (v1.19). */
+    var In = GG.Input, B = W.bridge;
+    if (B && In.mag > 0 && W.onBridge(P.x, P.y, 34)) {
+      var dot = In.x * B.dx + In.y * B.dy;
+      if (Math.abs(dot) > 0.35) { var sg = dot > 0 ? 1 : -1; In.x = B.dx * sg; In.y = B.dy * sg; }
+    }
     P.update(dt, function (x, y, r) { return W.blocked(x, y, r); });
 
     GG.Friends.update(dt, P, 'world');
@@ -176,10 +215,20 @@
     var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
     var lookAt = !fishing && !atDoor && !GG.Friends.busy ? GG.Critters.nearestLookOnly(P, 78) : null;
     if (lookAt) pickable = null;   // she is the more important thing to notice
+    /* A bug right in front of her keeps the button as NET - unless she
+       tapped on the plant herself (v1.19: a ripe dandelion used to take
+       the button over and she could not catch the ladybird beside it). */
+    if (pickable && pickable !== GG.Orchard.wanted && GG.Critters.catchableNear(P, 72)) pickable = null;
+    lastPickable = pickable;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
     if (fishing) friendly = null;
+
+    /* while the line is out, a tap anywhere on the water is the catch tap,
+       rather than a walk that pulls the line in */
+    if (fishing && tap) { GG.Input.clearTarget(); GG.Input.action2Pressed = true; }
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
 
     if (GG.Input.action3Pressed) {
       if (!GG.Friends.busy && friendly) GG.Friends.begin(P);
@@ -199,15 +248,17 @@
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (GG.Friends.riding) GG.UI.toast('Not from up here — get down first', 1800);
-      else if (P.startSwing()) swingChecked = false;
+      else if (P.startSwing()) { swingChecked = false; swingPeak = null; }
     }
     if (P.swinging() && !swingChecked) {
       var pr = P.swingProgress();
       if (pr > 0.16 && pr < 0.8) {
         var got = GG.Critters.tryCatch(P);
         if (got) { swingChecked = true; onCatch(got); }
+        /* where the net reached furthest, for judging what she swung at */
+        if (!swingPeak && pr >= 0.3) swingPeak = P.netPoint();
       }
-      if (pr >= 0.8) { swingChecked = true; onSwingMiss(P); }
+      if (pr >= 0.8) { swingChecked = true; onSwingMiss(P, swingPeak || P.netPoint()); }
     }
 
     var fishResult = Fi.update(dt, P);
@@ -235,6 +286,7 @@
           : (pickable ? pickPrompt(pickable) : null))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
+    else if (GG.Friends.riding) setActionLabel('\u2014', 'riding');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
     else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
@@ -249,30 +301,55 @@
     var W = GG.World, P = GG.Player;
     W.drawGround(ctx, cam, GG.view.w, GG.view.h);
     canvas._vw = GG.view.w;
-    W.drawWater(ctx, cam, t);
+    W.drawWater(ctx, cam, t, GG.view.w, GG.view.h);
     GG.Fishing.drawShadows(ctx, cam, t);
     W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
+    if (lastPickable && scene === 'world') GG.Orchard.drawTarget(ctx, cam, lastPickable, t);
 
     // everything that stands up gets sorted so Guin walks behind trees
     var list = W.sortedProps(cam, GG.view.w, GG.view.h);
-    var drawables = [];
-    for (var i = 0; i < list.length; i++) drawables.push({ y: list[i].y, p: list[i] });
-    drawables.push({ y: P.y, player: true });
+    var drawables = _drawables;
+    var n = 0, i;
+    for (i = 0; i < list.length; i++) {
+      var e = _pool[n] || (_pool[n] = { y: 0, p: null });
+      e.y = list[i].y; e.p = list[i];
+      drawables[n++] = e;
+    }
+    drawables.length = n;
+    _playerEntry.y = P.y;
+    drawables.push(_playerEntry);
     GG.Friends.collect(drawables, cam);
-    drawables.sort(function (a, b) { return a.y - b.y; });
+    drawables.sort(byY);
+    var seen = false, hidden = false, ply = P.y - GG.Friends.rideLift();
     for (var j = 0; j < drawables.length; j++) {
       var d = drawables[j];
       if (d.player) {
-        P.draw(ctx, P.x - cam.x, P.y - cam.y - GG.Friends.rideLift(), t);
+        seen = true;
+        P.draw(ctx, P.x - cam.x, ply - cam.y, t);
       } else if (d.friend) {
         GG.Friends.drawEntry(ctx, d, cam, t);
       } else {
         var p = d.p, fn = GG.Props[p.type];
-        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        if (!fn) continue;
+        /* v1.19: a big crown standing in front of her goes see-through, so
+           she never loses sight of herself under a tree */
+        var ghost = seen && TALL[p.type] && Math.abs(p.x - P.x) < p.r * 0.95 &&
+          p.y - ply < p.r * 2.4 && p.y > ply;
+        if (ghost) { ctx.save(); ctx.globalAlpha = 0.6; hidden = true; }
+        fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        if (ghost) ctx.restore();
       }
     }
+    /* and if she is under leaves, a faint copy of her on top, so she can
+       always see where she is */
+    if (hidden) {
+      ctx.save(); ctx.globalAlpha = 0.5;
+      P.draw(ctx, P.x - cam.x, ply - cam.y, t);
+      ctx.restore();
+    }
     GG.Friends.drawHearts(ctx, cam);
+    GG.Orchard.drawSparkles(ctx, cam, P, t, GG.view.w, GG.view.h);
     GG.Orchard.drawPops(ctx, cam);
     GG.Critters.draw(ctx, cam, t);
     GG.Fishing.draw(ctx, cam, t, P);
@@ -290,9 +367,14 @@
   }
 
   /* ---------- house scene ---------- */
+  var _blockedHouse = function (x, y, r) { return GG.House.blocked(x, y, r); };
+  var HOUSE_VERB = { door: ['GO OUT', 'back outside'], bed: ['SLEEP', 'have a nap'],
+    book: ['READ', 'the books'], terrarium: ['TANKS', 'my tanks'], shop: ['OPEN', 'decorations'] };
   function updateHouse(dt) {
     var H = GG.House, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedHouse;
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
     P.update(dt, function (x, y, r) { return H.blocked(x, y, r); });
 
     /* the friend who is with her comes indoors too, and the ones waiting at
@@ -303,7 +385,8 @@
 
     var spot = H.nearest(P.x, P.y);
     GG.UI.prompt(spot ? spot.label : null);
-    setActionLabel(spot ? 'OPEN' : '\u2014', spot ? spot.label.toLowerCase() : 'walk around');
+    var verb = spot && (HOUSE_VERB[spot.id] || ['OPEN', spot.label.toLowerCase()]);
+    setActionLabel(verb ? verb[0] : '\u2014', verb ? verb[1] : 'walk around');
 
     if (GG.Input.actionPressed && spot) {
       GG.Sfx.click();
@@ -355,14 +438,14 @@
     GG.UI.prompt(null);
     if (!GG.Save.data.seenHouseTip) {
       GG.Save.data.seenHouseTip = true; GG.Save.save();
-      setTimeout(function () { GG.UI.toast('Walk up to something and tap NET', 2600); }, 500);
+      setTimeout(function () { GG.UI.toast('Walk up to the bookshelf, the tanks or the bed, then tap the big button', 3200); }, 500);
     }
   }
   function leaveHouse() {
     GG.Sfx.door();
     GG.Friends.homeList = [];
     setScene('world');
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 50);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 92);
     GG.UI.prompt(null);
   }
   function sleep() {
@@ -376,9 +459,12 @@
   }
 
   /* ---------- the lava tube ---------- */
+  var _blockedCave = function (x, y, r) { return GG.Cave.blocked(x, y, r); };
   function updateCave(dt) {
     var C = GG.Cave, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedCave;
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
     P.update(dt, function (x, y, r) { return C.blocked(x, y, r); });
 
     /* She stops herself. Nobody stops her. */
@@ -451,19 +537,21 @@
     GG.Critters.room = null;
     GG.Critters.clear();
     setScene('world');
-    GG.Player.reset(GG.World.caveMouth.x + 10, GG.World.caveMouth.y + 62);
+    GG.Player.reset(GG.World.caveMouth.x + 10, GG.World.caveMouth.y + 100);
     GG.UI.prompt(null);
   }
 
   /* ---------- bees ---------- */
-  function onSwingMiss(P) {
-    var net = P.netPoint();
+  function onSwingMiss(P, at) {
+    var net = at || P.netPoint();
     /* swinging at the one she must not catch teaches, it does not punish */
-    var forbidden = GG.Critters.lookOnlyUnderNet(P);
+    var forbidden = GG.Critters.lookOnlyUnderNet(P, net);
     if (forbidden) { lookAtCreature(forbidden); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
-    if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
+    var end = P.netPoint();   /* close up, the net can reach past the hive */
+    if (hive && Math.min(GG.dist(net.x, net.y, hive.x, hive.y - 14),
+      GG.dist(end.x, end.y, hive.x, hive.y - 14)) < 46) {
       cross += GG.Critters.stirHive(hive.x, hive.y - 16);
     }
     if (cross) beeWarning();
@@ -512,6 +600,7 @@
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+    else if (r.kind === 'moved') GG.UI.toast('You walked away, so the line came in.', 2000);
   }
 
   /* ---------- look, don't catch ---------- */
@@ -552,11 +641,26 @@
   }
 
   /* ---------- little map ---------- */
+  /* The land and water never change, so they are painted once and kept
+     (v1.19: re-sampling 83,000 cells every time the menu opened froze it
+     for half a second). */
+  var _mapBase = null;
   function drawMinimap() {
     var cv = $('minimap'); if (!cv) return;
-    var c = cv.getContext('2d');
     var W = GG.World;
+    if (!_mapBase) {
+      _mapBase = document.createElement('canvas');
+      _mapBase.width = cv.width; _mapBase.height = cv.height;
+      paintMapBase(_mapBase.getContext('2d'), cv.width / W.W, cv.height / W.H);
+    }
+    var c = cv.getContext('2d');
+    c.clearRect(0, 0, cv.width, cv.height);
+    c.drawImage(_mapBase, 0, 0);
     var sx = cv.width / W.W, sy = cv.height / W.H;
+    drawMapMarks(c, sx, sy);
+  }
+  function paintMapBase(c, sx, sy) {
+    var W = GG.World;
     var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
       hill: '#d8d2a4', orchard: '#bfe07a', riverbank: '#8fd07f', beach: '#f0e2b8',
       shore: '#c2bcac', desert: '#cdb68c', mountain: '#9d9a93', taiga: '#3c5c3a',
@@ -573,19 +677,22 @@
         c.fillRect(x * sx, y * sy, step * sx + 1, step * sy + 1);
       }
     }
-    c.fillStyle = 'rgba(255,255,255,0.92)';
-    c.font = 'bold 15px "Trebuchet MS", sans-serif';
+  }
+  function drawMapMarks(c, sx, sy) {
+    var W = GG.World;
+    c.fillStyle = 'rgba(255,255,255,0.95)';
+    c.font = 'bold 18px "Trebuchet MS", sans-serif';
     c.textAlign = 'center';
     c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
-    [['Hills', 3600, 1340], ['Meadow', 4100, 1940], ['Woods', 5700, 1580], ['Orchard', 5560, 2380],
+    [['Hills', 3500, 1330], ['Meadow', 6250, 3170], ['Woods', 6500, 1250], ['Orchard', 5560, 2380],
      ['Pond', 3820, 2980], ['Garden', 4720, 2680], ['Stream', 4200, 2290],
      ['River', 5350, 2980], ['Inlet', 6380, 3520], ['Beach', 5700, 3780],
      ['Tidepools', 7320, 3090], ['The Sea', 7100, 4020],
      ['Desert', 2100, 2400], ['Ridge', 2720, 2800], ['Taiga', 4000, 740],
-     ['Tundra', 4000, 260], ['Glade', 5800, 1640], ['Rainforest', 7450, 2500],
+     ['Tundra', 4000, 260], ['Glade', 5900, 1680], ['Rainforest', 7450, 2500],
      ['Scablands', 700, 1700], ['Savanna', 620, 3900], ['Marsh', 3500, 3560],
      ['Bamboo', 4450, 1800], ['Cherry', 6300, 2800], ['Bird Town', 4380, 1380],
-     ['Farmyard', 4420, 3200], ['Dog\u2019s Paradise', 3440, 2130]].forEach(function (p) {
+     ['Farmyard', 4420, 3200], ['Dog\u2019s Paradise', 3620, 2090]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
@@ -604,7 +711,7 @@
       c.strokeStyle = '#3d3a34'; c.lineWidth = 2; c.stroke();
       c.fillStyle = '#120f0c';
       c.beginPath(); c.ellipse(cx0, cy0 + 3, 10, 10, 0, Math.PI, 0); c.lineTo(cx0 + 10, cy0 + 5); c.lineTo(cx0 - 10, cy0 + 5); c.closePath(); c.fill();
-      c.font = 'bold 15px "Trebuchet MS", sans-serif';
+      c.font = 'bold 18px "Trebuchet MS", sans-serif';
       c.fillStyle = '#fff6c8'; c.strokeStyle = 'rgba(40,30,20,0.85)'; c.lineWidth = 3;
       c.strokeText('Lava Tube', cx0, cy0 - 20); c.fillText('Lava Tube', cx0, cy0 - 20);
     }
@@ -692,19 +799,31 @@
       }
     }
 
-    ctx.save();
-    ctx.clearRect(0, 0, GG.view.w, GG.view.h);
-    if (scene === 'world') drawWorld(elapsed);
-    else if (scene === 'house') drawHouse(elapsed);
-    else if (scene === 'cave') drawCave(elapsed);
-    drawMoveTarget(elapsed);
-    ctx.restore();
+    /* While a panel or a card is open the garden is frozen, so it is drawn
+       once and then left alone - no point painting the same picture sixty
+       times a second underneath a book (v1.19). */
+    if (!paused || !_pausedDrawn) {
+      _pausedDrawn = paused;
+      ctx.save();
+      ctx.clearRect(0, 0, GG.view.w, GG.view.h);
+      if (scene === 'world') drawWorld(elapsed);
+      else if (scene === 'house') drawHouse(elapsed);
+      else if (scene === 'cave') drawCave(elapsed);
+      drawMoveTarget(elapsed);
+      ctx.restore();
+    }
+    /* paint the next patch of ground before she walks onto it */
+    if (!paused && scene === 'world' && GG.World.prewarm && dt < 0.034) {
+      var pdx = lastCamX === null ? 0 : cam.x - lastCamX, pdy = lastCamY === null ? 0 : cam.y - lastCamY;
+      lastCamX = cam.x; lastCamY = cam.y;
+      GG.World.prewarm(cam, GG.view.w, GG.view.h, pdx, pdy);
+    }
 
-    $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
-      (GG.Time.rain ? ' ☔' : '');
+    setText($('chip-time'), (GG.view.cssW < 400 ? '' : 'Day ' + GG.Time.day + ' · ') + GG.Time.label() +
+      (GG.Time.rain ? ' ☔' : ''));
     var placeNow = scene === 'house' ? 'Home'
       : (scene === 'cave' ? 'The Lava Tube' : GG.World.placeName(GG.Player.x, GG.Player.y));
-    $('chip-place').textContent = placeNow;
+    setText($('chip-place'), placeNow);
     parkNotice(placeNow);
 
     /* the sound of the place she is in */
@@ -1064,7 +1183,7 @@
     GG.Fishing.reset();
     GG.Fishing.swimmers.length = 0;
     GG.Friends.clear();
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 100);
     GG.Friends.loadCompanion();
     GG.UI.refreshHud();
     refreshGuestChrome();
@@ -1094,7 +1213,7 @@
     GG.Time.day = GG.Save.data.day;
     GG.World.build();
     GG.Orchard.assign();
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 100);
     GG.Friends.loadCompanion();
     resize();
     window.addEventListener('resize', resize);
@@ -1110,22 +1229,24 @@
     $('btn-play').addEventListener('click', function () { GG.Sfx.click(); startGame(); });
     $('btn-howto').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
     $('btn-settings').addEventListener('click', function () { GG.Sfx.click(); startSound(); openSettings(); });
-    $('menu-settings').addEventListener('click', function () { GG.Sfx.click(); openSettings(); });
+    /* v1.19 (David): the Garden Menu gets out of the way when Settings or
+       How to play opens, rather than sitting on top of it */
+    $('menu-settings').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); openSettings(); });
     wireSettings();
     wireGuest();
     refreshGuestChrome();
     $('btn-menu').addEventListener('click', function () {
       GG.Sfx.click();
-      $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs, ' +
-        GG.Save.totalFish() + ' of ' + GG.FISH.length + ' fish, ' +
-        GG.Save.totalFriends() + ' of ' + GG.ANIMALS.length + ' friends';
+      var found = 0, total = 0;
+      (GG.Book.BOOKS || []).forEach(function (b) { found += b.found(); total += b.list().length; });
+      $('menu-progress').textContent = found + ' of ' + total + ' pages in your Critter Compendium';
       $('menu-place').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.phaseName() +
         ' · ✦ ' + GG.Save.data.sparkles;
       GG.UI.open('screen-menu');
       drawMinimap();
     });
     $('menu-book').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.Book.open(); });
-    $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
+    $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.UI.open('screen-help'); });
 
     GG.UI.onCatchClosed = function () { swingChecked = true; };
     GG.UI.onWarningClosed = function () { swingChecked = true; };
