@@ -31,7 +31,8 @@ const { chromium } = require('playwright');
       if (!f.ripens) bad.noRipens.push(f.id);
       if (!f.measure) bad.noMeasure.push(f.id);
       if (!GG.DECOR_BY_ID[f.unlock]) bad.noUnlock.push(f.id);
-      if (['orchard', 'hill'].indexOf(f.where) < 0) bad.badWhere.push(f.id);
+      if (!f.autoDecor && ['orchard', 'hill'].indexOf(f.where) < 0) bad.badWhere.push(f.id);
+      if (f.autoDecor && [].concat(f.where).some(w => !GG.FRUITS_WHERE[w])) bad.badWhere.push(f.id);
     });
     const kinds = {};
     GG.FRUITS.forEach(f => { kinds[f.eat] = (kinds[f.eat] || 0) + 1; });
@@ -41,9 +42,9 @@ const { chromium } = require('playwright');
   });
   Object.keys(roster.bad).forEach(k =>
     ok('fruit ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('sixteen fruits (got ' + roster.count + ')', roster.count === 16);
+  ok('fifty-eight things to pick (got ' + roster.count + ')', roster.count === 58);
   ok('five in the orchard and five in the hills',
-    roster.orchard === 11 && roster.hill === 5);
+    roster.orchard === 16 && roster.hill === 5);
   ok('all three eat ratings are used ' + JSON.stringify(roster.kinds),
     roster.kinds.yes > 0 && roster.kinds.careful > 0 && roster.kinds.never > 0);
 
@@ -99,7 +100,7 @@ const { chromium } = require('playwright');
   });
   Object.keys(decor.bad).forEach(k =>
     ok('fruit decor ' + k + ' ' + JSON.stringify(decor.bad[k]), !decor.bad[k].length));
-  ok('sixteen fruit decorations (got ' + decor.count + ')', decor.count === 16);
+  ok('fifty-eight picked decorations (got ' + decor.count + ')', decor.count === 58);
   ok('none of them are unlocked to begin with', decor.startsLocked);
 
   /* ---------------- the plants out in the garden ---------------- */
@@ -112,11 +113,12 @@ const { chromium } = require('playwright');
       ground: ['fruitPatch'] };
     const placeOK = GG.Orchard.plants.every(q => {
       const def = GG.FRUIT_BY_ID[q.fruit];
+      if (q.pick) return ({ veg: 'vegPatch', flower: 'pickFlower', wild: 'wildBerry', low: 'wildBerry' })[def.on] === q.type;
       if (def.where === 'hill') return q.type === 'wildBush';
       return (WANT[def.on] || []).indexOf(q.type) >= 0;
     });
     return { total: GG.Orchard.plants.length, by, placeOK,
-      everyKind: GG.FRUITS.every(f => by[f.id] >= 4),
+      everyKind: GG.FRUITS.every(f => by[f.id] >= (f.autoDecor && f.on !== 'tree' && f.on !== 'vine' ? 2 : 4)),
       allRipe: GG.Orchard.plants.every(q => q.ripe === 1) };
   });
   ok('the garden is planted (' + plants.total + ' plants)', plants.total > 60);
@@ -206,7 +208,7 @@ const { chromium } = require('playwright');
   });
   ok('the bug card has no fruit warning on it', clean);
 
-  /* ---------------- the Fruit Book ---------------- */
+  /* ---------------- the Garden Book (the Fruit Book until v1.18) ---------------- */
   const book = await p.evaluate(() => {
     GG.Book.open('fruit');
     const cells = document.querySelectorAll('#book-grid .bugcell');
@@ -219,9 +221,9 @@ const { chromium } = require('playwright');
       tab: !!document.querySelector('#book-tabs .tab[data-book="fruit"].on')
     };
   });
-  ok('the Fruit Book opens', book.title === 'Fruit Book' && book.tab);
-  ok('it lists every fruit (' + book.cells + ')', book.cells === 16);
-  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 16');
+  ok('the Garden Book opens', book.title === 'Garden Book' && book.tab);
+  ok('it lists every fruit (' + book.cells + ')', book.cells === 58);
+  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 58');
 
   const page = await p.evaluate(() => {
     GG.Book.showDetail(GG.FRUIT_BY_ID.chokecherry);
@@ -241,7 +243,7 @@ const { chromium } = require('playwright');
     && page.tags.some(t => /Ripe in:/.test(t)));
   ok('it names the decoration it unlocks', page.tags.some(t => /Unlocked:/.test(t)));
   ok('and it carries the careful box', page.careClass === 'eat-careful' && /stone/i.test(page.care));
-  ok('the back button says All fruit', page.back === 'All fruit');
+  ok('the back button goes back to the whole garden', page.back === 'The whole garden');
 
   await p.evaluate(() => GG.UI.close('screen-book'));
 
@@ -261,8 +263,8 @@ const { chromium } = require('playwright');
     };
   });
   ok('the shop has a picked-not-bought shelf', shop.pickedGroup);
-  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 14);
-  ok('and they say "pick one" instead of a price', shop.pickOne === 14);
+  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 56);
+  ok('and they say "pick one" instead of a price', shop.pickOne === 56);
   ok('the apple plate she earned is hers', shop.plateOwned);
   await p.evaluate(() => GG.UI.close('screen-shop'));
 

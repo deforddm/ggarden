@@ -25,7 +25,7 @@ const { chromium } = require('playwright');
        reaches into: the desert, the ridge, the taiga, the tundra, the glade,
        the rainforest and the beach */
     const PLACES = ['meadow', 'garden', 'forest', 'pond', 'hill', 'orchard', 'riverbank',
-      'beach', 'shore', 'desert', 'mountain', 'taiga', 'tundra', 'glade', 'rainforest'];
+      'beach', 'shore', 'desert', 'mountain', 'taiga', 'tundra', 'glade', 'rainforest', 'farmyard', 'dogpark'];
     const FAMS = Object.keys(GG.FAMILY_NAMES);
     const seen = {};
     GG.ANIMALS.forEach(a => {
@@ -51,7 +51,7 @@ const { chromium } = require('playwright');
     return { bad, count: GG.ANIMALS.length, fams, ways: Object.keys(GG.FRIEND_WAYS).length };
   });
   Object.keys(roster.bad).forEach(k => ok('roster ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('54 animals (got ' + roster.count + ')', roster.count === 54);
+  ok('60 animals (got ' + roster.count + ')', roster.count === 60);
   ok('twenty-five families present ' + JSON.stringify(roster.fams),
     Object.keys(roster.fams).length === 25);
   ok('fourteen befriending methods (got ' + roster.ways + ')', roster.ways === 14);
@@ -155,8 +155,8 @@ const { chromium } = require('playwright');
     row: !!document.getElementById('companion-row')
   }));
   ok('the Friends Book opens', book.title === 'Friends Book');
-  ok('it lists every animal', book.cells === 54);
-  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 54');
+  ok('it lists every animal', book.cells === 60);
+  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 60');
   ok('the companion strip is there', book.row);
 
   const detail = await p.evaluate(() => {
