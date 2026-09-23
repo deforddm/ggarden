@@ -6,12 +6,46 @@
   'use strict';
   var $ = GG.$;
 
+  /* v1.19: the biggest bugs (an atlas moth, a rhinoceros beetle) used to
+     spill out of their cells over the count. Measure each drawing once and
+     shrink the ones that do not fit. */
+  var FIT = {};
+  function fitFor(def, w, h) {
+    var key = (def.id || def.name) + '|' + w + 'x' + h;
+    if (FIT[key] != null) return FIT[key];
+    var W2 = w * 2, H2 = h * 2;
+    var cv = document.createElement('canvas');
+    cv.width = W2; cv.height = H2;
+    var c = cv.getContext('2d');
+    GG.drawAny(c, def, W2 / 2, H2 / 2, Math.min(w, h) / 34 * 1.05, -Math.PI / 2, 1.1);
+    var k = 1;
+    try {
+      var d = c.getImageData(0, 0, W2, H2).data;
+      var x0 = W2, x1 = -1, y0 = H2, y1 = -1;
+      for (var y = 0; y < H2; y += 2) {
+        for (var x = 0; x < W2; x += 2) {
+          if (d[(y * W2 + x) * 4 + 3] > 24) {
+            if (x < x0) x0 = x; if (x > x1) x1 = x;
+            if (y < y0) y0 = y; if (y > y1) y1 = y;
+          }
+        }
+      }
+      if (x1 > x0 && y1 > y0) {
+        /* keep it centred: how far it reaches from the middle, each way */
+        var rx = Math.max(W2 / 2 - x0, x1 - W2 / 2), ry = Math.max(H2 / 2 - y0, y1 - H2 / 2);
+        k = Math.min(1, (w / 2 - 3) / rx, (h / 2 - 3) / ry);
+      }
+    } catch (e) { k = 1; }
+    FIT[key] = k;
+    return k;
+  }
+
   function thumb(def, w, h, silhouette) {
     var cv = document.createElement('canvas');
     cv.width = w * 2; cv.height = h * 2;
     var c = cv.getContext('2d');
     c.scale(2, 2);
-    var scale = Math.min(w, h) / 34;
+    var scale = Math.min(w, h) / 34 * fitFor(def, w, h);
     GG.drawAny(c, def, w / 2, h / 2, scale * 1.05, -Math.PI / 2, 1.1);
     if (silhouette) {
       // paint the whole drawing one flat colour so it stays a mystery
@@ -110,7 +144,10 @@
       grid.appendChild(shelf);
     },
 
-    setTab: function (tab) { this.tab = tab; this.showGrid(); },
+    setTab: function (tab) {
+      this.tab = tab; this._gridScroll = 0; this.showGrid();
+      var b = document.querySelector('#screen-book .body'); if (b) b.scrollTop = 0;
+    },
 
     showGrid: function () {
       if (!BOOK_BY_ID[this.tab]) { this.showContents(); return; }
@@ -206,6 +243,8 @@
       txt.innerHTML = kinds
         ? '<b>' + kinds + ' of ' + GG.FRUITS.length + ' kinds picked.</b> Every new kind '
           + 'unlocks a decoration for your tanks.'
+          + '<div class="dotkey"><i style="background:#8fb98f"></i>good to eat '
+          + '<i style="background:#e0a13c"></i>careful <i style="background:#d84a4a"></i>never eat</div>'
         : 'Walk up to a fruit tree, a vegetable bed, a wild berry bush or a clump of flowers '
           + 'and tap <b>PICK</b>. Every new kind unlocks a decoration.';
       row.appendChild(txt);
@@ -247,9 +286,13 @@
 
     showDetail: function (def) {
       var grid = $('book-grid'), det = $('book-detail');
+      /* remember where she was in the list, and start the page at the top */
+      var body = document.querySelector('#screen-book .body');
+      if (body && grid.style.display !== 'none') this._gridScroll = body.scrollTop;
       grid.style.display = 'none'; det.style.display = 'block';
+      if (body) body.scrollTop = 0;
       $('book-back').style.display = 'block';
-      $('book-back').textContent = def.isFruit ? 'The whole garden'
+      $('book-back').textContent = def.isFruit ? 'All the garden'
         : (def.isAnimal ? 'All friends'
           : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
@@ -538,7 +581,11 @@
   };
 
   document.addEventListener('DOMContentLoaded', function () {
-    $('book-back').addEventListener('click', function () { GG.Sfx.click(); Book.showGrid(); });
+    $('book-back').addEventListener('click', function () {
+      GG.Sfx.click(); Book.showGrid();
+      var body = document.querySelector('#screen-book .body');
+      if (body) body.scrollTop = Book._gridScroll || 0;
+    });
     document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
       el.addEventListener('click', function () { GG.Sfx.click(); Book.setTab(el.getAttribute('data-book')); });
     });

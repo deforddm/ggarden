@@ -12,14 +12,18 @@
       document.querySelectorAll('[data-close]').forEach(function (b) {
         b.addEventListener('click', function () { GG.Sfx.click(); self.close(b.getAttribute('data-close')); });
       });
-      $('catch-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideCatch(); });
-      $('warn-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideWarning(); });
+      /* v1.19: a card that has only just opened ignores taps for a moment.
+         Her next tap on NET used to land on the dark background and close
+         the NEW! card before she had read a word of it. */
+      function settled(ms) { return performance.now() - (self._cardAt || 0) > (ms || 900); }
+      $('catch-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideCatch(); });
+      $('warn-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideWarning(); });
       $('warn-pop').addEventListener('click', function (e) {
-        if (e.target.id === 'warn-pop') self.hideWarning();
+        if (e.target.id === 'warn-pop' && settled()) self.hideWarning();
       });
-      $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop') self.hideCatch(); });
-      $('friend-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideFriend(); });
-      $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop') self.hideFriend(); });
+      $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop' && settled()) self.hideCatch(); });
+      $('friend-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideFriend(); });
+      $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop' && settled()) self.hideFriend(); });
       $('friend-along').addEventListener('click', function () {
         GG.Sfx.click();
         var def = self._friendDef;
@@ -34,12 +38,20 @@
       var el = $(id); if (!el) return;
       el.classList.remove('hidden');
       if (this.openPanels.indexOf(id) < 0) this.openPanels.push(id);
+      this._panelClass();
     },
     close: function (id) {
       var el = $(id); if (!el) return;
       el.classList.add('hidden');
       var i = this.openPanels.indexOf(id);
       if (i >= 0) this.openPanels.splice(i, 1);
+      this._panelClass();
+    },
+    /* with a panel open the toast drops to the bottom, clear of the header
+       and its close button */
+    _panelClass: function () {
+      var app = $('app');
+      if (app) app.classList.toggle('panel-open', this.openPanels.some(function (p) { return p !== 'screen-title'; }));
     },
     anyOpen: function () {
       return this.openPanels.length > 0 ||
@@ -56,6 +68,9 @@
     },
 
     prompt: function (text) {
+      /* called every frame, so only touch the page when something changes */
+      if (text === this._promptText) return;
+      this._promptText = text;
       var p = $('prompt');
       if (text) { p.textContent = text; p.classList.add('show'); }
       else p.classList.remove('show');
@@ -80,6 +95,8 @@
           (isNew ? ' &nbsp;+&nbsp; new page in your ' + (def.isFish ? 'Fish Book' : 'Bug Book') + '!' : '');
       }
       $('catch-care').style.display = 'none';
+      $('catch-ok').textContent = 'Nice!';
+      this._cardAt = performance.now();
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
     },
@@ -95,6 +112,7 @@
       $('warn-fact').textContent = isNew
         ? def.facts[0]
         : def.facts[1 + Math.floor(Math.random() * (def.facts.length - 1))];
+      this._cardAt = performance.now();
       $('warn-pop').classList.remove('hidden');
       this._animWarn();
     },
@@ -153,6 +171,9 @@
       $('catch-reward').innerHTML = res.unlocked
         ? 'New decoration for your tanks: <b>' + res.unlocked.name + '</b>'
         : (res.first ? 'New page in your Garden Book!' : '&#10022; one for the basket');
+      /* "Nice!" under "Never eat this one" sends the wrong message */
+      $('catch-ok').textContent = def.eat === 'never' ? 'Got it' : 'Nice!';
+      this._cardAt = performance.now();
       $('catch-pop').classList.remove('hidden');
       this._animCatch(true);
     },
@@ -218,6 +239,15 @@
       var along = $('friend-along');
       along.hidden = look || (GG.Save.data.companion === def.id);
       along.textContent = 'Ask them along';
+      /* a rattlesnake or a bear is not a new friend with hearts round it:
+         it is somebody she met from a long way off, and kept away from */
+      var tag = $('friend-new');
+      tag.textContent = look ? 'MET FROM FAR AWAY' : 'NEW FRIEND!';
+      tag.classList.toggle('far', !!look);
+      if (look) tag.style.display = 'inline-block';
+      $('friend-ok').textContent = look ? 'I\u2019ll keep my distance' : 'Lovely!';
+      this._friendLook = !!look;
+      this._cardAt = performance.now();
       $('friend-pop').classList.remove('hidden');
       this._animFriend();
     },
@@ -232,10 +262,11 @@
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        g.addColorStop(0, '#f0f6e2'); g.addColorStop(1, '#dbeed6');
+        if (self._friendLook) { g.addColorStop(0, '#f6efe4'); g.addColorStop(1, '#e8dcc8'); }
+        else { g.addColorStop(0, '#f0f6e2'); g.addColorStop(1, '#dbeed6'); }
         c.fillStyle = g;
         GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
-        for (var i = 0; i < 9; i++) {
+        for (var i = 0; i < (self._friendLook ? 0 : 9); i++) {
           var a = t * 0.7 + i * 0.7;
           c.globalAlpha = 0.22 + 0.16 * Math.sin(a * 2);
           c.fillStyle = '#ff8fb0';

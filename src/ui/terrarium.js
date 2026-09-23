@@ -86,6 +86,7 @@
     },
 
     open: function () {
+      if (this._resetClear) this._resetClear();
       GG.UI.open('screen-terrarium');
       this.sel = null;
       var tk = this.tank();
@@ -129,7 +130,7 @@
       var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
-      $('tank-count').textContent = 'Tank ' + (this.index + 1) + ' of ' + d.terrariums.length;
+      $('tank-count').textContent = (this.index + 1) + ' / ' + d.terrariums.length;
       /* your only tank cannot be thrown away */
       $('tank-delete').hidden = d.terrariums.length <= 1;
       $('tank-remove').style.display = this.sel ? '' : 'none';
@@ -1106,22 +1107,55 @@
       });
 
       $('tank-prev').addEventListener('click', function () {
+        if (self._resetClear) self._resetClear();
         GG.Sfx.click();
         var n = GG.Save.data.terrariums.length;
         self.index = (self.index - 1 + n) % n; self.sel = null; self.refresh();
       });
       $('tank-next').addEventListener('click', function () {
+        if (self._resetClear) self._resetClear();
         GG.Sfx.click();
         var n = GG.Save.data.terrariums.length;
         self.index = (self.index + 1) % n; self.sel = null; self.refresh();
       });
       $('tank-remove').addEventListener('click', function () { GG.Sfx.click(); self.removeSelected(); });
-      $('tank-clear').addEventListener('click', function () {
+      /* v1.19: emptying a whole tank takes two taps, and can be undone for
+         a few seconds afterwards - it used to go in one tap, no questions */
+      var clearBtn = $('tank-clear'), clearState = null, clearTimer = 0, undo = null, armedTank = null;
+      function resetClear() {
+        clearState = null; undo = null; clearTimer = 0; armedTank = null;
+        clearBtn.textContent = 'Empty it'; clearBtn.classList.remove('armed');
+      }
+      clearBtn.addEventListener('click', function () {
         GG.Sfx.click();
         var tk = self.tank();
+        clearTimeout(clearTimer);
+        /* armed on a different tank (she switched tanks, or closed and came
+           back)? then this is a first tap again */
+        if (armedTank !== tk) { clearState = null; undo = null; clearBtn.classList.remove('armed'); }
+        if (clearState === 'undo' && undo && undo.tank === tk) {
+          tk.bugs = undo.bugs; tk.decor = undo.decor; tk.fish = undo.fish; tk.friends = undo.friends;
+          GG.Save.save(); resetClear(); self.refresh();
+          GG.UI.toast('Everything is back where it was', 1800);
+          return;
+        }
+        if (clearState !== 'armed') {
+          if (!(tk.bugs.length + tk.decor.length + (tk.fish || []).length + (tk.friends || []).length)) {
+            GG.UI.toast('This tank is already empty', 1600); return;
+          }
+          clearState = 'armed'; armedTank = tk;
+          clearBtn.textContent = 'Tap again to empty'; clearBtn.classList.add('armed');
+          clearTimer = setTimeout(resetClear, 3000);
+          return;
+        }
+        undo = { tank: tk, bugs: tk.bugs, decor: tk.decor, fish: tk.fish || [], friends: tk.friends || [] };
         tk.bugs = []; tk.decor = []; tk.fish = []; tk.friends = []; self.sel = null;
         GG.Save.save(); self.refresh();
+        clearState = 'undo'; armedTank = tk;
+        clearBtn.textContent = 'Put it all back'; clearBtn.classList.remove('armed');
+        clearTimer = setTimeout(resetClear, 6000);
       });
+      self._resetClear = resetClear;
       $('tank-rename').addEventListener('click', function () {
         GG.Sfx.click();
         var tk = self.tank();
