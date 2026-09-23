@@ -6,9 +6,18 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.15.1';
+  GG.VERSION = '1.16.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.16.0', title: 'A cottage your size, hats that fit, and a calmer horse',
+      lines: [
+        'Your cottage has been rebuilt to fit you. The bed is a real bed, the door is a real door, and the bookshelf is only a little taller than you are. There is a fireplace now, with a fire in it.',
+        'Friends waiting at home walk round the bed instead of getting stuck on top of it.',
+        'Silly hats sit on top of the head now, between the ears, instead of balancing on the tips of them.',
+        'When your horse is walking with you, nothing pops up. Stop and stand still, and she comes up beside you with her shoulder to you, and a little RIDE? button appears.'
+      ]
+    },
     {
       v: '1.15.1', title: 'A new sign on the bookshelf',
       lines: [
