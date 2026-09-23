@@ -29,18 +29,21 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;display:block;image
 /* ---------- HUD ---------- */
 #hud{position:absolute;inset:0;pointer-events:none}
 #hud-top{position:absolute;top:calc(8px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));
-  right:calc(8px + env(safe-area-inset-right));display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap}
+  right:calc(8px + env(safe-area-inset-right));display:flex;gap:6px;align-items:flex-start;flex-wrap:nowrap}
+#chip-place{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
 .chip{background:rgba(253,246,230,.92);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:bold;
   color:var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.12);white-space:nowrap}
 .chip.gold{color:#8a6212}
 #btn-menu{pointer-events:auto;margin-left:auto;background:rgba(253,246,230,.92);border:none;border-radius:999px;
   width:38px;height:32px;font-size:17px;font-weight:bold;color:var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.12)}
-#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));
+#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(210px + env(safe-area-inset-bottom));
   background:rgba(63,53,39,.86);color:#fff;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:bold;
   opacity:0;transition:opacity .18s;white-space:nowrap}
 #prompt.show{opacity:1}
-#toast{position:absolute;left:50%;transform:translateX(-50%);top:58px;background:rgba(63,53,39,.9);color:#fff;
-  padding:8px 16px;border-radius:999px;font-size:14px;font-weight:bold;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast{position:absolute;left:16px;right:16px;margin:0 auto;width:max-content;max-width:min(520px,calc(100% - 32px));
+  top:calc(52px + env(safe-area-inset-top));background:rgba(63,53,39,.93);color:#fff;text-align:center;
+  padding:9px 16px;border-radius:18px;font-size:14px;line-height:1.35;font-weight:bold;opacity:0;
+  transition:opacity .3s;pointer-events:none;z-index:40;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 #toast.show{opacity:1}
 
 /* ---------- touch controls ---------- */
@@ -67,7 +70,7 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;display:block;image
 .sheet header h2{margin:0;font-size:18px;flex:1}
 .sheet .body{padding:12px 14px;overflow:auto;-webkit-overflow-scrolling:touch;flex:1}
 .sheet footer{padding:10px 14px;border-top:2px solid #ece0c6;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.x{background:rgba(0,0,0,.18);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:19px;
+.x{background:rgba(0,0,0,.18);border:none;color:#fff;width:44px;height:44px;flex:none;border-radius:50%;font-size:21px;
   font-weight:bold;font-family:var(--font)}
 button{font-family:var(--font);cursor:pointer}
 .btn{background:var(--cream2);border:2px solid #e0cfa8;border-radius:14px;padding:9px 14px;font-weight:bold;
@@ -75,7 +78,7 @@ button{font-family:var(--font);cursor:pointer}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #e0cfa8}
 .btn.primary{background:var(--green);border-color:var(--green-d);color:#fff;box-shadow:0 3px 0 var(--green-d)}
 .btn.pink{background:var(--pink);border-color:#cf6f8f;color:#fff;box-shadow:0 3px 0 #cf6f8f}
-.btn.small{padding:6px 10px;font-size:13px;border-radius:11px}
+.btn.small{padding:6px 10px;font-size:13px;border-radius:11px;min-height:40px}
 .btn[disabled]{opacity:.45}
 
 /* ---------- title ---------- */
@@ -97,12 +100,12 @@ button{font-family:var(--font);cursor:pointer}
 .bugcell .cnt{position:absolute;top:3px;right:5px;font-size:10px;font-weight:bold;color:var(--green-d)}
 .bugcell .rar{position:absolute;top:4px;left:5px;width:8px;height:8px;border-radius:50%}
 #book-detail{display:none}
-#detail-art{width:100%;height:150px;display:block;background:linear-gradient(#eaf6e4,#d9eed2);border-radius:16px}
+#detail-art{width:100%;height:auto;aspect-ratio:640/300;display:block;background:linear-gradient(#eaf6e4,#d9eed2);border-radius:16px}
 .factline{background:var(--cream2);border-radius:14px;padding:10px 12px;margin:8px 0;font-size:14.5px;line-height:1.45}
 .factline b{color:var(--green-d)}
 .meta{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 2px}
 .tag{background:#eef3e6;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:bold;color:var(--ink2)}
-#progress{font-size:13px;font-weight:bold;color:var(--ink2)}
+#progress{font-size:13px;font-weight:bold;color:rgba(255,255,255,.92)}
 
 /* ---------- catch popup ---------- */
 #catch-pop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:30;
@@ -123,13 +126,13 @@ button{font-family:var(--font);cursor:pointer}
 #tank-canvas{width:100%;display:block;border-radius:16px;background:#cfe9f5;touch-action:none}
 #tank-name{font-size:16px;font-weight:bold;text-align:center;margin:6px 0 4px}
 .tabs{display:flex;gap:6px;margin:8px 0 6px}
-.tab{flex:1;background:var(--cream2);border:2px solid #eaddc0;border-radius:12px;padding:7px;font-weight:bold;
+.tab{flex:1;background:var(--cream2);border:2px solid #eaddc0;border-radius:12px;padding:7px;font-weight:bold;min-height:40px;
   font-size:13px;text-align:center}
 .tab.on{background:var(--green);border-color:var(--green-d);color:#fff}
-#tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:150px;overflow:auto}
+#tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;max-height:38vh;overflow:auto}
 .trayitem{background:var(--cream2);border:2px solid #eaddc0;border-radius:12px;padding:3px;text-align:center}
 .trayitem canvas{width:100%;height:42px;display:block}
-.trayitem .nm{font-size:9.5px;font-weight:bold;color:var(--ink2);line-height:1.1;min-height:22px}
+.trayitem .nm{font-size:11px;font-weight:bold;color:var(--ink2);line-height:1.1;min-height:22px}
 .trayitem.locked{opacity:.55}
 .price{font-size:10px;color:#8a6212;font-weight:bold}
 
@@ -190,7 +193,7 @@ ul.tips li{margin-bottom:3px}
 .newtank{background:var(--cream2);border:2px solid #eaddc0;border-radius:16px;padding:8px;text-align:center;
   box-shadow:0 3px 0 #e0cfa8}
 .newtank:active{transform:translateY(2px);box-shadow:0 1px 0 #e0cfa8}
-.newtank canvas{width:100%;height:86px;display:block;border-radius:11px}
+.newtank canvas{width:100%;height:auto;aspect-ratio:240/132;display:block;border-radius:11px}
 .newtank .nt-name{font-weight:bold;font-size:15px;margin-top:5px}
 .newtank .nt-blurb{font-size:12px;color:var(--ink2);line-height:1.3}
 .newtank .nt-warn{font-size:11.5px;font-weight:bold;color:#8a6212;margin-top:3px;line-height:1.3}
@@ -273,7 +276,7 @@ ul.tips li{margin-bottom:3px}
 .tag.friend{background:#e6f4e0;color:#3f7a3a}
 .tag.way{background:#fdeef4;color:#a3446a}
 .foodchain{background:#fdf4e8;border:2px solid #efdcc0;border-radius:14px;padding:10px 12px;margin:8px 0}
-.foodchain b{color:#8a6212;display:block;margin-bottom:3px}
+.foodchain > b{color:#8a6212;display:block;margin-bottom:3px}
 .fcline{font-size:13.5px;line-height:1.45;margin:2px 0}
 .fcnote{font-size:12px;color:var(--ink2);margin-top:4px;font-style:italic}
 
@@ -323,6 +326,48 @@ ul.tips li{margin-bottom:3px}
 /* v1.18: the Garden Book's shelves - fruit, berries, vegetables, flowers */
 .book-shelf{font-weight:bold;font-size:13px;color:#8a5a24;text-align:left;padding:8px 4px 2px;
   border-bottom:2px dotted rgba(138,90,36,0.35);letter-spacing:0.02em}
+/* v1.19: How to play, short and picture-first */
+.howto{display:flex;flex-direction:column;gap:6px}
+.how{display:flex;gap:12px;align-items:center;background:var(--cream2);border-radius:14px;padding:6px 12px;
+  font-size:14px;line-height:1.3;text-align:left}
+.how .hi{font-size:28px;line-height:1;flex:none;width:34px;text-align:center}
+.how b:first-child{display:block;font-size:15px;color:var(--ink);margin-bottom:1px}
+.howto-keys{text-align:center;margin-top:10px}
+/* v1.19: the friend card's buttons stay on screen on a small phone */
+#friend-btns{position:sticky;bottom:-16px;background:var(--cream);padding:8px 0 2px;margin-bottom:-2px}
+#friend-new.far{background:#b0503a}
+/* the safe choice looks safe */
+#reset-no{background:var(--green);border-color:var(--green-d);color:#fff;box-shadow:0 3px 0 var(--green-d)}
+#reset-yes.arming{background-image:linear-gradient(90deg,rgba(255,255,255,.45) 0,rgba(255,255,255,.45) 100%);
+  background-size:0% 100%;background-repeat:no-repeat;animation:armfill 3s linear forwards}
+@keyframes armfill{to{background-size:100% 100%}}
+.dotkey{margin-top:4px;font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.dotkey i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:6px}
+.dotkey i:first-child{margin-left:0}
+#tank-clear.armed{background:#f6d9d2;border-color:#d99a8a;color:#8a2f1f}
+#app.panel-open #toast{top:auto;bottom:calc(92px + env(safe-area-inset-bottom))}
+#tank-wrap{position:relative}
+#tank-remove{position:absolute;top:8px;right:8px;z-index:2}
+@media (pointer:coarse){.howto-keys{display:none}}
+/* bigger slider handles for small fingers */
+.slide input[type=range]{-webkit-appearance:none;appearance:none;height:40px;margin:0}
+.slide input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:#e3d6b8}
+.slide input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:#e3d6b8}
+.slide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-10px;
+  border-radius:50%;background:var(--green);border:3px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.slide input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--green);
+  border:3px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.slide input[type=range]:disabled{opacity:.45}
+/* v1.19 QA: a phone as wide as hers keeps the whole place name */
+@media (max-width:430px){.chip{padding:5px 9px;font-size:12px}#hud-top{gap:4px}}
+#btn-menu{width:44px;height:36px}
+#screen-terrarium .btn.small{min-height:44px}
+@media (max-height:700px){
+  .how{padding:4px 10px;font-size:13px;line-height:1.25}
+  .how .hi{font-size:22px;width:28px}
+  .how b:first-child{font-size:14px}
+  .howto{gap:4px}
+}
 
 </style>
 </head>
@@ -339,7 +384,6 @@ ul.tips li{margin-bottom:3px}
       <button id="btn-menu" aria-label="Menu">&#9776;</button>
     </div>
     <div id="prompt"></div>
-    <div id="toast"></div>
   </div>
 
   <div id="touch">
@@ -374,26 +418,17 @@ ul.tips li{margin-bottom:3px}
     <div class="sheet">
       <header><h2>How to play</h2><button class="x" data-close="screen-help">&times;</button></header>
       <div class="body">
-        <ul class="tips">
-          <li><b>Walk</b> by tapping where you want to go &mdash; Guin walks there on her own. Or put your thumb down anywhere on the screen and slide it, and steer her like a joystick.</li>
-          <li><b>Swing your net</b> with the big yellow button.</li>
-          <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
-          <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths, and after dark on the beach for ghost crabs.</li>
-          <li><b>Go fishing</b> anywhere there is water. Stand on the bank facing it and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
-          <li>Every water holds different fish: the <b>Lily Pond</b>, <b>Pebble Stream</b> up in the hills, the <b>Winding River</b>, <b>Gull Inlet</b> where the river meets the sea, and the <b>open sea</b> off Shell Beach. Follow the stream downhill and see where it takes you.</li>
-          <li>You can paddle straight across the little stream, but the river and the sea are too deep, so look for a way round.</li>
-          <li>Out at <b>The Tidepools</b>, past Shell Beach, you can wade into the rock pools and net crabs, sea stars, urchins and sea slugs with your net. (In a real rock pool we look and put everything back exactly where we found it.)</li>
-          <li><b>Making friends.</b> Some animals are not for catching at all &mdash; hummingbirds, frogs, bats, dogs, cats and parrots. Walk up to one and a green button appears telling you the right way to say hello to that kind of animal: put out a feeder, keep very still, ask its owner first. Tap it, then <b>stand completely still</b> while the little heart fills up. Wander about and it slips back a bit, but it never empties and the animal never runs off for good.</li>
-          <li>Every friend you make gets a page in the <b>Friends Book</b> with a <b>Good manners</b> note &mdash; the real way to be kind and safe with that animal. Tap <b>Ask them along</b> on any friend&rsquo;s page and they will follow you round the garden all day.</li>
-          <li>Build a <b>Garden Habitat</b> from the New Tank button: a corner of the garden out under the sky, with a feeder, a bat house, a kennel, a cat basket and a parrot perch to buy. Your friends come and visit it &mdash; they are never shut in, and you can send them off again whenever you like.</li>
-          <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
-          <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are four kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, a <b>hybrid tank</b> with a grassy bank above the water that holds both, and a <b>garden habitat</b> outdoors for your animal friends.</li>
-          <li>The rock-pool creatures &mdash; crabs, sea stars, urchins, limpets, periwinkles and sea slugs &mdash; <b>need water to live in</b>, so they go in a fish tank or a hybrid tank, never a dry terrarium. They potter about on the sand at the bottom.</li>
-          <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them in the decoration box by your bed &mdash; there are things for every kind of tank, from ferns and fairy houses to coral, sea grass and a treasure chest.</li>
-          <li><b>Settings</b> (on the title screen, or in the Garden Menu) turns the music, the garden sounds and the beeps up and down on their own.</li>
-          <li>A friend can have a turn with <b>Let a friend play</b> on the title screen. They get a garden of their own to explore, and yours is kept completely safe until they finish.</li>
-        </ul>
-        <p class="note">On a computer you can use the arrow keys (or WASD) to walk, hold <b>shift</b> to tiptoe, and press <b>space</b> to swing. <b>F</b> casts a fishing line and <b>E</b> says hello to an animal.</p>
+        <div class="howto">
+          <div class="how"><span class="hi">&#128070;</span><div><b>Walk</b>Tap where you want to go, or slide your thumb to steer.</div></div>
+          <div class="how"><span class="hi">&#129419;</span><div><b>Catch bugs</b>Creep up close and tap <b>NET</b>. If a bug shows a <b>!</b>, slow down.</div></div>
+          <div class="how"><span class="hi">&#127907;</span><div><b>Go fishing</b>Stand by the water and tap <b>FISH</b>. When the bobber dips, tap <b>CATCH</b>.</div></div>
+          <div class="how"><span class="hi">&#127822;</span><div><b>Pick things</b>Walk up to fruit, vegetables, berries or flowers and tap <b>PICK</b>.</div></div>
+          <div class="how"><span class="hi">&#128054;</span><div><b>Make friends</b>Walk up to an animal, tap the green button, then keep very still.</div></div>
+          <div class="how"><span class="hi">&#128029;</span><div><b>Mind the bees</b>Leave bees and their hive alone, or they sting.</div></div>
+          <div class="how"><span class="hi">&#127968;</span><div><b>Go home</b>Read your <b>Critter Compendium</b> and build tanks for your bugs, fish and friends.</div></div>
+          <div class="how"><span class="hi">&#10022;</span><div><b>Sparkles</b>Catching earns sparkles. Spend them on decorations for your tanks.</div></div>
+        </div>
+        <p class="note howto-keys">On a computer: arrow keys or WASD to walk, shift to tiptoe, space to swing.</p>
       </div>
       <footer><button class="btn primary grow" data-close="screen-help">Got it</button></footer>
     </div>
@@ -525,7 +560,8 @@ ul.tips li{margin-bottom:3px}
       <div class="body">
         <div id="tank-name"></div>
         <div id="tank-kind"></div>
-        <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas></div>
+        <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas>
+          <button class="btn small pink" id="tank-remove">Take out</button></div>
         <div class="row" style="margin-top:8px">
           <button class="btn small" id="tank-prev">&#8592;</button>
           <span class="grow" style="text-align:center;font-size:13px;font-weight:bold" id="tank-count"></span>
@@ -533,7 +569,6 @@ ul.tips li{margin-bottom:3px}
           <button class="btn small" id="tank-rename">Name</button>
           <button class="btn small" id="tank-bg">Scene</button>
           <button class="btn small" id="tank-type">Type</button>
-          <button class="btn small pink" id="tank-remove">Take out</button>
         </div>
         <div class="tabs">
           <div class="tab on" data-tab="bugs">Bugs</div>
@@ -616,9 +651,9 @@ ul.tips li{margin-bottom:3px}
     <div class="sheet">
       <header><h2>Decoration Box</h2><span class="chip gold" id="shop-sparkles"></span><button class="x" data-close="screen-shop">&times;</button></header>
       <div class="body">
-        <p class="note">Catch bugs to earn &#10022; sparkles, then buy pretty things for your terrariums.</p>
+        <p class="note">Catch bugs to earn &#10022; sparkles, then buy pretty things for your tanks.</p>
         <div id="shop-grid"></div>
-        <h3 style="font-size:15px;margin:14px 0 6px">Terrarium scenes</h3>
+        <h3 style="font-size:15px;margin:14px 0 6px">Tank scenes</h3>
         <div id="shop-bgs" class="shopitem-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px"></div>
       </div>
       <footer><button class="btn primary grow" data-close="screen-shop">Close</button></footer>
@@ -634,7 +669,7 @@ ul.tips li{margin-bottom:3px}
       <div id="friend-fact"></div>
       <div id="friend-manners"><b>Good manners</b><span></span></div>
       <div id="friend-reward"></div>
-      <div class="row" style="gap:8px">
+      <div class="row" id="friend-btns" style="gap:8px">
         <button class="btn grow" id="friend-along">Ask them along</button>
         <button class="btn primary grow" id="friend-ok">Lovely!</button>
       </div>
@@ -665,6 +700,9 @@ ul.tips li{margin-bottom:3px}
       <button class="btn primary" id="catch-ok" style="width:100%;padding:12px;font-size:16px">Nice!</button>
     </div>
   </div>
+
+  <!-- toasts sit above every panel, so a message said from inside a book or a tank is seen -->
+  <div id="toast"></div>
 </div>
 <script>
 /* ==== src/core/util.js ==== */
@@ -718,13 +756,26 @@ ul.tips li{margin-bottom:3px}
     ctx.closePath();
   };
 
+  /* Art code asks for the same few hundred shades every frame, so the
+     answers are remembered. The map is bounded: if something ever asks for
+     an endless run of different shades, it is simply cleared and refilled. */
+  var shadeMemo = new Map(), SHADE_CAP = 4096;
   GG.shade = function (hex, amt) {
+    var key = hex + '|' + amt;
+    var hit = shadeMemo.get(key);
+    if (hit !== undefined) return hit;
+    var out = shadeRaw(hex, amt);
+    if (shadeMemo.size >= SHADE_CAP) shadeMemo.clear();
+    shadeMemo.set(key, out);
+    return out;
+  };
+  function shadeRaw(hex, amt) {
     var n = parseInt(hex.slice(1), 16);
     var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
     if (amt > 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
     else { r *= (1 + amt); g *= (1 + amt); b *= (1 + amt); }
     return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
-  };
+  }
 
   GG.el = function (tag, cls, text) {
     var e = document.createElement(tag);
@@ -1098,7 +1149,10 @@ ul.tips li{margin-bottom:3px}
     pending: null,       // a finger that is down but has not slid yet
     moveTarget: null,    // { x, y } in the current scene's coordinates
     TAP_SLOP: 12,        // px a finger may wander and still count as a tap
-    TAP_TIME: 450,       // ms: longer than this and it is not a tap
+    TAP_TIME: 4000,      // ms: a press that never slides is a tap, however long she
+                         // holds it (v1.19 - small fingers press and hold)
+    tapPressed: null,    // { x, y } on the frame a tap lifted, in scene coordinates
+    blockedFn: null,     // the current scene's collision test, set by main.js
 
     /* Walk to (x, y) in the current scene. */
     walkTo: function (x, y) {
@@ -1180,7 +1234,7 @@ ul.tips li{margin-bottom:3px}
           self.pending = null;
           if (Date.now() - pd.t <= self.TAP_TIME && GG.screenToWorld) {
             var w = GG.screenToWorld(px, py);
-            if (w) self.walkTo(w.x, w.y);
+            if (w) { self.walkTo(w.x, w.y); self._tapQueued = { x: w.x, y: w.y }; }
           }
           return true;
         }
@@ -1288,8 +1342,33 @@ ul.tips li{margin-bottom:3px}
       var now = Date.now();
       if (!T.at) T.at = now;
       if (d < T.best - 2) { T.best = d; T.at = now; }
-      else if (now - T.at > 450) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
-      this.x = dx / d; this.y = dy / d;
+      else if (now - T.at > (T.side ? 1600 : 450)) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
+      var ux = dx / d, uy = dy / d;
+      /* v1.19: something in the way? Look a little to one side, then the
+         other, and slip round it - a tree trunk or a bush should not stop
+         her dead. Once she has picked a side she keeps it, so she does not
+         dither left-right-left in front of the trunk. */
+      var B = this.blockedFn;
+      if (B && d > 14) {
+        var look = 24, rad = 10;
+        if (B(P.x + ux * look, P.y + uy * look, rad)) {
+          var tries = T.side ? [T.side, -T.side] : [1, -1];
+          var found = false;
+          for (var a = 1; a <= 4 && !found; a++) {
+            for (var k = 0; k < tries.length && !found; k++) {
+              var ang = tries[k] * a * 0.4;
+              var cs = Math.cos(ang), sn = Math.sin(ang);
+              var rx = ux * cs - uy * sn, ry = ux * sn + uy * cs;
+              if (!B(P.x + rx * look, P.y + ry * look, rad)) {
+                ux = rx; uy = ry; T.side = tries[k]; found = true;
+              }
+            }
+          }
+        } else if (T.side && d < T.best + 1) {
+          T.side = 0;
+        }
+      }
+      this.x = ux; this.y = uy;
       this.mag = GG.clamp(d / 48, 0.18, 1);   // full speed, easing off over the last few steps
     },
 
@@ -1315,6 +1394,8 @@ ul.tips li{margin-bottom:3px}
       }
       this.actionPressed = this._actionQueued;
       this._actionQueued = false;
+      this.tapPressed = this._tapQueued || null;
+      this._tapQueued = null;
       this.action2Pressed = this._action2Queued;
       this._action2Queued = false;
       this.action3Pressed = this._action3Queued;
@@ -1997,9 +2078,24 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.18.0';
+  GG.VERSION = '1.19.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.19.0', title: 'A tidier, smoother garden',
+      lines: [
+        'How to play is short now: eight little pictures, one line each.',
+        'Settings and How to play close the Garden Menu when they open, so nothing is hiding behind anything.',
+        'The garden runs a lot faster, and it no longer works hard while a book or a tank is open.',
+        'Things you can pick twinkle when you are near them, and a dotted ring shows which one PICK means. If a bug is right in front of you, the button stays NET.',
+        'When you walk under a big tree you can still see yourself through the leaves.',
+        'Tap somewhere past a tree or a bush and you walk round it instead of stopping.',
+        'Bugs give you nearly a second after the ! before they fly off, fish give you longer to tap CATCH, and there are always fish close by to cast at.',
+        'The NEW! card waits for you to read it before a tap can close it, and a double tap on a door no longer walks you straight back out.',
+        'Emptying a tank takes two taps now, and you can put everything back.',
+        'Bird Town has lots more nest boxes and feeders, the signs fit their words, and nothing you can pick is hiding under a tree.'
+      ]
+    },
     {
       v: '1.18.0', title: 'Dog\u2019s Paradise, and a garden full of things to pick',
       lines: [
@@ -5252,7 +5348,7 @@ ul.tips li{margin-bottom:3px}
       blurb: 'Stop, stand tall, and step slowly backwards until it is a long way behind you. Never run towards it, and go and tell a grown-up.'
     },
     farmer: {
-      id: 'farmer', verb: 'Ask the farmer', btn: 'ASK FARMER', sub: 'come from the side',
+      id: 'farmer', verb: 'Ask the farmer', btn: 'ASK FARMER', sub: 'from the side',
       doing: 'Asking the farmer…', waiting: 'Stand where she can see you…',
       blurb: 'Ask the farmer first, come from the side where the animal can see you, and wash your hands afterwards.'
     },
@@ -5267,7 +5363,7 @@ ul.tips li{margin-bottom:3px}
       blurb: 'Stand still with your hands to yourself and let the snake go where it was going.'
     },
     seedtray: {
-      id: 'seedtray', verb: 'Fill the feeder', btn: 'FILL FEEDER', sub: 'then step back',
+      id: 'seedtray', verb: 'Fill the feeder', btn: 'FILL FEEDER', sub: 'step back',
       doing: 'Filling up the feeder…', waiting: 'Step back and keep still…',
       blurb: 'Fill the feeder with black-oil sunflower seed, then walk a long way back, sit down and keep still.'
     },
@@ -17355,15 +17451,27 @@ ul.tips li{margin-bottom:3px}
     c.closePath(); c.fill();
   };
 
+  /* The board grows to fit its words ("Dog's Paradise" ran off both ends
+     of the old fixed-width board). Text widths are remembered per label. */
+  var signTextW = {};
   P.sign = function (c, x, y, r, t, seed, label) {
+    var font = 'bold ' + Math.round(r * 0.36) + 'px "Trebuchet MS", sans-serif';
+    var w = r * 1.8;
+    if (label) {
+      c.font = font;
+      var key = label + '|' + font;
+      var tw = signTextW[key];
+      if (tw == null) tw = signTextW[key] = c.measureText(label).width;
+      w = Math.max(w, tw + r * 0.5);
+    }
     c.fillStyle = '#9a7247';
     c.fillRect(x - r * 0.1, y - r * 1.1, r * 0.2, r * 1.1);
     c.fillStyle = '#d9b982';
-    GG.roundRect(c, x - r * 0.9, y - r * 1.9, r * 1.8, r * 0.9, r * 0.12); c.fill();
+    GG.roundRect(c, x - w / 2, y - r * 1.9, w, r * 0.9, r * 0.12); c.fill();
     c.strokeStyle = '#9a7247'; c.lineWidth = 1.5; c.stroke();
     if (label) {
       c.fillStyle = '#5b432a';
-      c.font = 'bold ' + Math.round(r * 0.36) + 'px "Trebuchet MS", sans-serif';
+      c.font = font;
       c.textAlign = 'center'; c.textBaseline = 'middle';
       c.fillText(label, x, y - r * 1.45);
     }
@@ -23096,7 +23204,15 @@ ul.tips li{margin-bottom:3px}
     var n = parseInt(col.slice(1), 16);
     return ((n >> 8) & 255) >= Math.max((n >> 16) & 255, n & 255);
   }
+  /* worked out once per flower def - the defs never change while playing */
+  var colMemo = typeof WeakMap === 'function' ? new WeakMap() : null;
   function colours(a) {
+    if (!colMemo || !a || typeof a !== 'object') return coloursRaw(a);
+    var C = colMemo.get(a);
+    if (!C) { C = coloursRaw(a); colMemo.set(a, C); }
+    return C;
+  }
+  function coloursRaw(a) {
     var p = a.petal || a.skin || '#e0608a';
     var sc = a.stemCol || '#4f8a3a';
     return {
@@ -24472,7 +24588,7 @@ ul.tips li{margin-bottom:3px}
     }
   }
 
-  P.vegPatch = function (c, x, y, r, t, seed, col, p) {
+  function vegPatchLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = ripeOf(p);
     seed = seed || 0;
@@ -24488,7 +24604,7 @@ ul.tips li{margin-bottom:3px}
     else if (grp === 'sprawl') sprawlPatch(c, def, x, y, r, t, seed, ripe);
     else if (grp === 'spear') spearPatch(c, def, x, y, r, t, seed, ripe);
     else rootRow(c, def, x, y, r, t, seed, ripe);
-  };
+  }
 
   /* =====================================================================
      WILD BERRY - a native shrub, cane or groundcover
@@ -24567,7 +24683,7 @@ ul.tips li{margin-bottom:3px}
     }
   }
 
-  P.wildBerry = function (c, x, y, r, t, seed, col, p) {
+  function wildBerryLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = def ? ripeOf(p) : 0;
     seed = seed || 0;
@@ -24857,12 +24973,12 @@ ul.tips li{margin-bottom:3px}
         berry(c, def, hx, hy, r * 0.065 * g);
       }
     });
-  };
+  }
 
   /* =====================================================================
      PICK FLOWER - a clump of 3 to 5 blooms of one flower
      ===================================================================== */
-  P.pickFlower = function (c, x, y, r, t, seed, col, p) {
+  function pickFlowerLive(c, x, y, r, t, seed, col, p) {
     var def = defOf(p);
     var ripe = ripeOf(p);
     seed = seed || 0;
@@ -24896,7 +25012,66 @@ ul.tips li{margin-bottom:3px}
       });
       c.restore();
     });
-  };
+  }
+
+  /* =====================================================================
+     SPRITES - each of these clumps costs 50 to 190 microseconds to draw
+     from scratch, and a garden screen has dozens. So each plant is drawn
+     once into its own little offscreen canvas at the screen's real
+     resolution, and after that it is just stamped. It is redrawn only when
+     its crop changes (picked, then growing back in tenths), its size or the
+     screen scale changes. The price is the flowers' gentle sway.
+     ===================================================================== */
+  var SPR_CAP = 72;               // at most this many plants keep a sprite
+  var sprUsed = new Map();        // prop -> true, oldest use first
+  function spriteScale(c) {
+    if (GG.PROP_DPR) return GG.PROP_DPR * ((GG.view && GG.view.zoom) || 1);
+    var m = c.getTransform ? c.getTransform() : null;
+    var s = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 0;
+    if (!(s > 0)) s = ((GG.view && GG.view.zoom) || 1) * Math.min(window.devicePixelRatio || 1, 2.5);
+    return Math.round(s * 8) / 8;
+  }
+  function sprited(live, box) {
+    return function (c, x, y, r, t, seed, col, p) {
+      if (!p || typeof p !== 'object' || !c.drawImage) { live(c, x, y, r, t, seed, col, p); return; }
+      var ripe = p.ripe == null ? 1 : Math.max(0, Math.min(1, p.ripe));
+      /* in tenths, rounded DOWN: a plant never looks ready before it is */
+      var rq = ripe >= 1 ? 1 : Math.floor(ripe * 10) / 10;
+      var S = spriteScale(c);
+      var cv = p._spr;
+      if (!cv || p._sprFruit !== p.fruit || p._sprRipe !== rq || p._sprS !== S || p._sprR !== r || p._sprCol !== col) {
+        var side = r * box[0] + 4, up = r * box[1] + 6, down = r * box[2] + 4;
+        cv = cv || document.createElement('canvas');
+        cv.width = Math.max(1, Math.ceil((side * 2) * S));
+        cv.height = Math.max(1, Math.ceil((up + down) * S));
+        var g = cv.getContext('2d');
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.clearRect(0, 0, cv.width, cv.height);
+        g.setTransform(S, 0, 0, S, 0, 0);
+        /* draw it as it is now, still: t = 0 and the crop at rq */
+        var q = Object.create(p);
+        q.ripe = rq;
+        live(g, side, up, r, 0, seed, col, q);
+        p._spr = cv; p._sprFruit = p.fruit; p._sprRipe = rq; p._sprS = S; p._sprR = r; p._sprCol = col;
+        p._sprO = side; p._sprU = up;
+        if (sprUsed.size >= SPR_CAP && !sprUsed.has(p)) {
+          var old = sprUsed.keys().next().value;
+          sprUsed.delete(old);
+          if (old) old._spr = null;
+        }
+      }
+      sprUsed.delete(p); sprUsed.set(p, true);
+      /* land on whole device pixels, so the stamp is never resampled soft */
+      var dx = Math.round((x - p._sprO) * S) / S, dy = Math.round((y - p._sprU) * S) / S;
+      c.drawImage(cv, dx, dy, cv.width / S, cv.height / S);
+    };
+  }
+  /* [half width, height above the base, depth below it], in units of r */
+  P.vegPatch = sprited(vegPatchLive, [1.3, 2.35, 0.6]);
+  P.wildBerry = sprited(wildBerryLive, [1.35, 2.4, 0.5]);
+  P.pickFlower = sprited(pickFlowerLive, [1.5, 2.05, 0.4]);
+  /* the unsprited versions, for anything that wants them moving */
+  GG.PlantLive = { vegPatch: vegPatchLive, wildBerry: wildBerryLive, pickFlower: pickFlowerLive };
 })(window.GG = window.GG || {});
 
 /* ==== src/render/pickdecor.js ==== */
@@ -25819,6 +25994,14 @@ ul.tips li{margin-bottom:3px}
     dogpark: ['#93d668', '#8acd5f', '#9edd74']
   };
 
+  var GROUND_RGB = {};
+  Object.keys(GROUND).forEach(function (k) {
+    GROUND_RGB[k] = GROUND[k].map(function (h) {
+      var v = parseInt(h.slice(1), 16);
+      return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    });
+  });
+
   /* The three shades above are a fine speckle, close enough together to read
      as texture. These are the big blotches painted over them: the drifts of
      straw between the sagebrush, the lichen heath on the tundra, the patch of
@@ -25929,6 +26112,42 @@ ul.tips li{margin-bottom:3px}
 
   var MS = 8;   // water mask resolution, in pixels
 
+  /* Props that stand tall enough to hide what is just behind (north of) them. */
+  var TALL = { tree: 1, pine: 1, willow: 1, appleTree: 1, blackSpruce: 1, subalpineFir: 1,
+    mossyTrunk: 1, cherryTree: 1, bamboo: 1, basaltColumn: 1, garryOak: 1, oakSnag: 1, snag: 1,
+    vineMaple: 1, krummholz: 1, cliffOak: 1 };
+  /* how far a tall prop's crown spreads to each side, in units of its r */
+  var WIDE = { garryOak: 1.7, basaltColumn: 1.7, cherryTree: 1.5, willow: 1.3, mossyTrunk: 1.0 };
+  /* Small non-solid scenery that may be cleared away from round a plant to pick. */
+  var DECO = { flower: 1, tulip: 1, grassTuft: 1, mushroom: 1, fireweed: 1, woodSorrel: 1,
+    swordFern: 1, mossCampion: 1, pearly: 1, bracken: 1, heather: 1, lupine: 1, pasque: 1,
+    balsamroot: 1, bunchgrass: 1 };
+
+  /* The standing props are kept in columns this wide, each in y order, so a
+     frame only looks at the few columns on screen and binary-searches to
+     the rows it needs instead of walking all fifteen thousand props. */
+  var PCOL = 256;
+  /* How far a prop's paint reaches from its base (x, y), measured over every
+     prop type: up to ~202 px above it (the tallest trees), ~45 below and
+     ~109 to the side. So a prop whose base is up to 215 px BELOW the bottom
+     of the screen can still reach up into it, and one more than 55 px above
+     the top cannot. */
+  var CULL_UP = 55, CULL_DOWN = 215, CULL_SIDE = 120;
+  /* the collision grid, 200 px squares, numbered rather than keyed by string */
+  var GS = 200, GPAD = 2, GCOLS = Math.ceil(COLS * CELL / GS) + GPAD * 2;
+  function gkey(gx, gy) { return (gy + GPAD) * GCOLS + (gx + GPAD); }
+  /* the ground is sampled every GSTEP px (GPADC extra cells round each
+     chunk so the smoothing at its edges matches the next chunk) */
+  var GSTEP = 8, GPADC = 2, GRAIN = 0;
+  /* how many ground chunks to keep painted (each is 400x400) */
+  var CHUNK_CAP = 40;
+
+  function lowerBound(a, v) {
+    var lo = 0, hi = a.length;
+    while (lo < hi) { var m = (lo + hi) >> 1; if (a[m] < v) lo = m + 1; else hi = m; }
+    return lo;
+  }
+
   var World = GG.World = {
     CELL: CELL, COLS: COLS, ROWS: ROWS,
     W: COLS * CELL, H: ROWS * CELL,
@@ -25936,7 +26155,7 @@ ul.tips li{margin-bottom:3px}
     DOOR: { x: 4720, y: 2446 },
     KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL, MARSH: MARSH },
     marshPools: MARSH_POOLS,
-    props: [], solids: [], hive: null, grid: {}, chunks: {},
+    props: [], solids: [], hive: null, grid: {}, gridN: [], chunks: null,
     caveMouth: null, bootBrush: null,
     CHUNK: 400,
     pond: POND_E,
@@ -25962,8 +26181,12 @@ ul.tips li{margin-bottom:3px}
       for (i = 0; i < TIDEPOOLS.length; i++) {
         var p = TIDEPOOLS[i];
         var ex = (x - p.x) / p.rx, ey = (y - p.y) / p.ry;
+        var e2 = ex * ex + ey * ey;
+        /* the wobble below is never more than 1.15, so past that nothing
+           can be inside - skip the noise (an exact shortcut, same mask) */
+        if (e2 >= 1.15) continue;
         var wb = 1 + (GG.noise2(x / 40, y / 40, 19) - 0.5) * 0.3;
-        if (ex * ex + ey * ey < wb) return TIDEPOOL;
+        if (e2 < wb) return TIDEPOOL;
       }
       // stream / river / estuary
       var best = 1e9, bestKind = NONE;
@@ -25975,20 +26198,29 @@ ul.tips li{margin-bottom:3px}
         var px = a.x + vx * t, py = a.y + vy * t;
         var d = Math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
         var w = a.w + (b.w - a.w) * t;
+        /* The wobble can widen the channel by at most 17%. If even that
+           could not beat what is already found (or get below zero, which is
+           all the answer cares about), the noise cannot change anything. */
+        if (d - w * 1.17 >= Math.min(best, 0)) continue;
         w *= 1 + (GG.noise2(x / 70, y / 70, 11) - 0.5) * 0.34;
         if (d - w < best) { best = d - w; bestKind = (t > 0.5 ? b.kind : a.kind); }
       }
       if (best < 0) return bestKind;
       // the pond
       var dx = (x - POND_E.cx) / POND_E.rx, dy = (y - POND_E.cy) / POND_E.ry;
-      var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
-      if (dx * dx + dy * dy < wob) return POND;
+      var pd2 = dx * dx + dy * dy;
+      if (pd2 < 1.08) {
+        var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
+        if (pd2 < wob) return POND;
+      }
       // the marsh leads, with ragged reedy edges
       for (i = 0; i < MARSH_POOLS.length; i++) {
         var m = MARSH_POOLS[i];
         var mx = (x - m.x) / m.rx, my = (y - m.y) / m.ry;
+        var m2 = mx * mx + my * my;
+        if (m2 >= 1.21) continue;
         var mw = 1 + (GG.noise2(x / 46, y / 46, 29) - 0.5) * 0.42;
-        if (mx * mx + my * my < mw) return MARSH;
+        if (m2 < mw) return MARSH;
       }
       // and the sea fills everything below the tide line
       if (y > shoreY(x)) return SEA;
@@ -26115,21 +26347,22 @@ ul.tips li{margin-bottom:3px}
     /* ---------- building ---------- */
     build: function () {
       this.buildWater();
-      this.props = []; this.solids = []; this.grid = {};
+      this.props = []; this.solids = []; this.grid = {}; this.gridN = []; this._colliders = [];
       var rnd = GG.mulberry32(20260912);
       var self = this;
 
-      var skipAdd = false;
+      var skipAdd = false, inMain = false;
       function add(type, x, y, r, solid, rad, extra) {
         var p = { type: type, x: x, y: y, r: r, seed: rnd(), solid: !!solid, rad: rad || 0 };
         if (skipAdd) return p;
+        /* The scattered things (not the hand-placed ones) do not go down
+           on top of a solid thing already there: two trees growing out of
+           one trunk looks broken. The dice are still rolled, so nothing
+           else on the map moves. */
+        if (inMain && p.solid && self.blocked(x, y, p.rad * 0.6)) return p;
         if (extra) for (var k in extra) p[k] = extra[k];
         self.props.push(p);
-        if (p.solid) {
-          self.solids.push(p);
-          var key = Math.floor(x / 200) + ',' + Math.floor(y / 200);
-          (self.grid[key] = self.grid[key] || []).push(p);
-        }
+        if (p.solid) self._addSolid(p);
         return p;
       }
 
@@ -26141,6 +26374,7 @@ ul.tips li{margin-bottom:3px}
 
       var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
 
+      inMain = true;
       for (var i = 0; i < 28000; i++) {
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
@@ -26337,6 +26571,11 @@ ul.tips li{margin-bottom:3px}
           else if (v < 0.80) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: '#fff0a8' });
         }
       }
+      /* (If the last square rolled happened to be in the dog park, this used
+         to stay on and silently throw away everything placed below.) */
+      skipAdd = false; inMain = false;
+      /* the marsh's lodges, logs and boardwalks belong in the water */
+      this._settleMarsh();
 
       // lily pads on the pond
       for (var j = 0; j < 34; j++) {
@@ -26360,7 +26599,8 @@ ul.tips li{margin-bottom:3px}
       add('flower', HOUSE.x - 96, HOUSE.y - 10, 14, false, 0, { col: '#ff8fb0' });
       add('flower', HOUSE.x + 96, HOUSE.y - 10, 14, false, 0, { col: '#ffd45c' });
       this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
-      add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
+      /* clear of the fence, so the rail does not run through the post */
+      add('sign', HOUSE.x - 170, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
       add('sign', 4180, 1660, 26, false, 0, { label: 'Meadow' });
       add('sign', 5400, 1860, 26, false, 0, { label: 'Woods' });
@@ -26405,11 +26645,60 @@ ul.tips li{margin-bottom:3px}
       /* v1.18, last of all so everything above keeps exactly the place and
          the look it had: Dog's Paradise, and the new things to pick. */
       this.buildDogPark(add);
+      this.buildBirdTown(add);
+      this._clearSigns();
       this.plantPickables(add);
+      this._lookAlikes();
+      this._clearAroundPickables();
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
+      this.chunks = null;
+      this.reindex();
+    },
+
+    /* the solid props go into a 200 px grid for the collision test. Both a
+       string-keyed one (friends.js walks it) and a numbered one (blocked()
+       is called thousands of times a frame) are kept. */
+    _addSolid: function (p) {
+      this.solids.push(p);
+      var gx = Math.floor(p.x / GS), gy = Math.floor(p.y / GS);
+      var key = gx + ',' + gy;
+      (this.grid[key] = this.grid[key] || []).push(p);
+      var n = gkey(gx, gy);
+      (this.gridN[n] = this.gridN[n] || []).push(p);
+    },
+    /* rebuild the collision lists from this.props (after props are taken out) */
+    _rebuildSolids: function () {
+      this.solids = []; this.grid = {}; this.gridN = [];
+      for (var i = 0; i < this.props.length; i++) if (this.props[i].solid) this._addSolid(this.props[i]);
+      var C = this._colliders || [];
+      for (var j = 0; j < C.length; j++) this._addSolid(C[j]);
+    },
+
+    /* Sort the props by y and file them for drawing: the flat ones (painted
+       with the ground) in one list, the standing ones in PCOL-wide columns.
+       Called at the end of build(); call it again if props are ever added,
+       removed or moved afterwards. */
+    reindex: function () {
       this.props.sort(function (p, q) { return p.y - q.y; });
-      this.chunks = {};
+      var flat = [], cols = [], i, p, c;
+      for (i = 0; i < this.props.length; i++) {
+        p = this.props[i];
+        if (FLAT[p.type] === 1) { flat.push(p); continue; }
+        c = Math.max(0, Math.floor(p.x / PCOL));
+        (cols[c] = cols[c] || []).push(p);
+      }
+      var colY = [];
+      for (c = 0; c < cols.length; c++) {
+        if (!cols[c]) continue;
+        colY[c] = new Float64Array(cols[c].length);
+        for (i = 0; i < cols[c].length; i++) colY[c][i] = cols[c][i].y;
+      }
+      var flatY = new Float64Array(flat.length);
+      for (i = 0; i < flat.length; i++) flatY[i] = flat[i].y;
+      this._pflat = flat; this._pflatY = flatY;
+      this._pcols = cols; this._pcolY = colY;
+      this._pcount = this.props.length;
     },
 
     /* ---------- Dog's Paradise (v1.18) ----------
@@ -26472,6 +26761,250 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
+    /* ---------- tidying after the scatter ---------- */
+
+    /* take props out of the world, then rebuild the collision grid */
+    _removeProps: function (dead) {
+      if (!dead.size) return;
+      this.props = this.props.filter(function (p) { return !dead.has(p); });
+      this._rebuildSolids();
+    },
+
+    /* The muskrat lodges, the sunk logs and the boardwalks were scattered
+       over the marsh's dry mud with everything else, which is not where any
+       of them live. Each is moved to the nearest bit of marsh-pool edge,
+       with its foot just in the water. */
+    _settleMarsh: function () {
+      var self = this, MK = { muskratLodge: 1, sunkLog: 1, boardwalk: 1 };
+      var list = this.props.filter(function (p) { return MK[p.type] === 1; });
+      var placed = [], moved = new Set();
+      function wet(x, y) { return self.waterKind(x, y) === MARSH; }
+      function edgeDepth(x, y) {
+        var i = self.maskIndex(x, y);
+        return self.mask[i] === MARSH ? self.dShore[i] : -1;
+      }
+      function clear(p, x, y) {
+        for (var k = 0; k < placed.length; k++) {
+          if (Math.hypot(placed[k].x - x, placed[k].y - y) < (p.type === 'boardwalk' ? 170 : 115)) return false;
+        }
+        var S = self.solids;
+        for (var j = 0; j < S.length; j++) {
+          var q = S[j];
+          if (q === p || moved.has(q) || Math.abs(q.x - x) > 120 || Math.abs(q.y - y) > 120) continue;
+          var dx = q.x - x, dy = (q.y - y) * 1.55, rr = q.rad + (p.rad || 20) + 6;
+          if (dx * dx + dy * dy < rr * rr) return false;
+        }
+        return true;
+      }
+      function fits(p, x, y, relaxed) {
+        var d = edgeDepth(x, y);
+        if (d < 1 || d > (relaxed ? 4 : 2)) return false;
+        if (p.type === 'boardwalk') {
+          /* standing out from the north bank, both posts in the water */
+          var hw = p.r * 1.5;
+          if (!wet(x - hw * 0.8, y) || !wet(x + hw * 0.76, y)) return false;
+          if (self.isWater(x, y - p.r * 0.9) && !relaxed) return false;
+        } else if (p.type === 'sunkLog') {
+          /* the far end under the water, the near end up on the bank */
+          var flip = (((p.seed * 7) % 1) > 0.5) ? -1 : 1;
+          if (!wet(x + flip * p.r * 0.9, y)) return false;
+          if (!relaxed && wet(x - flip * p.r * 1.1, y - 8)) return false;
+        } else if (!relaxed && !self.isWater(x, y + p.r * 0.3)) {
+          return false;
+        }
+        return clear(p, x, y);
+      }
+      list.forEach(function (p) {
+        var best = null, bd = Infinity, pass, dx, dy;
+        for (pass = 0; pass < 2 && !best; pass++) {
+          for (dy = -900; dy <= 900; dy += 8) {
+            for (dx = -900; dx <= 900; dx += 8) {
+              var d2 = dx * dx + dy * dy;
+              if (d2 >= bd) continue;
+              if (fits(p, p.x + dx, p.y + dy, pass === 1)) { bd = d2; best = [p.x + dx, p.y + dy]; }
+            }
+          }
+        }
+        if (!best) return;
+        p.x = best[0]; p.y = best[1];
+        moved.add(p);
+        placed.push(p);
+        if (p.type === 'boardwalk') {
+          /* It is not something you walk under: posts along the deck stop
+             her at the bank, where she stands behind the blind. */
+          var hw2 = p.r * 1.5;
+          for (var k = -3; k <= 3; k++) {
+            self._colliders.push({ type: 'boardwalkPost', x: p.x + k * hw2 / 3.2, y: p.y - p.r * 0.3,
+              r: p.r * 0.3, seed: 0, solid: true, rad: p.r * 0.26 });
+          }
+        }
+      });
+      this._rebuildSolids();
+    },
+
+    /* A signpost with a tree right in front of it (south of it, so drawn
+       over it) cannot be read. Those trees go. */
+    _clearSigns: function () {
+      var signs = this.props.filter(function (p) { return p.type === 'sign'; });
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (TALL[q.type] !== 1) return;
+        for (var i = 0; i < signs.length; i++) {
+          var s = signs[i], dy = q.y - s.y;
+          /* the wide crowns reach further sideways than 70 px */
+          var reach = Math.max(70, q.r * (WIDE[q.type] || 1.1) + 30);
+          if (Math.abs(q.x - s.x) < reach && dy > 0 && dy < 150) { dead.add(q); return; }
+        }
+      });
+      this._removeProps(dead);
+    },
+
+    /* Is this a good place for something to pick? Not right by a signpost,
+       and not tucked in behind a tree's canopy where she cannot see it. */
+    _pickSpotOk: function (x, y) {
+      var S = this._signList, T = this._tallGrid, i;
+      for (i = 0; i < S.length; i++) {
+        if (Math.abs(S[i].x - x) < 45 && Math.abs(S[i].y - y) < 45 &&
+            Math.hypot(S[i].x - x, S[i].y - y) < 45) return false;
+      }
+      var gx = Math.floor(x / GS), gy = Math.floor(y / GS);
+      for (var ax = -1; ax <= 1; ax++) {
+        for (var ay = 0; ay <= 1; ay++) {
+          var L = T[gkey(gx + ax, gy + ay)];
+          if (!L) continue;
+          for (i = 0; i < L.length; i++) {
+            var q = L[i], dy = q.y - y;
+            if (dy >= 0 && dy <= 140 && Math.abs(q.x - x) < q.r * 1.2) return false;
+          }
+        }
+      }
+      return true;
+    },
+    _prepPickSpots: function () {
+      var T = [], S = [];
+      this.props.forEach(function (q) {
+        if (q.type === 'sign') S.push(q);
+        if (TALL[q.type] === 1) { var n = gkey(Math.floor(q.x / GS), Math.floor(q.y / GS)); (T[n] = T[n] || []).push(q); }
+      });
+      this._tallGrid = T; this._signList = S;
+    },
+
+    /* Scenery that looks just like a plant she can pick, but is not, is a
+       trap for a small child: she walks up, and nothing happens. So a few
+       of those (about one in four, spread out) become real ones, and the
+       rest are swapped for something that looks different. */
+    _lookAlikes: function () {
+      var self = this, planted = this.pickables || [];
+      var TO = { fireweed: 'fireweed', lupine: 'lupine', balsamroot: 'arrowleaf_balsamroot', thimbleberry: 'thimbleberry' };
+      var REST = { fireweed: { glade: 'bracken', taiga: 'grassTuft' }, lupine: 'heather', balsamroot: 'bunchgrass', thimbleberry: 'bush' };
+      var got = {}, seen = {};
+      var F = GG.FRUIT_BY_ID || {};
+      this.props.forEach(function (p) {
+        if (p.type === 'tulip') { p.type = 'flower'; return; }     // the garden's are plain flowers now
+        var id = TO[p.type];
+        if (!id) return;
+        var def = F[id], biome = self.biomeAt(p.x, p.y), key = id + '@' + biome;
+        seen[key] = (seen[key] || 0) + 1;
+        var ok = def && GG.fruitGrowsIn && GG.fruitGrowsIn(def, biome) &&
+          seen[key] % 4 === 1 && (got[key] || 0) < 5 && self._pickSpotOk(p.x, p.y);
+        if (ok) {
+          for (var k = 0; k < planted.length; k++) {
+            if (Math.hypot(planted[k].x - p.x, (planted[k].y - p.y) * 1.3) < 90) { ok = false; break; }
+          }
+        }
+        if (ok) {
+          var flower = def.on === 'flower';
+          p.type = flower ? 'pickFlower' : 'wildBerry';
+          p.r = flower ? GG.clamp(p.r, 18, 23) : GG.clamp(p.r, 20, 24);
+          p.pick = id; p.biome = biome;
+          got[key] = (got[key] || 0) + 1;
+          planted.push(p);
+          return;
+        }
+        var r = REST[p.type];
+        p.type = typeof r === 'string' ? r : (r[biome] || 'grassTuft');
+      });
+      this.pickables = planted;
+    },
+
+    /* and clear the grass and little flowers off each plant to pick, and out
+       of the way in front of it, so it stands clear and easy to see */
+    _clearAroundPickables: function () {
+      var P = this.pickables || [], G = [], i;
+      for (i = 0; i < P.length; i++) {
+        var n = gkey(Math.floor(P[i].x / GS), Math.floor(P[i].y / GS));
+        (G[n] = G[n] || []).push(P[i]);
+      }
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (DECO[q.type] !== 1 || q.solid || q.pick) return;
+        var gx = Math.floor(q.x / GS), gy = Math.floor(q.y / GS);
+        for (var ax = -1; ax <= 1; ax++) for (var ay = -1; ay <= 1; ay++) {
+          var L = G[gkey(gx + ax, gy + ay)];
+          if (!L) continue;
+          for (var k = 0; k < L.length; k++) {
+            var pk = L[k], dx = (q.x - pk.x) / (pk.r * 1.1), dy = q.y - pk.y;
+            dy /= dy > 0 ? pk.r * 1.5 : pk.r * 1.1;
+            if (dx * dx + dy * dy < 1) { dead.add(q); return; }
+          }
+        }
+      });
+      this._removeProps(dead);
+    },
+
+    /* ---------- Bird Town ----------
+       It was a meadow with one nest box, one bath and three feeders in it.
+       Now the bath is in the middle of the green, with nest boxes and feeder
+       poles round it and flowers for the insects the birds eat. */
+    BIRDTOWN: { cx: 4380, cy: 1340, sign: { x: 4380, y: 1420 } },
+    buildBirdTown: function (add) {
+      var self = this, B = this.BIRDTOWN, SG = B.sign, placed = [];
+      function ok(x, y, pad, edge) {
+        var bm = self.biomeAt(x, y);
+        return !self.isWater(x, y) && !self.isWater(x, y - 30) &&
+          (bm === 'birdtown' || (edge && bm === 'meadow')) &&
+          Math.hypot(x - SG.x, y - SG.y) > pad && self.dRiver[self.maskIndex(x, y)] > 8;
+      }
+      function put(type, x, y, r, solid, rad, extra, edge) {
+        if (!ok(x, y, 70, edge)) return null;
+        if (solid && self.blocked(x, y, rad + 16)) return null;
+        var p = add(type, x, y, r, solid, rad, extra);
+        placed.push(p);
+        return p;
+      }
+      put('birdBath', B.cx, B.cy, 30, true, 14);
+      /* a ring of nest boxes and feeder poles round the bath */
+      var n = 10;
+      for (var i = 0; i < n; i++) {
+        var a = -Math.PI / 2 + i * Math.PI * 2 / n + 0.16;
+        var x = B.cx + Math.cos(a) * 175, y = B.cy + Math.sin(a) * 84;
+        /* the ring may lean out onto the meadow at the edge of the green */
+        if (i % 2) put('feederPole', x, y, 32, true, 11, null, true);
+        else put('nestBox', x, y, 26, true, 11, null, true);
+      }
+      /* two more boxes on the far side of the signpost */
+      put('nestBox', B.cx - 150, B.cy + 190, 26, true, 11);
+      put('nestBox', B.cx + 140, B.cy + 200, 26, true, 11);
+      /* flowers round the bath */
+      var cols = ['#8fd8ff', '#ff8fb0', '#ffd45c', '#c39bff', '#fff0a8', '#8fd8ff'];
+      for (var j = 0; j < 9; j++) {
+        var b2 = j * Math.PI * 2 / 9 + 0.3;
+        var fx = B.cx + Math.cos(b2) * 66, fy = B.cy + 4 + Math.sin(b2) * 36;
+        put('flower', fx, fy, 12, false, 0, { col: cols[j % cols.length] }, true);
+      }
+      /* and nothing scattered earlier left standing in the middle of them */
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (placed.indexOf(q) >= 0) return;
+        if (!(DECO[q.type] === 1 || q.type === 'nestBox' || q.type === 'birdBath' || q.type === 'feederPole')) return;
+        for (var k = 0; k < placed.length; k++) {
+          var pk = placed[k];
+          if (Math.hypot(q.x - pk.x, q.y - pk.y) < (pk.solid ? 44 : 18)) { dead.add(q); return; }
+        }
+      });
+      this._removeProps(dead);
+    },
+
     /* ---------- the new things to pick (v1.18) ----------
        Each vegetable, wild berry and flower is planted where it really
        grows, a few of each, and the plant knows what it carries from the
@@ -26490,12 +27023,13 @@ ul.tips li{margin-bottom:3px}
       }
       var HOUSE = this.HOUSE;
       var planted = [];
+      this._prepPickSpots();
       /* how many of each, per place */
       var COUNT = { veg: 2, berry: 3, fruit: 3, flower: 3 };
       function spot(biome, rad, gap) {
         var list = cells[LET[biome]];
         if (!list) return null;
-        for (var a = 0; a < (rad >= 40 ? 2000 : 500); a++) {
+        for (var a = 0; a < (rad >= 40 ? 4000 : 1500); a++) {
           var c0 = list[Math.floor(R() * list.length)];
           var x = (c0[0] + R()) * CELL, y = (c0[1] + R()) * CELL;
           if (x < 60 || y < 80 || x > self.W - 60 || y > self.H - 60) continue;
@@ -26504,6 +27038,7 @@ ul.tips li{margin-bottom:3px}
           if (Math.abs(x - HOUSE.x) < HOUSE.w * 0.8 && y > HOUSE.y - HOUSE.w * 1.4 && y < HOUSE.y + 110) continue;
           if (self.blocked(x, y, rad + 10)) continue;
           if (rad >= 40 && self.solidWithin(x, y, 72)) continue;
+          if (!self._pickSpotOk(x, y)) continue;
           var ok = true;
           for (var k = 0; k < planted.length; k++) {
             var q = planted[k];
@@ -26541,7 +27076,7 @@ ul.tips li{margin-bottom:3px}
     solidWithin: function (x, y, d) {
       for (var gx = -1; gx <= 1; gx++) {
         for (var gy = -1; gy <= 1; gy++) {
-          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          var list = this.gridN[gkey(Math.floor(x / GS) + gx, Math.floor(y / GS) + gy)];
           if (!list) continue;
           for (var i = 0; i < list.length; i++) {
             if (Math.hypot(list[i].x - x, list[i].y - y) < d) return true;
@@ -26554,13 +27089,14 @@ ul.tips li{margin-bottom:3px}
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
-      if (this.isDeepWater(x, y) && !this.onBridge(x, y)) return true;   // the stream and the pools are waded, not blocked
+      if (this.isDeepWater(x, y) && !this.onBridge(x, y, 6)) return true;   // the stream and the pools are waded, not blocked
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
-          y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
+          y > H.y - H.w * 0.72 - rad && y < H.y + 3) return true;   // to the very front of the wall, so she is never hidden behind it
+      var G = this.gridN, cx = Math.floor(x / GS), cy = Math.floor(y / GS);
       for (var gx = -1; gx <= 1; gx++) {
         for (var gy = -1; gy <= 1; gy++) {
-          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          var list = G[gkey(cx + gx, cy + gy)];
           if (!list) continue;
           for (var i = 0; i < list.length; i++) {
             var p = list[i];
@@ -26594,8 +27130,37 @@ ul.tips li{margin-bottom:3px}
       return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
     },
 
-    _blotch: function (c, cx, cy) {
-      var C = this.CHUNK, PS = 8, pad = 2;
+    /* The biome of every GSTEP-sized cell of a chunk (plus a margin of GPADC
+       cells all round), worked out once and shared by the ground colour and
+       the blotches. */
+    _bioGrid: function (cx, cy) {
+      var C = this.CHUNK, n = C / GSTEP + GPADC * 2, out = new Array(n * n);
+      for (var y = 0; y < n; y++) {
+        for (var x = 0; x < n; x++) {
+          out[y * n + x] = this._paintBiome(cx * C + (x - GPADC) * GSTEP + GSTEP / 2,
+                                            cy * C + (y - GPADC) * GSTEP + GSTEP / 2);
+        }
+      }
+      return out;
+    },
+    /* biomeAt, for painting only: where the beach's wobbly inland edge dips
+       and leaves a little pocket of riverbank or meadow with sand all round
+       it (there was one by the Footbridge sign), paint it as sand. The
+       props were placed with biomeAt itself, so nothing moves. */
+    _paintBiome: function (x, y) {
+      var b = this.biomeAt(x, y);
+      if (b === 'beach' || b === 'shore' || this.mask[this.maskIndex(x, y)] !== NONE) return b;
+      if (this.dSea[this.maskIndex(x, y)] > 40) return b;
+      var R = 40, sand = 0;
+      if (this.biomeAt(x - R, y) === 'beach') sand++;
+      if (this.biomeAt(x + R, y) === 'beach') sand++;
+      if (this.biomeAt(x, y - R) === 'beach') sand++;
+      if (sand >= 2 && this.biomeAt(x, y + R) === 'beach') sand++;
+      return sand >= 4 || (sand === 3 && this.dSea[this.maskIndex(x, y)] < 30) ? 'beach' : b;
+    },
+
+    _blotch: function (c, cx, cy, bio) {
+      var C = this.CHUNK, PS = GSTEP, pad = GPADC;
       var n = Math.ceil(C / PS) + pad * 2;
       var lay = document.createElement('canvas');
       lay.width = n; lay.height = n;
@@ -26607,7 +27172,7 @@ ul.tips li{margin-bottom:3px}
           var wx = cx * C + (x - pad) * PS + PS / 2;
           var wy = cy * C + (y - pad) * PS + PS / 2;
           var o = (y * n + x) * 4;
-          var pt = PATCH[this.biomeAt(wx, wy)];
+          var pt = PATCH[bio[y * n + x]];
           if (!pt) { px[o + 3] = 0; continue; }
           /* a wobble on the sample point, so a patch ends in a crumbly line */
           var jx = wx + (GG.noise2(wx / 11, wy / 11, 53) - 0.5) * 26;
@@ -26631,25 +27196,117 @@ ul.tips li{margin-bottom:3px}
       c.restore();
     },
 
+    /* The painted ground is cached a chunk at a time. Only the most
+       recently used CHUNK_CAP chunks are kept (a Map remembers the order
+       they were put in, so the first key is always the stalest one). */
     chunkCanvas: function (cx, cy) {
-      var key = cx + ',' + cy;
-      if (this.chunks[key]) return this.chunks[key];
+      var key = cy * 1000 + cx;
+      var M = this.chunks || (this.chunks = new Map());
+      var hit = M.get(key);
+      if (hit) {
+        M.delete(key); M.set(key, hit);
+        return hit;
+      }
+      var cv = this._paintChunk(cx, cy);
+      M.set(key, cv);
+      if (M.size > CHUNK_CAP) M.delete(M.keys().next().value);
+      return cv;
+    },
+    hasChunk: function (cx, cy) { return !!(this.chunks && this.chunks.has(cy * 1000 + cx)); },
+
+    /* Paint at most one ground chunk that is not on screen yet but is about
+       to be - the next row or column the way she is walking - so the frame
+       that scrolls it in does not have to paint it. Call it once a frame
+       from the main loop when there is time to spare. Returns true if it
+       painted one. */
+    prewarm: function (cam, vw, vh, dirx, diry) {
+      var C = this.CHUNK;
+      var x0 = Math.floor(cam.x / C), x1 = Math.floor((cam.x + vw) / C);
+      var y0 = Math.floor(cam.y / C), y1 = Math.floor((cam.y + vh) / C);
+      /* anything on screen first (normally already there), then one ring out,
+         the side she is heading for first */
+      var sx = dirx > 0 ? 1 : (dirx < 0 ? -1 : 0), sy = diry > 0 ? 1 : (diry < 0 ? -1 : 0);
+      var cand = [], cx, cy;
+      for (cy = y0 - 1; cy <= y1 + 1; cy++) {
+        for (cx = x0 - 1; cx <= x1 + 1; cx++) {
+          if (cx < 0 || cy < 0 || cx * C >= this.W || cy * C >= this.H) continue;
+          if (this.hasChunk(cx, cy)) continue;
+          var on = cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+          var ahead = (sx && (sx > 0 ? cx > x1 : cx < x0)) || (sy && (sy > 0 ? cy > y1 : cy < y0));
+          cand.push({ cx: cx, cy: cy, s: on ? 0 : (ahead ? 1 : 2) });
+        }
+      }
+      if (!cand.length) return false;
+      cand.sort(function (a, b) { return a.s - b.s; });
+      /* never let prewarming push out a chunk that is on screen */
+      if (cand[0].s === 2 && this.chunks && this.chunks.size >= CHUNK_CAP) return false;
+      this.chunkCanvas(cand[0].cx, cand[0].cy);
+      return true;
+    },
+
+    _paintChunk: function (cx, cy) {
       var C = this.CHUNK;
       var cv = document.createElement('canvas');
       cv.width = C; cv.height = C;
       var c = cv.getContext('2d');
-      var step = 10, x, y, wx, wy;
+      var x, y, wx, wy, k;
 
-      for (y = 0; y < C; y += step) {
-        for (x = 0; x < C; x += step) {
-          wx = cx * C + x; wy = cy * C + y;
-          var b = this.biomeAt(wx + step / 2, wy + step / 2);
-          var pal = GROUND[b] || GROUND.meadow;
-          var n = GG.noise2(wx / 26, wy / 26, 21);
-          c.fillStyle = pal[GG.clamp((n * 3) | 0, 0, 2)];
-          c.fillRect(x, y, step + 1, step + 1);
+      /* The ground colour, one sample per GSTEP cell, blown up smoothly (the
+         same trick as the water and the blotches), so the edge between two
+         places curves instead of stepping in big squares. Each sample also
+         gets a tiny grain of its own, so the grass stays speckled instead of
+         going soft. The damp sand at the water's edge goes in here too. */
+      var bio = this._bioGrid(cx, cy);
+      var n = C / GSTEP + GPADC * 2;
+      var glay = document.createElement('canvas');
+      glay.width = n; glay.height = n;
+      var gctx = glay.getContext('2d');
+      var gimg = gctx.createImageData(n, n), gp = gimg.data;
+      for (y = 0; y < n; y++) {
+        for (x = 0; x < n; x++) {
+          k = y * n + x;
+          wx = cx * C + (x - GPADC) * GSTEP + GSTEP / 2;
+          wy = cy * C + (y - GPADC) * GSTEP + GSTEP / 2;
+          var pal = GROUND_RGB[bio[k]] || GROUND_RGB.meadow;
+          var sh3 = GG.noise2(wx / 26, wy / 26, 21);
+          var rgb = pal[GG.clamp((sh3 * 3) | 0, 0, 2)];
+          var grain = (GG.hash2(Math.floor(wx / GSTEP), Math.floor(wy / GSTEP), 77) - 0.5) * GRAIN;
+          var r0 = rgb[0] + grain, g0 = rgb[1] + grain, b0 = rgb[2] + grain;
+          var mi = this.maskIndex(wx, wy);
+          if (this.mask[mi] === NONE) {
+            var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
+            if (this.dSea[mi] <= 4.5 + damp || this.dPool[mi] <= 2.5 + damp) {
+              r0 += (196 - r0) * 0.55; g0 += (176 - g0) * 0.55; b0 += (132 - b0) * 0.55;
+            }
+          }
+          var o4 = k * 4;
+          gp[o4] = r0; gp[o4 + 1] = g0; gp[o4 + 2] = b0; gp[o4 + 3] = 255;
         }
       }
+      gctx.putImageData(gimg, 0, 0);
+      c.imageSmoothingEnabled = true;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
+      /* Smoothed all over, the grass goes soft and loses its speckle. So the
+         same samples go down again as crisp little squares everywhere except
+         in a band two cells wide along the edge between two places, where
+         the smooth layer underneath is left to show. */
+      var edge = new Uint8Array(n * n);
+      for (y = 0; y < n; y++) {
+        for (x = 0; x < n; x++) {
+          var bb = bio[y * n + x];
+          if ((x + 1 < n && bio[y * n + x + 1] !== bb) || (y + 1 < n && bio[(y + 1) * n + x] !== bb)) {
+            for (var ey = Math.max(0, y - 1); ey <= Math.min(n - 1, y + 2); ey++) {
+              for (var ex = Math.max(0, x - 1); ex <= Math.min(n - 1, x + 2); ex++) edge[ey * n + ex] = 1;
+            }
+          }
+        }
+      }
+      for (k = 0; k < n * n; k++) if (edge[k]) gp[k * 4 + 3] = 0;
+      gctx.putImageData(gimg, 0, 0);
+      c.imageSmoothingEnabled = false;
+      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
+      c.imageSmoothingEnabled = true;
 
       /* The big blotches of the newer places - drifts of straw between the
          sagebrush, lichen heath on the tundra, a patch of alpine turf between
@@ -26657,21 +27314,7 @@ ul.tips li{margin-bottom:3px}
          smoothly, the same trick as the water, so they melt into each other
          instead of stepping. Real ground is a patchwork, and one flat colour
          per place looks like a bedsheet. */
-      this._blotch(c, cx, cy);
-
-      // damp sand right at the water's edge
-      for (y = 0; y < C; y += 6) {
-        for (x = 0; x < C; x += 6) {
-          wx = cx * C + x; wy = cy * C + y;
-          var i = this.maskIndex(wx, wy);
-          if (this.mask[i] !== NONE) continue;
-          var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
-          if (this.dSea[i] <= 4.5 + damp || this.dPool[i] <= 2.5 + damp) {
-            c.fillStyle = 'rgba(196,176,132,0.55)';
-            c.fillRect(x, y, 7, 7);
-          }
-        }
-      }
+      this._blotch(c, cx, cy, bio);
 
       /* The water goes onto a little canvas one pixel per mask cell, then gets
          blown up smoothly over the ground, so the banks curve instead of
@@ -26707,7 +27350,6 @@ ul.tips li{margin-bottom:3px}
       c.imageSmoothingQuality = 'high';
       c.drawImage(lay, 0, 0, mw, mh, -pad * MS, -pad * MS, mw * MS, mh * MS);
 
-      this.chunks[key] = cv;
       return cv;
     },
 
@@ -26846,29 +27488,68 @@ ul.tips li{margin-bottom:3px}
       c.restore();
     },
 
+    /* Paint the props of one layer: 'flat' (the ones that lie on the
+       ground), 'sorted' (the standing ones, in y order) or, with no layer,
+       all of them in y order. */
     drawProps: function (c, cam, vw, vh, t, layer) {
-      var P = GG.Props;
-      var pad = 140;
-      for (var i = 0; i < this.props.length; i++) {
-        var p = this.props[i];
-        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
-        if (p.y < cam.y - pad * 2.4 || p.y > cam.y + vh + pad) continue;
-        var isFlat = FLAT[p.type] === 1;
-        if (layer === 'flat' && !isFlat) continue;
-        if (layer === 'sorted' && isFlat) continue;
-        var fn = P[p.type];
+      if (this._pcount !== this.props.length) this.reindex();
+      var P = GG.Props, i, p, fn;
+      if (layer !== 'flat') {
+        var list = this.sortedProps(cam, vw, vh);
+        if (layer !== 'sorted') {
+          /* everything: fold the flat ones in, then one sort */
+          list = list.slice();
+          this._flatVisible(cam, vw, vh, list);
+        }
+        list.sort(function (a, b) { return a.y - b.y; });
+        for (i = 0; i < list.length; i++) {
+          p = list[i]; fn = P[p.type];
+          if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        }
+        return;
+      }
+      var F = this._pflat, FY = this._pflatY;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE, y1 = cam.y + vh + CULL_DOWN;
+      for (i = lowerBound(FY, cam.y - CULL_UP); i < F.length; i++) {
+        p = F[i];
+        if (p.y > y1) break;
+        if (p.x < x0 || p.x > x1) continue;
+        fn = P[p.type];
         if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     },
+    _flatVisible: function (cam, vw, vh, out) {
+      var F = this._pflat, FY = this._pflatY;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE, y1 = cam.y + vh + CULL_DOWN;
+      for (var i = lowerBound(FY, cam.y - CULL_UP); i < F.length; i++) {
+        var p = F[i];
+        if (p.y > y1) break;
+        if (p.x >= x0 && p.x <= x1) out.push(p);
+      }
+      return out;
+    },
 
+    /* The standing props that can show on screen, for the caller to sort
+       in among Guin and the animals. Each column comes out in y order; the
+       columns are not merged, so sort by y before drawing. The array is
+       reused from frame to frame - copy it if you need to keep it. */
     sortedProps: function (cam, vw, vh) {
-      var out = [], pad = 150;
-      for (var i = 0; i < this.props.length; i++) {
-        var p = this.props[i];
-        if (FLAT[p.type] === 1) continue;
-        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
-        if (p.y < cam.y - pad * 2.6 || p.y > cam.y + vh + pad) continue;
-        out.push(p);
+      if (this._pcount !== this.props.length) this.reindex();
+      var out = this._pout || (this._pout = []);
+      out.length = 0;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE;
+      var y0 = cam.y - CULL_UP, y1 = cam.y + vh + CULL_DOWN;
+      var cols = this._pcols, colY = this._pcolY;
+      var c0 = Math.max(0, Math.floor(x0 / PCOL)), c1 = Math.min(cols.length - 1, Math.floor(x1 / PCOL));
+      for (var c = c0; c <= c1; c++) {
+        var L = cols[c];
+        if (!L) continue;
+        for (var i = lowerBound(colY[c], y0); i < L.length; i++) {
+          var p = L[i];
+          if (p.y > y1) break;
+          if (p.x < x0 || p.x > x1) continue;
+          out.push(p);
+        }
       }
       return out;
     }
@@ -27319,10 +28000,21 @@ ul.tips li{margin-bottom:3px}
         var scared = player.speed > 62 ? d.shy : d.shy * 0.55;
         if (player.swinging()) scared = d.shy * 1.15;
 
-        if (b.flee <= 0 && toP < scared) {
-          if (b.alert <= 0) { b.alert = 0.35; }
-          b.alert -= dt;
-          if (b.alert <= 0) {
+        /* v1.19: the ! is a real warning she can act on. If she stops dead
+           and keeps still, the countdown holds, and after a moment the bug
+           settles down again - which is exactly what the How to play card
+           tells her to do. Running on, or swinging, lets it fly. */
+        var still = player.speed < 25 && !player.swinging();
+        if (b.flee <= 0 && toP < scared && !(still && b.alert <= 0)) {
+          if (b.alert <= 0) { b.alert = 0.95; b.calm = 0; }
+          if (still) {
+            b.calm = (b.calm || 0) + dt;
+            if (b.calm > 1.1) { b.alert = 0; b.calm = 0; }
+          } else {
+            b.calm = 0;
+            b.alert -= dt;
+          }
+          if (b.alert <= 0 && !still) {
             b.flee = GG.rand(1.3, 2.6);
             b.angle = Math.atan2(b.y - player.y, b.x - player.x) + GG.rand(-0.5, 0.5);
           }
@@ -27488,6 +28180,17 @@ ul.tips li{margin-bottom:3px}
     },
 
     /* Did the net land on anything? */
+    /* Is there something catchable close enough that NET should stay NET?
+       (v1.19 - a ripe plant nearby used to take the button over.) */
+    catchableNear: function (player, radius) {
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (b.def.lookOnly || b.angry > 0) continue;
+        if (GG.dist(b.x, b.y - (b.z || 0) * 0.5, player.x, player.y - 10) < radius) return b;
+      }
+      return null;
+    },
+
     tryCatch: function (player) {
       var n = player.netPoint();
       var best = null, bestD = 1e9;
@@ -27507,8 +28210,8 @@ ul.tips li{margin-bottom:3px}
     },
 
     /* Did she just swing the net at something she must not catch? */
-    lookOnlyUnderNet: function (player) {
-      var n = player.netPoint();
+    lookOnlyUnderNet: function (player, at) {
+      var n = at || player.netPoint();
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
         if (!b.def.lookOnly || b.looked) continue;
@@ -27637,10 +28340,13 @@ ul.tips li{margin-bottom:3px}
           angerMark(c, sx + 10, sy - b.z - 15 * (b.def.size || 1), 6.4 + Math.sin(b.t * 20) * 0.9);
         }
         if (b.alert > 0 && b.flee <= 0) {
-          c.fillStyle = '#ffdf4a';
-          c.font = 'bold 15px "Trebuchet MS", sans-serif';
+          var ey = sy - b.z - 20 * (b.def.size || 1) - Math.abs(Math.sin(b.t * 9)) * 2;
+          c.font = 'bold 22px "Trebuchet MS", sans-serif';
           c.textAlign = 'center';
-          c.fillText('!', sx, sy - b.z - 20 * (b.def.size || 1));
+          c.lineWidth = 3.5; c.strokeStyle = 'rgba(70,50,10,0.75)';
+          c.strokeText('!', sx, ey);
+          c.fillStyle = '#ffdf4a';
+          c.fillText('!', sx, ey);
         }
       }
       for (var j = 0; j < this.fx.length; j++) {
@@ -27698,7 +28404,7 @@ ul.tips li{margin-bottom:3px}
   'use strict';
 
   var TARGET_FISH = 12;
-  var BITE_WINDOW = 0.95;      // generous on purpose
+  var BITE_WINDOW = 1.5;       // generous on purpose (v1.19: small hands are slower)
 
   /* Ten metres, in this garden's pixels - what a person blundering into a
      stream disturbs. Nothing like all of it is used unless she is running. */
@@ -27753,7 +28459,8 @@ ul.tips li{margin-bottom:3px}
       var far = Math.max(GG.view.w, GG.view.h) * 0.62 + 140;
       for (var i = 0; i < 40; i++) {
         var a = Math.random() * Math.PI * 2;
-        var r = (edgeBias ? 0.35 + Math.random() * 0.65 : Math.sqrt(Math.random())) * far;
+        var r = (edgeBias === 'close' ? 0.12 + Math.random() * 0.3
+          : (edgeBias ? 0.35 + Math.random() * 0.65 : Math.sqrt(Math.random()))) * far;
         var x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
         if (x < 20 || y < 20 || x > W.W - 20 || y > W.H - 20) continue;
         if (this.fishable(x, y)) return { x: x, y: y };
@@ -27763,8 +28470,30 @@ ul.tips li{margin-bottom:3px}
 
     stock: function (dt, player) {
       var guard = 0;
+      /* v1.19: a full pond can still have every fish over the far side, so
+         now and then one of the far-off ones is moved to where she is */
+      this._nudge = (this._nudge || 0) - (dt || 0);
+      if (this.swimmers.length >= TARGET_FISH && this._nudge <= 0 && player && this.state === 'idle') {
+        this._nudge = 2;
+        var near = 0, far = null, fd = 0;
+        for (var n = 0; n < this.swimmers.length; n++) {
+          var sw = this.swimmers[n], dd = GG.dist(sw.x, sw.y, player.x, player.y);
+          if (dd < 230) near++;
+          else if (dd > fd && dd > Math.max(GG.view.w, GG.view.h) * 0.6) { fd = dd; far = sw; }
+        }
+        if (near < 2 && far) {
+          var cp = this.randomWaterPoint('close', player);
+          if (cp && this.waterAt(cp.x, cp.y) === far.water) { far.x = cp.x; far.y = cp.y; far.age = 0; }
+        }
+      }
       while (this.swimmers.length < TARGET_FISH && guard++ < TARGET_FISH) {
-        var p = this.randomWaterPoint(true, player);
+        /* v1.19: keep a couple of fish where she can see them, so there is
+           always a shadow to cast at */
+        var close = 0;
+        for (var q = 0; q < this.swimmers.length; q++) {
+          if (GG.dist(this.swimmers[q].x, this.swimmers[q].y, player.x, player.y) < 230) close++;
+        }
+        var p = this.randomWaterPoint(close < 2 ? 'close' : true, player) || this.randomWaterPoint(true, player);
         if (!p) return;
         var water = this.waterAt(p.x, p.y);
         var cands = this.eligible(water);
@@ -27909,7 +28638,7 @@ ul.tips li{margin-bottom:3px}
         if (this.timer <= 0) {
           this.bob.x = this.bob.tx; this.bob.y = this.bob.ty;
           this.state = 'wait';
-          this.timer = 9;
+          this.timer = 7;
           GG.Sfx.plop();
           this.splash(this.bob.x, this.bob.y, 6);
           this.interest();
@@ -28061,6 +28790,7 @@ ul.tips li{margin-bottom:3px}
         c.save();
         c.translate(sx, sy);
         c.rotate(s.ang + wob);
+        c.globalAlpha = Math.min(1, (s.age || 0) / 1.2);   /* swims up out of the deep */
         c.fillStyle = 'rgba(12,44,62,0.36)';
         c.beginPath();
         c.ellipse(0, 0, len, len * (0.36 + cst * 0.16), cst * 0.5, 0, Math.PI * 2);
@@ -29006,6 +29736,20 @@ ul.tips li{margin-bottom:3px}
         f.ang += GG.rand(-1.6, 1.6);
         f.timer = GG.rand(1.2, 3.4);
         if (d.family === 'frog') { f.hop = 0.34; f.timer = GG.rand(2.4, 5); }
+      }
+      /* A dog that turns up at Dog's Paradise stays at the park: when it
+         wanders near the edge it turns back in (v1.19 - the park kept
+         emptying as the dogs pottered off over the hill). */
+      if (f.park === undefined) {
+        var DP = GG.World.DOGPARK;
+        f.park = !!(DP && d.family === 'dog' && GG.World.biomeRaw(f.x, f.y) === 'dogpark');
+      }
+      if (f.park) {
+        var P2 = GG.World.DOGPARK, m = 70;
+        if (f.x < P2.x0 + m || f.x > P2.x1 - m || f.y < P2.y0 + m || f.y > P2.y1 - m) {
+          var home = Math.atan2(P2.cy - f.y, P2.cx - f.x);
+          f.ang = GG.angLerp(f.ang, home, Math.min(1, dt * 3));
+        }
       }
       var speed = { hummingbird: 46, frog: 20, bat: 62, dog: 34, cat: 26, parrot: 34 }[d.family] || 28;
       var move = 1;
@@ -30041,8 +30785,30 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
+    /* v1.19: the plant she tapped on, so PICK means the one she chose and
+       not a neighbour that happens to be a step closer. */
+    wanted: null,
+    want: function (x, y) {
+      var best = null, bestD = 44 * 44;
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        var dx = x - p.x, dy = (y - (p.y - Math.min(30, p.r * 0.6))) * 1.1;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      this.wanted = best;
+      return best;
+    },
+
     /* The nearest plant with fruit on it, if she is close enough. */
     nearest: function (player) {
+      var w = this.wanted;
+      if (w) {
+        if (w.ripe >= 1) {
+          var wx = player.x - w.x, wy = (player.y - w.y) * 1.15;
+          if (wx * wx + wy * wy < REACH * REACH * 1.2) return w;
+        } else this.wanted = null;
+      }
       var best = null, bestD = REACH * REACH;
       for (var i = 0; i < this.plants.length; i++) {
         var p = this.plants[i];
@@ -30094,6 +30860,49 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
+    /* A soft ring on the ground under the plant PICK will take, so she can
+       see which one it means. */
+    drawTarget: function (c, cam, plant, t) {
+      if (!plant) return;
+      var x = plant.x - cam.x, y = plant.y - cam.y + 2;
+      var rx = Math.max(16, Math.min(34, plant.r * 0.8));
+      var k = 0.5 + 0.5 * Math.sin(t * 5);
+      c.save();
+      c.strokeStyle = 'rgba(255,236,150,' + (0.55 + 0.35 * k).toFixed(2) + ')';
+      c.lineWidth = 2.4;
+      c.setLineDash([5, 4]);
+      c.lineDashOffset = -t * 12;
+      c.beginPath(); c.ellipse(x, y, rx + k * 2, (rx + k * 2) * 0.4, 0, 0, Math.PI * 2); c.stroke();
+      c.restore();
+    },
+
+    /* A little twinkle over the ripe beds, bushes and flowers near her, so
+       the ones she can pick stand out from the ones that are only pretty.
+       (The fruit trees do not need it: the fruit is the sign.) */
+    drawSparkles: function (c, cam, player, t, vw, vh) {
+      var near2 = 280 * 280;
+      c.save();
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        if (!p.pick || p.ripe < 1) continue;
+        var dx = p.x - player.x, dy = p.y - player.y;
+        if (dx * dx + dy * dy > near2) continue;
+        var x = p.x - cam.x, y = p.y - cam.y - p.r * 1.25 - 6;
+        if (x < -20 || y < -20 || x > vw + 20 || y > vh + 40) continue;
+        var ph = t * 2.2 + (p.seed || 0) * 17;
+        var a = 0.35 + 0.55 * Math.max(0, Math.sin(ph));
+        var s = 3 + 1.6 * Math.max(0, Math.sin(ph));
+        y += Math.sin(ph * 0.5) * 2;
+        c.globalAlpha = a;
+        c.fillStyle = '#fff6c0';
+        c.beginPath();
+        c.moveTo(x, y - s * 1.6); c.lineTo(x + s * 0.4, y - s * 0.4); c.lineTo(x + s * 1.6, y);
+        c.lineTo(x + s * 0.4, y + s * 0.4); c.lineTo(x, y + s * 1.6); c.lineTo(x - s * 0.4, y + s * 0.4);
+        c.lineTo(x - s * 1.6, y); c.lineTo(x - s * 0.4, y - s * 0.4); c.closePath(); c.fill();
+      }
+      c.restore();
+    },
+
     /* how many kinds she has picked */
     kinds: function () {
       var n = 0;
@@ -30130,13 +30939,13 @@ ul.tips li{margin-bottom:3px}
 
   var House = GG.House = {
     W: W, H: H, FLOOR: FLOOR,
-    START: { x: 280, y: H - 44 },
+    START: { x: 280, y: H - 96 },   // a step in from the door, so a double tap does not walk her straight back out
 
     spots: [
       { id: 'book', x: 62, y: FLOOR + 22, w: 64, h: 32, label: 'Critter Compendium' },
-      { id: 'terrarium', x: 378, y: FLOOR + 24, w: 96, h: 32, label: 'Terrariums' },
+      { id: 'terrarium', x: 378, y: FLOOR + 24, w: 96, h: 32, label: 'My Tanks' },
       { id: 'shop', x: 482, y: FLOOR + 24, w: 54, h: 32, label: 'Decoration Box' },
-      { id: 'bed', x: (BED.x0 + BED.x1) / 2, y: (BED.y0 + BED.y1) / 2, w: BED.x1 - BED.x0 + 8, h: BED.y1 - BED.y0 + 8, label: 'Bed' },
+      { id: 'bed', x: (BED.x0 + BED.x1) / 2, y: (BED.y0 + BED.y1) / 2, w: BED.x1 - BED.x0 + 8, h: BED.y1 - BED.y0 + 8, label: 'Bed \u2014 have a nap' },
       { id: 'door', x: DOOR.x, y: H - 22, w: DOOR.w + 8, h: 26, label: 'Go Outside' }
     ],
 
@@ -30435,7 +31244,7 @@ ul.tips li{margin-bottom:3px}
 
   var Cave = GG.Cave = {
     W: W, H: H, FLOORY: FLOORY, BATS: BATS,
-    START: { x: 132, y: FLOORY - 40 },
+    START: { x: 250, y: FLOORY - 104 },   // clear of the way out, and above the rock pile
     ceilAt: ceilAt,
     turned: 0,                    // how far her lantern is turned away
 
@@ -30692,14 +31501,18 @@ ul.tips li{margin-bottom:3px}
       document.querySelectorAll('[data-close]').forEach(function (b) {
         b.addEventListener('click', function () { GG.Sfx.click(); self.close(b.getAttribute('data-close')); });
       });
-      $('catch-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideCatch(); });
-      $('warn-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideWarning(); });
+      /* v1.19: a card that has only just opened ignores taps for a moment.
+         Her next tap on NET used to land on the dark background and close
+         the NEW! card before she had read a word of it. */
+      function settled(ms) { return performance.now() - (self._cardAt || 0) > (ms || 900); }
+      $('catch-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideCatch(); });
+      $('warn-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideWarning(); });
       $('warn-pop').addEventListener('click', function (e) {
-        if (e.target.id === 'warn-pop') self.hideWarning();
+        if (e.target.id === 'warn-pop' && settled()) self.hideWarning();
       });
-      $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop') self.hideCatch(); });
-      $('friend-ok').addEventListener('click', function () { GG.Sfx.click(); self.hideFriend(); });
-      $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop') self.hideFriend(); });
+      $('catch-pop').addEventListener('click', function (e) { if (e.target.id === 'catch-pop' && settled()) self.hideCatch(); });
+      $('friend-ok').addEventListener('click', function () { if (!settled(450)) return; GG.Sfx.click(); self.hideFriend(); });
+      $('friend-pop').addEventListener('click', function (e) { if (e.target.id === 'friend-pop' && settled()) self.hideFriend(); });
       $('friend-along').addEventListener('click', function () {
         GG.Sfx.click();
         var def = self._friendDef;
@@ -30714,12 +31527,20 @@ ul.tips li{margin-bottom:3px}
       var el = $(id); if (!el) return;
       el.classList.remove('hidden');
       if (this.openPanels.indexOf(id) < 0) this.openPanels.push(id);
+      this._panelClass();
     },
     close: function (id) {
       var el = $(id); if (!el) return;
       el.classList.add('hidden');
       var i = this.openPanels.indexOf(id);
       if (i >= 0) this.openPanels.splice(i, 1);
+      this._panelClass();
+    },
+    /* with a panel open the toast drops to the bottom, clear of the header
+       and its close button */
+    _panelClass: function () {
+      var app = $('app');
+      if (app) app.classList.toggle('panel-open', this.openPanels.some(function (p) { return p !== 'screen-title'; }));
     },
     anyOpen: function () {
       return this.openPanels.length > 0 ||
@@ -30736,6 +31557,9 @@ ul.tips li{margin-bottom:3px}
     },
 
     prompt: function (text) {
+      /* called every frame, so only touch the page when something changes */
+      if (text === this._promptText) return;
+      this._promptText = text;
       var p = $('prompt');
       if (text) { p.textContent = text; p.classList.add('show'); }
       else p.classList.remove('show');
@@ -30760,6 +31584,8 @@ ul.tips li{margin-bottom:3px}
           (isNew ? ' &nbsp;+&nbsp; new page in your ' + (def.isFish ? 'Fish Book' : 'Bug Book') + '!' : '');
       }
       $('catch-care').style.display = 'none';
+      $('catch-ok').textContent = 'Nice!';
+      this._cardAt = performance.now();
       $('catch-pop').classList.remove('hidden');
       this._animCatch();
     },
@@ -30775,6 +31601,7 @@ ul.tips li{margin-bottom:3px}
       $('warn-fact').textContent = isNew
         ? def.facts[0]
         : def.facts[1 + Math.floor(Math.random() * (def.facts.length - 1))];
+      this._cardAt = performance.now();
       $('warn-pop').classList.remove('hidden');
       this._animWarn();
     },
@@ -30833,6 +31660,9 @@ ul.tips li{margin-bottom:3px}
       $('catch-reward').innerHTML = res.unlocked
         ? 'New decoration for your tanks: <b>' + res.unlocked.name + '</b>'
         : (res.first ? 'New page in your Garden Book!' : '&#10022; one for the basket');
+      /* "Nice!" under "Never eat this one" sends the wrong message */
+      $('catch-ok').textContent = def.eat === 'never' ? 'Got it' : 'Nice!';
+      this._cardAt = performance.now();
       $('catch-pop').classList.remove('hidden');
       this._animCatch(true);
     },
@@ -30898,6 +31728,15 @@ ul.tips li{margin-bottom:3px}
       var along = $('friend-along');
       along.hidden = look || (GG.Save.data.companion === def.id);
       along.textContent = 'Ask them along';
+      /* a rattlesnake or a bear is not a new friend with hearts round it:
+         it is somebody she met from a long way off, and kept away from */
+      var tag = $('friend-new');
+      tag.textContent = look ? 'MET FROM FAR AWAY' : 'NEW FRIEND!';
+      tag.classList.toggle('far', !!look);
+      if (look) tag.style.display = 'inline-block';
+      $('friend-ok').textContent = look ? 'I\u2019ll keep my distance' : 'Lovely!';
+      this._friendLook = !!look;
+      this._cardAt = performance.now();
       $('friend-pop').classList.remove('hidden');
       this._animFriend();
     },
@@ -30912,10 +31751,11 @@ ul.tips li{margin-bottom:3px}
         var t = (now - start) / 1000;
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
-        g.addColorStop(0, '#f0f6e2'); g.addColorStop(1, '#dbeed6');
+        if (self._friendLook) { g.addColorStop(0, '#f6efe4'); g.addColorStop(1, '#e8dcc8'); }
+        else { g.addColorStop(0, '#f0f6e2'); g.addColorStop(1, '#dbeed6'); }
         c.fillStyle = g;
         GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
-        for (var i = 0; i < 9; i++) {
+        for (var i = 0; i < (self._friendLook ? 0 : 9); i++) {
           var a = t * 0.7 + i * 0.7;
           c.globalAlpha = 0.22 + 0.16 * Math.sin(a * 2);
           c.fillStyle = '#ff8fb0';
@@ -30956,12 +31796,46 @@ ul.tips li{margin-bottom:3px}
   'use strict';
   var $ = GG.$;
 
+  /* v1.19: the biggest bugs (an atlas moth, a rhinoceros beetle) used to
+     spill out of their cells over the count. Measure each drawing once and
+     shrink the ones that do not fit. */
+  var FIT = {};
+  function fitFor(def, w, h) {
+    var key = (def.id || def.name) + '|' + w + 'x' + h;
+    if (FIT[key] != null) return FIT[key];
+    var W2 = w * 2, H2 = h * 2;
+    var cv = document.createElement('canvas');
+    cv.width = W2; cv.height = H2;
+    var c = cv.getContext('2d');
+    GG.drawAny(c, def, W2 / 2, H2 / 2, Math.min(w, h) / 34 * 1.05, -Math.PI / 2, 1.1);
+    var k = 1;
+    try {
+      var d = c.getImageData(0, 0, W2, H2).data;
+      var x0 = W2, x1 = -1, y0 = H2, y1 = -1;
+      for (var y = 0; y < H2; y += 2) {
+        for (var x = 0; x < W2; x += 2) {
+          if (d[(y * W2 + x) * 4 + 3] > 24) {
+            if (x < x0) x0 = x; if (x > x1) x1 = x;
+            if (y < y0) y0 = y; if (y > y1) y1 = y;
+          }
+        }
+      }
+      if (x1 > x0 && y1 > y0) {
+        /* keep it centred: how far it reaches from the middle, each way */
+        var rx = Math.max(W2 / 2 - x0, x1 - W2 / 2), ry = Math.max(H2 / 2 - y0, y1 - H2 / 2);
+        k = Math.min(1, (w / 2 - 3) / rx, (h / 2 - 3) / ry);
+      }
+    } catch (e) { k = 1; }
+    FIT[key] = k;
+    return k;
+  }
+
   function thumb(def, w, h, silhouette) {
     var cv = document.createElement('canvas');
     cv.width = w * 2; cv.height = h * 2;
     var c = cv.getContext('2d');
     c.scale(2, 2);
-    var scale = Math.min(w, h) / 34;
+    var scale = Math.min(w, h) / 34 * fitFor(def, w, h);
     GG.drawAny(c, def, w / 2, h / 2, scale * 1.05, -Math.PI / 2, 1.1);
     if (silhouette) {
       // paint the whole drawing one flat colour so it stays a mystery
@@ -31060,7 +31934,10 @@ ul.tips li{margin-bottom:3px}
       grid.appendChild(shelf);
     },
 
-    setTab: function (tab) { this.tab = tab; this.showGrid(); },
+    setTab: function (tab) {
+      this.tab = tab; this._gridScroll = 0; this.showGrid();
+      var b = document.querySelector('#screen-book .body'); if (b) b.scrollTop = 0;
+    },
 
     showGrid: function () {
       if (!BOOK_BY_ID[this.tab]) { this.showContents(); return; }
@@ -31156,6 +32033,8 @@ ul.tips li{margin-bottom:3px}
       txt.innerHTML = kinds
         ? '<b>' + kinds + ' of ' + GG.FRUITS.length + ' kinds picked.</b> Every new kind '
           + 'unlocks a decoration for your tanks.'
+          + '<div class="dotkey"><i style="background:#8fb98f"></i>good to eat '
+          + '<i style="background:#e0a13c"></i>careful <i style="background:#d84a4a"></i>never eat</div>'
         : 'Walk up to a fruit tree, a vegetable bed, a wild berry bush or a clump of flowers '
           + 'and tap <b>PICK</b>. Every new kind unlocks a decoration.';
       row.appendChild(txt);
@@ -31197,9 +32076,13 @@ ul.tips li{margin-bottom:3px}
 
     showDetail: function (def) {
       var grid = $('book-grid'), det = $('book-detail');
+      /* remember where she was in the list, and start the page at the top */
+      var body = document.querySelector('#screen-book .body');
+      if (body && grid.style.display !== 'none') this._gridScroll = body.scrollTop;
       grid.style.display = 'none'; det.style.display = 'block';
+      if (body) body.scrollTop = 0;
       $('book-back').style.display = 'block';
-      $('book-back').textContent = def.isFruit ? 'The whole garden'
+      $('book-back').textContent = def.isFruit ? 'All the garden'
         : (def.isAnimal ? 'All friends'
           : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
@@ -31488,7 +32371,11 @@ ul.tips li{margin-bottom:3px}
   };
 
   document.addEventListener('DOMContentLoaded', function () {
-    $('book-back').addEventListener('click', function () { GG.Sfx.click(); Book.showGrid(); });
+    $('book-back').addEventListener('click', function () {
+      GG.Sfx.click(); Book.showGrid();
+      var body = document.querySelector('#screen-book .body');
+      if (body) body.scrollTop = Book._gridScroll || 0;
+    });
     document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
       el.addEventListener('click', function () { GG.Sfx.click(); Book.setTab(el.getAttribute('data-book')); });
     });
@@ -31584,6 +32471,7 @@ ul.tips li{margin-bottom:3px}
     },
 
     open: function () {
+      if (this._resetClear) this._resetClear();
       GG.UI.open('screen-terrarium');
       this.sel = null;
       var tk = this.tank();
@@ -31627,7 +32515,7 @@ ul.tips li{margin-bottom:3px}
       var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
-      $('tank-count').textContent = 'Tank ' + (this.index + 1) + ' of ' + d.terrariums.length;
+      $('tank-count').textContent = (this.index + 1) + ' / ' + d.terrariums.length;
       /* your only tank cannot be thrown away */
       $('tank-delete').hidden = d.terrariums.length <= 1;
       $('tank-remove').style.display = this.sel ? '' : 'none';
@@ -32604,22 +33492,55 @@ ul.tips li{margin-bottom:3px}
       });
 
       $('tank-prev').addEventListener('click', function () {
+        if (self._resetClear) self._resetClear();
         GG.Sfx.click();
         var n = GG.Save.data.terrariums.length;
         self.index = (self.index - 1 + n) % n; self.sel = null; self.refresh();
       });
       $('tank-next').addEventListener('click', function () {
+        if (self._resetClear) self._resetClear();
         GG.Sfx.click();
         var n = GG.Save.data.terrariums.length;
         self.index = (self.index + 1) % n; self.sel = null; self.refresh();
       });
       $('tank-remove').addEventListener('click', function () { GG.Sfx.click(); self.removeSelected(); });
-      $('tank-clear').addEventListener('click', function () {
+      /* v1.19: emptying a whole tank takes two taps, and can be undone for
+         a few seconds afterwards - it used to go in one tap, no questions */
+      var clearBtn = $('tank-clear'), clearState = null, clearTimer = 0, undo = null, armedTank = null;
+      function resetClear() {
+        clearState = null; undo = null; clearTimer = 0; armedTank = null;
+        clearBtn.textContent = 'Empty it'; clearBtn.classList.remove('armed');
+      }
+      clearBtn.addEventListener('click', function () {
         GG.Sfx.click();
         var tk = self.tank();
+        clearTimeout(clearTimer);
+        /* armed on a different tank (she switched tanks, or closed and came
+           back)? then this is a first tap again */
+        if (armedTank !== tk) { clearState = null; undo = null; clearBtn.classList.remove('armed'); }
+        if (clearState === 'undo' && undo && undo.tank === tk) {
+          tk.bugs = undo.bugs; tk.decor = undo.decor; tk.fish = undo.fish; tk.friends = undo.friends;
+          GG.Save.save(); resetClear(); self.refresh();
+          GG.UI.toast('Everything is back where it was', 1800);
+          return;
+        }
+        if (clearState !== 'armed') {
+          if (!(tk.bugs.length + tk.decor.length + (tk.fish || []).length + (tk.friends || []).length)) {
+            GG.UI.toast('This tank is already empty', 1600); return;
+          }
+          clearState = 'armed'; armedTank = tk;
+          clearBtn.textContent = 'Tap again to empty'; clearBtn.classList.add('armed');
+          clearTimer = setTimeout(resetClear, 3000);
+          return;
+        }
+        undo = { tank: tk, bugs: tk.bugs, decor: tk.decor, fish: tk.fish || [], friends: tk.friends || [] };
         tk.bugs = []; tk.decor = []; tk.fish = []; tk.friends = []; self.sel = null;
         GG.Save.save(); self.refresh();
+        clearState = 'undo'; armedTank = tk;
+        clearBtn.textContent = 'Put it all back'; clearBtn.classList.remove('armed');
+        clearTimer = setTimeout(resetClear, 6000);
       });
+      self._resetClear = resetClear;
       $('tank-rename').addEventListener('click', function () {
         GG.Sfx.click();
         var tk = self.tank();
@@ -32858,6 +33779,15 @@ ul.tips li{margin-bottom:3px}
     ctx.restore();
   }
   var lastTime = 0, elapsed = 0;
+  /* reused every frame, so drawing the world makes no garbage */
+  var _drawables = [], _pool = [], _playerEntry = { y: 0, player: true };
+  function byY(a, b) { return a.y - b.y; }
+  var TALL = { tree: 1, pine: 1, willow: 1, appleTree: 1, blackSpruce: 1, subalpineFir: 1, mossyTrunk: 1,
+    cherryTree: 1, bamboo: 1, basaltColumn: 1, garryOak: 1, oakSnag: 1, snag: 1, vineMaple: 1,
+    krummholz: 1, cliffOak: 1, sagebrush: 1 };
+  var _pausedDrawn = false;
+  /* write to the page only when the words change - every write costs a layout */
+  function setText(el, s) { if (el && el._t !== s) { el._t = s; el.textContent = s; } }
   var swingChecked = false;
   var saveTimer = 0;
   var hurtFlash = 0;
@@ -32867,7 +33797,10 @@ ul.tips li{margin-bottom:3px}
   GG.view = { w: 480, h: 320, cssW: 480, cssH: 320, zoom: 1 };
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    /* 2 is plenty for a phone held at arm's length, and draws about a third
+       faster than 2.5 (v1.19) */
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    _pausedDrawn = false;
     var w = window.innerWidth, h = window.innerHeight;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
@@ -32884,8 +33817,12 @@ ul.tips li{margin-bottom:3px}
     ctx.setTransform(dpr * z, 0, 0, dpr * z, 0, 0);
   }
 
+  var sceneLock = 0;   // a moment after going through a door when the button does nothing
   function setScene(s) {
     scene = s;
+    sceneLock = 0.8;
+    _pausedDrawn = false;
+    GG.Orchard.wanted = null;
     GG.Input.clearTarget();
     applyZoom();
     if (s === 'world') {
@@ -32909,7 +33846,7 @@ ul.tips li{margin-bottom:3px}
     var main = 'FISH', sub = 'cast', ready = false;
     if (st === 'bite') { main = 'CATCH'; sub = 'now!'; ready = true; }
     else if (st === 'nibble') { main = 'WAIT'; sub = 'nibble\u2026'; }
-    else if (st === 'wait') { main = 'WAIT'; sub = 'reel in'; }
+    else if (st === 'wait') { main = 'WAIT'; sub = 'for the !'; }
     else if (st === 'cast' || st === 'reel') { main = '\u2026'; sub = ''; }
     btn.classList.toggle('ready', ready);
     var key = main + '|' + sub;
@@ -32980,15 +33917,31 @@ ul.tips li{margin-bottom:3px}
   }
 
   /* ---------- world scene ---------- */
+  var _blockedWorld = function (x, y, r) { return GG.World.blocked(x, y, r); };
+  var lastPickable = null, swingPeak = null;
+  var lastCamX = null, lastCamY = null;
+
+  /* A tap on the cottage walks her to the door step, not into the wall. */
+  function onHouse(x, y) {
+    var H = GG.World.HOUSE;
+    return x > H.x - H.w / 2 - 6 && x < H.x + H.w / 2 + 6 && y > H.y - H.w * 1.3 && y < H.y + 4;
+  }
+
   function updateWorld(dt) {
     var W = GG.World, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedWorld;
+    var tap = GG.Input.tapPressed;
+    if (tap && !GG.Fishing.active()) {
+      if (onHouse(tap.x, tap.y)) GG.Input.walkTo(W.DOOR.x, W.DOOR.y + 40);
+      else GG.Orchard.want(tap.x, tap.y);
+    }
 
     var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
     var atDoor = doorD < 40;
     /* the lava tube up on the ridge, and the boot brush at its mouth */
     var brush = W.bootBrush;
-    if (brush && !brush.used && GG.dist(P.x, P.y, brush.x, brush.y) < 34) {
+    if (brush && !brush.used && GG.dist(P.x, P.y, brush.x, brush.y) < 52) {
       brush.used = true;
       GG.Sfx.click();
       GG.UI.toast('You wipe your boots. People carry the bat sickness in on them.', 3200);
@@ -32996,6 +33949,13 @@ ul.tips li{margin-bottom:3px}
     var atCave = !!W.caveMouth && GG.dist(P.x, P.y, W.caveMouth.x, W.caveMouth.y + 20) < 62;
     var Fi = GG.Fishing;
 
+    /* On the footbridge, push the stick roughly along it and she walks
+       along it, rather than bumping into the rail (v1.19). */
+    var In = GG.Input, B = W.bridge;
+    if (B && In.mag > 0 && W.onBridge(P.x, P.y, 34)) {
+      var dot = In.x * B.dx + In.y * B.dy;
+      if (Math.abs(dot) > 0.35) { var sg = dot > 0 ? 1 : -1; In.x = B.dx * sg; In.y = B.dy * sg; }
+    }
     P.update(dt, function (x, y, r) { return W.blocked(x, y, r); });
 
     GG.Friends.update(dt, P, 'world');
@@ -33007,10 +33967,20 @@ ul.tips li{margin-bottom:3px}
     var pickable = !fishing && !atDoor && !GG.Friends.busy ? GG.Orchard.nearest(P) : null;
     var lookAt = !fishing && !atDoor && !GG.Friends.busy ? GG.Critters.nearestLookOnly(P, 78) : null;
     if (lookAt) pickable = null;   // she is the more important thing to notice
+    /* A bug right in front of her keeps the button as NET - unless she
+       tapped on the plant herself (v1.19: a ripe dandelion used to take
+       the button over and she could not catch the ladybird beside it). */
+    if (pickable && pickable !== GG.Orchard.wanted && GG.Critters.catchableNear(P, 72)) pickable = null;
+    lastPickable = pickable;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
     if (fishing) friendly = null;
+
+    /* while the line is out, a tap anywhere on the water is the catch tap,
+       rather than a walk that pulls the line in */
+    if (fishing && tap) { GG.Input.clearTarget(); GG.Input.action2Pressed = true; }
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
 
     if (GG.Input.action3Pressed) {
       if (!GG.Friends.busy && friendly) GG.Friends.begin(P);
@@ -33030,15 +34000,17 @@ ul.tips li{margin-bottom:3px}
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (GG.Friends.riding) GG.UI.toast('Not from up here — get down first', 1800);
-      else if (P.startSwing()) swingChecked = false;
+      else if (P.startSwing()) { swingChecked = false; swingPeak = null; }
     }
     if (P.swinging() && !swingChecked) {
       var pr = P.swingProgress();
       if (pr > 0.16 && pr < 0.8) {
         var got = GG.Critters.tryCatch(P);
         if (got) { swingChecked = true; onCatch(got); }
+        /* where the net reached furthest, for judging what she swung at */
+        if (!swingPeak && pr >= 0.3) swingPeak = P.netPoint();
       }
-      if (pr >= 0.8) { swingChecked = true; onSwingMiss(P); }
+      if (pr >= 0.8) { swingChecked = true; onSwingMiss(P, swingPeak || P.netPoint()); }
     }
 
     var fishResult = Fi.update(dt, P);
@@ -33066,6 +34038,7 @@ ul.tips li{margin-bottom:3px}
           : (pickable ? pickPrompt(pickable) : null))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
+    else if (GG.Friends.riding) setActionLabel('\u2014', 'riding');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
     else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
@@ -33080,30 +34053,55 @@ ul.tips li{margin-bottom:3px}
     var W = GG.World, P = GG.Player;
     W.drawGround(ctx, cam, GG.view.w, GG.view.h);
     canvas._vw = GG.view.w;
-    W.drawWater(ctx, cam, t);
+    W.drawWater(ctx, cam, t, GG.view.w, GG.view.h);
     GG.Fishing.drawShadows(ctx, cam, t);
     W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
+    if (lastPickable && scene === 'world') GG.Orchard.drawTarget(ctx, cam, lastPickable, t);
 
     // everything that stands up gets sorted so Guin walks behind trees
     var list = W.sortedProps(cam, GG.view.w, GG.view.h);
-    var drawables = [];
-    for (var i = 0; i < list.length; i++) drawables.push({ y: list[i].y, p: list[i] });
-    drawables.push({ y: P.y, player: true });
+    var drawables = _drawables;
+    var n = 0, i;
+    for (i = 0; i < list.length; i++) {
+      var e = _pool[n] || (_pool[n] = { y: 0, p: null });
+      e.y = list[i].y; e.p = list[i];
+      drawables[n++] = e;
+    }
+    drawables.length = n;
+    _playerEntry.y = P.y;
+    drawables.push(_playerEntry);
     GG.Friends.collect(drawables, cam);
-    drawables.sort(function (a, b) { return a.y - b.y; });
+    drawables.sort(byY);
+    var seen = false, hidden = false, ply = P.y - GG.Friends.rideLift();
     for (var j = 0; j < drawables.length; j++) {
       var d = drawables[j];
       if (d.player) {
-        P.draw(ctx, P.x - cam.x, P.y - cam.y - GG.Friends.rideLift(), t);
+        seen = true;
+        P.draw(ctx, P.x - cam.x, ply - cam.y, t);
       } else if (d.friend) {
         GG.Friends.drawEntry(ctx, d, cam, t);
       } else {
         var p = d.p, fn = GG.Props[p.type];
-        if (fn) fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        if (!fn) continue;
+        /* v1.19: a big crown standing in front of her goes see-through, so
+           she never loses sight of herself under a tree */
+        var ghost = seen && TALL[p.type] && Math.abs(p.x - P.x) < p.r * 0.95 &&
+          p.y - ply < p.r * 2.4 && p.y > ply;
+        if (ghost) { ctx.save(); ctx.globalAlpha = 0.6; hidden = true; }
+        fn(ctx, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        if (ghost) ctx.restore();
       }
     }
+    /* and if she is under leaves, a faint copy of her on top, so she can
+       always see where she is */
+    if (hidden) {
+      ctx.save(); ctx.globalAlpha = 0.5;
+      P.draw(ctx, P.x - cam.x, ply - cam.y, t);
+      ctx.restore();
+    }
     GG.Friends.drawHearts(ctx, cam);
+    GG.Orchard.drawSparkles(ctx, cam, P, t, GG.view.w, GG.view.h);
     GG.Orchard.drawPops(ctx, cam);
     GG.Critters.draw(ctx, cam, t);
     GG.Fishing.draw(ctx, cam, t, P);
@@ -33121,9 +34119,14 @@ ul.tips li{margin-bottom:3px}
   }
 
   /* ---------- house scene ---------- */
+  var _blockedHouse = function (x, y, r) { return GG.House.blocked(x, y, r); };
+  var HOUSE_VERB = { door: ['GO OUT', 'back outside'], bed: ['SLEEP', 'have a nap'],
+    book: ['READ', 'the books'], terrarium: ['TANKS', 'my tanks'], shop: ['OPEN', 'decorations'] };
   function updateHouse(dt) {
     var H = GG.House, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedHouse;
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
     P.update(dt, function (x, y, r) { return H.blocked(x, y, r); });
 
     /* the friend who is with her comes indoors too, and the ones waiting at
@@ -33134,7 +34137,8 @@ ul.tips li{margin-bottom:3px}
 
     var spot = H.nearest(P.x, P.y);
     GG.UI.prompt(spot ? spot.label : null);
-    setActionLabel(spot ? 'OPEN' : '\u2014', spot ? spot.label.toLowerCase() : 'walk around');
+    var verb = spot && (HOUSE_VERB[spot.id] || ['OPEN', spot.label.toLowerCase()]);
+    setActionLabel(verb ? verb[0] : '\u2014', verb ? verb[1] : 'walk around');
 
     if (GG.Input.actionPressed && spot) {
       GG.Sfx.click();
@@ -33186,14 +34190,14 @@ ul.tips li{margin-bottom:3px}
     GG.UI.prompt(null);
     if (!GG.Save.data.seenHouseTip) {
       GG.Save.data.seenHouseTip = true; GG.Save.save();
-      setTimeout(function () { GG.UI.toast('Walk up to something and tap NET', 2600); }, 500);
+      setTimeout(function () { GG.UI.toast('Walk up to the bookshelf, the tanks or the bed, then tap the big button', 3200); }, 500);
     }
   }
   function leaveHouse() {
     GG.Sfx.door();
     GG.Friends.homeList = [];
     setScene('world');
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 50);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 92);
     GG.UI.prompt(null);
   }
   function sleep() {
@@ -33207,9 +34211,12 @@ ul.tips li{margin-bottom:3px}
   }
 
   /* ---------- the lava tube ---------- */
+  var _blockedCave = function (x, y, r) { return GG.Cave.blocked(x, y, r); };
   function updateCave(dt) {
     var C = GG.Cave, P = GG.Player;
     GG.Time.update(dt);
+    GG.Input.blockedFn = _blockedCave;
+    if (sceneLock > 0) { sceneLock -= dt; GG.Input.actionPressed = false; }
     P.update(dt, function (x, y, r) { return C.blocked(x, y, r); });
 
     /* She stops herself. Nobody stops her. */
@@ -33282,19 +34289,21 @@ ul.tips li{margin-bottom:3px}
     GG.Critters.room = null;
     GG.Critters.clear();
     setScene('world');
-    GG.Player.reset(GG.World.caveMouth.x + 10, GG.World.caveMouth.y + 62);
+    GG.Player.reset(GG.World.caveMouth.x + 10, GG.World.caveMouth.y + 100);
     GG.UI.prompt(null);
   }
 
   /* ---------- bees ---------- */
-  function onSwingMiss(P) {
-    var net = P.netPoint();
+  function onSwingMiss(P, at) {
+    var net = at || P.netPoint();
     /* swinging at the one she must not catch teaches, it does not punish */
-    var forbidden = GG.Critters.lookOnlyUnderNet(P);
+    var forbidden = GG.Critters.lookOnlyUnderNet(P, net);
     if (forbidden) { lookAtCreature(forbidden); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
-    if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
+    var end = P.netPoint();   /* close up, the net can reach past the hive */
+    if (hive && Math.min(GG.dist(net.x, net.y, hive.x, hive.y - 14),
+      GG.dist(end.x, end.y, hive.x, hive.y - 14)) < 46) {
       cross += GG.Critters.stirHive(hive.x, hive.y - 16);
     }
     if (cross) beeWarning();
@@ -33343,6 +34352,7 @@ ul.tips li{margin-bottom:3px}
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
     else if (r.kind === 'lost') GG.UI.toast('It got away! Tap the moment you see the !', 2400);
     else if (r.kind === 'nothing') GG.UI.toast('Nothing is biting here. Try casting somewhere else.', 2200);
+    else if (r.kind === 'moved') GG.UI.toast('You walked away, so the line came in.', 2000);
   }
 
   /* ---------- look, don't catch ---------- */
@@ -33383,11 +34393,26 @@ ul.tips li{margin-bottom:3px}
   }
 
   /* ---------- little map ---------- */
+  /* The land and water never change, so they are painted once and kept
+     (v1.19: re-sampling 83,000 cells every time the menu opened froze it
+     for half a second). */
+  var _mapBase = null;
   function drawMinimap() {
     var cv = $('minimap'); if (!cv) return;
-    var c = cv.getContext('2d');
     var W = GG.World;
+    if (!_mapBase) {
+      _mapBase = document.createElement('canvas');
+      _mapBase.width = cv.width; _mapBase.height = cv.height;
+      paintMapBase(_mapBase.getContext('2d'), cv.width / W.W, cv.height / W.H);
+    }
+    var c = cv.getContext('2d');
+    c.clearRect(0, 0, cv.width, cv.height);
+    c.drawImage(_mapBase, 0, 0);
     var sx = cv.width / W.W, sy = cv.height / W.H;
+    drawMapMarks(c, sx, sy);
+  }
+  function paintMapBase(c, sx, sy) {
+    var W = GG.World;
     var COLS = { meadow: '#9ad96f', garden: '#f0b7d0', forest: '#3f8446', pond: '#a7d78a',
       hill: '#d8d2a4', orchard: '#bfe07a', riverbank: '#8fd07f', beach: '#f0e2b8',
       shore: '#c2bcac', desert: '#cdb68c', mountain: '#9d9a93', taiga: '#3c5c3a',
@@ -33404,19 +34429,22 @@ ul.tips li{margin-bottom:3px}
         c.fillRect(x * sx, y * sy, step * sx + 1, step * sy + 1);
       }
     }
-    c.fillStyle = 'rgba(255,255,255,0.92)';
-    c.font = 'bold 15px "Trebuchet MS", sans-serif';
+  }
+  function drawMapMarks(c, sx, sy) {
+    var W = GG.World;
+    c.fillStyle = 'rgba(255,255,255,0.95)';
+    c.font = 'bold 18px "Trebuchet MS", sans-serif';
     c.textAlign = 'center';
     c.strokeStyle = 'rgba(60,80,50,0.7)'; c.lineWidth = 3;
-    [['Hills', 3600, 1340], ['Meadow', 4100, 1940], ['Woods', 5700, 1580], ['Orchard', 5560, 2380],
+    [['Hills', 3500, 1330], ['Meadow', 6250, 3170], ['Woods', 6500, 1250], ['Orchard', 5560, 2380],
      ['Pond', 3820, 2980], ['Garden', 4720, 2680], ['Stream', 4200, 2290],
      ['River', 5350, 2980], ['Inlet', 6380, 3520], ['Beach', 5700, 3780],
      ['Tidepools', 7320, 3090], ['The Sea', 7100, 4020],
      ['Desert', 2100, 2400], ['Ridge', 2720, 2800], ['Taiga', 4000, 740],
-     ['Tundra', 4000, 260], ['Glade', 5800, 1640], ['Rainforest', 7450, 2500],
+     ['Tundra', 4000, 260], ['Glade', 5900, 1680], ['Rainforest', 7450, 2500],
      ['Scablands', 700, 1700], ['Savanna', 620, 3900], ['Marsh', 3500, 3560],
      ['Bamboo', 4450, 1800], ['Cherry', 6300, 2800], ['Bird Town', 4380, 1380],
-     ['Farmyard', 4420, 3200], ['Dog\u2019s Paradise', 3440, 2130]].forEach(function (p) {
+     ['Farmyard', 4420, 3200], ['Dog\u2019s Paradise', 3620, 2090]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
@@ -33435,7 +34463,7 @@ ul.tips li{margin-bottom:3px}
       c.strokeStyle = '#3d3a34'; c.lineWidth = 2; c.stroke();
       c.fillStyle = '#120f0c';
       c.beginPath(); c.ellipse(cx0, cy0 + 3, 10, 10, 0, Math.PI, 0); c.lineTo(cx0 + 10, cy0 + 5); c.lineTo(cx0 - 10, cy0 + 5); c.closePath(); c.fill();
-      c.font = 'bold 15px "Trebuchet MS", sans-serif';
+      c.font = 'bold 18px "Trebuchet MS", sans-serif';
       c.fillStyle = '#fff6c8'; c.strokeStyle = 'rgba(40,30,20,0.85)'; c.lineWidth = 3;
       c.strokeText('Lava Tube', cx0, cy0 - 20); c.fillText('Lava Tube', cx0, cy0 - 20);
     }
@@ -33523,19 +34551,31 @@ ul.tips li{margin-bottom:3px}
       }
     }
 
-    ctx.save();
-    ctx.clearRect(0, 0, GG.view.w, GG.view.h);
-    if (scene === 'world') drawWorld(elapsed);
-    else if (scene === 'house') drawHouse(elapsed);
-    else if (scene === 'cave') drawCave(elapsed);
-    drawMoveTarget(elapsed);
-    ctx.restore();
+    /* While a panel or a card is open the garden is frozen, so it is drawn
+       once and then left alone - no point painting the same picture sixty
+       times a second underneath a book (v1.19). */
+    if (!paused || !_pausedDrawn) {
+      _pausedDrawn = paused;
+      ctx.save();
+      ctx.clearRect(0, 0, GG.view.w, GG.view.h);
+      if (scene === 'world') drawWorld(elapsed);
+      else if (scene === 'house') drawHouse(elapsed);
+      else if (scene === 'cave') drawCave(elapsed);
+      drawMoveTarget(elapsed);
+      ctx.restore();
+    }
+    /* paint the next patch of ground before she walks onto it */
+    if (!paused && scene === 'world' && GG.World.prewarm && dt < 0.034) {
+      var pdx = lastCamX === null ? 0 : cam.x - lastCamX, pdy = lastCamY === null ? 0 : cam.y - lastCamY;
+      lastCamX = cam.x; lastCamY = cam.y;
+      GG.World.prewarm(cam, GG.view.w, GG.view.h, pdx, pdy);
+    }
 
-    $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
-      (GG.Time.rain ? ' ☔' : '');
+    setText($('chip-time'), (GG.view.cssW < 400 ? '' : 'Day ' + GG.Time.day + ' · ') + GG.Time.label() +
+      (GG.Time.rain ? ' ☔' : ''));
     var placeNow = scene === 'house' ? 'Home'
       : (scene === 'cave' ? 'The Lava Tube' : GG.World.placeName(GG.Player.x, GG.Player.y));
-    $('chip-place').textContent = placeNow;
+    setText($('chip-place'), placeNow);
     parkNotice(placeNow);
 
     /* the sound of the place she is in */
@@ -33895,7 +34935,7 @@ ul.tips li{margin-bottom:3px}
     GG.Fishing.reset();
     GG.Fishing.swimmers.length = 0;
     GG.Friends.clear();
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 100);
     GG.Friends.loadCompanion();
     GG.UI.refreshHud();
     refreshGuestChrome();
@@ -33925,7 +34965,7 @@ ul.tips li{margin-bottom:3px}
     GG.Time.day = GG.Save.data.day;
     GG.World.build();
     GG.Orchard.assign();
-    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 70);
+    GG.Player.reset(GG.World.DOOR.x, GG.World.DOOR.y + 100);
     GG.Friends.loadCompanion();
     resize();
     window.addEventListener('resize', resize);
@@ -33941,22 +34981,24 @@ ul.tips li{margin-bottom:3px}
     $('btn-play').addEventListener('click', function () { GG.Sfx.click(); startGame(); });
     $('btn-howto').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
     $('btn-settings').addEventListener('click', function () { GG.Sfx.click(); startSound(); openSettings(); });
-    $('menu-settings').addEventListener('click', function () { GG.Sfx.click(); openSettings(); });
+    /* v1.19 (David): the Garden Menu gets out of the way when Settings or
+       How to play opens, rather than sitting on top of it */
+    $('menu-settings').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); openSettings(); });
     wireSettings();
     wireGuest();
     refreshGuestChrome();
     $('btn-menu').addEventListener('click', function () {
       GG.Sfx.click();
-      $('menu-progress').textContent = GG.Save.totalSpecies() + ' of ' + GG.BUGS.length + ' bugs, ' +
-        GG.Save.totalFish() + ' of ' + GG.FISH.length + ' fish, ' +
-        GG.Save.totalFriends() + ' of ' + GG.ANIMALS.length + ' friends';
+      var found = 0, total = 0;
+      (GG.Book.BOOKS || []).forEach(function (b) { found += b.found(); total += b.list().length; });
+      $('menu-progress').textContent = found + ' of ' + total + ' pages in your Critter Compendium';
       $('menu-place').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.phaseName() +
         ' · ✦ ' + GG.Save.data.sparkles;
       GG.UI.open('screen-menu');
       drawMinimap();
     });
     $('menu-book').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.Book.open(); });
-    $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.open('screen-help'); });
+    $('menu-help').addEventListener('click', function () { GG.Sfx.click(); GG.UI.close('screen-menu'); GG.UI.open('screen-help'); });
 
     GG.UI.onCatchClosed = function () { swingChecked = true; };
     GG.UI.onWarningClosed = function () { swingChecked = true; };
