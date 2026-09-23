@@ -164,6 +164,7 @@
       (this.data.terrariums || []).forEach(function (t) {
         if (!t.friends) t.friends = [];
       });
+      this.tidyUnique();
       if (this.data.companion && !this.data.friends[this.data.companion]) {
         this.data.companion = null;
       }
@@ -254,6 +255,27 @@
       if (!c) c = this.data.fruit[id] = { count: 0, first: Date.now() };
       c.count++;
       return isNew;
+    },
+    /* A unique friend (Cookie) is in one place only. An older save could have
+       her walking along AND waiting indoors AND in two habitats; keep the
+       first of those and let the rest go. */
+    tidyUnique: function () {
+      var d = this.data;
+      if (!GG.ANIMALS) return;
+      GG.ANIMALS.forEach(function (def) {
+        if (!def.unique) return;
+        var id = def.id, placed = false;
+        if (d.companion === id) placed = true;
+        var at = (d.homeFriends || []).indexOf(id);
+        if (at >= 0) { if (placed) d.homeFriends.splice(at, 1); else placed = true; }
+        (d.terrariums || []).forEach(function (t) {
+          if (!t.friends) return;
+          for (var i = t.friends.length - 1; i >= 0; i--) {
+            if (t.friends[i].id !== id) continue;
+            if (placed) t.friends.splice(i, 1); else placed = true;
+          }
+        });
+      });
     },
     hatOf: function (id) { return (this.data.hats || {})[id] || null; },
     setHat: function (id, hatId) {
