@@ -305,3 +305,6 @@ ul.tips li{margin-bottom:3px}
 #friend-unique,#friend-riding{font-size:13.5px;line-height:1.45;background:#fff4e6;border:2px solid #f0d2a8;border-radius:14px;padding:9px 12px}
 #friend-unique b,#friend-riding b{display:block;color:#a8642a;margin-bottom:3px}
 #friend-unique span,#friend-riding span{display:block}
+/* v1.18: the Garden Book's shelves - fruit, berries, vegetables, flowers */
+.book-shelf{font-weight:bold;font-size:13px;color:#8a5a24;text-align:left;padding:8px 4px 2px;
+  border-bottom:2px dotted rgba(138,90,36,0.35);letter-spacing:0.02em}
