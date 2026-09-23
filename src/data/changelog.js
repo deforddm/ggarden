@@ -6,9 +6,24 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.18.0';
+  GG.VERSION = '1.19.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.19.0', title: 'A tidier, smoother garden',
+      lines: [
+        'How to play is short now: eight little pictures, one line each.',
+        'Settings and How to play close the Garden Menu when they open, so nothing is hiding behind anything.',
+        'The garden runs a lot faster, and it no longer works hard while a book or a tank is open.',
+        'Things you can pick twinkle when you are near them, and a dotted ring shows which one PICK means. If a bug is right in front of you, the button stays NET.',
+        'When you walk under a big tree you can still see yourself through the leaves.',
+        'Tap somewhere past a tree or a bush and you walk round it instead of stopping.',
+        'Bugs give you nearly a second after the ! before they fly off, fish give you longer to tap CATCH, and there are always fish close by to cast at.',
+        'The NEW! card waits for you to read it before a tap can close it, and a double tap on a door no longer walks you straight back out.',
+        'Emptying a tank takes two taps now, and you can put everything back.',
+        'Bird Town has lots more nest boxes and feeders, the signs fit their words, and nothing you can pick is hiding under a tree.'
+      ]
+    },
     {
       v: '1.18.0', title: 'Dog\u2019s Paradise, and a garden full of things to pick',
       lines: [

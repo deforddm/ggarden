@@ -120,7 +120,7 @@
       blurb: 'Stop, stand tall, and step slowly backwards until it is a long way behind you. Never run towards it, and go and tell a grown-up.'
     },
     farmer: {
-      id: 'farmer', verb: 'Ask the farmer', btn: 'ASK FARMER', sub: 'come from the side',
+      id: 'farmer', verb: 'Ask the farmer', btn: 'ASK FARMER', sub: 'from the side',
       doing: 'Asking the farmer…', waiting: 'Stand where she can see you…',
       blurb: 'Ask the farmer first, come from the side where the animal can see you, and wash your hands afterwards.'
     },
@@ -135,7 +135,7 @@
       blurb: 'Stand still with your hands to yourself and let the snake go where it was going.'
     },
     seedtray: {
-      id: 'seedtray', verb: 'Fill the feeder', btn: 'FILL FEEDER', sub: 'then step back',
+      id: 'seedtray', verb: 'Fill the feeder', btn: 'FILL FEEDER', sub: 'step back',
       doing: 'Filling up the feeder…', waiting: 'Step back and keep still…',
       blurb: 'Fill the feeder with black-oil sunflower seed, then walk a long way back, sit down and keep still.'
     },
