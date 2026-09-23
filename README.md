@@ -26,7 +26,7 @@ tools needed, installable to a phone home screen, works offline).
   way up - which is why the desert sits behind the mountains, and why it is a
   cold shrub-steppe rather than a Sahara. North of the woods the trees get
   smaller until the taiga gives out altogether and the tundra begins.
-* 174 real insects and mini-beasts, each with its own habitat, time of day
+* 186 real insects and mini-beasts, each with its own habitat, time of day
   and behaviour. Bugs get nervous when you charge at them - a `!` appears,
   and then they bolt. Creep closer instead (tiptoe = hold shift on a keyboard,
   or push the joystick gently).
@@ -72,7 +72,7 @@ tools needed, installable to a phone home screen, works offline).
   and chases you. If she catches you, Guin sees stars for a couple of seconds,
   walks slowly and cannot swing, and every bug nearby scatters. Nothing already
   caught is ever lost. You can still catch an angry bee if you are quick.
-* Catching a bug earns sparkles and, if it is new, a page in the **Bug Book**
+* Catching a bug earns sparkles and, if it is new, a page in the **Bug Book** (one of the four books in the **Critter Compendium**)
   with real, fact-checked information about that insect.
 * **Music and the sound of the place.** None of it is a file: a little
   generative music box plays a pentatonic tune whose mood follows the hour,
@@ -119,7 +119,7 @@ tools needed, installable to a phone home screen, works offline).
 * Creatures put into a tank **live in it** - butterflies and dragonflies fly
   about, grasshoppers hop, snails creep along the ground. Each one stays near
   the spot you put it down, and picking one up grabs it wherever it has got to.
-* Go **home** (the cottage) to read the Bug Book, buy decorations with
+* Go **home** (the cottage) to read the Critter Compendium, buy decorations with
   sparkles, and build **terrariums** - drag bugs and decorations around a
   little glass tank, pick a scene, name it and keep it.
 * Sleeping in the bed skips to the next morning.

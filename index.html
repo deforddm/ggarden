@@ -176,8 +176,8 @@
           <div class="grow"><b id="menu-progress">0 of 31 bugs found</b><div class="note" id="menu-place"></div></div>
         </div>
         <canvas id="minimap" width="640" height="480"></canvas>
-        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house.</div>
-        <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Bug Book</button>
+        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
+        <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Critter Compendium</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
         <button class="btn grow" id="menu-settings" style="width:100%;margin-bottom:8px">Settings</button>
         <button class="btn grow pink" id="menu-endguest" style="width:100%" hidden>Finish the visit</button>
@@ -186,12 +186,13 @@
     </div>
   </div>
 
-  <!-- bug book -->
+  <!-- the Critter Compendium: the Bug, Fish, Friends and Fruit books under one cover -->
   <div class="panel hidden" id="screen-book">
     <div class="sheet">
-      <header><h2 id="book-title">Bug Book</h2><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
+      <header><div class="grow"><div id="book-kicker">Critter Compendium</div><h2 id="book-title">Critter Compendium</h2></div><span id="progress"></span><button class="x" data-close="screen-book">&times;</button></header>
       <div class="body">
         <div class="tabs" id="book-tabs">
+          <div class="tab" data-book="home" title="All the books">&#128218;</div>
           <div class="tab on" data-book="bugs">Bugs</div>
           <div class="tab" data-book="fish">Fish</div>
           <div class="tab" data-book="friends">Friends</div>
