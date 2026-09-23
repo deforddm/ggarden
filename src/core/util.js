@@ -48,13 +48,26 @@
     ctx.closePath();
   };
 
+  /* Art code asks for the same few hundred shades every frame, so the
+     answers are remembered. The map is bounded: if something ever asks for
+     an endless run of different shades, it is simply cleared and refilled. */
+  var shadeMemo = new Map(), SHADE_CAP = 4096;
   GG.shade = function (hex, amt) {
+    var key = hex + '|' + amt;
+    var hit = shadeMemo.get(key);
+    if (hit !== undefined) return hit;
+    var out = shadeRaw(hex, amt);
+    if (shadeMemo.size >= SHADE_CAP) shadeMemo.clear();
+    shadeMemo.set(key, out);
+    return out;
+  };
+  function shadeRaw(hex, amt) {
     var n = parseInt(hex.slice(1), 16);
     var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
     if (amt > 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
     else { r *= (1 + amt); g *= (1 + amt); b *= (1 + amt); }
     return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
-  };
+  }
 
   GG.el = function (tag, cls, text) {
     var e = document.createElement(tag);

@@ -27,7 +27,10 @@
     pending: null,       // a finger that is down but has not slid yet
     moveTarget: null,    // { x, y } in the current scene's coordinates
     TAP_SLOP: 12,        // px a finger may wander and still count as a tap
-    TAP_TIME: 450,       // ms: longer than this and it is not a tap
+    TAP_TIME: 4000,      // ms: a press that never slides is a tap, however long she
+                         // holds it (v1.19 - small fingers press and hold)
+    tapPressed: null,    // { x, y } on the frame a tap lifted, in scene coordinates
+    blockedFn: null,     // the current scene's collision test, set by main.js
 
     /* Walk to (x, y) in the current scene. */
     walkTo: function (x, y) {
@@ -109,7 +112,7 @@
           self.pending = null;
           if (Date.now() - pd.t <= self.TAP_TIME && GG.screenToWorld) {
             var w = GG.screenToWorld(px, py);
-            if (w) self.walkTo(w.x, w.y);
+            if (w) { self.walkTo(w.x, w.y); self._tapQueued = { x: w.x, y: w.y }; }
           }
           return true;
         }
@@ -217,8 +220,33 @@
       var now = Date.now();
       if (!T.at) T.at = now;
       if (d < T.best - 2) { T.best = d; T.at = now; }
-      else if (now - T.at > 450) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
-      this.x = dx / d; this.y = dy / d;
+      else if (now - T.at > (T.side ? 1600 : 450)) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
+      var ux = dx / d, uy = dy / d;
+      /* v1.19: something in the way? Look a little to one side, then the
+         other, and slip round it - a tree trunk or a bush should not stop
+         her dead. Once she has picked a side she keeps it, so she does not
+         dither left-right-left in front of the trunk. */
+      var B = this.blockedFn;
+      if (B && d > 14) {
+        var look = 24, rad = 10;
+        if (B(P.x + ux * look, P.y + uy * look, rad)) {
+          var tries = T.side ? [T.side, -T.side] : [1, -1];
+          var found = false;
+          for (var a = 1; a <= 4 && !found; a++) {
+            for (var k = 0; k < tries.length && !found; k++) {
+              var ang = tries[k] * a * 0.4;
+              var cs = Math.cos(ang), sn = Math.sin(ang);
+              var rx = ux * cs - uy * sn, ry = ux * sn + uy * cs;
+              if (!B(P.x + rx * look, P.y + ry * look, rad)) {
+                ux = rx; uy = ry; T.side = tries[k]; found = true;
+              }
+            }
+          }
+        } else if (T.side && d < T.best + 1) {
+          T.side = 0;
+        }
+      }
+      this.x = ux; this.y = uy;
       this.mag = GG.clamp(d / 48, 0.18, 1);   // full speed, easing off over the last few steps
     },
 
@@ -244,6 +272,8 @@
       }
       this.actionPressed = this._actionQueued;
       this._actionQueued = false;
+      this.tapPressed = this._tapQueued || null;
+      this._tapQueued = null;
       this.action2Pressed = this._action2Queued;
       this._action2Queued = false;
       this.action3Pressed = this._action3Queued;
