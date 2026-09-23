@@ -78,6 +78,14 @@
     dogpark: ['#93d668', '#8acd5f', '#9edd74']
   };
 
+  var GROUND_RGB = {};
+  Object.keys(GROUND).forEach(function (k) {
+    GROUND_RGB[k] = GROUND[k].map(function (h) {
+      var v = parseInt(h.slice(1), 16);
+      return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    });
+  });
+
   /* The three shades above are a fine speckle, close enough together to read
      as texture. These are the big blotches painted over them: the drifts of
      straw between the sagebrush, the lichen heath on the tundra, the patch of
@@ -188,6 +196,42 @@
 
   var MS = 8;   // water mask resolution, in pixels
 
+  /* Props that stand tall enough to hide what is just behind (north of) them. */
+  var TALL = { tree: 1, pine: 1, willow: 1, appleTree: 1, blackSpruce: 1, subalpineFir: 1,
+    mossyTrunk: 1, cherryTree: 1, bamboo: 1, basaltColumn: 1, garryOak: 1, oakSnag: 1, snag: 1,
+    vineMaple: 1, krummholz: 1, cliffOak: 1 };
+  /* how far a tall prop's crown spreads to each side, in units of its r */
+  var WIDE = { garryOak: 1.7, basaltColumn: 1.7, cherryTree: 1.5, willow: 1.3, mossyTrunk: 1.0 };
+  /* Small non-solid scenery that may be cleared away from round a plant to pick. */
+  var DECO = { flower: 1, tulip: 1, grassTuft: 1, mushroom: 1, fireweed: 1, woodSorrel: 1,
+    swordFern: 1, mossCampion: 1, pearly: 1, bracken: 1, heather: 1, lupine: 1, pasque: 1,
+    balsamroot: 1, bunchgrass: 1 };
+
+  /* The standing props are kept in columns this wide, each in y order, so a
+     frame only looks at the few columns on screen and binary-searches to
+     the rows it needs instead of walking all fifteen thousand props. */
+  var PCOL = 256;
+  /* How far a prop's paint reaches from its base (x, y), measured over every
+     prop type: up to ~202 px above it (the tallest trees), ~45 below and
+     ~109 to the side. So a prop whose base is up to 215 px BELOW the bottom
+     of the screen can still reach up into it, and one more than 55 px above
+     the top cannot. */
+  var CULL_UP = 55, CULL_DOWN = 215, CULL_SIDE = 120;
+  /* the collision grid, 200 px squares, numbered rather than keyed by string */
+  var GS = 200, GPAD = 2, GCOLS = Math.ceil(COLS * CELL / GS) + GPAD * 2;
+  function gkey(gx, gy) { return (gy + GPAD) * GCOLS + (gx + GPAD); }
+  /* the ground is sampled every GSTEP px (GPADC extra cells round each
+     chunk so the smoothing at its edges matches the next chunk) */
+  var GSTEP = 8, GPADC = 2, GRAIN = 0;
+  /* how many ground chunks to keep painted (each is 400x400) */
+  var CHUNK_CAP = 40;
+
+  function lowerBound(a, v) {
+    var lo = 0, hi = a.length;
+    while (lo < hi) { var m = (lo + hi) >> 1; if (a[m] < v) lo = m + 1; else hi = m; }
+    return lo;
+  }
+
   var World = GG.World = {
     CELL: CELL, COLS: COLS, ROWS: ROWS,
     W: COLS * CELL, H: ROWS * CELL,
@@ -195,7 +239,7 @@
     DOOR: { x: 4720, y: 2446 },
     KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL, MARSH: MARSH },
     marshPools: MARSH_POOLS,
-    props: [], solids: [], hive: null, grid: {}, chunks: {},
+    props: [], solids: [], hive: null, grid: {}, gridN: [], chunks: null,
     caveMouth: null, bootBrush: null,
     CHUNK: 400,
     pond: POND_E,
@@ -221,8 +265,12 @@
       for (i = 0; i < TIDEPOOLS.length; i++) {
         var p = TIDEPOOLS[i];
         var ex = (x - p.x) / p.rx, ey = (y - p.y) / p.ry;
+        var e2 = ex * ex + ey * ey;
+        /* the wobble below is never more than 1.15, so past that nothing
+           can be inside - skip the noise (an exact shortcut, same mask) */
+        if (e2 >= 1.15) continue;
         var wb = 1 + (GG.noise2(x / 40, y / 40, 19) - 0.5) * 0.3;
-        if (ex * ex + ey * ey < wb) return TIDEPOOL;
+        if (e2 < wb) return TIDEPOOL;
       }
       // stream / river / estuary
       var best = 1e9, bestKind = NONE;
@@ -234,20 +282,29 @@
         var px = a.x + vx * t, py = a.y + vy * t;
         var d = Math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
         var w = a.w + (b.w - a.w) * t;
+        /* The wobble can widen the channel by at most 17%. If even that
+           could not beat what is already found (or get below zero, which is
+           all the answer cares about), the noise cannot change anything. */
+        if (d - w * 1.17 >= Math.min(best, 0)) continue;
         w *= 1 + (GG.noise2(x / 70, y / 70, 11) - 0.5) * 0.34;
         if (d - w < best) { best = d - w; bestKind = (t > 0.5 ? b.kind : a.kind); }
       }
       if (best < 0) return bestKind;
       // the pond
       var dx = (x - POND_E.cx) / POND_E.rx, dy = (y - POND_E.cy) / POND_E.ry;
-      var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
-      if (dx * dx + dy * dy < wob) return POND;
+      var pd2 = dx * dx + dy * dy;
+      if (pd2 < 1.08) {
+        var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
+        if (pd2 < wob) return POND;
+      }
       // the marsh leads, with ragged reedy edges
       for (i = 0; i < MARSH_POOLS.length; i++) {
         var m = MARSH_POOLS[i];
         var mx = (x - m.x) / m.rx, my = (y - m.y) / m.ry;
+        var m2 = mx * mx + my * my;
+        if (m2 >= 1.21) continue;
         var mw = 1 + (GG.noise2(x / 46, y / 46, 29) - 0.5) * 0.42;
-        if (mx * mx + my * my < mw) return MARSH;
+        if (m2 < mw) return MARSH;
       }
       // and the sea fills everything below the tide line
       if (y > shoreY(x)) return SEA;
@@ -374,21 +431,22 @@
     /* ---------- building ---------- */
     build: function () {
       this.buildWater();
-      this.props = []; this.solids = []; this.grid = {};
+      this.props = []; this.solids = []; this.grid = {}; this.gridN = []; this._colliders = [];
       var rnd = GG.mulberry32(20260912);
       var self = this;
 
-      var skipAdd = false;
+      var skipAdd = false, inMain = false;
       function add(type, x, y, r, solid, rad, extra) {
         var p = { type: type, x: x, y: y, r: r, seed: rnd(), solid: !!solid, rad: rad || 0 };
         if (skipAdd) return p;
+        /* The scattered things (not the hand-placed ones) do not go down
+           on top of a solid thing already there: two trees growing out of
+           one trunk looks broken. The dice are still rolled, so nothing
+           else on the map moves. */
+        if (inMain && p.solid && self.blocked(x, y, p.rad * 0.6)) return p;
         if (extra) for (var k in extra) p[k] = extra[k];
         self.props.push(p);
-        if (p.solid) {
-          self.solids.push(p);
-          var key = Math.floor(x / 200) + ',' + Math.floor(y / 200);
-          (self.grid[key] = self.grid[key] || []).push(p);
-        }
+        if (p.solid) self._addSolid(p);
         return p;
       }
 
@@ -400,6 +458,7 @@
 
       var FLOWER_COLS = ['#ff8fb0', '#ffd45c', '#c39bff', '#ff9a5c', '#fff0a8', '#8fd8ff', '#ff6f91'];
 
+      inMain = true;
       for (var i = 0; i < 28000; i++) {
         var x = rnd() * this.W, y = rnd() * this.H;
         if (this.isWater(x, y)) continue;
@@ -596,6 +655,11 @@
           else if (v < 0.80) add('flower', x, y, 11 + rnd() * 4, false, 0, { col: '#fff0a8' });
         }
       }
+      /* (If the last square rolled happened to be in the dog park, this used
+         to stay on and silently throw away everything placed below.) */
+      skipAdd = false; inMain = false;
+      /* the marsh's lodges, logs and boardwalks belong in the water */
+      this._settleMarsh();
 
       // lily pads on the pond
       for (var j = 0; j < 34; j++) {
@@ -619,7 +683,8 @@
       add('flower', HOUSE.x - 96, HOUSE.y - 10, 14, false, 0, { col: '#ff8fb0' });
       add('flower', HOUSE.x + 96, HOUSE.y - 10, 14, false, 0, { col: '#ffd45c' });
       this.hive = add('beehive', HOUSE.x + 150, HOUSE.y - 40, 26, true, 14);
-      add('sign', HOUSE.x - 118, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
+      /* clear of the fence, so the rail does not run through the post */
+      add('sign', HOUSE.x - 170, HOUSE.y + 56, 26, false, 0, { label: 'Home' });
 
       add('sign', 4180, 1660, 26, false, 0, { label: 'Meadow' });
       add('sign', 5400, 1860, 26, false, 0, { label: 'Woods' });
@@ -664,11 +729,60 @@
       /* v1.18, last of all so everything above keeps exactly the place and
          the look it had: Dog's Paradise, and the new things to pick. */
       this.buildDogPark(add);
+      this.buildBirdTown(add);
+      this._clearSigns();
       this.plantPickables(add);
+      this._lookAlikes();
+      this._clearAroundPickables();
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
+      this.chunks = null;
+      this.reindex();
+    },
+
+    /* the solid props go into a 200 px grid for the collision test. Both a
+       string-keyed one (friends.js walks it) and a numbered one (blocked()
+       is called thousands of times a frame) are kept. */
+    _addSolid: function (p) {
+      this.solids.push(p);
+      var gx = Math.floor(p.x / GS), gy = Math.floor(p.y / GS);
+      var key = gx + ',' + gy;
+      (this.grid[key] = this.grid[key] || []).push(p);
+      var n = gkey(gx, gy);
+      (this.gridN[n] = this.gridN[n] || []).push(p);
+    },
+    /* rebuild the collision lists from this.props (after props are taken out) */
+    _rebuildSolids: function () {
+      this.solids = []; this.grid = {}; this.gridN = [];
+      for (var i = 0; i < this.props.length; i++) if (this.props[i].solid) this._addSolid(this.props[i]);
+      var C = this._colliders || [];
+      for (var j = 0; j < C.length; j++) this._addSolid(C[j]);
+    },
+
+    /* Sort the props by y and file them for drawing: the flat ones (painted
+       with the ground) in one list, the standing ones in PCOL-wide columns.
+       Called at the end of build(); call it again if props are ever added,
+       removed or moved afterwards. */
+    reindex: function () {
       this.props.sort(function (p, q) { return p.y - q.y; });
-      this.chunks = {};
+      var flat = [], cols = [], i, p, c;
+      for (i = 0; i < this.props.length; i++) {
+        p = this.props[i];
+        if (FLAT[p.type] === 1) { flat.push(p); continue; }
+        c = Math.max(0, Math.floor(p.x / PCOL));
+        (cols[c] = cols[c] || []).push(p);
+      }
+      var colY = [];
+      for (c = 0; c < cols.length; c++) {
+        if (!cols[c]) continue;
+        colY[c] = new Float64Array(cols[c].length);
+        for (i = 0; i < cols[c].length; i++) colY[c][i] = cols[c][i].y;
+      }
+      var flatY = new Float64Array(flat.length);
+      for (i = 0; i < flat.length; i++) flatY[i] = flat[i].y;
+      this._pflat = flat; this._pflatY = flatY;
+      this._pcols = cols; this._pcolY = colY;
+      this._pcount = this.props.length;
     },
 
     /* ---------- Dog's Paradise (v1.18) ----------
@@ -731,6 +845,250 @@
       }
     },
 
+    /* ---------- tidying after the scatter ---------- */
+
+    /* take props out of the world, then rebuild the collision grid */
+    _removeProps: function (dead) {
+      if (!dead.size) return;
+      this.props = this.props.filter(function (p) { return !dead.has(p); });
+      this._rebuildSolids();
+    },
+
+    /* The muskrat lodges, the sunk logs and the boardwalks were scattered
+       over the marsh's dry mud with everything else, which is not where any
+       of them live. Each is moved to the nearest bit of marsh-pool edge,
+       with its foot just in the water. */
+    _settleMarsh: function () {
+      var self = this, MK = { muskratLodge: 1, sunkLog: 1, boardwalk: 1 };
+      var list = this.props.filter(function (p) { return MK[p.type] === 1; });
+      var placed = [], moved = new Set();
+      function wet(x, y) { return self.waterKind(x, y) === MARSH; }
+      function edgeDepth(x, y) {
+        var i = self.maskIndex(x, y);
+        return self.mask[i] === MARSH ? self.dShore[i] : -1;
+      }
+      function clear(p, x, y) {
+        for (var k = 0; k < placed.length; k++) {
+          if (Math.hypot(placed[k].x - x, placed[k].y - y) < (p.type === 'boardwalk' ? 170 : 115)) return false;
+        }
+        var S = self.solids;
+        for (var j = 0; j < S.length; j++) {
+          var q = S[j];
+          if (q === p || moved.has(q) || Math.abs(q.x - x) > 120 || Math.abs(q.y - y) > 120) continue;
+          var dx = q.x - x, dy = (q.y - y) * 1.55, rr = q.rad + (p.rad || 20) + 6;
+          if (dx * dx + dy * dy < rr * rr) return false;
+        }
+        return true;
+      }
+      function fits(p, x, y, relaxed) {
+        var d = edgeDepth(x, y);
+        if (d < 1 || d > (relaxed ? 4 : 2)) return false;
+        if (p.type === 'boardwalk') {
+          /* standing out from the north bank, both posts in the water */
+          var hw = p.r * 1.5;
+          if (!wet(x - hw * 0.8, y) || !wet(x + hw * 0.76, y)) return false;
+          if (self.isWater(x, y - p.r * 0.9) && !relaxed) return false;
+        } else if (p.type === 'sunkLog') {
+          /* the far end under the water, the near end up on the bank */
+          var flip = (((p.seed * 7) % 1) > 0.5) ? -1 : 1;
+          if (!wet(x + flip * p.r * 0.9, y)) return false;
+          if (!relaxed && wet(x - flip * p.r * 1.1, y - 8)) return false;
+        } else if (!relaxed && !self.isWater(x, y + p.r * 0.3)) {
+          return false;
+        }
+        return clear(p, x, y);
+      }
+      list.forEach(function (p) {
+        var best = null, bd = Infinity, pass, dx, dy;
+        for (pass = 0; pass < 2 && !best; pass++) {
+          for (dy = -900; dy <= 900; dy += 8) {
+            for (dx = -900; dx <= 900; dx += 8) {
+              var d2 = dx * dx + dy * dy;
+              if (d2 >= bd) continue;
+              if (fits(p, p.x + dx, p.y + dy, pass === 1)) { bd = d2; best = [p.x + dx, p.y + dy]; }
+            }
+          }
+        }
+        if (!best) return;
+        p.x = best[0]; p.y = best[1];
+        moved.add(p);
+        placed.push(p);
+        if (p.type === 'boardwalk') {
+          /* It is not something you walk under: posts along the deck stop
+             her at the bank, where she stands behind the blind. */
+          var hw2 = p.r * 1.5;
+          for (var k = -3; k <= 3; k++) {
+            self._colliders.push({ type: 'boardwalkPost', x: p.x + k * hw2 / 3.2, y: p.y - p.r * 0.3,
+              r: p.r * 0.3, seed: 0, solid: true, rad: p.r * 0.26 });
+          }
+        }
+      });
+      this._rebuildSolids();
+    },
+
+    /* A signpost with a tree right in front of it (south of it, so drawn
+       over it) cannot be read. Those trees go. */
+    _clearSigns: function () {
+      var signs = this.props.filter(function (p) { return p.type === 'sign'; });
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (TALL[q.type] !== 1) return;
+        for (var i = 0; i < signs.length; i++) {
+          var s = signs[i], dy = q.y - s.y;
+          /* the wide crowns reach further sideways than 70 px */
+          var reach = Math.max(70, q.r * (WIDE[q.type] || 1.1) + 30);
+          if (Math.abs(q.x - s.x) < reach && dy > 0 && dy < 150) { dead.add(q); return; }
+        }
+      });
+      this._removeProps(dead);
+    },
+
+    /* Is this a good place for something to pick? Not right by a signpost,
+       and not tucked in behind a tree's canopy where she cannot see it. */
+    _pickSpotOk: function (x, y) {
+      var S = this._signList, T = this._tallGrid, i;
+      for (i = 0; i < S.length; i++) {
+        if (Math.abs(S[i].x - x) < 45 && Math.abs(S[i].y - y) < 45 &&
+            Math.hypot(S[i].x - x, S[i].y - y) < 45) return false;
+      }
+      var gx = Math.floor(x / GS), gy = Math.floor(y / GS);
+      for (var ax = -1; ax <= 1; ax++) {
+        for (var ay = 0; ay <= 1; ay++) {
+          var L = T[gkey(gx + ax, gy + ay)];
+          if (!L) continue;
+          for (i = 0; i < L.length; i++) {
+            var q = L[i], dy = q.y - y;
+            if (dy >= 0 && dy <= 140 && Math.abs(q.x - x) < q.r * 1.2) return false;
+          }
+        }
+      }
+      return true;
+    },
+    _prepPickSpots: function () {
+      var T = [], S = [];
+      this.props.forEach(function (q) {
+        if (q.type === 'sign') S.push(q);
+        if (TALL[q.type] === 1) { var n = gkey(Math.floor(q.x / GS), Math.floor(q.y / GS)); (T[n] = T[n] || []).push(q); }
+      });
+      this._tallGrid = T; this._signList = S;
+    },
+
+    /* Scenery that looks just like a plant she can pick, but is not, is a
+       trap for a small child: she walks up, and nothing happens. So a few
+       of those (about one in four, spread out) become real ones, and the
+       rest are swapped for something that looks different. */
+    _lookAlikes: function () {
+      var self = this, planted = this.pickables || [];
+      var TO = { fireweed: 'fireweed', lupine: 'lupine', balsamroot: 'arrowleaf_balsamroot', thimbleberry: 'thimbleberry' };
+      var REST = { fireweed: { glade: 'bracken', taiga: 'grassTuft' }, lupine: 'heather', balsamroot: 'bunchgrass', thimbleberry: 'bush' };
+      var got = {}, seen = {};
+      var F = GG.FRUIT_BY_ID || {};
+      this.props.forEach(function (p) {
+        if (p.type === 'tulip') { p.type = 'flower'; return; }     // the garden's are plain flowers now
+        var id = TO[p.type];
+        if (!id) return;
+        var def = F[id], biome = self.biomeAt(p.x, p.y), key = id + '@' + biome;
+        seen[key] = (seen[key] || 0) + 1;
+        var ok = def && GG.fruitGrowsIn && GG.fruitGrowsIn(def, biome) &&
+          seen[key] % 4 === 1 && (got[key] || 0) < 5 && self._pickSpotOk(p.x, p.y);
+        if (ok) {
+          for (var k = 0; k < planted.length; k++) {
+            if (Math.hypot(planted[k].x - p.x, (planted[k].y - p.y) * 1.3) < 90) { ok = false; break; }
+          }
+        }
+        if (ok) {
+          var flower = def.on === 'flower';
+          p.type = flower ? 'pickFlower' : 'wildBerry';
+          p.r = flower ? GG.clamp(p.r, 18, 23) : GG.clamp(p.r, 20, 24);
+          p.pick = id; p.biome = biome;
+          got[key] = (got[key] || 0) + 1;
+          planted.push(p);
+          return;
+        }
+        var r = REST[p.type];
+        p.type = typeof r === 'string' ? r : (r[biome] || 'grassTuft');
+      });
+      this.pickables = planted;
+    },
+
+    /* and clear the grass and little flowers off each plant to pick, and out
+       of the way in front of it, so it stands clear and easy to see */
+    _clearAroundPickables: function () {
+      var P = this.pickables || [], G = [], i;
+      for (i = 0; i < P.length; i++) {
+        var n = gkey(Math.floor(P[i].x / GS), Math.floor(P[i].y / GS));
+        (G[n] = G[n] || []).push(P[i]);
+      }
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (DECO[q.type] !== 1 || q.solid || q.pick) return;
+        var gx = Math.floor(q.x / GS), gy = Math.floor(q.y / GS);
+        for (var ax = -1; ax <= 1; ax++) for (var ay = -1; ay <= 1; ay++) {
+          var L = G[gkey(gx + ax, gy + ay)];
+          if (!L) continue;
+          for (var k = 0; k < L.length; k++) {
+            var pk = L[k], dx = (q.x - pk.x) / (pk.r * 1.1), dy = q.y - pk.y;
+            dy /= dy > 0 ? pk.r * 1.5 : pk.r * 1.1;
+            if (dx * dx + dy * dy < 1) { dead.add(q); return; }
+          }
+        }
+      });
+      this._removeProps(dead);
+    },
+
+    /* ---------- Bird Town ----------
+       It was a meadow with one nest box, one bath and three feeders in it.
+       Now the bath is in the middle of the green, with nest boxes and feeder
+       poles round it and flowers for the insects the birds eat. */
+    BIRDTOWN: { cx: 4380, cy: 1340, sign: { x: 4380, y: 1420 } },
+    buildBirdTown: function (add) {
+      var self = this, B = this.BIRDTOWN, SG = B.sign, placed = [];
+      function ok(x, y, pad, edge) {
+        var bm = self.biomeAt(x, y);
+        return !self.isWater(x, y) && !self.isWater(x, y - 30) &&
+          (bm === 'birdtown' || (edge && bm === 'meadow')) &&
+          Math.hypot(x - SG.x, y - SG.y) > pad && self.dRiver[self.maskIndex(x, y)] > 8;
+      }
+      function put(type, x, y, r, solid, rad, extra, edge) {
+        if (!ok(x, y, 70, edge)) return null;
+        if (solid && self.blocked(x, y, rad + 16)) return null;
+        var p = add(type, x, y, r, solid, rad, extra);
+        placed.push(p);
+        return p;
+      }
+      put('birdBath', B.cx, B.cy, 30, true, 14);
+      /* a ring of nest boxes and feeder poles round the bath */
+      var n = 10;
+      for (var i = 0; i < n; i++) {
+        var a = -Math.PI / 2 + i * Math.PI * 2 / n + 0.16;
+        var x = B.cx + Math.cos(a) * 175, y = B.cy + Math.sin(a) * 84;
+        /* the ring may lean out onto the meadow at the edge of the green */
+        if (i % 2) put('feederPole', x, y, 32, true, 11, null, true);
+        else put('nestBox', x, y, 26, true, 11, null, true);
+      }
+      /* two more boxes on the far side of the signpost */
+      put('nestBox', B.cx - 150, B.cy + 190, 26, true, 11);
+      put('nestBox', B.cx + 140, B.cy + 200, 26, true, 11);
+      /* flowers round the bath */
+      var cols = ['#8fd8ff', '#ff8fb0', '#ffd45c', '#c39bff', '#fff0a8', '#8fd8ff'];
+      for (var j = 0; j < 9; j++) {
+        var b2 = j * Math.PI * 2 / 9 + 0.3;
+        var fx = B.cx + Math.cos(b2) * 66, fy = B.cy + 4 + Math.sin(b2) * 36;
+        put('flower', fx, fy, 12, false, 0, { col: cols[j % cols.length] }, true);
+      }
+      /* and nothing scattered earlier left standing in the middle of them */
+      var dead = new Set();
+      this.props.forEach(function (q) {
+        if (placed.indexOf(q) >= 0) return;
+        if (!(DECO[q.type] === 1 || q.type === 'nestBox' || q.type === 'birdBath' || q.type === 'feederPole')) return;
+        for (var k = 0; k < placed.length; k++) {
+          var pk = placed[k];
+          if (Math.hypot(q.x - pk.x, q.y - pk.y) < (pk.solid ? 44 : 18)) { dead.add(q); return; }
+        }
+      });
+      this._removeProps(dead);
+    },
+
     /* ---------- the new things to pick (v1.18) ----------
        Each vegetable, wild berry and flower is planted where it really
        grows, a few of each, and the plant knows what it carries from the
@@ -749,12 +1107,13 @@
       }
       var HOUSE = this.HOUSE;
       var planted = [];
+      this._prepPickSpots();
       /* how many of each, per place */
       var COUNT = { veg: 2, berry: 3, fruit: 3, flower: 3 };
       function spot(biome, rad, gap) {
         var list = cells[LET[biome]];
         if (!list) return null;
-        for (var a = 0; a < (rad >= 40 ? 2000 : 500); a++) {
+        for (var a = 0; a < (rad >= 40 ? 4000 : 1500); a++) {
           var c0 = list[Math.floor(R() * list.length)];
           var x = (c0[0] + R()) * CELL, y = (c0[1] + R()) * CELL;
           if (x < 60 || y < 80 || x > self.W - 60 || y > self.H - 60) continue;
@@ -763,6 +1122,7 @@
           if (Math.abs(x - HOUSE.x) < HOUSE.w * 0.8 && y > HOUSE.y - HOUSE.w * 1.4 && y < HOUSE.y + 110) continue;
           if (self.blocked(x, y, rad + 10)) continue;
           if (rad >= 40 && self.solidWithin(x, y, 72)) continue;
+          if (!self._pickSpotOk(x, y)) continue;
           var ok = true;
           for (var k = 0; k < planted.length; k++) {
             var q = planted[k];
@@ -800,7 +1160,7 @@
     solidWithin: function (x, y, d) {
       for (var gx = -1; gx <= 1; gx++) {
         for (var gy = -1; gy <= 1; gy++) {
-          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          var list = this.gridN[gkey(Math.floor(x / GS) + gx, Math.floor(y / GS) + gy)];
           if (!list) continue;
           for (var i = 0; i < list.length; i++) {
             if (Math.hypot(list[i].x - x, list[i].y - y) < d) return true;
@@ -813,13 +1173,14 @@
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
-      if (this.isDeepWater(x, y) && !this.onBridge(x, y)) return true;   // the stream and the pools are waded, not blocked
+      if (this.isDeepWater(x, y) && !this.onBridge(x, y, 6)) return true;   // the stream and the pools are waded, not blocked
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
-          y > H.y - H.w * 0.72 - rad && y < H.y - 4) return true;
+          y > H.y - H.w * 0.72 - rad && y < H.y + 3) return true;   // to the very front of the wall, so she is never hidden behind it
+      var G = this.gridN, cx = Math.floor(x / GS), cy = Math.floor(y / GS);
       for (var gx = -1; gx <= 1; gx++) {
         for (var gy = -1; gy <= 1; gy++) {
-          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          var list = G[gkey(cx + gx, cy + gy)];
           if (!list) continue;
           for (var i = 0; i < list.length; i++) {
             var p = list[i];
@@ -853,8 +1214,37 @@
       return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
     },
 
-    _blotch: function (c, cx, cy) {
-      var C = this.CHUNK, PS = 8, pad = 2;
+    /* The biome of every GSTEP-sized cell of a chunk (plus a margin of GPADC
+       cells all round), worked out once and shared by the ground colour and
+       the blotches. */
+    _bioGrid: function (cx, cy) {
+      var C = this.CHUNK, n = C / GSTEP + GPADC * 2, out = new Array(n * n);
+      for (var y = 0; y < n; y++) {
+        for (var x = 0; x < n; x++) {
+          out[y * n + x] = this._paintBiome(cx * C + (x - GPADC) * GSTEP + GSTEP / 2,
+                                            cy * C + (y - GPADC) * GSTEP + GSTEP / 2);
+        }
+      }
+      return out;
+    },
+    /* biomeAt, for painting only: where the beach's wobbly inland edge dips
+       and leaves a little pocket of riverbank or meadow with sand all round
+       it (there was one by the Footbridge sign), paint it as sand. The
+       props were placed with biomeAt itself, so nothing moves. */
+    _paintBiome: function (x, y) {
+      var b = this.biomeAt(x, y);
+      if (b === 'beach' || b === 'shore' || this.mask[this.maskIndex(x, y)] !== NONE) return b;
+      if (this.dSea[this.maskIndex(x, y)] > 40) return b;
+      var R = 40, sand = 0;
+      if (this.biomeAt(x - R, y) === 'beach') sand++;
+      if (this.biomeAt(x + R, y) === 'beach') sand++;
+      if (this.biomeAt(x, y - R) === 'beach') sand++;
+      if (sand >= 2 && this.biomeAt(x, y + R) === 'beach') sand++;
+      return sand >= 4 || (sand === 3 && this.dSea[this.maskIndex(x, y)] < 30) ? 'beach' : b;
+    },
+
+    _blotch: function (c, cx, cy, bio) {
+      var C = this.CHUNK, PS = GSTEP, pad = GPADC;
       var n = Math.ceil(C / PS) + pad * 2;
       var lay = document.createElement('canvas');
       lay.width = n; lay.height = n;
@@ -866,7 +1256,7 @@
           var wx = cx * C + (x - pad) * PS + PS / 2;
           var wy = cy * C + (y - pad) * PS + PS / 2;
           var o = (y * n + x) * 4;
-          var pt = PATCH[this.biomeAt(wx, wy)];
+          var pt = PATCH[bio[y * n + x]];
           if (!pt) { px[o + 3] = 0; continue; }
           /* a wobble on the sample point, so a patch ends in a crumbly line */
           var jx = wx + (GG.noise2(wx / 11, wy / 11, 53) - 0.5) * 26;
@@ -890,25 +1280,117 @@
       c.restore();
     },
 
+    /* The painted ground is cached a chunk at a time. Only the most
+       recently used CHUNK_CAP chunks are kept (a Map remembers the order
+       they were put in, so the first key is always the stalest one). */
     chunkCanvas: function (cx, cy) {
-      var key = cx + ',' + cy;
-      if (this.chunks[key]) return this.chunks[key];
+      var key = cy * 1000 + cx;
+      var M = this.chunks || (this.chunks = new Map());
+      var hit = M.get(key);
+      if (hit) {
+        M.delete(key); M.set(key, hit);
+        return hit;
+      }
+      var cv = this._paintChunk(cx, cy);
+      M.set(key, cv);
+      if (M.size > CHUNK_CAP) M.delete(M.keys().next().value);
+      return cv;
+    },
+    hasChunk: function (cx, cy) { return !!(this.chunks && this.chunks.has(cy * 1000 + cx)); },
+
+    /* Paint at most one ground chunk that is not on screen yet but is about
+       to be - the next row or column the way she is walking - so the frame
+       that scrolls it in does not have to paint it. Call it once a frame
+       from the main loop when there is time to spare. Returns true if it
+       painted one. */
+    prewarm: function (cam, vw, vh, dirx, diry) {
+      var C = this.CHUNK;
+      var x0 = Math.floor(cam.x / C), x1 = Math.floor((cam.x + vw) / C);
+      var y0 = Math.floor(cam.y / C), y1 = Math.floor((cam.y + vh) / C);
+      /* anything on screen first (normally already there), then one ring out,
+         the side she is heading for first */
+      var sx = dirx > 0 ? 1 : (dirx < 0 ? -1 : 0), sy = diry > 0 ? 1 : (diry < 0 ? -1 : 0);
+      var cand = [], cx, cy;
+      for (cy = y0 - 1; cy <= y1 + 1; cy++) {
+        for (cx = x0 - 1; cx <= x1 + 1; cx++) {
+          if (cx < 0 || cy < 0 || cx * C >= this.W || cy * C >= this.H) continue;
+          if (this.hasChunk(cx, cy)) continue;
+          var on = cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+          var ahead = (sx && (sx > 0 ? cx > x1 : cx < x0)) || (sy && (sy > 0 ? cy > y1 : cy < y0));
+          cand.push({ cx: cx, cy: cy, s: on ? 0 : (ahead ? 1 : 2) });
+        }
+      }
+      if (!cand.length) return false;
+      cand.sort(function (a, b) { return a.s - b.s; });
+      /* never let prewarming push out a chunk that is on screen */
+      if (cand[0].s === 2 && this.chunks && this.chunks.size >= CHUNK_CAP) return false;
+      this.chunkCanvas(cand[0].cx, cand[0].cy);
+      return true;
+    },
+
+    _paintChunk: function (cx, cy) {
       var C = this.CHUNK;
       var cv = document.createElement('canvas');
       cv.width = C; cv.height = C;
       var c = cv.getContext('2d');
-      var step = 10, x, y, wx, wy;
+      var x, y, wx, wy, k;
 
-      for (y = 0; y < C; y += step) {
-        for (x = 0; x < C; x += step) {
-          wx = cx * C + x; wy = cy * C + y;
-          var b = this.biomeAt(wx + step / 2, wy + step / 2);
-          var pal = GROUND[b] || GROUND.meadow;
-          var n = GG.noise2(wx / 26, wy / 26, 21);
-          c.fillStyle = pal[GG.clamp((n * 3) | 0, 0, 2)];
-          c.fillRect(x, y, step + 1, step + 1);
+      /* The ground colour, one sample per GSTEP cell, blown up smoothly (the
+         same trick as the water and the blotches), so the edge between two
+         places curves instead of stepping in big squares. Each sample also
+         gets a tiny grain of its own, so the grass stays speckled instead of
+         going soft. The damp sand at the water's edge goes in here too. */
+      var bio = this._bioGrid(cx, cy);
+      var n = C / GSTEP + GPADC * 2;
+      var glay = document.createElement('canvas');
+      glay.width = n; glay.height = n;
+      var gctx = glay.getContext('2d');
+      var gimg = gctx.createImageData(n, n), gp = gimg.data;
+      for (y = 0; y < n; y++) {
+        for (x = 0; x < n; x++) {
+          k = y * n + x;
+          wx = cx * C + (x - GPADC) * GSTEP + GSTEP / 2;
+          wy = cy * C + (y - GPADC) * GSTEP + GSTEP / 2;
+          var pal = GROUND_RGB[bio[k]] || GROUND_RGB.meadow;
+          var sh3 = GG.noise2(wx / 26, wy / 26, 21);
+          var rgb = pal[GG.clamp((sh3 * 3) | 0, 0, 2)];
+          var grain = (GG.hash2(Math.floor(wx / GSTEP), Math.floor(wy / GSTEP), 77) - 0.5) * GRAIN;
+          var r0 = rgb[0] + grain, g0 = rgb[1] + grain, b0 = rgb[2] + grain;
+          var mi = this.maskIndex(wx, wy);
+          if (this.mask[mi] === NONE) {
+            var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
+            if (this.dSea[mi] <= 4.5 + damp || this.dPool[mi] <= 2.5 + damp) {
+              r0 += (196 - r0) * 0.55; g0 += (176 - g0) * 0.55; b0 += (132 - b0) * 0.55;
+            }
+          }
+          var o4 = k * 4;
+          gp[o4] = r0; gp[o4 + 1] = g0; gp[o4 + 2] = b0; gp[o4 + 3] = 255;
         }
       }
+      gctx.putImageData(gimg, 0, 0);
+      c.imageSmoothingEnabled = true;
+      c.imageSmoothingQuality = 'high';
+      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
+      /* Smoothed all over, the grass goes soft and loses its speckle. So the
+         same samples go down again as crisp little squares everywhere except
+         in a band two cells wide along the edge between two places, where
+         the smooth layer underneath is left to show. */
+      var edge = new Uint8Array(n * n);
+      for (y = 0; y < n; y++) {
+        for (x = 0; x < n; x++) {
+          var bb = bio[y * n + x];
+          if ((x + 1 < n && bio[y * n + x + 1] !== bb) || (y + 1 < n && bio[(y + 1) * n + x] !== bb)) {
+            for (var ey = Math.max(0, y - 1); ey <= Math.min(n - 1, y + 2); ey++) {
+              for (var ex = Math.max(0, x - 1); ex <= Math.min(n - 1, x + 2); ex++) edge[ey * n + ex] = 1;
+            }
+          }
+        }
+      }
+      for (k = 0; k < n * n; k++) if (edge[k]) gp[k * 4 + 3] = 0;
+      gctx.putImageData(gimg, 0, 0);
+      c.imageSmoothingEnabled = false;
+      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
+      c.imageSmoothingEnabled = true;
 
       /* The big blotches of the newer places - drifts of straw between the
          sagebrush, lichen heath on the tundra, a patch of alpine turf between
@@ -916,21 +1398,7 @@
          smoothly, the same trick as the water, so they melt into each other
          instead of stepping. Real ground is a patchwork, and one flat colour
          per place looks like a bedsheet. */
-      this._blotch(c, cx, cy);
-
-      // damp sand right at the water's edge
-      for (y = 0; y < C; y += 6) {
-        for (x = 0; x < C; x += 6) {
-          wx = cx * C + x; wy = cy * C + y;
-          var i = this.maskIndex(wx, wy);
-          if (this.mask[i] !== NONE) continue;
-          var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
-          if (this.dSea[i] <= 4.5 + damp || this.dPool[i] <= 2.5 + damp) {
-            c.fillStyle = 'rgba(196,176,132,0.55)';
-            c.fillRect(x, y, 7, 7);
-          }
-        }
-      }
+      this._blotch(c, cx, cy, bio);
 
       /* The water goes onto a little canvas one pixel per mask cell, then gets
          blown up smoothly over the ground, so the banks curve instead of
@@ -966,7 +1434,6 @@
       c.imageSmoothingQuality = 'high';
       c.drawImage(lay, 0, 0, mw, mh, -pad * MS, -pad * MS, mw * MS, mh * MS);
 
-      this.chunks[key] = cv;
       return cv;
     },
 
@@ -1105,29 +1572,68 @@
       c.restore();
     },
 
+    /* Paint the props of one layer: 'flat' (the ones that lie on the
+       ground), 'sorted' (the standing ones, in y order) or, with no layer,
+       all of them in y order. */
     drawProps: function (c, cam, vw, vh, t, layer) {
-      var P = GG.Props;
-      var pad = 140;
-      for (var i = 0; i < this.props.length; i++) {
-        var p = this.props[i];
-        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
-        if (p.y < cam.y - pad * 2.4 || p.y > cam.y + vh + pad) continue;
-        var isFlat = FLAT[p.type] === 1;
-        if (layer === 'flat' && !isFlat) continue;
-        if (layer === 'sorted' && isFlat) continue;
-        var fn = P[p.type];
+      if (this._pcount !== this.props.length) this.reindex();
+      var P = GG.Props, i, p, fn;
+      if (layer !== 'flat') {
+        var list = this.sortedProps(cam, vw, vh);
+        if (layer !== 'sorted') {
+          /* everything: fold the flat ones in, then one sort */
+          list = list.slice();
+          this._flatVisible(cam, vw, vh, list);
+        }
+        list.sort(function (a, b) { return a.y - b.y; });
+        for (i = 0; i < list.length; i++) {
+          p = list[i]; fn = P[p.type];
+          if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
+        }
+        return;
+      }
+      var F = this._pflat, FY = this._pflatY;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE, y1 = cam.y + vh + CULL_DOWN;
+      for (i = lowerBound(FY, cam.y - CULL_UP); i < F.length; i++) {
+        p = F[i];
+        if (p.y > y1) break;
+        if (p.x < x0 || p.x > x1) continue;
+        fn = P[p.type];
         if (fn) fn(c, p.x - cam.x, p.y - cam.y, p.r, t, p.seed, p.col || p.label, p);
       }
     },
+    _flatVisible: function (cam, vw, vh, out) {
+      var F = this._pflat, FY = this._pflatY;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE, y1 = cam.y + vh + CULL_DOWN;
+      for (var i = lowerBound(FY, cam.y - CULL_UP); i < F.length; i++) {
+        var p = F[i];
+        if (p.y > y1) break;
+        if (p.x >= x0 && p.x <= x1) out.push(p);
+      }
+      return out;
+    },
 
+    /* The standing props that can show on screen, for the caller to sort
+       in among Guin and the animals. Each column comes out in y order; the
+       columns are not merged, so sort by y before drawing. The array is
+       reused from frame to frame - copy it if you need to keep it. */
     sortedProps: function (cam, vw, vh) {
-      var out = [], pad = 150;
-      for (var i = 0; i < this.props.length; i++) {
-        var p = this.props[i];
-        if (FLAT[p.type] === 1) continue;
-        if (p.x < cam.x - pad || p.x > cam.x + vw + pad) continue;
-        if (p.y < cam.y - pad * 2.6 || p.y > cam.y + vh + pad) continue;
-        out.push(p);
+      if (this._pcount !== this.props.length) this.reindex();
+      var out = this._pout || (this._pout = []);
+      out.length = 0;
+      var x0 = cam.x - CULL_SIDE, x1 = cam.x + vw + CULL_SIDE;
+      var y0 = cam.y - CULL_UP, y1 = cam.y + vh + CULL_DOWN;
+      var cols = this._pcols, colY = this._pcolY;
+      var c0 = Math.max(0, Math.floor(x0 / PCOL)), c1 = Math.min(cols.length - 1, Math.floor(x1 / PCOL));
+      for (var c = c0; c <= c1; c++) {
+        var L = cols[c];
+        if (!L) continue;
+        for (var i = lowerBound(colY[c], y0); i < L.length; i++) {
+          var p = L[i];
+          if (p.y > y1) break;
+          if (p.x < x0 || p.x > x1) continue;
+          out.push(p);
+        }
       }
       return out;
     }

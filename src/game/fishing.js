@@ -28,7 +28,7 @@
   'use strict';
 
   var TARGET_FISH = 12;
-  var BITE_WINDOW = 0.95;      // generous on purpose
+  var BITE_WINDOW = 1.5;       // generous on purpose (v1.19: small hands are slower)
 
   /* Ten metres, in this garden's pixels - what a person blundering into a
      stream disturbs. Nothing like all of it is used unless she is running. */
@@ -83,7 +83,8 @@
       var far = Math.max(GG.view.w, GG.view.h) * 0.62 + 140;
       for (var i = 0; i < 40; i++) {
         var a = Math.random() * Math.PI * 2;
-        var r = (edgeBias ? 0.35 + Math.random() * 0.65 : Math.sqrt(Math.random())) * far;
+        var r = (edgeBias === 'close' ? 0.12 + Math.random() * 0.3
+          : (edgeBias ? 0.35 + Math.random() * 0.65 : Math.sqrt(Math.random()))) * far;
         var x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
         if (x < 20 || y < 20 || x > W.W - 20 || y > W.H - 20) continue;
         if (this.fishable(x, y)) return { x: x, y: y };
@@ -93,8 +94,30 @@
 
     stock: function (dt, player) {
       var guard = 0;
+      /* v1.19: a full pond can still have every fish over the far side, so
+         now and then one of the far-off ones is moved to where she is */
+      this._nudge = (this._nudge || 0) - (dt || 0);
+      if (this.swimmers.length >= TARGET_FISH && this._nudge <= 0 && player && this.state === 'idle') {
+        this._nudge = 2;
+        var near = 0, far = null, fd = 0;
+        for (var n = 0; n < this.swimmers.length; n++) {
+          var sw = this.swimmers[n], dd = GG.dist(sw.x, sw.y, player.x, player.y);
+          if (dd < 230) near++;
+          else if (dd > fd && dd > Math.max(GG.view.w, GG.view.h) * 0.6) { fd = dd; far = sw; }
+        }
+        if (near < 2 && far) {
+          var cp = this.randomWaterPoint('close', player);
+          if (cp && this.waterAt(cp.x, cp.y) === far.water) { far.x = cp.x; far.y = cp.y; far.age = 0; }
+        }
+      }
       while (this.swimmers.length < TARGET_FISH && guard++ < TARGET_FISH) {
-        var p = this.randomWaterPoint(true, player);
+        /* v1.19: keep a couple of fish where she can see them, so there is
+           always a shadow to cast at */
+        var close = 0;
+        for (var q = 0; q < this.swimmers.length; q++) {
+          if (GG.dist(this.swimmers[q].x, this.swimmers[q].y, player.x, player.y) < 230) close++;
+        }
+        var p = this.randomWaterPoint(close < 2 ? 'close' : true, player) || this.randomWaterPoint(true, player);
         if (!p) return;
         var water = this.waterAt(p.x, p.y);
         var cands = this.eligible(water);
@@ -239,7 +262,7 @@
         if (this.timer <= 0) {
           this.bob.x = this.bob.tx; this.bob.y = this.bob.ty;
           this.state = 'wait';
-          this.timer = 9;
+          this.timer = 7;
           GG.Sfx.plop();
           this.splash(this.bob.x, this.bob.y, 6);
           this.interest();
@@ -391,6 +414,7 @@
         c.save();
         c.translate(sx, sy);
         c.rotate(s.ang + wob);
+        c.globalAlpha = Math.min(1, (s.age || 0) / 1.2);   /* swims up out of the deep */
         c.fillStyle = 'rgba(12,44,62,0.36)';
         c.beginPath();
         c.ellipse(0, 0, len, len * (0.36 + cst * 0.16), cst * 0.5, 0, Math.PI * 2);

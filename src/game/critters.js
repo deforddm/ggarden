@@ -191,10 +191,21 @@
         var scared = player.speed > 62 ? d.shy : d.shy * 0.55;
         if (player.swinging()) scared = d.shy * 1.15;
 
-        if (b.flee <= 0 && toP < scared) {
-          if (b.alert <= 0) { b.alert = 0.35; }
-          b.alert -= dt;
-          if (b.alert <= 0) {
+        /* v1.19: the ! is a real warning she can act on. If she stops dead
+           and keeps still, the countdown holds, and after a moment the bug
+           settles down again - which is exactly what the How to play card
+           tells her to do. Running on, or swinging, lets it fly. */
+        var still = player.speed < 25 && !player.swinging();
+        if (b.flee <= 0 && toP < scared && !(still && b.alert <= 0)) {
+          if (b.alert <= 0) { b.alert = 0.95; b.calm = 0; }
+          if (still) {
+            b.calm = (b.calm || 0) + dt;
+            if (b.calm > 1.1) { b.alert = 0; b.calm = 0; }
+          } else {
+            b.calm = 0;
+            b.alert -= dt;
+          }
+          if (b.alert <= 0 && !still) {
             b.flee = GG.rand(1.3, 2.6);
             b.angle = Math.atan2(b.y - player.y, b.x - player.x) + GG.rand(-0.5, 0.5);
           }
@@ -360,6 +371,17 @@
     },
 
     /* Did the net land on anything? */
+    /* Is there something catchable close enough that NET should stay NET?
+       (v1.19 - a ripe plant nearby used to take the button over.) */
+    catchableNear: function (player, radius) {
+      for (var i = 0; i < this.list.length; i++) {
+        var b = this.list[i];
+        if (b.def.lookOnly || b.angry > 0) continue;
+        if (GG.dist(b.x, b.y - (b.z || 0) * 0.5, player.x, player.y - 10) < radius) return b;
+      }
+      return null;
+    },
+
     tryCatch: function (player) {
       var n = player.netPoint();
       var best = null, bestD = 1e9;
@@ -379,8 +401,8 @@
     },
 
     /* Did she just swing the net at something she must not catch? */
-    lookOnlyUnderNet: function (player) {
-      var n = player.netPoint();
+    lookOnlyUnderNet: function (player, at) {
+      var n = at || player.netPoint();
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
         if (!b.def.lookOnly || b.looked) continue;
@@ -509,10 +531,13 @@
           angerMark(c, sx + 10, sy - b.z - 15 * (b.def.size || 1), 6.4 + Math.sin(b.t * 20) * 0.9);
         }
         if (b.alert > 0 && b.flee <= 0) {
-          c.fillStyle = '#ffdf4a';
-          c.font = 'bold 15px "Trebuchet MS", sans-serif';
+          var ey = sy - b.z - 20 * (b.def.size || 1) - Math.abs(Math.sin(b.t * 9)) * 2;
+          c.font = 'bold 22px "Trebuchet MS", sans-serif';
           c.textAlign = 'center';
-          c.fillText('!', sx, sy - b.z - 20 * (b.def.size || 1));
+          c.lineWidth = 3.5; c.strokeStyle = 'rgba(70,50,10,0.75)';
+          c.strokeText('!', sx, ey);
+          c.fillStyle = '#ffdf4a';
+          c.fillText('!', sx, ey);
         }
       }
       for (var j = 0; j < this.fx.length; j++) {

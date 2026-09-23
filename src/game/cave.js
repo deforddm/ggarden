@@ -25,7 +25,7 @@
 
   var Cave = GG.Cave = {
     W: W, H: H, FLOORY: FLOORY, BATS: BATS,
-    START: { x: 132, y: FLOORY - 40 },
+    START: { x: 250, y: FLOORY - 104 },   // clear of the way out, and above the rock pile
     ceilAt: ceilAt,
     turned: 0,                    // how far her lantern is turned away
 

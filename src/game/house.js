@@ -24,13 +24,13 @@
 
   var House = GG.House = {
     W: W, H: H, FLOOR: FLOOR,
-    START: { x: 280, y: H - 44 },
+    START: { x: 280, y: H - 96 },   // a step in from the door, so a double tap does not walk her straight back out
 
     spots: [
       { id: 'book', x: 62, y: FLOOR + 22, w: 64, h: 32, label: 'Critter Compendium' },
-      { id: 'terrarium', x: 378, y: FLOOR + 24, w: 96, h: 32, label: 'Terrariums' },
+      { id: 'terrarium', x: 378, y: FLOOR + 24, w: 96, h: 32, label: 'My Tanks' },
       { id: 'shop', x: 482, y: FLOOR + 24, w: 54, h: 32, label: 'Decoration Box' },
-      { id: 'bed', x: (BED.x0 + BED.x1) / 2, y: (BED.y0 + BED.y1) / 2, w: BED.x1 - BED.x0 + 8, h: BED.y1 - BED.y0 + 8, label: 'Bed' },
+      { id: 'bed', x: (BED.x0 + BED.x1) / 2, y: (BED.y0 + BED.y1) / 2, w: BED.x1 - BED.x0 + 8, h: BED.y1 - BED.y0 + 8, label: 'Bed \u2014 have a nap' },
       { id: 'door', x: DOOR.x, y: H - 22, w: DOOR.w + 8, h: 26, label: 'Go Outside' }
     ],
 

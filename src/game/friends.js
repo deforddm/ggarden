@@ -859,6 +859,20 @@
         f.timer = GG.rand(1.2, 3.4);
         if (d.family === 'frog') { f.hop = 0.34; f.timer = GG.rand(2.4, 5); }
       }
+      /* A dog that turns up at Dog's Paradise stays at the park: when it
+         wanders near the edge it turns back in (v1.19 - the park kept
+         emptying as the dogs pottered off over the hill). */
+      if (f.park === undefined) {
+        var DP = GG.World.DOGPARK;
+        f.park = !!(DP && d.family === 'dog' && GG.World.biomeRaw(f.x, f.y) === 'dogpark');
+      }
+      if (f.park) {
+        var P2 = GG.World.DOGPARK, m = 70;
+        if (f.x < P2.x0 + m || f.x > P2.x1 - m || f.y < P2.y0 + m || f.y > P2.y1 - m) {
+          var home = Math.atan2(P2.cy - f.y, P2.cx - f.x);
+          f.ang = GG.angLerp(f.ang, home, Math.min(1, dt * 3));
+        }
+      }
       var speed = { hummingbird: 46, frog: 20, bat: 62, dog: 34, cat: 26, parrot: 34 }[d.family] || 28;
       var move = 1;
       if (d.family === 'frog') move = f.hop > 0 ? 3.4 : 0;

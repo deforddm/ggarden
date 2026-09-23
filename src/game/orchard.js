@@ -78,8 +78,30 @@
       }
     },
 
+    /* v1.19: the plant she tapped on, so PICK means the one she chose and
+       not a neighbour that happens to be a step closer. */
+    wanted: null,
+    want: function (x, y) {
+      var best = null, bestD = 44 * 44;
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        var dx = x - p.x, dy = (y - (p.y - Math.min(30, p.r * 0.6))) * 1.1;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      this.wanted = best;
+      return best;
+    },
+
     /* The nearest plant with fruit on it, if she is close enough. */
     nearest: function (player) {
+      var w = this.wanted;
+      if (w) {
+        if (w.ripe >= 1) {
+          var wx = player.x - w.x, wy = (player.y - w.y) * 1.15;
+          if (wx * wx + wy * wy < REACH * REACH * 1.2) return w;
+        } else this.wanted = null;
+      }
       var best = null, bestD = REACH * REACH;
       for (var i = 0; i < this.plants.length; i++) {
         var p = this.plants[i];
@@ -129,6 +151,49 @@
         GG.FruitArt.draw(c, p.def, p.x - cam.x, p.y - cam.y - 34 - k * 34, 0.85, p.t);
         c.restore();
       }
+    },
+
+    /* A soft ring on the ground under the plant PICK will take, so she can
+       see which one it means. */
+    drawTarget: function (c, cam, plant, t) {
+      if (!plant) return;
+      var x = plant.x - cam.x, y = plant.y - cam.y + 2;
+      var rx = Math.max(16, Math.min(34, plant.r * 0.8));
+      var k = 0.5 + 0.5 * Math.sin(t * 5);
+      c.save();
+      c.strokeStyle = 'rgba(255,236,150,' + (0.55 + 0.35 * k).toFixed(2) + ')';
+      c.lineWidth = 2.4;
+      c.setLineDash([5, 4]);
+      c.lineDashOffset = -t * 12;
+      c.beginPath(); c.ellipse(x, y, rx + k * 2, (rx + k * 2) * 0.4, 0, 0, Math.PI * 2); c.stroke();
+      c.restore();
+    },
+
+    /* A little twinkle over the ripe beds, bushes and flowers near her, so
+       the ones she can pick stand out from the ones that are only pretty.
+       (The fruit trees do not need it: the fruit is the sign.) */
+    drawSparkles: function (c, cam, player, t, vw, vh) {
+      var near2 = 280 * 280;
+      c.save();
+      for (var i = 0; i < this.plants.length; i++) {
+        var p = this.plants[i];
+        if (!p.pick || p.ripe < 1) continue;
+        var dx = p.x - player.x, dy = p.y - player.y;
+        if (dx * dx + dy * dy > near2) continue;
+        var x = p.x - cam.x, y = p.y - cam.y - p.r * 1.25 - 6;
+        if (x < -20 || y < -20 || x > vw + 20 || y > vh + 40) continue;
+        var ph = t * 2.2 + (p.seed || 0) * 17;
+        var a = 0.35 + 0.55 * Math.max(0, Math.sin(ph));
+        var s = 3 + 1.6 * Math.max(0, Math.sin(ph));
+        y += Math.sin(ph * 0.5) * 2;
+        c.globalAlpha = a;
+        c.fillStyle = '#fff6c0';
+        c.beginPath();
+        c.moveTo(x, y - s * 1.6); c.lineTo(x + s * 0.4, y - s * 0.4); c.lineTo(x + s * 1.6, y);
+        c.lineTo(x + s * 0.4, y + s * 0.4); c.lineTo(x, y + s * 1.6); c.lineTo(x - s * 0.4, y + s * 0.4);
+        c.lineTo(x - s * 1.6, y); c.lineTo(x - s * 0.4, y - s * 0.4); c.closePath(); c.fill();
+      }
+      c.restore();
     },
 
     /* how many kinds she has picked */
