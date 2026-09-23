@@ -233,6 +233,9 @@ ul.tips li{margin-bottom:3px}
   background:linear-gradient(#c2f0c0,#5fb45f);color:#123d12;font-family:var(--font);font-weight:bold;font-size:13px;
   box-shadow:0 5px 0 #3d8a3d,0 10px 18px rgba(0,0,0,.3);transition:transform .06s,box-shadow .06s}
 #btn-friend.down{transform:translateY(4px);box-shadow:0 1px 0 #3d8a3d}
+#btn-friend.quiet{width:58px;height:58px;font-size:11px;opacity:.78;right:calc(37px + env(safe-area-inset-right));
+  background:linear-gradient(#e6f5dc,#a9d59a);color:#2c5a2a;box-shadow:0 3px 0 #7fae72,0 6px 12px rgba(0,0,0,.2)}
+#btn-friend.quiet small{font-size:9px}
 #btn-friend small{display:block;font-size:10px;opacity:.8;font-weight:normal;line-height:1.15;padding:0 4px}
 #btn-friend.waiting{background:linear-gradient(#fff1a8,#ffbe3c);color:#5b4310;
   box-shadow:0 5px 0 #b8871f,0 10px 18px rgba(0,0,0,.3)}
