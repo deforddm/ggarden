@@ -471,6 +471,15 @@ const { chromium } = require('playwright');
       for (let i = 0; i < trees.length; i += 7) {
         const t = trees[i];
         if (W.isWater(t.x, t.y)) continue;
+        /* and open walkable ground east of it for the chase (the marsh grew
+           real water in v1.15, which moved things about) */
+        let open = true;
+        for (let dx = 40; dx <= 280 && open; dx += 20) {
+          for (let dy = -30; dy <= 260 && open; dy += 40) {
+            if (W.isWater(t.x + dx, t.y + dy)) open = false;
+          }
+        }
+        if (!open) continue;
         let n = 0;
         for (let j = 0; j < W.solids.length; j += 3) {
           const q = W.solids[j];

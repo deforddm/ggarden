@@ -387,7 +387,7 @@ const { chromium } = require('playwright');
   });
   ok('all twenty new bugs are in the roster ' + JSON.stringify(bugs.missing), !bugs.missing.length);
   ok('and every one of them draws something ' + JSON.stringify(bugs.blank), !bugs.blank.length);
-  ok('the roster is 174 (got ' + bugs.total + ')', bugs.total === 174);
+  ok('the roster is 186 (got ' + bugs.total + ')', bugs.total === 186);
   ok('the orchard has plenty now (' + bugs.orchard + ')', bugs.orchard >= 25);
   ok('the hills are no longer empty (' + bugs.hill + ')', bugs.hill >= 13);
   ok('both have something out at night (' + bugs.orchardNight + ', ' + bugs.hillNight + ')',
@@ -557,7 +557,7 @@ const { chromium } = require('playwright');
       hunts: !!det.querySelector('.foodchain')
     };
   });
-  ok('the Bug Book lists 174 now (' + wbook.cells + ')', wbook.cells === 174);
+  ok('the Bug Book lists 186 now (' + wbook.cells + ')', wbook.cells === 186);
   ok('meeting her opened her page (' + wbook.progress + ')', wbook.got >= 1);
   ok('the page says Met, not Caught', wbook.tags.some(t => /^Met: /.test(t))
     && !wbook.tags.some(t => /^Caught: /.test(t)));
