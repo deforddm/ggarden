@@ -29,8 +29,15 @@ const { chromium } = require('playwright');
   }));
   ok('Guin is the same size indoors as outdoors (' + inside.zoom.toFixed(2) + ' vs ' + outZoom.toFixed(2) + ')',
     Math.abs(inside.zoom - outZoom) < 0.001);
-  ok('the room is bigger than the view, so the camera follows her',
-    inside.room[0] > 700 && inside.room[1] > 500);
+  /* v1.16: the cottage is built to Guin's own scale now - a real room of
+     about 12 m by 7 m at 45 px to the metre, not a giant's hall */
+  const scale = await p.evaluate(() => {
+    const H = GG.House, bed = H.spots.find(s => s.id === 'bed'), door = H.spots.find(s => s.id === 'door');
+    return { w: H.W, h: H.H, bedLong: bed.h - 8, doorW: door.w - 8 };
+  });
+  ok('the room is a room, not a hall (' + scale.w + ' x ' + scale.h + ')', scale.w <= 640 && scale.h <= 480 && scale.w >= 400);
+  ok('her bed is about one and a half Guins long (' + scale.bedLong + 'px)', scale.bedLong > 70 && scale.bedLong < 120);
+  ok('the doorway is about her own width and a bit (' + scale.doorW + 'px)', scale.doorW > 34 && scale.doorW < 60);
   await p.screenshot({ path: __dirname + '/shots/fix-house.png' });
 
   // can she reach every piece of furniture?
