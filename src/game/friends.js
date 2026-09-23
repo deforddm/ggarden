@@ -1251,7 +1251,7 @@
       for (var i = 0; i < ids.length; i++) {
         var def = GG.ANIMAL_BY_ID[ids[i]];
         if (!def || !GG.Save.hasFriend(ids[i])) continue;
-        var spot = this.homeSpot(i, ids.length);
+        var spot = this.homeSpot(i, ids.length, def);
         this.homeList.push({
           def: def, x: spot.x, y: spot.y,
           ang: Math.random() * Math.PI * 2, t: Math.random() * 40,
@@ -1261,17 +1261,28 @@
       }
     },
 
-    homeSpot: function (i, n) {
-      var H = GG.House;
-      var lo = H.FLOOR + 48, hi = H.H - 60;
-      var cols = Math.max(1, Math.min(4, n));
-      var col = i % cols, row = Math.floor(i / cols);
-      return {
-        x: GG.clamp(150 + col * ((H.W - 300) / Math.max(1, cols - 1 || 1)) + GG.rand(-24, 24),
-          90, H.W - 190),
-        y: GG.clamp(lo + 40 + row * 70 + GG.rand(-16, 16), lo, hi)
-      };
+    /* Somewhere clear on the floor for friend number i of n: spread across
+       the open floor spots the house offers, never inside the bed, the
+       plant or the doorway (v1.16 - they used to be dealt out on a grid
+       that could land right inside the bed, and then jitter there). */
+    homeSpot: function (i, n, def) {
+      var H = GG.House, spots = H.homeSpots ? H.homeSpots(this.HOME_RAD) : [];
+      /* a horse or a moose is as tall as a grown-up, so it stands out on the
+         open floor, not in front of the bookshelf with its head in it */
+      if (def) {
+        var ext = (GG.AnimalArt.SPAN[def.art.shape] || 38) * (def.size || 1) * 1.15;
+        var roomy = spots.filter(function (q) {
+          return q.y - ext * 0.8 > H.FLOOR - 10 && !H.blocked(q.x, q.y, Math.max(14, ext * 0.42));
+        });
+        if (roomy.length) spots = roomy;
+      }
+      if (!spots.length) return H.freeNear(H.START.x, H.START.y - 80, this.HOME_RAD);
+      var step = Math.max(1, Math.floor(spots.length / Math.max(1, n)));
+      var p = spots[(i * step + Math.floor(step / 2)) % spots.length];
+      var j = H.freeNear(p.x + GG.rand(-10, 10), p.y + GG.rand(-8, 8), this.HOME_RAD);
+      return j;
     },
+    HOME_RAD: 14,
 
     /* They potter about the cottage floor while she is indoors. */
     stepHome: function (dt) {
@@ -1296,9 +1307,16 @@
         var vx = Math.cos(f.ang) * speed * move;
         var vy = Math.sin(f.ang) * speed * move * 0.55;
         f.gait = GG.clamp(Math.sqrt(vx * vx + vy * vy) / 28, 0, 1.3);
-        var nx = f.x + vx * dt, ny = f.y + vy * dt;
-        if (!H.blocked(nx, f.y, 12)) f.x = nx; else f.ang = Math.PI - f.ang;
-        if (!H.blocked(f.x, ny, 12)) f.y = ny; else f.ang = -f.ang;
+        var nx = f.x + vx * dt, ny = f.y + vy * dt, R = this.HOME_RAD;
+        /* if something has ended up inside the bed or the wall (a door
+           opening, a resize, an old save), set it back down on clear floor
+           rather than let it flip about on the spot */
+        if (H.blocked(f.x, f.y, R)) {
+          var fr = H.freeNear(f.x, f.y, R);
+          f.x = fr.x; f.y = fr.y; nx = f.x; ny = f.y;
+        }
+        if (!H.blocked(nx, f.y, R)) f.x = nx; else f.ang = Math.PI - f.ang;
+        if (!H.blocked(f.x, ny, R)) f.y = ny; else f.ang = -f.ang;
         if (Math.cos(f.ang) < -0.05 && move > 0.1) f.faceLeft = true;
         else if (Math.cos(f.ang) > 0.05 && move > 0.1) f.faceLeft = false;
 
@@ -1315,7 +1333,7 @@
     },
     loadCompanion: function () {
       /* a new outing: you ask again, and the helmet comes out again */
-      this.riding = null; this.asked = false; this.helmetOn = false;
+      this.riding = null; this.asked = false; this.helmetOn = false; this.standTold = false;
       var id = GG.Save.data.companion;
       this.companion = (id && GG.ANIMAL_BY_ID[id] && GG.Save.hasFriend(id))
         ? { id: id, x: GG.Player.x - 30, y: GG.Player.y + 10, t: 0, faceLeft: false }
@@ -1342,6 +1360,15 @@
       if (comp.dx == null) { comp.dx = -1; comp.dy = 0.35; }
       var tx = player.x + comp.dx * 26 - comp.dy * 12;
       var ty = player.y + comp.dy * 22 + 11;
+      /* a horse she has stopped beside comes up alongside her and stands
+         shoulder-on, the way you would lead one - so the right place to get
+         on is simply where she is already standing */
+      if (def.rideable && this.scene !== 'house' &&
+          ((this.stillT || 0) > 0.35 || this.sidle > 0)) {
+        var side = comp.faceLeft ? 1 : -1;
+        tx = player.x + side * 4;
+        ty = player.y - 16;
+      }
 
       var d = GG.dist(comp.x, comp.y, tx, ty);
       comp.gait = 0;
@@ -1357,10 +1384,17 @@
       if (GG.dist(comp.x, comp.y, player.x, player.y) > 420) { comp.x = tx; comp.y = ty; }
       /* indoors they have to stay in the room with her */
       if (this.scene === 'house') {
-        var H = GG.House;
-        comp.x = GG.clamp(comp.x, 62, H.W - 62);
-        comp.y = GG.clamp(comp.y, H.FLOOR + 14, H.H - 24);
+        /* indoors the furniture is solid for friends too: they walk round
+           the bed, not over it */
+        var H = GG.House, R = this.HOME_RAD;
+        if (H.blocked(comp.x, comp.y, R)) {
+          var px0 = comp.px == null ? comp.x : comp.px, py0 = comp.py == null ? comp.y : comp.py;
+          if (!H.blocked(comp.x, py0, R)) comp.y = py0;
+          else if (!H.blocked(px0, comp.y, R)) comp.x = px0;
+          else { var fr = H.freeNear(comp.x, comp.y, R); comp.x = fr.x; comp.y = fr.y; }
+        }
       }
+      comp.px = comp.x; comp.py = comp.y;
 
       var fam = def.family;
       var busy = d > 8;
@@ -1407,15 +1441,18 @@
       if (!def || !def.rideable) return null;     /* a cow is not a horse */
       if (GG.Fishing && GG.Fishing.active()) return null;
       if (player.stun > 0) return null;
+      /* v1.16 (David): while she is just walking along with her horse
+         following, nothing pops up at all. The offer only comes once she
+         has stopped, with the horse standing beside her - and then quietly. */
+      if ((this.stillT || 0) < this.RIDE_STILL) return null;
       if (GG.dist(player.x, player.y, comp.x, comp.y) > 60) return null;
       var stance = this.rideStance(player, comp);
       if (stance !== 'shoulder') {
-        return { stage: 'stand', main: 'COME ROUND',
-          sub: stance === 'behind' ? 'not behind' : 'not her nose' };
+        return { stage: 'stand', main: 'RIDE', sub: 'go to her shoulder', quiet: true };
       }
-      if (!this.asked) return { stage: 'ask', main: 'ASK FIRST', sub: 'may I ride?' };
-      if (!this.helmetOn) return { stage: 'helmet', main: 'HELMET ON', sub: 'every time' };
-      return { stage: 'up', main: 'GET ON', sub: 'at her shoulder' };
+      if (!this.asked) return { stage: 'ask', main: 'RIDE?', sub: 'ask first', quiet: true };
+      if (!this.helmetOn) return { stage: 'helmet', main: 'HELMET', sub: 'every time', quiet: true };
+      return { stage: 'up', main: 'GET ON', sub: 'at her shoulder', quiet: true };
     },
 
     /* One tap, one step of the flow. */
@@ -1425,11 +1462,16 @@
       var comp = this.companion, def = comp ? GG.ANIMAL_BY_ID[comp.id] : null;
       var name = def ? def.name : 'her';
       if (offer.stage === 'stand') {
-        GG.UI.toast(this.rideStance(player, comp) === 'behind'
-          ? 'She cannot see straight behind her. Come round to her shoulder, talking as you go.'
-          : 'She cannot see right under her own nose either. Come to her shoulder, from the side.',
-          3400);
-        GG.Sfx.warn();
+        /* the lesson is told once an outing, not every time */
+        if (!this.standTold) {
+          this.standTold = true;
+          GG.UI.toast(this.rideStance(player, comp) === 'behind'
+            ? 'She cannot see straight behind her, so you always get on at her shoulder. She steps round for you.'
+            : 'She cannot see right under her own nose, so you get on at her shoulder. She steps round for you.',
+            3400);
+        }
+        GG.Sfx.click();
+        this.sidle = 1.6;       /* she walks up alongside, shoulder to you */
         return true;
       }
       if (offer.stage === 'ask') {
@@ -1482,7 +1524,11 @@
       return (this.riding && this._liftAsked > 0) ? this.RIDE_LIFT : 0;
     },
 
+    RIDE_STILL: 0.55,          // seconds stood still before the offer appears
+
     stepRide: function (dt, player) {
+      this.stillT = (player.speed || 0) < 6 ? (this.stillT || 0) + dt : 0;
+      if (this.sidle > 0) this.sidle -= dt;
       /* the friend button is shared, so riding only ever takes the tap when
          there is nobody new to say hello to */
       var In = GG.Input;
