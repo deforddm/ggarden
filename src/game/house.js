@@ -11,7 +11,7 @@
     START: { x: 415, y: 580 },
 
     spots: [
-      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Bug Book' },
+      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Critter Compendium' },
       { id: 'terrarium', x: 410, y: 186, w: 186, h: 84, label: 'Terrariums' },
       { id: 'shop', x: 675, y: 200, w: 116, h: 84, label: 'Decoration Box' },
       { id: 'bed', x: 730, y: 430, w: 150, h: 250, label: 'Bed' },

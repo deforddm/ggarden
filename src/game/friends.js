@@ -144,6 +144,9 @@
         /* never two of the same kind on screen at once, and never a second
            copy of the friend who is already walking with her */
         if (this.companion && this.companion.id === def.id) continue;
+        /* and a unique friend who is indoors or visiting a habitat is not
+           also out here */
+        if (GG.animalIsUnique(def) && this.uniqueWhere(def.id)) continue;
         for (var j = 0; j < this.list.length; j++) {
           if (this.list[j].def.id === def.id) { def = null; break; }
         }
@@ -1116,6 +1119,61 @@
       if (this.onFriend) this.onFriend(def, isNew, reward);
     },
 
+    /* ---------- one-of-a-kind friends ---------- */
+    /* Where is this unique friend right now? 'companion', 'home', a habitat
+       tank, or null for "out in the garden". */
+    uniqueWhere: function (id) {
+      var d = GG.Save.data;
+      if (d.companion === id) return 'companion';
+      if ((d.homeFriends || []).indexOf(id) >= 0) return 'home';
+      var tanks = d.terrariums || [];
+      for (var i = 0; i < tanks.length; i++) {
+        var fr = tanks[i].friends || [];
+        for (var j = 0; j < fr.length; j++) if (fr[j].id === id) return tanks[i];
+      }
+      return null;
+    },
+    /* Put a unique friend in exactly one place, taking her out of every other.
+       `keepTank` is the habitat she is going into, if that is where. Returns
+       a sentence saying where she came from, or '' if she was out in the
+       garden. */
+    claimUnique: function (id, where, keepTank) {
+      var def = GG.ANIMAL_BY_ID[id];
+      if (!GG.animalIsUnique(def)) return '';
+      var d = GG.Save.data, from = '';
+      if (where !== 'companion' && d.companion === id) {
+        d.companion = null;
+        this.companion = null;
+        if (this.riding) this.dismount('swap');
+        from = 'She stops walking with you';
+      }
+      if (where !== 'home' && d.homeFriends) {
+        var at = d.homeFriends.indexOf(id);
+        if (at >= 0) { d.homeFriends.splice(at, 1); from = 'She leaves the cottage'; }
+        if (this.homeList) {
+          this.homeList = this.homeList.filter(function (f) { return f.def.id !== id; });
+        }
+      }
+      (d.terrariums || []).forEach(function (t) {
+        if (t === keepTank || !t.friends) return;
+        for (var i = t.friends.length - 1; i >= 0; i--) {
+          if (t.friends[i].id === id) {
+            t.friends.splice(i, 1);
+            from = 'She hops out of ' + (t.name || 'her habitat');
+          }
+        }
+      });
+      /* and nobody else who looks just like her wanders the garden */
+      for (var k = this.list.length - 1; k >= 0; k--) {
+        if (this.list[k].def.id === id) {
+          if (this.busy && this.busy.animal === this.list[k]) this.busy = null;
+          this.list.splice(k, 1);
+        }
+      }
+      GG.Save.save();
+      return from;
+    },
+
     /* ---------- the friend who tags along ---------- */
     setCompanion: function (id) {
       /* the look-only friends never come along. You met her; that is all
@@ -1135,6 +1193,10 @@
       /* and the new one is coming with you, so they leave the house */
       if (id) this.takeFromHome(id);
 
+      var moved = id ? this.claimUnique(id, 'companion') : '';
+      if (moved && GG.UI && GG.UI.toast) {
+        GG.UI.toast(moved + ' to come with you. There is only one ' + GG.ANIMAL_BY_ID[id].name + '!', 3000);
+      }
       GG.Save.data.companion = id || null;
       GG.Save.save();
       this.companion = id
@@ -1162,6 +1224,7 @@
       if (!d.homeFriends) d.homeFriends = [];
       var at = d.homeFriends.indexOf(id);
       if (at >= 0) d.homeFriends.splice(at, 1);
+      this.claimUnique(id, 'home');
       d.homeFriends.push(id);
       /* the cottage only holds so many - the one who has been there longest
          wanders back out to the garden */

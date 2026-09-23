@@ -55,7 +55,7 @@
     },
 
     /* ---------- which water is this, and who lives in it? ---------- */
-    WATER_NAMES: { 1: 'pond', 2: 'stream', 3: 'river', 4: 'estuary', 5: 'sea' },
+    WATER_NAMES: { 1: 'pond', 2: 'stream', 3: 'river', 4: 'estuary', 5: 'sea', 7: 'swamp' },
 
     waterAt: function (x, y) {
       return this.WATER_NAMES[GG.World.waterKind(x, y)] || null;

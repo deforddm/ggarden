@@ -5,7 +5,38 @@
   var TARGET = 16;
 
   /* water kind -> which habitat name the roster uses */
-  var WATER_BIOME = { 1: 'pond', 2: 'river', 3: 'river', 4: 'sea', 5: 'sea', 6: 'tidepool' };
+  var WATER_BIOME = { 1: 'pond', 2: 'river', 3: 'river', 4: 'sea', 5: 'sea', 6: 'tidepool', 7: 'swamp' };
+
+  /* What happens after a sting, species by species. Of everything that stings
+     in this garden, the honeybee worker is the one that dies of it: her
+     stinger is strongly barbed, it catches in our skin and tears away from
+     her. The others pull theirs back out and go on with their day (a few
+     harvester ants elsewhere lose theirs too, but that has not been shown for
+     ours). A stinger is a changed egg-laying tube, so only the girls have one.
+     Checked: UC IPM, Virginia Tech ENTO-49, Visscher et al. Lancet 1996,
+     Burke Museum, WSU, Clemson HGIC, Utah State. */
+  GG.stingDies = function (def) { return !!def && def.id === 'honeybee'; };
+  GG.STING_LINES = {
+    honeybee: 'Ouch! A honeybee stung you. Her stinger is barbed and stays in your skin, so she only ever gets one sting - she really did not want to. Get the stinger out as fast as you can.',
+    bumblebee: 'Ouch! A bumblebee stung you. Her stinger has hardly any barbs, so she can sting again - but she only does it when she is squashed or scared. Give her some room.',
+    polar_bumblebee: 'Ouch! A polar bumble bee stung you. Unlike a honeybee, she flew off fine. Give her room - it is cold up here and she is busy.',
+    paper_wasp: 'Ouch! A paper wasp stung you. They sting to guard their nest. Walk slowly away - no swatting.',
+    sand_wasp: 'Ouch! A sand wasp stung you. They almost never sting people, so you must have really bothered her. Only the girls can sting.',
+    mason_bee: 'Ouch! A mason bee stung you. They almost never do, and it is a small sting - she must have been squashed.',
+    yellowjacket: 'Ouch! A yellowjacket stung you. She can sting again and again, so step away calmly. Never swat - a squashed yellowjacket calls her sisters.',
+    baldfaced_hornet: 'Ouch! A bald-faced hornet stung you. She is really a kind of yellowjacket, and she guards her paper nest hard. Back away slowly.',
+    northern_scorpion: 'Ouch! A northern scorpion stung you. It hurts about as much as a bee sting, or less, and it fades. Tell a grown-up, and always shake out your shoes.',
+    harvester_ant: 'Ouch! A harvester ant stung you - they really do have stingers, and it hurts. Keep off the bare dirt round their mound.',
+    velvet_ant: 'Ouch! A velvet ant stung you. She is really a wasp with no wings, and her sting is famous for hurting a lot. Look, but leave her be.',
+    sweat_bee: 'Ouch! A sweat bee stung you. They only sting when they get trapped against your skin, and it is a small one.',
+    thatching_ant: 'Ouch! A thatching ant got you. They have no stinger at all - that was a bite, with a squirt of acid in it.',
+    leafcutter_bee: 'Ouch! A leafcutter bee stung you. They hardly ever sting and it is a mild one - she must have been squeezed.'
+  };
+  GG.stingLine = function (def) {
+    if (!def) return 'Ouch!';
+    return GG.STING_LINES[def.id] ||
+      ('Ouch! A ' + def.name.toLowerCase() + ' stung you. Give her some space and she will calm down.');
+  };
 
   /* The little red cross that means "this bee is cross with you". */
   function angerMark(c, x, y, r) {
@@ -351,7 +382,7 @@
       var n = player.netPoint();
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
-        if (!b.def.lookOnly) continue;
+        if (!b.def.lookOnly || b.looked) continue;
         var reach = n.r + 10 * (b.def.size || 1);
         if (GG.dist(b.x, b.y, n.x, n.y) < reach) return b;
       }
@@ -363,7 +394,7 @@
       var best = null, bestD = (radius || 74) * (radius || 74);
       for (var i = 0; i < this.list.length; i++) {
         var b = this.list[i];
-        if (!b.def.lookOnly) continue;
+        if (!b.def.lookOnly || b.looked) continue;
         var dx = player.x - b.x, dy = (player.y - b.y) * 1.15;
         var d = dx * dx + dy * dy;
         if (d < bestD) { bestD = d; best = b; }
@@ -408,8 +439,15 @@
         if (b.angry <= 0 || !b.def.sting) continue;
         if (GG.dist(b.x, b.y - b.z * 0.4, player.x, player.y - 14) < 18) {
           var def = b.def;
-          this.list.splice(i, 1);
-          this.puff(b.x, b.y - b.z);
+          /* Only a honeybee dies of stinging someone: her stinger is barbed,
+             it stays in the skin and tears away from her. Every other stinger
+             in the garden is smooth - she pulls it out and flies off, and she
+             is still here. (v1.15 - Guin: "Bees that are not honeybees
+             disapaer when you get stung".) */
+          if (GG.stingDies(def)) {
+            this.list.splice(i, 1);
+            this.puff(b.x, b.y - b.z);
+          }
           this.scatter(player.x, player.y, 170);
           return def;
         }

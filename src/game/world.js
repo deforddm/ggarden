@@ -45,7 +45,7 @@
     E: 'birdtown', K: 'farmyard' };
 
   /* water kinds */
-  var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6;
+  var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6, MARSH = 7;
 
   var GROUND = {
     meadow: ['#8ecf63', '#83c55a', '#98d76d'],
@@ -99,6 +99,19 @@
   };
 
   var POND_E = { cx: 3820, cy: 2980, rx: 460, ry: 300 };
+
+  /* The Cattail Marsh's open water. A marsh is not one pond: it is a lot of
+     small dark leads between the stands of cattail, and you fish from the
+     edges of them. (v1.15 - Guin: "I cant fish in the marsh". She could not,
+     because v1.14 built the marsh as land and forgot to put any water in it.) */
+  var MARSH_POOLS = [
+    { x: 3090, y: 3470, rx: 150, ry: 72 },
+    { x: 3420, y: 3540, rx: 200, ry: 92 },
+    { x: 3790, y: 3480, rx: 150, ry: 76 },
+    { x: 4000, y: 3650, rx: 118, ry: 62 },
+    { x: 3260, y: 3740, rx: 136, ry: 56 },
+    { x: 3640, y: 3740, rx: 170, ry: 62 }
+  ];
 
   /* the stream grows into a river and then opens into the estuary */
   var FLOW = [
@@ -175,7 +188,8 @@
     W: COLS * CELL, H: ROWS * CELL,
     HOUSE: { x: 4720, y: 2440, w: 150 },
     DOOR: { x: 4720, y: 2446 },
-    KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL },
+    KIND: { NONE: NONE, POND: POND, STREAM: STREAM, RIVER: RIVER, ESTUARY: ESTUARY, SEA: SEA, TIDEPOOL: TIDEPOOL, MARSH: MARSH },
+    marshPools: MARSH_POOLS,
     props: [], solids: [], hive: null, grid: {}, chunks: {},
     caveMouth: null, bootBrush: null,
     CHUNK: 400,
@@ -223,6 +237,13 @@
       var dx = (x - POND_E.cx) / POND_E.rx, dy = (y - POND_E.cy) / POND_E.ry;
       var wob = 1 + (GG.noise2(x / 90, y / 90, 3) - 0.5) * 0.16;
       if (dx * dx + dy * dy < wob) return POND;
+      // the marsh leads, with ragged reedy edges
+      for (i = 0; i < MARSH_POOLS.length; i++) {
+        var m = MARSH_POOLS[i];
+        var mx = (x - m.x) / m.rx, my = (y - m.y) / m.ry;
+        var mw = 1 + (GG.noise2(x / 46, y / 46, 29) - 0.5) * 0.42;
+        if (mx * mx + my * my < mw) return MARSH;
+      }
       // and the sea fills everything below the tide line
       if (y > shoreY(x)) return SEA;
       return NONE;
@@ -300,6 +321,7 @@
         if (this.mask[i] === TIDEPOOL) return 'shore';
         if (this.mask[i] === SEA || this.mask[i] === ESTUARY) return 'beach';
         if (this.mask[i] === POND) return 'pond';
+        if (this.mask[i] === MARSH) return 'swamp';
         return 'riverbank';
       }
       /* The inland edges of the sand and the rock wander about a bit, so the
@@ -331,6 +353,7 @@
       if (k === STREAM) return 'Pebble Stream';
       if (k === TIDEPOOL) return 'The Tidepools';
       if (k === POND) return 'Lily Pond';
+      if (k === MARSH) return 'Cattail Marsh';
       return {
         meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
         pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
@@ -604,13 +627,21 @@
       add('sign', BRIDGE.bx - BRIDGE.dy * 34, BRIDGE.by + BRIDGE.dx * 34, 26, false, 0, { label: 'Footbridge' });
       add('sign', 7200, 3160, 26, false, 0, { label: 'Tidepools' });
       /* the seven places from v1.14 */
+      // duckweed rafts floating on the marsh leads (after everything else, so
+      // the rest of the map's random layout is exactly what it was)
+      for (var k3 = 0; k3 < 60; k3++) {
+        var mp = MARSH_POOLS[Math.floor(rnd() * MARSH_POOLS.length)];
+        var ma = rnd() * Math.PI * 2, mr = Math.sqrt(rnd()) * 0.8;
+        var dxw = mp.x + Math.cos(ma) * mp.rx * mr, dyw = mp.y + Math.sin(ma) * mp.ry * mr;
+        if (this.waterKind(dxw, dyw) === MARSH) add('duckweed', dxw, dyw, 22 + rnd() * 14);
+      }
       /* The lava tube, and the boot brush that opens it. */
       this.caveMouth = add('caveMouth', 2480, 2180, 52, true, 30);
       this.bootBrush = add('bootBrush', 2578, 2246, 24, false, 0, {});
       add('sign', 2352, 2250, 26, false, 0, { label: 'Lava Tube' });
       add('sign', 620, 1900, 26, false, 0, { label: 'Scablands' });
       add('sign', 640, 3820, 26, false, 0, { label: 'Oak Savanna' });
-      add('sign', 3500, 3520, 26, false, 0, { label: 'Cattail Marsh' });
+      add('sign', 3250, 3392, 26, false, 0, { label: 'Cattail Marsh' });
       add('sign', 4460, 1780, 26, false, 0, { label: 'Bamboo' });
       add('sign', 6260, 2760, 26, false, 0, { label: 'Cherry Grove' });
       add('sign', 4380, 1420, 26, false, 0, { label: 'Bird Town' });
@@ -651,6 +682,7 @@
       else if (kind === RIVER) { shallow = [126, 198, 214]; deep = [58, 134, 168]; }
       else if (kind === STREAM) { shallow = [160, 220, 228]; deep = [96, 176, 200]; }
       else if (kind === TIDEPOOL) { shallow = [150, 214, 216]; deep = [86, 168, 178]; }
+      else if (kind === MARSH) { shallow = [122, 150, 112]; deep = [52, 82, 66]; }   // tea-dark marsh water
       else { shallow = [126, 200, 214]; deep = [61, 147, 184]; }
       var t = GG.clamp(depth, 0, 1);
       return [shallow[0] + (deep[0] - shallow[0]) * t,
@@ -787,7 +819,9 @@
       for (var cy = y0; cy <= y1; cy++) {
         for (var cx = x0; cx <= x1; cx++) {
           if (cx < 0 || cy < 0 || cx * C >= this.W || cy * C >= this.H) continue;
-          c.drawImage(this.chunkCanvas(cx, cy), cx * C - cam.x, cy * C - cam.y);
+          /* one pixel of overlap, so a chunk edge that lands between two
+             screen pixels never shows a hairline of the dark canvas behind */
+          c.drawImage(this.chunkCanvas(cx, cy), cx * C - cam.x, cy * C - cam.y, C + 1, C + 1);
         }
       }
     },
@@ -845,8 +879,8 @@
               c.arc(sx, sy, 5 + Math.sin(t * 1.6 + h * 8) * 1.6, 0.3, 2.4);
               c.stroke();
             }
-          } else if (k === POND) {
-            if (h > 0.7) {
+          } else if (k === POND || k === MARSH) {
+            if (h > (k === MARSH ? 0.82 : 0.7)) {
               c.strokeStyle = 'rgba(255,255,255,0.28)';
               c.lineWidth = 2.2;
               var o2 = Math.sin(t * 0.9 + h * 9) * 7;
