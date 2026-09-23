@@ -27,7 +27,6 @@
       <button id="btn-menu" aria-label="Menu">&#9776;</button>
     </div>
     <div id="prompt"></div>
-    <div id="toast"></div>
   </div>
 
   <div id="touch">
@@ -62,26 +61,17 @@
     <div class="sheet">
       <header><h2>How to play</h2><button class="x" data-close="screen-help">&times;</button></header>
       <div class="body">
-        <ul class="tips">
-          <li><b>Walk</b> by tapping where you want to go &mdash; Guin walks there on her own. Or put your thumb down anywhere on the screen and slide it, and steer her like a joystick.</li>
-          <li><b>Swing your net</b> with the big yellow button.</li>
-          <li>Bugs get nervous when you run at them. When you see a <b>!</b>, slow down and creep closer.</li>
-          <li>Different bugs like different places and different times of day. Come back at night for fireflies and moths, and after dark on the beach for ghost crabs.</li>
-          <li><b>Go fishing</b> anywhere there is water. Stand on the bank facing it and a blue <b>FISH</b> button appears. Cast, watch the shadow swim over, and when the bobber goes under and you see a <b>!</b>, tap <b>CATCH</b>. Bigger shadows are bigger fish.</li>
-          <li>Every water holds different fish: the <b>Lily Pond</b>, <b>Pebble Stream</b> up in the hills, the <b>Winding River</b>, <b>Gull Inlet</b> where the river meets the sea, and the <b>open sea</b> off Shell Beach. Follow the stream downhill and see where it takes you.</li>
-          <li>You can paddle straight across the little stream, but the river and the sea are too deep, so look for a way round.</li>
-          <li>Out at <b>The Tidepools</b>, past Shell Beach, you can wade into the rock pools and net crabs, sea stars, urchins and sea slugs with your net. (In a real rock pool we look and put everything back exactly where we found it.)</li>
-          <li><b>Making friends.</b> Some animals are not for catching at all &mdash; hummingbirds, frogs, bats, dogs, cats and parrots. Walk up to one and a green button appears telling you the right way to say hello to that kind of animal: put out a feeder, keep very still, ask its owner first. Tap it, then <b>stand completely still</b> while the little heart fills up. Wander about and it slips back a bit, but it never empties and the animal never runs off for good.</li>
-          <li>Every friend you make gets a page in the <b>Friends Book</b> with a <b>Good manners</b> note &mdash; the real way to be kind and safe with that animal. Tap <b>Ask them along</b> on any friend&rsquo;s page and they will follow you round the garden all day.</li>
-          <li>Build a <b>Garden Habitat</b> from the New Tank button: a corner of the garden out under the sky, with a feeder, a bat house, a kennel, a cat basket and a parrot perch to buy. Your friends come and visit it &mdash; they are never shut in, and you can send them off again whenever you like.</li>
-          <li><b>Bees can sting.</b> Swing at a bee and miss, or poke the beehive, and she will chase you with a little red cross over her head. Run away, or catch her quickly! A sting leaves you seeing stars for a moment.</li>
-          <li>Go <b>home</b> (the little cottage) to read about everything you have caught and to build tanks. There are four kinds: a <b>terrarium</b> for bugs, a <b>fish tank</b> for fish, a <b>hybrid tank</b> with a grassy bank above the water that holds both, and a <b>garden habitat</b> outdoors for your animal friends.</li>
-          <li>The rock-pool creatures &mdash; crabs, sea stars, urchins, limpets, periwinkles and sea slugs &mdash; <b>need water to live in</b>, so they go in a fish tank or a hybrid tank, never a dry terrarium. They potter about on the sand at the bottom.</li>
-          <li>Catching bugs earns <b>&#10022; sparkles</b>. Spend them in the decoration box by your bed &mdash; there are things for every kind of tank, from ferns and fairy houses to coral, sea grass and a treasure chest.</li>
-          <li><b>Settings</b> (on the title screen, or in the Garden Menu) turns the music, the garden sounds and the beeps up and down on their own.</li>
-          <li>A friend can have a turn with <b>Let a friend play</b> on the title screen. They get a garden of their own to explore, and yours is kept completely safe until they finish.</li>
-        </ul>
-        <p class="note">On a computer you can use the arrow keys (or WASD) to walk, hold <b>shift</b> to tiptoe, and press <b>space</b> to swing. <b>F</b> casts a fishing line and <b>E</b> says hello to an animal.</p>
+        <div class="howto">
+          <div class="how"><span class="hi">&#128070;</span><div><b>Walk</b>Tap where you want to go, or slide your thumb to steer.</div></div>
+          <div class="how"><span class="hi">&#129419;</span><div><b>Catch bugs</b>Creep up close and tap <b>NET</b>. If a bug shows a <b>!</b>, slow down.</div></div>
+          <div class="how"><span class="hi">&#127907;</span><div><b>Go fishing</b>Stand by the water and tap <b>FISH</b>. When the bobber dips, tap <b>CATCH</b>.</div></div>
+          <div class="how"><span class="hi">&#127822;</span><div><b>Pick things</b>Walk up to fruit, vegetables, berries or flowers and tap <b>PICK</b>.</div></div>
+          <div class="how"><span class="hi">&#128054;</span><div><b>Make friends</b>Walk up to an animal, tap the green button, then keep very still.</div></div>
+          <div class="how"><span class="hi">&#128029;</span><div><b>Mind the bees</b>Leave bees and their hive alone, or they sting.</div></div>
+          <div class="how"><span class="hi">&#127968;</span><div><b>Go home</b>Read your <b>Critter Compendium</b> and build tanks for your bugs, fish and friends.</div></div>
+          <div class="how"><span class="hi">&#10022;</span><div><b>Sparkles</b>Catching earns sparkles. Spend them on decorations for your tanks.</div></div>
+        </div>
+        <p class="note howto-keys">On a computer: arrow keys or WASD to walk, shift to tiptoe, space to swing.</p>
       </div>
       <footer><button class="btn primary grow" data-close="screen-help">Got it</button></footer>
     </div>
@@ -213,7 +203,8 @@
       <div class="body">
         <div id="tank-name"></div>
         <div id="tank-kind"></div>
-        <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas></div>
+        <div id="tank-wrap"><canvas id="tank-canvas" width="640" height="420"></canvas>
+          <button class="btn small pink" id="tank-remove">Take out</button></div>
         <div class="row" style="margin-top:8px">
           <button class="btn small" id="tank-prev">&#8592;</button>
           <span class="grow" style="text-align:center;font-size:13px;font-weight:bold" id="tank-count"></span>
@@ -221,7 +212,6 @@
           <button class="btn small" id="tank-rename">Name</button>
           <button class="btn small" id="tank-bg">Scene</button>
           <button class="btn small" id="tank-type">Type</button>
-          <button class="btn small pink" id="tank-remove">Take out</button>
         </div>
         <div class="tabs">
           <div class="tab on" data-tab="bugs">Bugs</div>
@@ -304,9 +294,9 @@
     <div class="sheet">
       <header><h2>Decoration Box</h2><span class="chip gold" id="shop-sparkles"></span><button class="x" data-close="screen-shop">&times;</button></header>
       <div class="body">
-        <p class="note">Catch bugs to earn &#10022; sparkles, then buy pretty things for your terrariums.</p>
+        <p class="note">Catch bugs to earn &#10022; sparkles, then buy pretty things for your tanks.</p>
         <div id="shop-grid"></div>
-        <h3 style="font-size:15px;margin:14px 0 6px">Terrarium scenes</h3>
+        <h3 style="font-size:15px;margin:14px 0 6px">Tank scenes</h3>
         <div id="shop-bgs" class="shopitem-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px"></div>
       </div>
       <footer><button class="btn primary grow" data-close="screen-shop">Close</button></footer>
@@ -322,7 +312,7 @@
       <div id="friend-fact"></div>
       <div id="friend-manners"><b>Good manners</b><span></span></div>
       <div id="friend-reward"></div>
-      <div class="row" style="gap:8px">
+      <div class="row" id="friend-btns" style="gap:8px">
         <button class="btn grow" id="friend-along">Ask them along</button>
         <button class="btn primary grow" id="friend-ok">Lovely!</button>
       </div>
@@ -353,6 +343,9 @@
       <button class="btn primary" id="catch-ok" style="width:100%;padding:12px;font-size:16px">Nice!</button>
     </div>
   </div>
+
+  <!-- toasts sit above every panel, so a message said from inside a book or a tank is seen -->
+  <div id="toast"></div>
 </div>
 
 <script src="src/core/util.js"></script>
