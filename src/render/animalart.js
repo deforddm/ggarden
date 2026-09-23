@@ -254,14 +254,98 @@
   };
 
   /* ---------------- dog ---------------- */
+  /* Dog's Paradise breeds are drawn from the same dog with a few optional
+     art keys (every one of them off for the older dogs, which come out
+     exactly as before):
+       spots: '#hex'            a Dalmatian's round spots
+       merle: '#hex'            blue merle patches (with points + bob below)
+       points: '#hex'           copper points: cheeks, eyebrows, lower legs
+       bob: true                a short bobbed tail
+       curly: true              a Poodle's curls: topknot, ear puffs, chest, tail pom
+       long: true               a Dachshund: long low body, short legs, long ears
+       feather: '#hex'|true     a Golden's feathering: ears, chest, legs, tail
+       mask: '#hex'             a German Shepherd's dark muzzle and eyes */
+  function dogDims(a) {
+    var build = a.build || 'mid';
+    var legLen = a.long ? 5.4 : (build === 'short' ? 4.2 : (build === 'big' ? 9 : 7.4));
+    /* a Dachshund is the same dog pulled longer: the front half slides
+       forward and the back half slides back */
+    var fx = a.long ? 4.6 : 0;
+    return { build: build, legLen: legLen, bodyY: 14 - legLen, fx: fx, rx: -fx };
+  }
+  /* A soft blob of three overlapping ovals - a merle patch. */
+  function blob(c, r, x, y, s) {
+    ell(c, x, y, s, s * 0.8, r() * 3);
+    ell(c, x + (r() - 0.5) * s * 1.4, y + (r() - 0.5) * s, s * 0.7, s * 0.55, r() * 3);
+    ell(c, x + (r() - 0.5) * s * 1.4, y + (r() - 0.5) * s, s * 0.55, s * 0.45, r() * 3);
+  }
+  /* GG.shade, but handing back '#rrggbb' so it can be shaded again. */
+  function hexShade(hex, amt) {
+    var m = GG.shade(hex, amt).match(/\d+/g);
+    return '#' + m.map(function (v) { return ('0' + (+v).toString(16)).slice(-2); }).join('');
+  }
+  /* A coat of little curls: soft C-shaped squiggles scattered over the
+     clipped shape, the same every frame. */
+  function curls(c, col, x0, y0, w, h, rad) {
+    var r = GG.mulberry32(71), row = 0, x, y, a0;
+    c.lineCap = 'round';
+    c.lineWidth = rad * 0.42;
+    for (y = y0 + rad * 0.9; y < y0 + h; y += rad * 1.9, row++) {
+      for (x = x0 + (row % 2 ? rad * 1.1 : 0) + rad * 0.6; x < x0 + w; x += rad * 2.2) {
+        var jx = x + (r() - 0.5) * rad * 0.7, jy = y + (r() - 0.5) * rad * 0.6;
+        a0 = r() * Math.PI * 2;
+        c.strokeStyle = GG.shade(col, -0.1);
+        c.beginPath(); c.arc(jx, jy, rad * 0.6, a0, a0 + 4.2); c.stroke();
+        c.strokeStyle = GG.shade(col, 0.16);
+        c.beginPath(); c.arc(jx - rad * 0.12, jy - rad * 0.14, rad * 0.4, a0 + 3.4, a0 + 5.2); c.stroke();
+      }
+    }
+  }
+  /* A Poodle's outline: a row of puffs all round the edge of the box, so
+     the whole dog looks fluffy rather than smooth. */
+  function puffEdge(c, col, x0, y0, w, h, rad) {
+    var x, k = Math.max(2, Math.round((w - rad * 2) / (rad * 1.35)));
+    c.fillStyle = col;
+    for (var i = 0; i <= k; i++) {
+      x = x0 + rad + (w - rad * 2) * i / k;
+      ell(c, x, y0 + rad * 0.7, rad, rad * 0.9);
+      ell(c, x, y0 + h - rad * 0.6, rad, rad * 0.9);
+    }
+    ell(c, x0 + rad * 0.6, y0 + h / 2, rad, h / 2 - rad * 0.3);
+  }
+  /* A round pompon, drawn as a ring of curls round a fat middle. */
+  function pom(c, col, x, y, rad) {
+    var i, ang;
+    c.fillStyle = GG.shade(col, -0.12);
+    for (i = 0; i < 7; i++) {
+      ang = i / 7 * Math.PI * 2;
+      ell(c, x + Math.cos(ang) * rad * 0.62, y + Math.sin(ang) * rad * 0.62 + rad * 0.08, rad * 0.46, rad * 0.46);
+    }
+    c.fillStyle = col;
+    for (i = 0; i < 7; i++) {
+      ang = i / 7 * Math.PI * 2 + 0.3;
+      ell(c, x + Math.cos(ang) * rad * 0.55, y + Math.sin(ang) * rad * 0.55, rad * 0.44, rad * 0.44);
+    }
+    ell(c, x, y, rad * 0.7, rad * 0.7);
+    c.fillStyle = GG.shade(col, 0.18);
+    ell(c, x - rad * 0.3, y - rad * 0.32, rad * 0.3, rad * 0.26);
+  }
+
   S.dog = function (c, a, t, gait) {
     gait = gait || 0;
     var trot = Math.min(1, gait);
     var wag = Math.sin(t * (6 + trot * 4)) * (0.45 + trot * 0.3);
     var pant = Math.sin(t * 3) * 0.4;
-    var build = a.build || 'mid';
-    var legLen = build === 'short' ? 4.2 : (build === 'big' ? 9 : 7.4);
-    var bodyY = 14 - legLen;
+    var dd = dogDims(a);
+    var build = dd.build;
+    var legLen = dd.legLen;
+    var bodyY = dd.bodyY;
+    var fx = dd.fx, rx = dd.rx;
+    /* the body's box: a Dachshund's is longer and not so deep */
+    var bL = -12 + rx, bW = 24 + fx - rx;
+    var bT = a.long ? bodyY - 5 : bodyY - 6.5, bH = a.long ? 8 : 11;
+    var fcol = a.feather === true ? GG.shade(a.body, 0.2) : a.feather;
+    var r, i;
     /* the two diagonal pairs swing opposite each other, the way dogs trot */
     var stepA = Math.sin(t * 8.6) * 3.4 * trot;
     var stepB = Math.sin(t * 8.6 + Math.PI) * 3.4 * trot;
@@ -281,78 +365,233 @@
       c.lineWidth = 3;
       c.beginPath();
       c.moveTo(-4.4, -12.2); c.quadraticCurveTo(-2.4, -13.4, -1, -12.6); c.stroke();
+    } else if (a.bob) {
+      /* an Aussie's bobbed tail: just a wiggling tuft */
+      c.translate(-11.4 + rx, bodyY - 4.4);
+      c.rotate(-0.5 + wag * 0.7);
+      c.fillStyle = GG.shade(a.body, -0.06);
+      ell(c, -1.8, -0.4, 3, 2.3, -0.3);
+      c.fillStyle = a.merle || a.body;
+      ell(c, -2.4, -1, 1.4, 1.1, -0.3);
     } else {
-      c.translate(-12, bodyY - 4);
+      c.translate(-12 + rx, bodyY - 4);
       c.rotate(-0.7 + wag);
+      if (fcol) {
+        /* a Golden's plume, hanging off the back of the tail */
+        c.fillStyle = fcol;
+        c.beginPath(); c.moveTo(0.4, 0.6);
+        for (i = 1; i <= 6; i++) {
+          var s1 = i / 6, u1 = 1 - s1;
+          var qx = 2 * u1 * s1 * -4 + s1 * s1 * -3, qy = 2 * u1 * s1 * -4 + s1 * s1 * -9;
+          var tx1 = 2 * u1 * -4 + 2 * s1 * 1, ty1 = 2 * u1 * -4 + 2 * s1 * -5;
+          var tl = Math.sqrt(tx1 * tx1 + ty1 * ty1) || 1;
+          var len = (i % 2 ? 5.2 : 3.2) * Math.sin(s1 * Math.PI * 0.85 + 0.2);
+          c.lineTo(qx + ty1 / tl * len, qy - tx1 / tl * len);
+        }
+        c.lineTo(-3.4, -10.4);
+        c.quadraticCurveTo(-4, -4, 0, 0);
+        c.closePath(); c.fill();
+      }
       c.strokeStyle = a.body; c.lineWidth = 3.4; c.lineCap = 'round';
       c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-4, -4, -3, -9); c.stroke();
       c.strokeStyle = (a.patch === 'ruff') ? a.accent : GG.shade(a.body, 0.18);
       c.lineWidth = (a.patch === 'ruff') ? 3 : 1.6;
       c.beginPath(); c.moveTo(-2.7, -6.6); c.quadraticCurveTo(-3.4, -8, -3, -9); c.stroke();
+      if (a.spots) {
+        c.fillStyle = a.spots;
+        ell(c, -1.9, -2.6, 1, 1); ell(c, -3.2, -6.4, 0.9, 0.9);
+      }
+      if (a.curly) pom(c, a.body, -3, -9.4, 3.4);
     }
     c.restore();
 
     c.save();
     c.translate(0, -bounce);
 
+    /* the extra bits some breeds carry on their legs: copper socks, a
+       Golden's feathering, a Dalmatian's spots, a Poodle's bracelets */
+    var legExtras = (a.points || fcol || a.spots) ? function (legs, dark) {
+      c.save();
+      c.lineCap = 'round';
+      legs.forEach(function (L) {
+        var x0 = L[0], x1 = L[1], y0 = bodyY + 1, y1 = 13.4 + bounce;
+        if (fcol) {
+          c.fillStyle = dark ? GG.shade(fcol, -0.1) : fcol;
+          c.beginPath();
+          c.moveTo(x0 - 1.2, y0 + (y1 - y0) * 0.1);
+          c.lineTo(x0 - 1.4 + (x1 - x0) * 0.25 - 2.6, y0 + (y1 - y0) * 0.42);
+          c.lineTo(x0 - 1.2 + (x1 - x0) * 0.3, y0 + (y1 - y0) * 0.38);
+          c.lineTo(x0 - 1.4 + (x1 - x0) * 0.5 - 2.2, y0 + (y1 - y0) * 0.66);
+          c.lineTo(x0 - 1.1 + (x1 - x0) * 0.55, y0 + (y1 - y0) * 0.6);
+          c.closePath(); c.fill();
+        }
+        if (a.points) {
+          c.strokeStyle = dark ? GG.shade(a.points, -0.12) : a.points;
+          c.lineWidth = dark ? 3.6 : 3.4;
+          c.beginPath();
+          c.moveTo(x0 + (x1 - x0) * 0.5, y0 + (y1 - y0) * 0.5); c.lineTo(x1, y1); c.stroke();
+        }
+        if (a.spots) {
+          c.fillStyle = a.spots;
+          ell(c, x0 + (x1 - x0) * 0.45 + 0.3, y0 + (y1 - y0) * 0.45, 0.9, 0.9);
+          ell(c, x0 + (x1 - x0) * 0.75 - 0.4, y0 + (y1 - y0) * 0.75, 0.7, 0.7);
+        }
+      });
+      c.restore();
+    } : null;
+
     /* back legs then front legs, swinging as she trots */
     c.strokeStyle = GG.shade(a.body, -0.12); c.lineWidth = 3.6; c.lineCap = 'round';
-    c.beginPath(); c.moveTo(-8, bodyY + 1); c.lineTo(-8.4 + stepB, 13.4 + bounce); c.stroke();
-    c.beginPath(); c.moveTo(7.4, bodyY + 1); c.lineTo(7.8 + stepA, 13.4 + bounce); c.stroke();
+    c.beginPath(); c.moveTo(-8 + rx, bodyY + 1); c.lineTo(-8.4 + rx + stepB, 13.4 + bounce); c.stroke();
+    c.beginPath(); c.moveTo(7.4 + fx, bodyY + 1); c.lineTo(7.8 + fx + stepA, 13.4 + bounce); c.stroke();
+    if (legExtras) legExtras([[-8 + rx, -8.4 + rx + stepB], [7.4 + fx, 7.8 + fx + stepA]], true);
     c.strokeStyle = a.body; c.lineWidth = 3.4;
-    c.beginPath(); c.moveTo(-5.4, bodyY + 1); c.lineTo(-5.8 + stepA, 13.4 + bounce); c.stroke();
-    c.beginPath(); c.moveTo(10, bodyY + 1); c.lineTo(10.4 + stepB, 13.4 + bounce); c.stroke();
+    c.beginPath(); c.moveTo(-5.4 + rx, bodyY + 1); c.lineTo(-5.8 + rx + stepA, 13.4 + bounce); c.stroke();
+    c.beginPath(); c.moveTo(10 + fx, bodyY + 1); c.lineTo(10.4 + fx + stepB, 13.4 + bounce); c.stroke();
+    if (legExtras) legExtras([[-5.4 + rx, -5.8 + rx + stepA], [10 + fx, 10.4 + fx + stepB]], false);
     /* paws */
     c.fillStyle = GG.shade(a.body, 0.2);
-    [-8.4 + stepB, -5.8 + stepA, 7.8 + stepA, 10.4 + stepB].forEach(function (px) {
+    [-8.4 + rx + stepB, -5.8 + rx + stepA, 7.8 + fx + stepA, 10.4 + fx + stepB].forEach(function (px) {
       ell(c, px, 13.8 + bounce, 2.2, 1.3);
     });
+    if (a.curly) {
+      /* a Poodle's bracelets, the little pompons just above each paw */
+      [-8.4 + rx + stepB, 7.8 + fx + stepA].forEach(function (px) {
+        pom(c, hexShade(a.body, -0.1), px, 11.6 + bounce, 2.3);
+      });
+      [-5.8 + rx + stepA, 10.4 + fx + stepB].forEach(function (px) {
+        pom(c, a.body, px, 11.6 + bounce, 2.3);
+      });
+    }
 
+    if (fcol) {
+      /* the feathering that hangs from a Golden's chest and belly */
+      c.fillStyle = fcol;
+      c.beginPath();
+      c.moveTo(bL + bW - 2, bT + bH - 5);
+      c.lineTo(bL + bW - 0.6, bT + bH + 2.2);
+      c.lineTo(bL + bW - 2.6, bT + bH + 0.6);
+      c.lineTo(bL + bW - 3.6, bT + bH + 3);
+      c.lineTo(bL + bW - 5, bT + bH + 0.6);
+      c.lineTo(bL + bW - 6.6, bT + bH + 2.2);
+      c.lineTo(bL + bW - 8, bT + bH - 1);
+      c.lineTo(-2, bT + bH + 1.6);
+      c.lineTo(-4, bT + bH);
+      c.lineTo(-6, bT + bH + 1.4);
+      c.lineTo(-8, bT + bH - 1);
+      c.closePath(); c.fill();
+    }
     /* body */
     c.fillStyle = a.body;
-    GG.roundRect(c, -12, bodyY - 6.5, 24, 11, 5.5); c.fill();
+    GG.roundRect(c, bL, bT, bW, bH, 5.5); c.fill();
+    if (a.curly) puffEdge(c, a.body, bL - 0.8, bT - 0.9, bW + 1.2, bH + 1.4, 2.3);
+    if (a.long) {
+      /* a Dachshund's deep chest, hanging down between its front legs */
+      ell(c, 7.4 + fx, bT + bH - 2.2, 5, 2.7);
+    }
+    if (a.merle || a.curly) {
+      c.save();
+      if (a.curly) {
+        c.beginPath(); c.rect(bL - 3, bT - 3, bW + 6, bH + 6); c.clip();
+        curls(c, a.body, bL - 1, bT - 1.4, bW + 1, bH + 2, 1.5);
+        c.restore(); c.save();
+      }
+      GG.roundRect(c, bL, bT, bW, bH, 5.5); c.clip();
+      if (a.merle) {
+        /* blue merle: torn, uneven dark patches, never twice the same size */
+        r = GG.mulberry32(31);
+        /* a mid grey marbling first, then the torn dark patches over it */
+        c.fillStyle = a.merle; c.globalAlpha = 0.35;
+        blob(c, r, -6 + rx, bT + 4, 3.4);
+        blob(c, r, 2, bT + 3, 3);
+        c.globalAlpha = 1;
+        [[-9.4, 2, 2.1], [-4.6, 1.2, 1.7], [0.4, 2.4, 2.2], [4.6, 1, 1.3],
+         [-7, 6.4, 1.3], [-2, 5.6, 1.5], [2.6, 6.8, 1.1], [6.4, 4.6, 1]].forEach(function (b) {
+          c.fillStyle = a.merle;
+          blob(c, r, b[0] + (b[0] < 0 ? rx : fx), bT + b[1], b[2]);
+        });
+        c.globalAlpha = 0.7;
+        for (i = 0; i < 12; i++) ell(c, bL + 2 + r() * (bW - 4), bT + 1 + r() * (bH - 3), 0.5, 0.45);
+        c.globalAlpha = 1;
+      }
+      c.restore();
+    }
+    if (a.curly) {
+      /* the Poodle's chest puff, wrapped round the front of her */
+      pom(c, a.body, 9.4 + fx, bodyY - 1.4, 5.4);
+    }
     if (a.patch) {
       c.save();
-      GG.roundRect(c, -12, bodyY - 6.5, 24, 11, 5.5); c.clip();
+      GG.roundRect(c, bL, bT, bW, bH, 5.5); c.clip();
       c.fillStyle = a.accent;
       if (a.patch === 'ruff') {
         /* a collie: a white ruff round the shoulders and a white belly */
         c.beginPath();
-        c.moveTo(4.4, bodyY - 7.5);
-        c.quadraticCurveTo(9, bodyY - 1, 5.4, bodyY + 5.5);
-        c.lineTo(13, bodyY + 5.5); c.lineTo(13, bodyY - 7.5);
+        c.moveTo(4.4 + fx, bodyY - 7.5);
+        c.quadraticCurveTo(9 + fx, bodyY - 1, 5.4 + fx, bodyY + 5.5);
+        c.lineTo(13 + fx, bodyY + 5.5); c.lineTo(13 + fx, bodyY - 7.5);
         c.closePath(); c.fill();
         ell(c, -2, bodyY + 4.4, 8, 2.4);
       } else {
         /* a beagle: a dark saddle right over the back */
         c.beginPath();
-        c.moveTo(-13, bodyY + 1.4);
+        c.moveTo(-13 + rx, bodyY + 1.4);
         c.quadraticCurveTo(-6, bodyY + 0.4, 1, bodyY + 1.6);
         c.quadraticCurveTo(4.6, bodyY + 2, 5.6, bodyY - 1.4);
-        c.lineTo(5.6, bodyY - 8); c.lineTo(-13, bodyY - 8);
+        c.lineTo(5.6, bodyY - 8); c.lineTo(-13 + rx, bodyY - 8);
         c.closePath(); c.fill();
       }
       c.restore();
     }
     /* the paler underside */
     c.fillStyle = a.muzzle; c.globalAlpha = 0.5;
-    ell(c, 0, bodyY + 3.4, 9.4, 2.6);
+    ell(c, 0, bodyY + 3.4 + (a.long ? -0.8 : 0), 9.4 + (fx - rx) / 2, 2.6);
     c.globalAlpha = 1;
+    if (a.spots) {
+      c.save();
+      GG.roundRect(c, bL, bT, bW, bH, 5.5); c.clip();
+      /* the Dalmatian's spots, in a jittered grid so they spread out
+         evenly - and the same every frame */
+      r = GG.mulberry32(17);
+      c.fillStyle = a.spots;
+      for (var gy = 0; gy < 3; gy++) {
+        for (var gx = 0; gx < 6; gx++) {
+          if (r() < 0.12) continue;
+          var sr = 0.9 + r() * 0.8;
+          ell(c, bL + (gx + 0.25 + (gy % 2) * 0.5 + r() * 0.4) * bW / 6.4,
+            bT + (gy + 0.3 + r() * 0.4) * bH / 3, sr, sr * 0.92);
+        }
+      }
+      c.restore();
+    }
 
     /* the collar, sitting round the neck with a little tag hanging off it */
     c.save();
-    GG.roundRect(c, -12, bodyY - 6.5, 24, 11, 5.5); c.clip();
+    GG.roundRect(c, bL, bT, bW, bH, 5.5); c.clip();
     c.fillStyle = a.collar;
-    GG.roundRect(c, 8.2, bodyY - 6.8, 2.9, 11.6, 1.3); c.fill();
+    GG.roundRect(c, 8.2 + fx, bodyY - 6.8, 2.9, 11.6, 1.3); c.fill();
     c.restore();
+    if (a.long) c.translate(fx, bT + bH - (bodyY + 4.5));
     c.fillStyle = '#f0d060';
     ell(c, 9.7, bodyY + 3.6, 1.4, 1.4);
     c.fillStyle = GG.shade('#f0d060', -0.18);
     ell(c, 9.7, bodyY + 3.9, 0.6, 0.5);
+    if (a.long) c.translate(0, -(bT + bH - (bodyY + 4.5)));
 
     /* head */
     c.fillStyle = a.body;
     ell(c, 14.4, bodyY - 6.4, 6.4, 5.8);
+    if (fcol && a.ears !== 'up') {
+      /* a Golden's feathered ear: a wavy fringe peeping out below it */
+      c.fillStyle = fcol;
+      c.beginPath();
+      c.moveTo(10.8, bodyY - 8.4);
+      c.quadraticCurveTo(6.6, bodyY - 4.6, 8.4, bodyY + 1);
+      c.lineTo(9.6, bodyY + 0.2); c.lineTo(10.4, bodyY + 1.8);
+      c.lineTo(11.6, bodyY + 0.4); c.lineTo(12.8, bodyY + 1.4);
+      c.quadraticCurveTo(14.4, bodyY - 3, 13.8, bodyY - 8);
+      c.closePath(); c.fill();
+    }
     /* ears: floppy on a beagle, upright on a corgi */
     c.fillStyle = a.ear;
     if (a.ears === 'up') {
@@ -370,6 +609,21 @@
       c.beginPath();
       c.moveTo(16.8, bodyY - 11); c.lineTo(18.2, bodyY - 16.8); c.lineTo(18.8, bodyY - 10.4);
       c.closePath(); c.fill();
+    } else if (a.curly) {
+      /* a Poodle's ear is a long hanging bunch of curls */
+      pom(c, a.ear, 10.8, bodyY - 6.2, 3.2);
+      pom(c, a.ear, 10.2, bodyY - 2.6, 3.4);
+      pom(c, a.ear, 10.8, bodyY + 0.6, 3);
+    } else if (a.long) {
+      /* a Dachshund's ear: long, soft and swinging */
+      c.beginPath();
+      c.moveTo(11.2, bodyY - 9.8);
+      c.quadraticCurveTo(6.6, bodyY - 6.4, 8.4, bodyY + 0.6);
+      c.quadraticCurveTo(10.4, bodyY + 2.6, 12.6, bodyY + 0.4);
+      c.quadraticCurveTo(14.4, bodyY - 4, 14, bodyY - 8.6);
+      c.closePath(); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.12)';
+      ell(c, 10.4, bodyY - 5.4, 1, 2.6, 0.2);
     } else if (build === 'short') {
       c.beginPath();
       c.moveTo(11.4, bodyY - 10); c.lineTo(10.4, bodyY - 17.4); c.lineTo(15.4, bodyY - 11.4);
@@ -383,6 +637,36 @@
       c.quadraticCurveTo(7.4, bodyY - 6, 9.4, bodyY - 0.4);
       c.quadraticCurveTo(13.4, bodyY - 2.4, 13.8, bodyY - 8);
       c.closePath(); c.fill();
+      if (a.spots) {
+        c.save(); c.clip();
+        c.fillStyle = a.spots;
+        ell(c, 10.4, bodyY - 5, 1.3, 1.2); ell(c, 11.8, bodyY - 1.8, 1, 0.9);
+        c.restore();
+      }
+    }
+    if (a.merle || a.spots) {
+      c.save();
+      c.beginPath();
+      c.ellipse(14.4, bodyY - 6.4, 6.4, 5.8, 0, 0, Math.PI * 2);
+      c.clip();
+      if (a.merle) {
+        r = GG.mulberry32(53);
+        c.fillStyle = a.merle;
+        blob(c, r, 14.6, bodyY - 11, 2.2);
+        blob(c, r, 12.4, bodyY - 5.4, 1.3);
+        blob(c, r, 18.4, bodyY - 10.4, 0.9);
+      }
+      if (a.spots) {
+        c.fillStyle = a.spots;
+        ell(c, 14.2, bodyY - 10.4, 1.1, 1); ell(c, 18.6, bodyY - 8.8, 0.8, 0.8);
+        ell(c, 13.6, bodyY - 3.8, 0.9, 0.9);
+      }
+      c.restore();
+    }
+    if (a.curly) {
+      /* the topknot, piled up on top of her head */
+      pom(c, a.body, 12.2, bodyY - 10.8, 3.4);
+      pom(c, a.body, 15.2, bodyY - 12, 3.8);
     }
     if (a.face === 'bandit') {
       /* Cookie's markings: a white face with a dark robber's mask over the
@@ -403,10 +687,31 @@
     }
 
     /* muzzle */
+    if (a.long) {
+      /* a Dachshund's long nose */
+      c.fillStyle = a.muzzle;
+      ell(c, 20, bodyY - 4.6, 5.4, 2.9, -0.06);
+    }
     c.fillStyle = a.muzzle;
     ell(c, 19, bodyY - 4.4, 4.6, 3.4);
+    if (a.mask) {
+      /* a German Shepherd's dark mask: over the nose and round the eyes */
+      c.save();
+      c.beginPath(); c.ellipse(19, bodyY - 4.4, 4.6, 3.4, 0, 0, Math.PI * 2); c.clip();
+      c.fillStyle = a.mask;
+      ell(c, 20.4, bodyY - 6.4, 5.4, 2.8, 0.1);
+      c.restore();
+      c.fillStyle = a.mask; c.globalAlpha = 0.5;
+      ell(c, 17.2, bodyY - 6.8, 2.6, 1.9, 0.5);
+      c.globalAlpha = 1;
+    }
+    if (a.points) {
+      /* copper cheeks */
+      c.fillStyle = a.points;
+      ell(c, 16.9, bodyY - 3.4, 2, 1.6, 0.3);
+    }
     c.fillStyle = a.nose;
-    ell(c, 22.4, bodyY - 5.4, 1.7, 1.4);
+    ell(c, 22.4 + (a.long ? 1.6 : 0), bodyY - 5.4, 1.7, 1.4);
     /* the happy open mouth, with the tongue hanging out of it */
     c.fillStyle = '#e88a94';
     c.beginPath();
@@ -418,7 +723,7 @@
     c.beginPath();
     c.moveTo(19.6, bodyY - 3); c.lineTo(19.4, bodyY - 0.6 + pant); c.stroke();
     c.strokeStyle = GG.shade(a.nose, 0.2); c.lineWidth = 0.9;
-    curve(c, 22, bodyY - 3.8, 20.4, bodyY - 2.4, 17.6, bodyY - 3, 0.9, GG.shade(a.nose, 0.2));
+    curve(c, 22 + (a.long ? 1.4 : 0), bodyY - 3.8, 20.4, bodyY - 2.4, 17.6, bodyY - 3, 0.9, GG.shade(a.nose, 0.2));
     eye(c, 16.4, bodyY - 7.6, 1.5, '#2f241c', true);
     if (a.patch === 'ruff') {
       /* the narrow white stripe down a collie's face */
@@ -430,8 +735,13 @@
       GG.roundRect(c, 17.2, bodyY - 12.4, 1.8, 7.6, 0.9); c.fill();
       c.restore();
     }
+    if (a.points) {
+      /* and the copper eyebrow dot above each eye */
+      c.fillStyle = a.points;
+      ell(c, 15.6, bodyY - 10, 1.2, 0.8, -0.2);
+    }
     /* the eyebrow spot dogs so often have */
-    if (a.patch && a.patch !== 'ruff') {
+    if (a.patch && a.patch !== 'ruff' && !a.mask) {
       c.fillStyle = 'rgba(255,255,255,0.55)';
       ell(c, 16.4, bodyY - 9.8, 1.5, 1);
     }
@@ -3264,11 +3574,13 @@
      wide the head is, and how far the hat should tilt. */
   var HAT_SPOT = {
     dog: function (a) {
-      var build = a.build || 'mid';
-      var legLen = build === 'short' ? 4.2 : (build === 'big' ? 9 : 7.4);
-      var bodyY = 14 - legLen;
-      /* clear of a husky's tall ears, or snug on a floppy-eared head */
-      return { x: a.ears === 'up' ? 15.4 : 14.4, y: bodyY - (a.ears === 'up' ? 18.6 : 12.4),
+      var dd = dogDims(a);
+      var bodyY = dd.bodyY;
+      /* clear of a husky's tall ears, or snug on a floppy-eared head; a
+         Dachshund's head sits further forward, and a Poodle's hat goes on
+         top of her topknot rather than inside it */
+      return { x: (a.ears === 'up' ? 15.4 : 14.4) + dd.fx,
+        y: bodyY - (a.ears === 'up' ? 18.6 : 12.4) - (a.curly ? 3.6 : 0),
         r: 5.6, tilt: -0.12 };
     },
     cat: function (a, t, gait) {
@@ -3582,7 +3894,8 @@
   };
 
   GG.animalFit = function (def, px) {
-    return px / ((SPAN[def.art.shape] || 38) * (def.size || 1));
+    /* a Dachshund is mostly dog from end to end, so it needs more room */
+    return px / ((SPAN[def.art.shape] || 38) * (def.size || 1) * (def.art.long ? 1.2 : 1));
   };
 
   GG.AnimalArt = {
