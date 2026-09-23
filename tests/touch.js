@@ -92,6 +92,7 @@ const { chromium, devices } = require('playwright');
   const popped = !(await hidden('#catch-pop'));
   check('catching opens the popup', popped);
   if (popped) {
+    await p.waitForTimeout(300);   // v1.19: a card ignores taps for its first moment
     await p.tap('#catch-ok');
     await p.waitForTimeout(400);
     check('catch popup closes on tap', await hidden('#catch-pop'));

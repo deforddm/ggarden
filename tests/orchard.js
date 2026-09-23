@@ -243,7 +243,7 @@ const { chromium } = require('playwright');
     && page.tags.some(t => /Ripe in:/.test(t)));
   ok('it names the decoration it unlocks', page.tags.some(t => /Unlocked:/.test(t)));
   ok('and it carries the careful box', page.careClass === 'eat-careful' && /stone/i.test(page.care));
-  ok('the back button goes back to the whole garden', page.back === 'The whole garden');
+  ok('the back button goes back to the whole garden', page.back === 'All the garden');
 
   await p.evaluate(() => GG.UI.close('screen-book'));
 
