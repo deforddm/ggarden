@@ -33,9 +33,9 @@ const { chromium, devices } = require('playwright');
   check('game is running', await p.evaluate(() => GG.Critters.list.length > 0));
 
   // joystick still works: drag on the left half and see Guin move
+  await p.touchscreen.tap(120, 700);        /* since v1.17 a tap walks her there */
+  await p.waitForTimeout(1500);
   const before = await p.evaluate(() => ({ x: GG.Player.x, y: GG.Player.y }));
-  await p.touchscreen.tap(120, 700);
-  await p.waitForTimeout(100);
   await p.evaluate(async () => {
     const fire = (type, x, y) => {
       const t = new Touch({ identifier: 7, target: document.getElementById('app'), clientX: x, clientY: y });
