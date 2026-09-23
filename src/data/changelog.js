@@ -6,9 +6,17 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.16.0';
+  GG.VERSION = '1.17.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.17.0', title: 'Walk anywhere, or just tap where you want to go',
+      lines: [
+        'Tap anywhere in the garden and you walk there all by yourself. A little ring shows where you are going.',
+        'Or put your thumb down anywhere on the screen, not just on the left, and slide it to steer.',
+        'On a computer, click to walk there, or hold the mouse down and drag to steer.'
+      ]
+    },
     {
       v: '1.16.0', title: 'A cottage your size, hats that fit, and a calmer horse',
       lines: [
