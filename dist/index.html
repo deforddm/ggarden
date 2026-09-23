@@ -248,6 +248,9 @@ ul.tips li{margin-bottom:3px}
   background:linear-gradient(#c2f0c0,#5fb45f);color:#123d12;font-family:var(--font);font-weight:bold;font-size:13px;
   box-shadow:0 5px 0 #3d8a3d,0 10px 18px rgba(0,0,0,.3);transition:transform .06s,box-shadow .06s}
 #btn-friend.down{transform:translateY(4px);box-shadow:0 1px 0 #3d8a3d}
+#btn-friend.quiet{width:58px;height:58px;font-size:11px;opacity:.78;right:calc(37px + env(safe-area-inset-right));
+  background:linear-gradient(#e6f5dc,#a9d59a);color:#2c5a2a;box-shadow:0 3px 0 #7fae72,0 6px 12px rgba(0,0,0,.2)}
+#btn-friend.quiet small{font-size:9px}
 #btn-friend small{display:block;font-size:10px;opacity:.8;font-weight:normal;line-height:1.15;padding:0 4px}
 #btn-friend.waiting{background:linear-gradient(#fff1a8,#ffbe3c);color:#5b4310;
   box-shadow:0 5px 0 #b8871f,0 10px 18px rgba(0,0,0,.3)}
@@ -1907,9 +1910,18 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.15.1';
+  GG.VERSION = '1.16.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.16.0', title: 'A cottage your size, hats that fit, and a calmer horse',
+      lines: [
+        'Your cottage has been rebuilt to fit you. The bed is a real bed, the door is a real door, and the bookshelf is only a little taller than you are. There is a fireplace now, with a fire in it.',
+        'Friends waiting at home walk round the bed instead of getting stuck on top of it.',
+        'Silly hats sit on top of the head now, between the ears, instead of balancing on the tips of them.',
+        'When your horse is walking with you, nothing pops up. Stop and stand still, and she comes up beside you with her shoulder to you, and a little RIDE? button appears.'
+      ]
+    },
     {
       v: '1.15.1', title: 'A new sign on the bookshelf',
       lines: [
@@ -15558,6 +15570,51 @@ ul.tips li{margin-bottom:3px}
     snake: function () { return { x: 19, y: 0.4, r: 3.4, tilt: -0.1 }; }
   };
 
+  /* v1.16 - David: "improve the placement of silly hats, currently they sit
+     on top of ears etc. Make them fit more to the top of the head." Each hat
+     was being set down at the height of the ear tips, so on anything with
+     ears it perched on them. These nudges (in each animal's own drawing
+     units, measured off a grid laid over every head) bring the hat down onto
+     the crown of the skull, between or in front of the ears, and shrink its
+     brim to the width of the head so the ears stay visible either side. */
+  var HAT_FIT = {
+    hummingbird: { dx: 0.5, dy: 1.2, r: 3.0 },
+    frog: { dx: 0.2, dy: 0.6, r: 4.2 },
+    bat: { dx: 0, dy: 4.0, r: 3.0 },
+    'dog:up': { dx: 0.6, dy: 6.0, r: 3.4 },
+    dog: { dx: 1.8, dy: 0.5, r: 4.8 },
+    cat: { dx: 1.0, dy: 1.2, r: 4.0 },
+    parrot: { dx: 0, dy: 0.4, r: 4.4 },
+    rabbit: { dx: 1.8, dy: 0.6, r: 3.6 },
+    treesquirrel: { dx: 1.4, dy: 0.6, r: 3.8 },
+    groundsquirrel: { dx: 0.9, dy: 0.4, r: 3.3 },
+    turtle: { dx: 0.9, dy: 0.7, r: 3.2 },
+    bear: { dx: 0.4, dy: 2.4, r: 3.8 },
+    raccoon: { dx: 0, dy: 2.8, r: 3.3 },
+    fox: { dx: -0.6, dy: 3.4, r: 3.1 },
+    deer: { dx: 0.5, dy: 1.3, r: 3.4 },
+    moose: { dx: 1.8, dy: 0.9, r: 4.2 },
+    cow: { dx: 1.5, dy: 0.9, r: 4.2 },
+    horse: { dx: -0.3, dy: 1.3, r: 3.3 },
+    sheep: { dx: 1.8, dy: 1.1, r: 3.8 },
+    chicken: { dx: 0.4, dy: 0.3, r: 3.2 },
+    otter: { dx: 0.5, dy: -2.4, r: 3.8 },
+    owl: { dx: 0.4, dy: 0.2, r: 5.0 },
+    panda: { dx: -1.8, dy: 1.9, r: 3.5 },
+    koala: { dx: 1.8, dy: 2.0, r: 4.2 },
+    ocelot: { dx: 0.7, dy: 3.0, r: 3.4 },
+    redpanda: { dx: 0.7, dy: 3.2, r: 3.4 },
+    axolotl: { dx: 0.9, dy: -0.8, r: 4.0 },
+    songbird: { dx: 0.3, dy: 0.2, r: 4.0 },
+    snake: { dx: 3.0, dy: -1.0, r: 3.0 }
+  };
+  function fitHat(shape, a, at) {
+    var f = HAT_FIT[shape === 'dog' && a.ears === 'up' ? 'dog:up' : shape];
+    if (!f || !at) return at;
+    var k = a.calf ? (shape === 'moose' ? 0.7 : 0.74) : 1;
+    return { x: at.x + f.dx * k, y: at.y + f.dy * k, r: f.r * k, tilt: at.tilt };
+  }
+
   var HATS = GG.HATS = [
     { id: 'party', name: 'Party Hat' },
     { id: 'top', name: 'Top Hat' },
@@ -15754,7 +15811,7 @@ ul.tips li{margin-bottom:3px}
     var art = HAT_ART[hatId];
     var spot = HAT_SPOT[def.art.shape];
     if (!art || !spot) return;
-    var at = spot(def.art, t, gait);
+    var at = fitHat(def.art.shape, def.art, spot(def.art, t, gait));
     c.save();
     c.translate(at.x, at.y);
     c.rotate(at.tilt || 0);
@@ -15790,6 +15847,11 @@ ul.tips li{margin-bottom:3px}
   GG.AnimalArt = {
     shapes: S,
     SPAN: SPAN,
+    /* where the hat sits on this animal, in its own drawing units */
+    hatSpot: function (def, t, gait) {
+      var f = HAT_SPOT[def.art.shape];
+      return f ? fitHat(def.art.shape, def.art, f(def.art, t, gait)) : null;
+    },
 
     /* (x, y) is the animal's FEET. faceLeft mirrors it. */
     draw: function (c, def, x, y, scale, faceLeft, t, gait, hat) {
@@ -24596,7 +24658,7 @@ ul.tips li{margin-bottom:3px}
       for (var i = 0; i < ids.length; i++) {
         var def = GG.ANIMAL_BY_ID[ids[i]];
         if (!def || !GG.Save.hasFriend(ids[i])) continue;
-        var spot = this.homeSpot(i, ids.length);
+        var spot = this.homeSpot(i, ids.length, def);
         this.homeList.push({
           def: def, x: spot.x, y: spot.y,
           ang: Math.random() * Math.PI * 2, t: Math.random() * 40,
@@ -24606,17 +24668,28 @@ ul.tips li{margin-bottom:3px}
       }
     },
 
-    homeSpot: function (i, n) {
-      var H = GG.House;
-      var lo = H.FLOOR + 48, hi = H.H - 60;
-      var cols = Math.max(1, Math.min(4, n));
-      var col = i % cols, row = Math.floor(i / cols);
-      return {
-        x: GG.clamp(150 + col * ((H.W - 300) / Math.max(1, cols - 1 || 1)) + GG.rand(-24, 24),
-          90, H.W - 190),
-        y: GG.clamp(lo + 40 + row * 70 + GG.rand(-16, 16), lo, hi)
-      };
+    /* Somewhere clear on the floor for friend number i of n: spread across
+       the open floor spots the house offers, never inside the bed, the
+       plant or the doorway (v1.16 - they used to be dealt out on a grid
+       that could land right inside the bed, and then jitter there). */
+    homeSpot: function (i, n, def) {
+      var H = GG.House, spots = H.homeSpots ? H.homeSpots(this.HOME_RAD) : [];
+      /* a horse or a moose is as tall as a grown-up, so it stands out on the
+         open floor, not in front of the bookshelf with its head in it */
+      if (def) {
+        var ext = (GG.AnimalArt.SPAN[def.art.shape] || 38) * (def.size || 1) * 1.15;
+        var roomy = spots.filter(function (q) {
+          return q.y - ext * 0.8 > H.FLOOR - 10 && !H.blocked(q.x, q.y, Math.max(14, ext * 0.42));
+        });
+        if (roomy.length) spots = roomy;
+      }
+      if (!spots.length) return H.freeNear(H.START.x, H.START.y - 80, this.HOME_RAD);
+      var step = Math.max(1, Math.floor(spots.length / Math.max(1, n)));
+      var p = spots[(i * step + Math.floor(step / 2)) % spots.length];
+      var j = H.freeNear(p.x + GG.rand(-10, 10), p.y + GG.rand(-8, 8), this.HOME_RAD);
+      return j;
     },
+    HOME_RAD: 14,
 
     /* They potter about the cottage floor while she is indoors. */
     stepHome: function (dt) {
@@ -24641,9 +24714,16 @@ ul.tips li{margin-bottom:3px}
         var vx = Math.cos(f.ang) * speed * move;
         var vy = Math.sin(f.ang) * speed * move * 0.55;
         f.gait = GG.clamp(Math.sqrt(vx * vx + vy * vy) / 28, 0, 1.3);
-        var nx = f.x + vx * dt, ny = f.y + vy * dt;
-        if (!H.blocked(nx, f.y, 12)) f.x = nx; else f.ang = Math.PI - f.ang;
-        if (!H.blocked(f.x, ny, 12)) f.y = ny; else f.ang = -f.ang;
+        var nx = f.x + vx * dt, ny = f.y + vy * dt, R = this.HOME_RAD;
+        /* if something has ended up inside the bed or the wall (a door
+           opening, a resize, an old save), set it back down on clear floor
+           rather than let it flip about on the spot */
+        if (H.blocked(f.x, f.y, R)) {
+          var fr = H.freeNear(f.x, f.y, R);
+          f.x = fr.x; f.y = fr.y; nx = f.x; ny = f.y;
+        }
+        if (!H.blocked(nx, f.y, R)) f.x = nx; else f.ang = Math.PI - f.ang;
+        if (!H.blocked(f.x, ny, R)) f.y = ny; else f.ang = -f.ang;
         if (Math.cos(f.ang) < -0.05 && move > 0.1) f.faceLeft = true;
         else if (Math.cos(f.ang) > 0.05 && move > 0.1) f.faceLeft = false;
 
@@ -24660,7 +24740,7 @@ ul.tips li{margin-bottom:3px}
     },
     loadCompanion: function () {
       /* a new outing: you ask again, and the helmet comes out again */
-      this.riding = null; this.asked = false; this.helmetOn = false;
+      this.riding = null; this.asked = false; this.helmetOn = false; this.standTold = false;
       var id = GG.Save.data.companion;
       this.companion = (id && GG.ANIMAL_BY_ID[id] && GG.Save.hasFriend(id))
         ? { id: id, x: GG.Player.x - 30, y: GG.Player.y + 10, t: 0, faceLeft: false }
@@ -24687,6 +24767,15 @@ ul.tips li{margin-bottom:3px}
       if (comp.dx == null) { comp.dx = -1; comp.dy = 0.35; }
       var tx = player.x + comp.dx * 26 - comp.dy * 12;
       var ty = player.y + comp.dy * 22 + 11;
+      /* a horse she has stopped beside comes up alongside her and stands
+         shoulder-on, the way you would lead one - so the right place to get
+         on is simply where she is already standing */
+      if (def.rideable && this.scene !== 'house' &&
+          ((this.stillT || 0) > 0.35 || this.sidle > 0)) {
+        var side = comp.faceLeft ? 1 : -1;
+        tx = player.x + side * 4;
+        ty = player.y - 16;
+      }
 
       var d = GG.dist(comp.x, comp.y, tx, ty);
       comp.gait = 0;
@@ -24702,10 +24791,17 @@ ul.tips li{margin-bottom:3px}
       if (GG.dist(comp.x, comp.y, player.x, player.y) > 420) { comp.x = tx; comp.y = ty; }
       /* indoors they have to stay in the room with her */
       if (this.scene === 'house') {
-        var H = GG.House;
-        comp.x = GG.clamp(comp.x, 62, H.W - 62);
-        comp.y = GG.clamp(comp.y, H.FLOOR + 14, H.H - 24);
+        /* indoors the furniture is solid for friends too: they walk round
+           the bed, not over it */
+        var H = GG.House, R = this.HOME_RAD;
+        if (H.blocked(comp.x, comp.y, R)) {
+          var px0 = comp.px == null ? comp.x : comp.px, py0 = comp.py == null ? comp.y : comp.py;
+          if (!H.blocked(comp.x, py0, R)) comp.y = py0;
+          else if (!H.blocked(px0, comp.y, R)) comp.x = px0;
+          else { var fr = H.freeNear(comp.x, comp.y, R); comp.x = fr.x; comp.y = fr.y; }
+        }
       }
+      comp.px = comp.x; comp.py = comp.y;
 
       var fam = def.family;
       var busy = d > 8;
@@ -24752,15 +24848,18 @@ ul.tips li{margin-bottom:3px}
       if (!def || !def.rideable) return null;     /* a cow is not a horse */
       if (GG.Fishing && GG.Fishing.active()) return null;
       if (player.stun > 0) return null;
+      /* v1.16 (David): while she is just walking along with her horse
+         following, nothing pops up at all. The offer only comes once she
+         has stopped, with the horse standing beside her - and then quietly. */
+      if ((this.stillT || 0) < this.RIDE_STILL) return null;
       if (GG.dist(player.x, player.y, comp.x, comp.y) > 60) return null;
       var stance = this.rideStance(player, comp);
       if (stance !== 'shoulder') {
-        return { stage: 'stand', main: 'COME ROUND',
-          sub: stance === 'behind' ? 'not behind' : 'not her nose' };
+        return { stage: 'stand', main: 'RIDE', sub: 'go to her shoulder', quiet: true };
       }
-      if (!this.asked) return { stage: 'ask', main: 'ASK FIRST', sub: 'may I ride?' };
-      if (!this.helmetOn) return { stage: 'helmet', main: 'HELMET ON', sub: 'every time' };
-      return { stage: 'up', main: 'GET ON', sub: 'at her shoulder' };
+      if (!this.asked) return { stage: 'ask', main: 'RIDE?', sub: 'ask first', quiet: true };
+      if (!this.helmetOn) return { stage: 'helmet', main: 'HELMET', sub: 'every time', quiet: true };
+      return { stage: 'up', main: 'GET ON', sub: 'at her shoulder', quiet: true };
     },
 
     /* One tap, one step of the flow. */
@@ -24770,11 +24869,16 @@ ul.tips li{margin-bottom:3px}
       var comp = this.companion, def = comp ? GG.ANIMAL_BY_ID[comp.id] : null;
       var name = def ? def.name : 'her';
       if (offer.stage === 'stand') {
-        GG.UI.toast(this.rideStance(player, comp) === 'behind'
-          ? 'She cannot see straight behind her. Come round to her shoulder, talking as you go.'
-          : 'She cannot see right under her own nose either. Come to her shoulder, from the side.',
-          3400);
-        GG.Sfx.warn();
+        /* the lesson is told once an outing, not every time */
+        if (!this.standTold) {
+          this.standTold = true;
+          GG.UI.toast(this.rideStance(player, comp) === 'behind'
+            ? 'She cannot see straight behind her, so you always get on at her shoulder. She steps round for you.'
+            : 'She cannot see right under her own nose, so you get on at her shoulder. She steps round for you.',
+            3400);
+        }
+        GG.Sfx.click();
+        this.sidle = 1.6;       /* she walks up alongside, shoulder to you */
         return true;
       }
       if (offer.stage === 'ask') {
@@ -24827,7 +24931,11 @@ ul.tips li{margin-bottom:3px}
       return (this.riding && this._liftAsked > 0) ? this.RIDE_LIFT : 0;
     },
 
+    RIDE_STILL: 0.55,          // seconds stood still before the offer appears
+
     stepRide: function (dt, player) {
+      this.stillT = (player.speed || 0) < 6 ? (this.stillT || 0) + dt : 0;
+      if (this.sidle > 0) this.sidle -= dt;
       /* the friend button is shared, so riding only ever takes the tap when
          there is nobody new to say hello to */
       var In = GG.Input;
@@ -25241,33 +25349,78 @@ ul.tips li{margin-bottom:3px}
 })(window.GG = window.GG || {});
 
 /* ==== src/game/house.js ==== */
-/* Inside Guin's cottage: the bug book, the terrarium table, the decoration box and a cosy bed.
-   The room is drawn at the same scale as the world outside, so Guin is the same size indoors. */
+/* Inside Guin's cottage: the Critter Compendium on its bookshelf, the tank
+   table, the decoration chest, a fireplace, and her own bed.
+
+   v1.16 - David: "make the inside of the house feel more true to the
+   player's dimensions. It feels like a giant's home currently." It did: the
+   bed was five Guins long and the front door twice her height. The whole room
+   is now built to her scale, at about 45 pixels to the metre (Guin is a child
+   of about 1.2 m and ~56 px): a 1.9 m bed, a door she could walk through, a
+   bookshelf a little taller than she is. The room is drawn at the same zoom as
+   the world outside, so she is exactly the same size indoors. */
 (function (GG) {
   'use strict';
 
-  var W = 840, H = 640;
-  var FLOOR = 214;          // where the wall stops and the floorboards start
+  var W = 560, H = 440;
+  var FLOOR = 112;          // where the back wall stops and the floorboards start
+  var SIDE = 14;            // thickness of the side and front walls
+  var BACK = FLOOR + 16;    // furniture along the back wall stands out this far
+
+  /* the solid things on the floor, as rectangles (the back-wall furniture is
+     covered by BACK) */
+  var BED = { x0: 468, x1: W - SIDE, y0: 244, y1: 344 };
+  var PLANT = { x0: SIDE, x1: 58, y0: 360, y1: 396 };
+  var DOOR = { x: 280, w: 46 };
 
   var House = GG.House = {
     W: W, H: H, FLOOR: FLOOR,
-    START: { x: 415, y: 580 },
+    START: { x: 280, y: H - 44 },
 
     spots: [
-      { id: 'book', x: 145, y: 200, w: 116, h: 86, label: 'Critter Compendium' },
-      { id: 'terrarium', x: 410, y: 186, w: 186, h: 84, label: 'Terrariums' },
-      { id: 'shop', x: 675, y: 200, w: 116, h: 84, label: 'Decoration Box' },
-      { id: 'bed', x: 730, y: 430, w: 150, h: 250, label: 'Bed' },
-      { id: 'door', x: 415, y: 624, w: 116, h: 36, label: 'Go Outside' }
+      { id: 'book', x: 62, y: FLOOR + 22, w: 64, h: 32, label: 'Critter Compendium' },
+      { id: 'terrarium', x: 378, y: FLOOR + 24, w: 96, h: 32, label: 'Terrariums' },
+      { id: 'shop', x: 482, y: FLOOR + 24, w: 54, h: 32, label: 'Decoration Box' },
+      { id: 'bed', x: (BED.x0 + BED.x1) / 2, y: (BED.y0 + BED.y1) / 2, w: BED.x1 - BED.x0 + 8, h: BED.y1 - BED.y0 + 8, label: 'Bed' },
+      { id: 'door', x: DOOR.x, y: H - 22, w: DOOR.w + 8, h: 26, label: 'Go Outside' }
     ],
 
     blocked: function (x, y, rad) {
-      if (x < 52 + rad || x > W - 52 - rad) return true;
-      if (y < FLOOR + rad) return true;
-      if (y > H - 16 - rad) return true;
-      if (x > 644 - rad && y > 326 - rad && y < 604) return true;   // the bed
-      if (x < 132 + rad && y > 372 - rad && y < 430) return true;   // the potted plant
+      rad = rad || 0;
+      if (x < SIDE + rad || x > W - SIDE - rad) return true;
+      if (y < BACK + rad * 0.6) return true;
+      if (y > H - SIDE - rad * 0.6) return true;
+      if (x > BED.x0 - rad && x < BED.x1 + rad && y > BED.y0 - rad * 0.6 && y < BED.y1 + rad * 0.4) return true;
+      if (x < PLANT.x1 + rad && y > PLANT.y0 - rad * 0.6 && y < PLANT.y1 + rad * 0.4) return true;
       return false;
+    },
+
+    /* The nearest place to (x, y) where something of this size can stand -
+       for putting a friend back on the floor if it ever ends up inside the
+       bed or the wall. */
+    freeNear: function (x, y, rad) {
+      if (!this.blocked(x, y, rad)) return { x: x, y: y };
+      for (var r = 6; r < 400; r += 6) {
+        for (var a = 0; a < Math.PI * 2; a += 0.3) {
+          var nx = x + Math.cos(a) * r, ny = y + Math.sin(a) * r;
+          if (!this.blocked(nx, ny, rad)) return { x: nx, y: ny };
+        }
+      }
+      return { x: this.START.x, y: this.START.y - 60 };
+    },
+
+    /* Open floor, spread about the room and clear of the furniture and the
+       doorway, for the friends waiting at home. */
+    homeSpots: function (rad) {
+      var out = [];
+      for (var y = BACK + 36; y < H - 40; y += 54) {
+        for (var x = SIDE + 44; x < W - SIDE - 30; x += 62) {
+          if (this.blocked(x, y, rad)) continue;
+          if (GG.dist(x, y, this.START.x, this.START.y) < 70) continue;
+          out.push({ x: x, y: y });
+        }
+      }
+      return out;
     },
 
     nearest: function (px, py) {
@@ -25277,7 +25430,7 @@ ul.tips li{margin-bottom:3px}
         var dx = Math.max(0, Math.abs(px - s.x) - s.w / 2);
         var dy = Math.max(0, Math.abs(py - s.y) - s.h / 2);
         var d = Math.sqrt(dx * dx + dy * dy);
-        if (d < 64 && d < bd) { bd = d; best = s; }
+        if (d < 24 && d < bd) { bd = d; best = s; }
       }
       return best;
     },
@@ -25285,136 +25438,214 @@ ul.tips li{margin-bottom:3px}
     draw: function (c, cam, t) {
       c.save();
       c.translate(-cam.x, -cam.y);
-
-      /* ---- wall ---- */
-      c.fillStyle = '#e9d3b4';
-      c.fillRect(0, 0, W, FLOOR);
-      c.fillStyle = '#dcc19c';
-      for (var i = 0; i < W; i += 52) c.fillRect(i, 0, 2, FLOOR);
-      c.fillStyle = '#c9a97f';
-      c.fillRect(0, FLOOR - 14, W, 14);
+      var night = GG.Time.isDark();
+      var i;
 
       /* ---- floor ---- */
+      c.save();
+      c.beginPath(); c.rect(0, FLOOR, W, H - FLOOR); c.clip();
       c.fillStyle = '#c69a6b';
       c.fillRect(0, FLOOR, W, H - FLOOR);
       c.fillStyle = '#b98c5f';
-      for (var y = FLOOR + 6; y < H; y += 40) c.fillRect(0, y, W, 3);
-      for (var x = 0; x < W; x += 106) c.fillRect(x, FLOOR, 2, H - FLOOR);
+      for (var y = FLOOR + 18; y < H; y += 18) c.fillRect(0, y, W, 1.5);       // boards ~40 cm
+      for (var row = 0; FLOOR + row * 18 < H; row++) {
+        for (var bx = (row % 2) * 46; bx < W; bx += 92) c.fillRect(bx, FLOOR + row * 18, 1.5, 18);
+      }
+      c.restore();
+
+      /* ---- back wall ---- */
+      c.fillStyle = '#e9d3b4';
+      c.fillRect(0, 0, W, FLOOR);
+      c.fillStyle = '#dfc6a2';
+      for (i = 0; i < W; i += 26) c.fillRect(i, 0, 1.5, FLOOR - 8);         // tongue and groove
+      c.fillStyle = '#b98f63';
+      c.fillRect(0, FLOOR - 8, W, 8);                                        // skirting board
+      c.fillStyle = '#d2b48c';
+      c.fillRect(0, 0, W, 6);                                                // picture rail
 
       /* ---- rug ---- */
       c.fillStyle = '#8fc7d8';
-      c.beginPath(); c.ellipse(380, 432, 178, 104, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(262, 290, 74, 44, 0, 0, Math.PI * 2); c.fill();
       c.fillStyle = '#a9d9e6';
-      c.beginPath(); c.ellipse(380, 432, 138, 78, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(262, 290, 56, 32, 0, 0, Math.PI * 2); c.fill();
       c.fillStyle = '#8fc7d8';
-      c.beginPath(); c.ellipse(380, 432, 90, 48, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(262, 290, 34, 19, 0, 0, Math.PI * 2); c.fill();
 
-      /* ---- window, with the real time of day showing through ---- */
-      var night = GG.Time.isDark();
+      /* ---- window: 1.2 m wide, with the real time of day in it ---- */
+      var wx = 136, wy = 24, ww = 56, wh = 46;
       c.fillStyle = '#8a6a45';
-      GG.roundRect(c, 330, 30, 142, 104, 7); c.fill();
+      GG.roundRect(c, wx - 4, wy - 4, ww + 8, wh + 8, 4); c.fill();
       c.fillStyle = night ? '#20306a' : '#a7dcf4';
-      c.fillRect(337, 37, 128, 90);
+      c.fillRect(wx, wy, ww, wh);
       if (night) {
         c.fillStyle = '#fff6c4';
-        c.beginPath(); c.arc(434, 62, 11, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(wx + 40, wy + 13, 5, 0, Math.PI * 2); c.fill();
         c.fillStyle = '#dfe8ff';
-        for (var s = 0; s < 11; s++) c.fillRect(342 + (s * 41) % 116, 42 + (s * 27) % 74, 2, 2);
+        for (var s = 0; s < 7; s++) c.fillRect(wx + 4 + (s * 17) % 48, wy + 4 + (s * 11) % 38, 1.5, 1.5);
       } else {
-        c.fillStyle = '#7fc46a'; c.fillRect(337, 98, 128, 29);
+        c.fillStyle = '#7fc46a'; c.fillRect(wx, wy + wh - 12, ww, 12);
         c.fillStyle = '#ffe98a';
-        c.beginPath(); c.arc(438, 58, 12, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(wx + 42, wy + 12, 6, 0, Math.PI * 2); c.fill();
         c.fillStyle = '#ffffff';
-        c.beginPath(); c.ellipse(372, 62, 21, 9, 0, 0, Math.PI * 2); c.fill();
-        c.beginPath(); c.ellipse(392, 57, 14, 7, 0, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.ellipse(wx + 16, wy + 14, 9, 4, 0, 0, Math.PI * 2); c.fill();
       }
-      c.strokeStyle = '#8a6a45'; c.lineWidth = 6;
+      c.strokeStyle = '#8a6a45'; c.lineWidth = 3;
       c.beginPath();
-      c.moveTo(401, 37); c.lineTo(401, 127);
-      c.moveTo(337, 82); c.lineTo(465, 82);
+      c.moveTo(wx + ww / 2, wy); c.lineTo(wx + ww / 2, wy + wh);
+      c.moveTo(wx, wy + wh / 2); c.lineTo(wx + ww, wy + wh / 2);
       c.stroke();
+      c.fillStyle = '#9a6f43'; c.fillRect(wx - 6, wy + wh + 3, ww + 12, 4);   // sill
 
-      /* ---- bookshelf (the Critter Compendium: all her collections) ---- */
-      c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 92, 112, 108, 96, 5); c.fill();
-      c.fillStyle = '#7d5733'; c.fillRect(97, 156, 98, 6);
-      var bookCols = ['#d2584f', '#e0a34a', '#5f9ed6', '#78bb63', '#b57fd1'];
-      for (var b = 0; b < 5; b++) {
-        c.fillStyle = bookCols[b];
-        c.fillRect(102 + b * 19, 121, 14, 35);
+      /* ---- fireplace, 1.4 m across, with a real little fire ---- */
+      var fx = 232, fw = 64;
+      c.fillStyle = '#b3a494';
+      c.fillRect(fx, FLOOR - 56, fw, 56 + 10);
+      c.fillStyle = '#a09080';
+      for (var bk = 0; bk < 7; bk++) {
+        for (var bc = 0; bc < 4; bc++) {
+          c.fillRect(fx + 2 + bc * 16 + (bk % 2) * 8, FLOOR - 54 + bk * 9, 14, 1.2);
+        }
       }
+      c.fillStyle = '#8a5f36';
+      c.fillRect(fx - 6, FLOOR - 60, fw + 12, 7);                              // mantel
+      c.fillStyle = '#2b1f18';
+      GG.roundRect(c, fx + 14, FLOOR - 34, fw - 28, 34, 10); c.fill();       // firebox
+      c.fillStyle = '#6b4a2e';
+      c.fillRect(fx + 18, FLOOR - 6, fw - 36, 4);                             // log
+      var fl = 0.5 + 0.5 * Math.sin(t * 9.1) * Math.sin(t * 5.3 + 1);
+      c.fillStyle = 'rgba(255,150,40,0.95)';
+      c.beginPath();
+      c.moveTo(fx + 22, FLOOR - 5); c.quadraticCurveTo(fx + 26, FLOOR - 20 - fl * 5, fx + 32, FLOOR - 26 - fl * 3);
+      c.quadraticCurveTo(fx + 38, FLOOR - 18 - fl * 4, fx + 42, FLOOR - 5); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(255,230,120,0.95)';
+      c.beginPath();
+      c.moveTo(fx + 27, FLOOR - 5); c.quadraticCurveTo(fx + 30, FLOOR - 14 - fl * 3, fx + 32, FLOOR - 17 - fl * 2);
+      c.quadraticCurveTo(fx + 35, FLOOR - 12 - fl * 2, fx + 37, FLOOR - 5); c.closePath(); c.fill();
+      c.fillStyle = '#8f8274';
+      c.fillRect(fx - 4, FLOOR + 6, fw + 8, 8);                               // hearth stone
+      /* a warm glow on the floor in front of it */
+      var g = c.createRadialGradient(fx + fw / 2, FLOOR + 14, 4, fx + fw / 2, FLOOR + 14, 80);
+      g.addColorStop(0, 'rgba(255,170,70,' + (0.22 + fl * 0.06).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(255,170,70,0)');
+      c.fillStyle = g; c.fillRect(fx - 60, FLOOR, fw + 120, 100);
+      /* a little clock and a candle on the mantel, for the sense of size */
+      c.fillStyle = '#f2e6cf'; c.fillRect(fx + 6, FLOOR - 68, 5, 8);
+      c.fillStyle = '#ffd45c'; c.beginPath(); c.ellipse(fx + 8.5, FLOOR - 70, 1.6, 2.4, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#c98f56'; GG.roundRect(c, fx + fw - 18, FLOOR - 72, 12, 12, 3); c.fill();
+      c.fillStyle = '#fff6e0'; c.beginPath(); c.arc(fx + fw - 12, FLOOR - 66, 4, 0, Math.PI * 2); c.fill();
+
+      /* ---- bookshelf: 1.2 m wide, a little taller than Guin ---- */
+      var sx0 = 32, sw = 60, stop = FLOOR - 58, sbase = FLOOR + 14;
+      c.fillStyle = '#9a6f43';
+      GG.roundRect(c, sx0, stop, sw, sbase - stop, 3); c.fill();
+      c.fillStyle = '#7d5733';
+      c.fillRect(sx0 + 3, stop + 3, sw - 6, sbase - stop - 6);
+      var bookCols = ['#d2584f', '#e0a34a', '#5f9ed6', '#78bb63', '#b57fd1', '#e07f9c', '#6fb2a8'];
+      for (var shelf = 0; shelf < 3; shelf++) {
+        var sy = stop + 5 + shelf * 19;
+        var bxp = sx0 + 5, k = shelf * 3;
+        while (bxp < sx0 + sw - 8) {
+          var bw = 4 + ((k * 7) % 3);
+          var bh = 12 + ((k * 5) % 4);
+          c.fillStyle = bookCols[k % bookCols.length];
+          c.fillRect(bxp, sy + (16 - bh), bw, bh);
+          bxp += bw + 1; k++;
+        }
+        c.fillStyle = '#9a6f43'; c.fillRect(sx0 + 3, sy + 16, sw - 6, 3);
+      }
+      /* the Collections sign across the bottom shelf */
       c.fillStyle = '#f2e6cf';
-      GG.roundRect(c, 97, 166, 98, 34, 4); c.fill();
+      GG.roundRect(c, sx0 + 3, sbase - 17, sw - 6, 14, 3); c.fill();
       c.fillStyle = '#4b6b3a';
       c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-      /* the label is a plank of fixed width, so the word is sized to fit it */
-      var fs = 16;
+      var fs = 11;
       do {
         c.font = 'bold ' + fs + 'px "Trebuchet MS", sans-serif';
-      } while (c.measureText('Collections').width > 88 && --fs > 9);
-      c.fillText('Collections', 146, 189);
+      } while (c.measureText('Collections').width > sw - 12 && --fs > 6);
+      c.fillText('Collections', sx0 + sw / 2, sbase - 6);
 
-      /* ---- terrarium table ---- */
+      /* ---- tank table: 2 m long, waist height to a grown-up ---- */
+      var tx0 = 330, tw = 96, ttop = FLOOR - 20, tbase = FLOOR + 14;
+      c.fillStyle = '#8a5f36';
+      c.fillRect(tx0 + 5, ttop + 6, 5, tbase - ttop - 6);
+      c.fillRect(tx0 + tw - 10, ttop + 6, 5, tbase - ttop - 6);
       c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 320, 152, 180, 54, 6); c.fill();
-      c.fillStyle = '#8a5f36'; c.fillRect(334, 204, 12, 18); c.fillRect(474, 204, 12, 18);
+      GG.roundRect(c, tx0, ttop, tw, 8, 3); c.fill();
       var tanks = GG.Save.data.terrariums;
-      for (var k = 0; k < Math.min(3, tanks.length); k++) {
-        var tx = 336 + k * 58, type = tanks[k].type || 'terrarium';
+      for (var tk = 0; tk < Math.min(3, tanks.length); tk++) {
+        var gx = tx0 + 5 + tk * 30, gw = 26, gh = 20, gy = ttop - gh, type = tanks[tk].type || 'terrarium';
         c.save();
-        GG.roundRect(c, tx, 112, 46, 42, 5); c.clip();
+        GG.roundRect(c, gx, gy, gw, gh, 3); c.clip();
         if (type === 'aquarium') {
-          c.fillStyle = '#8fd3ea'; c.fillRect(tx, 112, 46, 42);
-          c.fillStyle = '#3f93b8'; c.fillRect(tx, 138, 46, 16);
-          c.fillStyle = '#e3d6a8'; c.fillRect(tx + 2, 146, 42, 8);
+          c.fillStyle = '#8fd3ea'; c.fillRect(gx, gy, gw, gh);
+          c.fillStyle = '#3f93b8'; c.fillRect(gx, gy + 12, gw, 8);
+          c.fillStyle = '#e3d6a8'; c.fillRect(gx + 1, gy + 16, gw - 2, 4);
         } else if (type === 'hybrid') {
-          c.fillStyle = '#cfeeff'; c.fillRect(tx, 112, 46, 42);
-          c.fillStyle = '#8ecf63'; c.fillRect(tx, 130, 46, 8);
-          c.fillStyle = '#7fc4d2'; c.fillRect(tx, 138, 46, 16);
-          c.fillStyle = '#dfd2a4'; c.fillRect(tx + 2, 149, 42, 5);
+          c.fillStyle = '#cfeeff'; c.fillRect(gx, gy, gw, gh);
+          c.fillStyle = '#8ecf63'; c.fillRect(gx, gy + 8, gw, 4);
+          c.fillStyle = '#7fc4d2'; c.fillRect(gx, gy + 12, gw, 8);
+        } else if (type === 'habitat') {
+          c.fillStyle = '#cfeeff'; c.fillRect(gx, gy, gw, gh);
+          c.fillStyle = '#6fae52'; c.fillRect(gx, gy + 8, gw, 4);
+          c.fillStyle = '#8ecf63'; c.fillRect(gx, gy + 12, gw, 8);
         } else {
-          c.fillStyle = 'rgba(180,230,255,0.55)'; c.fillRect(tx, 112, 46, 42);
-          c.fillStyle = '#7fc46a'; c.fillRect(tx, 139, 46, 15);
+          c.fillStyle = 'rgba(180,230,255,0.55)'; c.fillRect(gx, gy, gw, gh);
+          c.fillStyle = '#7fc46a'; c.fillRect(gx, gy + 13, gw, 7);
         }
         c.restore();
-        c.strokeStyle = '#cfe9f5'; c.lineWidth = 2;
-        GG.roundRect(c, tx, 112, 46, 42, 5); c.stroke();
+        c.strokeStyle = '#cfe9f5'; c.lineWidth = 1.2;
+        GG.roundRect(c, gx, gy, gw, gh, 3); c.stroke();
       }
 
-      /* ---- decoration box ---- */
+      /* ---- decoration chest: a toy box, knee high ---- */
+      var cx0 = 460, cw = 44, cbase = FLOOR + 14;
       c.fillStyle = '#c98f56';
-      GG.roundRect(c, 622, 160, 100, 56, 6); c.fill();
+      GG.roundRect(c, cx0, cbase - 24, cw, 24, 3); c.fill();
       c.fillStyle = '#e0a86c';
-      GG.roundRect(c, 617, 146, 110, 24, 6); c.fill();
-      c.fillStyle = '#8a5f36'; c.fillRect(665, 170, 12, 18);
+      GG.roundRect(c, cx0 - 2, cbase - 31, cw + 4, 9, 3); c.fill();
+      c.fillStyle = '#8a5f36'; c.fillRect(cx0 + cw / 2 - 3, cbase - 24, 6, 8);
       c.fillStyle = '#ffd45c';
-      c.beginPath(); c.arc(671, 185, 6, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(cx0 + cw / 2, cbase - 16, 2.4, 0, Math.PI * 2); c.fill();
 
-      /* ---- bed ---- */
+      /* ---- her bed: a real single bed, 1.9 m by 0.9 m ---- */
       c.fillStyle = '#9a6f43';
-      GG.roundRect(c, 656, 326, 136, 278, 12); c.fill();
+      GG.roundRect(c, BED.x0, BED.y0 - 8, BED.x1 - BED.x0, BED.y1 - BED.y0 + 8, 5); c.fill();  // frame + headboard
       c.fillStyle = '#f6eadf';
-      GG.roundRect(c, 664, 334, 120, 68, 9); c.fill();
+      GG.roundRect(c, BED.x0 + 4, BED.y0, BED.x1 - BED.x0 - 8, 22, 5); c.fill();                // pillow
       c.fillStyle = '#e07f9c';
-      GG.roundRect(c, 664, 382, 120, 214, 9); c.fill();
+      GG.roundRect(c, BED.x0 + 3, BED.y0 + 20, BED.x1 - BED.x0 - 6, BED.y1 - BED.y0 - 23, 5); c.fill(); // quilt
       c.fillStyle = '#f09cb4';
-      GG.roundRect(c, 664, 430, 120, 26, 5); c.fill();
+      GG.roundRect(c, BED.x0 + 3, BED.y0 + 20, BED.x1 - BED.x0 - 6, 9, 3); c.fill();          // turned-down sheet
+      c.fillStyle = 'rgba(255,255,255,0.35)';
+      for (var q = 0; q < 3; q++) c.fillRect(BED.x0 + 8 + q * 13, BED.y0 + 40, 2, BED.y1 - BED.y0 - 48);
+      /* a bedside rug */
+      c.fillStyle = '#e8c870';
+      GG.roundRect(c, BED.x0 - 30, BED.y0 + 30, 24, 40, 6); c.fill();
 
-      /* ---- potted plant ---- */
+      /* ---- potted plant in the corner ---- */
       c.fillStyle = '#c4703f';
-      GG.roundRect(c, 68, 380, 56, 50, 7); c.fill();
-      GG.Props.bush(c, 96, 382, 42, t, 0.4);
+      GG.roundRect(c, PLANT.x0 + 12, PLANT.y1 - 20, 24, 20, 4); c.fill();
+      GG.Props.bush(c, PLANT.x0 + 24, PLANT.y1 - 18, 20, t, 0.4);
 
-      /* ---- door ---- */
+      /* ---- side and front walls, with the doorway in the front one ---- */
+      c.fillStyle = '#b3906a';
+      c.fillRect(0, 0, SIDE, H);
+      c.fillRect(W - SIDE, 0, SIDE, H);
+      c.fillRect(0, H - SIDE, DOOR.x - DOOR.w / 2, SIDE);
+      c.fillRect(DOOR.x + DOOR.w / 2, H - SIDE, W - DOOR.x - DOOR.w / 2, SIDE);
+      c.fillStyle = '#9d7b57';
+      c.fillRect(SIDE - 2, 0, 2, H - SIDE); c.fillRect(W - SIDE, 0, 2, H - SIDE);
+      /* the doorway: open, with the doormat and daylight (or night) outside */
+      c.fillStyle = night ? '#223066' : '#9fd87a';
+      c.fillRect(DOOR.x - DOOR.w / 2, H - SIDE, DOOR.w, SIDE);
       c.fillStyle = '#8a5f36';
-      GG.roundRect(c, 358, 600, 116, 40, 7); c.fill();
+      c.fillRect(DOOR.x - DOOR.w / 2 - 3, H - SIDE, 3, SIDE);
+      c.fillRect(DOOR.x + DOOR.w / 2, H - SIDE, 3, SIDE);
       c.fillStyle = '#a9743f';
-      GG.roundRect(c, 365, 607, 102, 33, 6); c.fill();
-      c.fillStyle = '#ffd45c';
-      c.beginPath(); c.arc(452, 623, 5, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#5b432a';
-      c.font = 'bold 14px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
-      c.fillText('outside', 415, 629);
+      GG.roundRect(c, DOOR.x - 20, H - SIDE - 16, 40, 13, 3); c.fill();       // doormat
+      c.fillStyle = '#8a5f36';
+      c.font = 'bold 8px "Trebuchet MS", sans-serif'; c.textAlign = 'center';
+      c.fillText('HELLO', DOOR.x, H - SIDE - 6.5);
 
       c.restore();
     }
@@ -27910,6 +28141,8 @@ ul.tips li{margin-bottom:3px}
     var show = !!(busy || cand || ride);
     btn.classList.toggle('hidden', !show);
     btn.classList.toggle('waiting', !!busy);
+    /* getting on your own horse is an offer, not an alarm */
+    btn.classList.toggle('quiet', !!(ride && ride.quiet) && !busy && !cand);
     if (!show) { _friendLabel = ''; return null; }
     var main, sub;
     if (ride) { main = ride.main; sub = ride.sub; } else {
