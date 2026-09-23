@@ -6,6 +6,26 @@
   var canvas, ctx, dpr = 1;
   var scene = 'title';
   var cam = { x: 0, y: 0 };
+  /* screen (CSS pixels) -> the current scene's own coordinates, for tap-to-walk */
+  GG.screenToWorld = function (cx, cy) {
+    var r = canvas.getBoundingClientRect();
+    var z = GG.view.zoom || 1;
+    return { x: cam.x + (cx - r.left) / z, y: cam.y + (cy - r.top) / z };
+  };
+  /* a little ring where she is walking to */
+  function drawMoveTarget(t) {
+    var T = GG.Input.moveTarget;
+    if (!T) return;
+    var x = T.x - cam.x, y = T.y - cam.y;
+    var p = 0.5 + 0.5 * Math.sin(t * 7);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,' + (0.55 + 0.3 * p).toFixed(2) + ')';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(x, y, 9 + p * 2, 4.5 + p, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,111,158,0.85)';
+    ctx.beginPath(); ctx.ellipse(x, y, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
   var lastTime = 0, elapsed = 0;
   var swingChecked = false;
   var saveTimer = 0;
@@ -35,6 +55,7 @@
 
   function setScene(s) {
     scene = s;
+    GG.Input.clearTarget();
     applyZoom();
     if (s === 'world') {
       GG.Critters.clear();
@@ -675,6 +696,7 @@
     if (scene === 'world') drawWorld(elapsed);
     else if (scene === 'house') drawHouse(elapsed);
     else if (scene === 'cave') drawCave(elapsed);
+    drawMoveTarget(elapsed);
     ctx.restore();
 
     $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
@@ -789,7 +811,7 @@
     checkNews();
     if (!GG.Save.data.seenIntro) {
       GG.Save.data.seenIntro = true; GG.Save.save();
-      setTimeout(function () { GG.UI.toast('Slide your thumb on the left to walk', 2800); }, 600);
+      setTimeout(function () { GG.UI.toast('Tap where you want to go, or slide your thumb anywhere to walk', 3200); }, 600);
       setTimeout(function () { GG.UI.toast('Tap NET to swing at a bug', 2800); }, 3800);
     }
   }
