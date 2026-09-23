@@ -157,10 +157,6 @@
     updateFishButton(fishing, !!castable);
     var friendly = updateFriendButton(P);
     if (fishing) friendly = null;
-    if (atCave) {
-      GG.UI.prompt(brush && brush.used ? 'Into the lava tube' : 'Wipe your boots on the brush first');
-      setActionLabel(brush && brush.used ? 'GO IN' : '\u2014', brush && brush.used ? 'lava tube' : 'boots first');
-    }
 
     if (GG.Input.action3Pressed) {
       if (!GG.Friends.busy && friendly) GG.Friends.begin(P);
@@ -169,8 +165,14 @@
       else if (castable) Fi.cast(P);
     } else if (GG.Input.actionPressed) {
       if (atDoor) { enterHouse(); return; }
-      if (atCave) { enterCave(); return; }
-      if (lookAt) { lookAtCreature(lookAt.def); return; }
+      if (atCave) {
+        if (brush && !brush.used) {
+          GG.UI.toast('Wipe your boots on the brush first \u2014 it is just down the path.', 2600);
+          return;
+        }
+        enterCave(); return;
+      }
+      if (lookAt) { lookAtCreature(lookAt); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
       else if (GG.Friends.riding) GG.UI.toast('Not from up here — get down first', 1800);
@@ -200,13 +202,19 @@
     if (W.W < GG.view.w) cam.x = (W.W - GG.view.w) / 2;
     if (W.H < GG.view.h) cam.y = (W.H - GG.view.h) / 2;
 
+    /* The door and the lava tube both get a proper button - v1.15, Guin:
+       "Button for enrty". The cave's label used to be set and then written
+       straight over by NET a few lines later, every frame. */
+    var caveReady = atCave && !(brush && !brush.used);
     GG.UI.prompt(atDoor ? 'Tap to go inside'
-      : (lookAt ? 'Look \u2014 but this one is not for catching'
-        : (pickable ? 'Tap to pick the fruit' : null)));
+      : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
+        : (lookAt ? 'Look \u2014 but this one is not for catching'
+          : (pickable ? 'Tap to pick the fruit' : null))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
     else if (atDoor) setActionLabel('GO IN', 'door');
+    else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
     else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
@@ -360,11 +368,15 @@
     if (stung) onSting(stung);
 
     var spot = C.nearest(P.x, P.y);
-    GG.UI.prompt(spot ? spot.label : null);
-    setActionLabel(spot ? 'GO OUT' : 'NET', spot ? 'back outside' : 'tap');
+    var lookC = spot ? null : GG.Critters.nearestLookOnly(P, 78);
+    GG.UI.prompt(spot ? spot.label : (lookC ? 'Look \u2014 but this one is not for catching' : null));
+    if (spot) setActionLabel('GO OUT', 'back outside');
+    else if (lookC) setActionLabel('LOOK', 'don\u2019t catch');
+    else setActionLabel('NET', 'tap');
 
     if (GG.Input.actionPressed) {
       if (spot) { leaveCave(); return; }
+      if (lookC) { lookAtCreature(lookC); return; }
       if (P.startSwing()) swingChecked = false;
     }
     if (P.swinging() && !swingChecked) {
@@ -425,7 +437,7 @@
     var net = P.netPoint();
     /* swinging at the one she must not catch teaches, it does not punish */
     var forbidden = GG.Critters.lookOnlyUnderNet(P);
-    if (forbidden) { lookAtCreature(forbidden.def); return; }
+    if (forbidden) { lookAtCreature(forbidden); return; }
     var cross = GG.Critters.angerNear(net.x, net.y, 66);
     var hive = GG.World.hive;
     if (hive && GG.dist(net.x, net.y, hive.x, hive.y - 14) < 46) {
@@ -450,10 +462,7 @@
     GG.Sfx.ouch();
     GG.Save.data.stings = (GG.Save.data.stings || 0) + 1;
     GG.Save.save();
-    var line = def.id === 'honeybee'
-      ? 'Ouch! A honeybee stung you. She only gets one sting in her whole life, so she really did not want to.'
-      : 'Ouch! A bumblebee stung you. Give her some space and she will calm down.';
-    GG.UI.toast(line, 3400);
+    GG.UI.toast(GG.stingLine(def), 4200);
   }
 
   /* ---------- fishing ---------- */
@@ -485,7 +494,13 @@
   /* ---------- look, don't catch ---------- */
   /* One creature in the whole garden is never caught. Meeting her is what
      opens her page in the Bug Book, and the warning comes with it. */
-  function lookAtCreature(def) {
+  /* Once per creature: after she has looked, that one goes back to what it
+     was doing and the LOOK button stops offering it (v1.15 - Guin: "You can
+     spam look at uncatchable bugs make it so you can only do it once for
+     each bug"). A new one of the same kind can still be met. */
+  function lookAtCreature(b) {
+    var def = b.def || b;
+    if (b.def) b.looked = true;
     var isNew = GG.Save.addSeen(def.id);
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.warn(); else GG.Sfx.click();
@@ -525,7 +540,7 @@
       tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a',
       badlands: '#a2947a', savanna: '#c9b172', swamp: '#5e6b47', bamboo: '#7a9450',
       cherry: '#c8e089', birdtown: '#9ad96f', farmyard: '#b9ac7e' };
-    var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4' };
+    var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4', 7: '#4f7f73' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
       for (var x = 0; x < W.W; x += step) {
@@ -555,6 +570,29 @@
     c.fillRect(W.HOUSE.x * sx - 7, W.HOUSE.y * sy - 10, 14, 11);
     c.fillStyle = '#f4e7cf';
     c.fillRect(W.HOUSE.x * sx - 5, W.HOUSE.y * sy - 5, 10, 6);
+    /* landmarks - the places you go INTO, or across, drawn as little
+       pictures so she can find them again (v1.15) */
+    var cm = W.caveMouth;
+    if (cm) {
+      var cx0 = cm.x * sx, cy0 = cm.y * sy + 4;
+      c.fillStyle = '#7a746a';
+      c.beginPath(); c.ellipse(cx0, cy0, 19, 15, 0, Math.PI, 0); c.lineTo(cx0 + 19, cy0 + 5); c.lineTo(cx0 - 19, cy0 + 5); c.closePath(); c.fill();
+      c.strokeStyle = '#3d3a34'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = '#120f0c';
+      c.beginPath(); c.ellipse(cx0, cy0 + 3, 10, 10, 0, Math.PI, 0); c.lineTo(cx0 + 10, cy0 + 5); c.lineTo(cx0 - 10, cy0 + 5); c.closePath(); c.fill();
+      c.font = 'bold 15px "Trebuchet MS", sans-serif';
+      c.fillStyle = '#fff6c8'; c.strokeStyle = 'rgba(40,30,20,0.85)'; c.lineWidth = 3;
+      c.strokeText('Lava Tube', cx0, cy0 - 20); c.fillText('Lava Tube', cx0, cy0 - 20);
+    }
+    var br = W.bridge;
+    if (br) {
+      c.save();
+      c.translate(br.x * sx, br.y * sy);
+      c.rotate(Math.atan2(br.dy, br.dx));
+      c.fillStyle = '#b07a44'; c.fillRect(-14, -6, 28, 12);
+      c.strokeStyle = '#6e4622'; c.lineWidth = 2; c.strokeRect(-14, -6, 28, 12);
+      c.restore();
+    }
     // guin
     c.fillStyle = '#ff5f92';
     c.beginPath(); c.arc(GG.Player.x * sx, GG.Player.y * sy, 7, 0, Math.PI * 2); c.fill();
