@@ -1,4 +1,7 @@
-/* The Bug Book: every bug Guin has met, with real facts. */
+/* The Critter Compendium (v1.15): one big book with four books inside it -
+   the Bug Book, the Fish Book, the Friends Book and the Fruit Book - every
+   creature and fruit Guin has met, with real facts. Opening it with no book
+   named shows the contents page, a shelf of the four. */
 (function (GG) {
   'use strict';
   var $ = GG.$;
@@ -21,20 +24,99 @@
     return cv;
   }
 
+  /* The books on the shelf, in shelf order. */
+  var BOOKS = [
+    { id: 'bugs', name: 'Bug Book', blurb: 'bugs and mini-beasts', col: '#5f9f4a',
+      show: function () { return GG.BUG_BY_ID.monarch || GG.BUGS[0]; },
+      list: function () { return GG.BUGS; },
+      found: function () { return GG.Save.totalSpecies(); } },
+    { id: 'fish', name: 'Fish Book', blurb: 'fish and river creatures', col: '#3f8fb8',
+      show: function () { return GG.FISH_BY_ID.bluegill || GG.FISH[0]; },
+      list: function () { return GG.FISH; },
+      found: function () { return GG.Save.totalFish(); } },
+    { id: 'friends', name: 'Friends Book', blurb: 'animal friends', col: '#c9728a',
+      show: function () { return GG.ANIMAL_BY_ID.cookie || GG.ANIMALS[0]; },
+      list: function () { return GG.ANIMALS; },
+      found: function () {
+        var met = 0;
+        GG.ANIMALS.forEach(function (a) { if (a.lookOnly && GG.Save.hasSeen(a.id)) met++; });
+        return GG.Save.totalFriends() + met;
+      } },
+    { id: 'fruit', name: 'Fruit Book', blurb: 'fruit and berries', col: '#d0813a',
+      show: function () { return GG.FRUIT_BY_ID && (GG.FRUIT_BY_ID.apple || GG.FRUITS[0]); },
+      list: function () { return GG.FRUITS; },
+      found: function () { return GG.Save.totalFruit(); } }
+  ];
+  var BOOK_BY_ID = {};
+  BOOKS.forEach(function (b) { BOOK_BY_ID[b.id] = b; });
+
   var Book = GG.Book = {
     tab: 'bugs',
+    BOOKS: BOOKS,
 
+    /* open() with no book named shows the contents page */
     open: function (tab) {
-      if (tab) this.tab = tab;
+      this.tab = tab || 'home';
       GG.UI.open('screen-book');
       this.showGrid();
+    },
+
+    /* The contents page: a shelf of the four books, each with how far she
+       has got through it. */
+    showContents: function () {
+      var grid = $('book-grid'), det = $('book-detail');
+      grid.style.display = 'grid'; det.style.display = 'none';
+      $('book-back').style.display = 'none';
+      $('book-tabs').style.display = '';
+      $('book-title').textContent = 'Critter Compendium';
+      $('book-kicker').classList.add('hide');
+      document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
+        el.classList.toggle('on', el.getAttribute('data-book') === 'home');
+      });
+      grid.innerHTML = '';
+      var all = 0, got = 0;
+      BOOKS.forEach(function (b) { all += b.list().length; got += Math.min(b.found(), b.list().length); });
+      $('progress').textContent = got + ' / ' + all;
+
+      var note = GG.el('div', 'shelfnote');
+      note.innerHTML = '<b>Your Critter Compendium.</b> Four books in one. Everything you catch, '
+        + 'meet, befriend or pick gets its own page. You have found <b>' + got + '</b> of <b>'
+        + all + '</b> so far.';
+      grid.appendChild(note);
+
+      var shelf = GG.el('div', 'shelf');
+      BOOKS.forEach(function (b) {
+        var n = b.list().length, f = Math.min(b.found(), n);
+        var card = GG.el('div', 'shelfbook');
+        card.setAttribute('data-open', b.id);
+        card.style.background = b.col;
+        card.appendChild(GG.el('div', 'bk', b.name));
+        var def = b.show();
+        var cv = document.createElement('canvas');
+        cv.width = 280; cv.height = 156;
+        var c = cv.getContext('2d'); c.scale(2, 2);
+        if (def) {
+          if (def.isAnimal) GG.AnimalArt.draw(c, def, 70, 64, GG.animalFit(def, 58), false, 1.2);
+          else GG.drawAny(c, def, 70, 39, def.isFish ? 2.2 : 2.1, def.isFish ? 0 : -Math.PI / 2, 1.1);
+        }
+        card.appendChild(cv);
+        card.appendChild(GG.el('div', 'bn', f + ' of ' + n + ' ' + b.blurb));
+        var bar = GG.el('div', 'bar'), fill = GG.el('i');
+        fill.style.width = (n ? Math.round(f / n * 100) : 0) + '%';
+        bar.appendChild(fill); card.appendChild(bar);
+        card.addEventListener('click', function () { GG.Sfx.click(); Book.setTab(b.id); });
+        shelf.appendChild(card);
+      });
+      grid.appendChild(shelf);
     },
 
     setTab: function (tab) { this.tab = tab; this.showGrid(); },
 
     showGrid: function () {
+      if (!BOOK_BY_ID[this.tab]) { this.showContents(); return; }
       var grid = $('book-grid'), det = $('book-detail');
       var tab = this.tab;
+      $('book-kicker').classList.remove('hide');
       var fish = tab === 'fish', friends = tab === 'friends', fruit = tab === 'fruit';
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
@@ -386,6 +468,20 @@
             Book.showDetail(def);
           });
           det.appendChild(along);
+          if (GG.animalIsUnique(def)) {
+            /* there is only one of her, and the page says where she is */
+            var w = GG.Friends.uniqueWhere(def.id), wtxt;
+            if (w === 'companion') wtxt = 'She is out walking with you.';
+            else if (w === 'home') wtxt = 'She is waiting for you at the cottage.';
+            else if (w) wtxt = 'She is visiting ' + (w.name || 'one of your habitats') + '.';
+            else wtxt = 'She is out in the garden somewhere.';
+            var one = GG.el('div');
+            one.id = 'friend-unique';
+            one.style.margin = '10px 0';
+            one.innerHTML = '<b>There is only one ' + def.name + '</b><span>She is one particular '
+              + 'dog, not a kind of dog, so she can only be in one place at a time. ' + wtxt + '</span>';
+            det.appendChild(one);
+          }
         }
       }
 

@@ -16,6 +16,25 @@
     return b.ground || b.floor || b.water;                           // walking
   }
 
+  /* Where does this decoration stand? In a hybrid tank the water pieces -
+     sea grass, shells, coral, the treasure chest - go down on the sand under
+     the water, and everything else stands on the bank. (v1.15 - Guin: "You
+     cant put fish tank items in the water in hibirid tanks".) */
+  function decorBand(dec, b) {
+    if (b.id === 'hybrid' && dec && dec.for === 'water') return [CH - 64, CH - 44];
+    return b.decor;
+  }
+
+  /* Crabs are the rock-pool creatures that really do walk out of the water:
+     a shore crab forages over wet rock at low tide and a hermit crab will
+     clamber out of a pool. So in a hybrid tank they go for walks on the bank
+     and come back down again. (v1.15 - Guin: "Crabs can walk on land if its
+     a hybird tank".) */
+  GG.walksAshore = function (def) {
+    return !!def && GG.isAquaticBug(def) && !!def.art &&
+      (def.art.shape === 'crab' || def.art.shape === 'hermitcrab');
+  };
+
   var T = GG.Terrarium = {
     index: 0,
     tab: 'bugs',
@@ -77,6 +96,17 @@
     },
     close: function () { cancelAnimationFrame(this._raf); },
 
+    /* Water pieces put on a hybrid's bank before v1.15 go down into the water. */
+    tidyDecor: function (tk) {
+      if (!tk || tk.type !== 'hybrid') return;
+      var b = this.bands(tk), moved = false;
+      (tk.decor || []).forEach(function (x) {
+        var db = decorBand(GG.DECOR_BY_ID[x.id], b);
+        if (x.y < db[0] || x.y > db[1] + 10) { x.y = GG.rand(db[0], db[1]); moved = true; }
+      });
+      if (moved) GG.Save.save();
+    },
+
     /* Which tray tabs does this kind of tank have, and is the current one one
        of them? */
     tabAllowed: function (ty, k) {
@@ -95,6 +125,7 @@
 
     refresh: function () {
       var tk = this.tank(), d = GG.Save.data, ty = this.typeOf(tk);
+      this.tidyDecor(tk);
       var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
@@ -252,10 +283,18 @@
           : 'This tank is full! (' + max + ' is the limit)');
         return;
       }
+      /* There is only one Cookie: if she is walking with Guin, waiting at
+         the cottage or visiting another habitat, she comes here instead. */
+      if (kind === 'friend' && GG.animalIsUnique(GG.ANIMAL_BY_ID[id]) && GG.Friends) {
+        var moved = GG.Friends.claimUnique(id, 'habitat', tk);
+        if (moved) {
+          GG.UI.toast(moved + ' and comes here. There is only one ' + GG.ANIMAL_BY_ID[id].name + '!', 3000);
+        }
+      }
 
       var y;
       if (kind === 'fish') y = GG.rand(b.water[0] + 10, b.water[1] - 10);
-      else if (kind === 'decor') y = GG.rand(b.decor[0], b.decor[1]);
+      else if (kind === 'decor') { var db = decorBand(GG.DECOR_BY_ID[id], b); y = GG.rand(db[0], db[1]); }
       else if (kind === 'friend') {
         var fb = this.friendBand(GG.ANIMAL_BY_ID[id], b);
         y = GG.rand(fb[0] + 4, fb[1] - 4);
@@ -436,15 +475,34 @@
         var vx = Math.cos(m.ang) * speed * move;
         var vy = Math.sin(m.ang) * speed * move * (air ? 0.7 : 0.4);
         m.ox += vx * dt; m.oy += vy * dt;
-        var away = Math.sqrt(m.ox * m.ox + m.oy * m.oy);
+        var crabOut = b.id === 'hybrid' && GG.walksAshore(def);
+        var away = Math.sqrt(m.ox * m.ox + (crabOut ? 0 : m.oy * m.oy));
         if (away > radius) {
-          m.ox = m.ox / away * radius; m.oy = m.oy / away * radius;
+          m.ox = m.ox / away * radius; if (!crabOut) m.oy = m.oy / away * radius;
           m.ang = Math.atan2(-m.oy, -m.ox) + GG.rand(-0.6, 0.6);
         }
+        if (crabOut) m.oy -= vy * dt;   // the crab's up-and-down is its walk to the bank, below
 
         var band = bandFor(def, b);
         var lo = band[0], hi = band[1];
         void skim;
+
+        /* a crab's walk up onto the bank and back down again */
+        if (b.id === 'hybrid' && b.ground && GG.walksAshore(def)) {
+          m.outT = (m.outT == null ? GG.rand(3, 8) : m.outT) - dt;
+          if (m.outT <= 0) {
+            m.ashore = !m.ashore;
+            m.outT = m.ashore ? GG.rand(7, 13) : GG.rand(8, 16);
+            m.goalY = m.ashore ? GG.rand(b.ground[0] + 6, b.ground[1] - 4) : it.y;
+          }
+          var goal = m.goalY == null ? it.y : m.goalY;
+          var cur = it.y + m.oy;
+          var stepY = GG.clamp(goal - cur, -34 * dt, 34 * dt);
+          m.oy += stepY;
+          if (Math.abs(goal - cur) > 3) m.face = GG.angLerp(m.face, stepY < 0 ? -Math.PI / 2 : Math.PI / 2, Math.min(1, dt * 4));
+          lo = b.ground[0]; hi = b.floor ? b.floor[1] : hi;
+          m.oy = GG.clamp(m.oy, lo - it.y, hi - it.y);
+        }
 
         var wx = it.x + m.ox, wy = it.y + m.oy;
         var lx = GG.clamp(wx, 40, CW - 40);
@@ -774,7 +832,7 @@
     dragLimits: function (e) {
       var tk = this.tank(), b = this.bands(tk);
       if (e.kind === 'fish') return b.water;
-      if (e.kind === 'decor') return [b.decor[0], b.decor[1] + 10];
+      if (e.kind === 'decor') { var db = decorBand(GG.DECOR_BY_ID[e.it.id], b); return [db[0], db[1] + 10]; }
       if (e.kind === 'friend') return this.friendBand(GG.ANIMAL_BY_ID[e.it.id], b);
       return bandFor(GG.BUG_BY_ID[e.it.id], b);
     },
@@ -886,7 +944,7 @@
       tk.bugs.forEach(function (x) { self.reseat(x, bandFor(GG.BUG_BY_ID[x.id], b)); });
       tk.fish.forEach(function (x) { self.reseat(x, b.water); });
       tk.friends.forEach(function (x) { self.reseat(x, self.friendBand(GG.ANIMAL_BY_ID[x.id], b)); });
-      tk.decor.forEach(function (x) { self.reseat(x, b.decor); });
+      tk.decor.forEach(function (x) { self.reseat(x, decorBand(GG.DECOR_BY_ID[x.id], b)); });
 
       this.sel = null; this.drag = null;
       GG.Save.save();
