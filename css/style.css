@@ -148,6 +148,19 @@ ul.tips li{margin-bottom:3px}
   animation:bitepulse .45s infinite alternate}
 @keyframes bitepulse{from{transform:scale(1)}to{transform:scale(1.09)}}
 #book-tabs{margin-top:0}
+#book-tabs .tab[data-book="home"]{flex:0 0 46px}
+#book-kicker{font-size:10.5px;font-weight:bold;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-bottom:1px}
+#book-kicker.hide{display:none}
+.shelf{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shelfbook{position:relative;border-radius:16px;padding:10px 10px 12px;color:#fff;cursor:pointer;
+  box-shadow:inset 7px 0 0 rgba(0,0,0,.16),0 3px 0 rgba(0,0,0,.14);min-height:150px;display:flex;flex-direction:column}
+.shelfbook canvas{width:100%;height:78px;display:block;background:rgba(255,255,255,.2);border-radius:10px;margin:6px 0 8px}
+.shelfbook .bk{font-weight:bold;font-size:16px;line-height:1.1}
+.shelfbook .bn{font-size:12px;opacity:.95;margin-top:2px}
+.shelfbook .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.35);margin-top:auto;overflow:hidden}
+.shelfbook .bar i{display:block;height:100%;background:#fff6c8;border-radius:5px}
+.shelfbook:active{transform:translateY(2px)}
+.shelfnote{grid-column:1/-1;background:var(--cream2);border:2px solid #eaddc0;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.35}
 
 #deltank-art{width:100%;display:block;border-radius:16px;background:#cfe9f5}
 #deltank-name{font-size:17px;font-weight:bold;text-align:center;margin:8px 0 2px}
@@ -286,3 +299,6 @@ ul.tips li{margin-bottom:3px}
 #warn-danger b{display:block;color:#b22b2b;margin-bottom:3px}
 #warn-fact{font-size:14px;line-height:1.45;background:var(--cream2);border-radius:14px;padding:10px;margin:8px 0}
 .tag.lookonly{background:#fdeaea;color:#b22b2b}
+#friend-unique,#friend-riding{font-size:13.5px;line-height:1.45;background:#fff4e6;border:2px solid #f0d2a8;border-radius:14px;padding:9px 12px}
+#friend-unique b,#friend-riding b{display:block;color:#a8642a;margin-bottom:3px}
+#friend-unique span,#friend-riding span{display:block}
