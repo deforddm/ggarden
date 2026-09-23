@@ -835,6 +835,12 @@
       var sy = 7 - i * 2.5;
       c.fillStyle = (i % 2) ? alt : a.body;
       ell(c, wob, sy, r, r);
+      if (a.spots) {
+        /* the tent caterpillar's blue spots down each side */
+        c.fillStyle = a.spots;
+        ell(c, wob - r * 0.62, sy, 0.8, 0.8); ell(c, wob + r * 0.62, sy, 0.8, 0.8);
+      }
+      if (a.back) { c.fillStyle = a.back; ell(c, wob, sy, 0.75, r * 0.95); }
       if (a.woolly) {
         /* thick fur all over, and a tuft of longer hairs near the tail */
         var tail = (i <= 1);
@@ -1164,6 +1170,11 @@
         c.restore();
       }
     }
+    if (a.wingSpot) {
+      /* the spotted wing drosophila boy's one dark dot near each wing tip */
+      c.globalAlpha = 1; c.fillStyle = a.wingSpot;
+      ell(c, -6.2, -3.4, 1.3, 1.3); ell(c, 6.2, -3.4, 1.3, 1.3);
+    }
     c.restore();
     legs(c, a.accent, 3, 3, 5, t * 10, 1);
     c.fillStyle = a.body; ell(c, 0, 2, 3.2, 5.4);
@@ -1184,7 +1195,7 @@
       ell(c, -1.1, 1.4, 0.55, 4.4); ell(c, 1.1, 1.4, 0.55, 4.4);
     }
     c.fillStyle = GG.shade(a.body, -0.15); ell(c, 0, -3.4, 3, 2.6);
-    c.fillStyle = '#8a3a2a';
+    c.fillStyle = a.eyeCol || '#8a3a2a';
     ell(c, -1.9, -5, 2, 2.3); ell(c, 1.9, -5, 2, 2.3);
     c.fillStyle = 'rgba(255,255,255,0.4)';
     ell(c, -2.3, -5.6, 0.6, 0.6); ell(c, 2.3, -5.6, 0.6, 0.6);
@@ -1298,17 +1309,21 @@
       c.fillStyle = '#ffffff';
       ell(c, s * 8.4, -2.4, 7.6, 3.2, s * 0.14);
       c.globalAlpha = 1;
-      c.strokeStyle = a.accent; c.lineWidth = 1.1;
+      c.strokeStyle = a.rim || a.accent; c.lineWidth = 1.1;
       c.beginPath(); c.ellipse(s * 8.4, -2.4, 7.6, 3.2, s * 0.14, 0, Math.PI * 2); c.stroke();
       c.globalAlpha = 0.3; c.fillStyle = '#ffffff';
       ell(c, s * 5.4, 2.6, 4.4, 2.4, -s * 0.2);
       c.globalAlpha = 1;
-      c.strokeStyle = a.accent; c.lineWidth = 0.9;
+      c.strokeStyle = a.rim || a.accent; c.lineWidth = 0.9;
       c.beginPath(); c.ellipse(s * 5.4, 2.6, 4.4, 2.4, -s * 0.2, 0, Math.PI * 2); c.stroke();
     }
     c.restore();
     c.fillStyle = a.wing; ell(c, 0, -1, 2.6, 5.4);
     c.fillStyle = a.accent; ell(c, 0, 4.2, 2.4, 3.4);
+    if (a.belt) {
+      /* the peachtree borer's one bright belt */
+      c.fillStyle = a.belt; ell(c, 0, 3.6, 2.45, 1.05);
+    }
     c.fillStyle = GG.shade(a.accent, -0.2);
     c.beginPath();
     c.moveTo(-3.4, 7); c.lineTo(0, 5.4); c.lineTo(3.4, 7); c.lineTo(0, 9.6);
@@ -3448,6 +3463,11 @@
     }
     c.fillStyle = a.back; ell(c, 0, 4.6, 4.2, 5.9);
     c.fillStyle = a.stripe; ell(c, 0, 4.6, 1.1, 5.5);
+    if (a.bars) {
+      /* the zebra jumper's black and white stripes, across the back */
+      c.fillStyle = a.bars;
+      ell(c, 0, 2.2, 3.7, 0.95); ell(c, 0, 5, 3.9, 0.95); ell(c, 0, 7.8, 3.1, 0.9);
+    }
     c.fillStyle = a.body; ell(c, 0, -3.8, 4.4, 4.8);
     c.strokeStyle = GG.shade(a.body, 0.45); c.lineWidth = 0.55; c.lineCap = 'round';
     for (var f = 0; f < 12; f++) {

@@ -1338,9 +1338,9 @@
       maxBugs: 8, maxFish: 0, maxDecor: 12, creatures: 'land' },
     { id: 'aquarium', name: 'Fish Tank', short: 'Fish Tank',
       blurb: 'All water, for fish and rock-pool creatures.',
-      maxBugs: 4, maxFish: 6, maxDecor: 8, creatures: 'water' },
+      maxBugs: 8, maxFish: 6, maxDecor: 8, creatures: 'water' },
     { id: 'hybrid', name: 'Hybrid Tank', short: 'Hybrid', blurb: 'A grassy bank above, water below. Bugs and fish together.',
-      maxBugs: 5, maxFish: 4, maxDecor: 10, creatures: 'any' },
+      maxBugs: 8, maxFish: 6, maxDecor: 10, creatures: 'any' },
     { id: 'habitat', name: 'Garden Habitat', short: 'Habitat',
       blurb: 'A corner of the garden your friends come and visit.',
       maxBugs: 0, maxFish: 0, maxFriends: 5, maxDecor: 12, creatures: 'none' }
