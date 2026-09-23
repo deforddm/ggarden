@@ -232,7 +232,7 @@
     GG.UI.prompt(atDoor ? 'Tap to go inside'
       : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
         : (lookAt ? 'Look \u2014 but this one is not for catching'
-          : (pickable ? 'Tap to pick the fruit' : null))));
+          : (pickable ? pickPrompt(pickable) : null))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (fishing) setActionLabel('\u2014', 'fishing');
@@ -562,7 +562,8 @@
       shore: '#c2bcac', desert: '#cdb68c', mountain: '#9d9a93', taiga: '#3c5c3a',
       tundra: '#c3c9ba', rainforest: '#2f5c2c', glade: '#c9bb6a',
       badlands: '#a2947a', savanna: '#c9b172', swamp: '#5e6b47', bamboo: '#7a9450',
-      cherry: '#c8e089', birdtown: '#9ad96f', farmyard: '#b9ac7e' };
+      cherry: '#c8e089', birdtown: '#9ad96f', farmyard: '#b9ac7e',
+      dogpark: '#b4e88a' };
     var WCOL = { 1: '#4fa8c9', 2: '#8fd6e2', 3: '#5fb9d4', 4: '#5aa8a4', 5: '#2f7fb4', 6: '#7fd0c4', 7: '#4f7f73' };
     var step = 20;
     for (var y = 0; y < W.H; y += step) {
@@ -584,7 +585,7 @@
      ['Tundra', 4000, 260], ['Glade', 5800, 1640], ['Rainforest', 7450, 2500],
      ['Scablands', 700, 1700], ['Savanna', 620, 3900], ['Marsh', 3500, 3560],
      ['Bamboo', 4450, 1800], ['Cherry', 6300, 2800], ['Bird Town', 4380, 1380],
-     ['Farmyard', 4420, 3200]].forEach(function (p) {
+     ['Farmyard', 4420, 3200], ['Dog\u2019s Paradise', 3440, 2130]].forEach(function (p) {
       c.strokeText(p[0], p[1] * sx, p[2] * sy);
       c.fillText(p[0], p[1] * sx, p[2] * sy);
     });
@@ -701,8 +702,10 @@
 
     $('chip-time').textContent = 'Day ' + GG.Time.day + ' · ' + GG.Time.label() +
       (GG.Time.rain ? ' ☔' : '');
-    $('chip-place').textContent = scene === 'house' ? 'Home'
+    var placeNow = scene === 'house' ? 'Home'
       : (scene === 'cave' ? 'The Lava Tube' : GG.World.placeName(GG.Player.x, GG.Player.y));
+    $('chip-place').textContent = placeNow;
+    parkNotice(placeNow);
 
     /* the sound of the place she is in */
     if (GG.Audio.ready()) {
@@ -712,6 +715,38 @@
     }
   }
   var _wasPaused = false;
+
+  /* what the prompt calls the thing she is about to pick (v1.18) */
+  function pickPrompt(plant) {
+    var d = plant && GG.FRUIT_BY_ID[plant.fruit];
+    var k = d && d.kind;
+    return k === 'flower' ? 'Tap to pick a flower'
+      : (k === 'veg' ? 'Tap to pick the vegetable'
+        : (k === 'berry' ? 'Tap to pick the berries' : 'Tap to pick the fruit'));
+  }
+
+  /* The notice board at Dog's Paradise: every time she walks in, one thing
+     worth knowing about how dogs play (v1.18). Checked against Byosiere et
+     al. 2016 on the play bow, Bekoff on fair play, Cornell's vet school on
+     the zoomies, and the ASPCA on grapes and onions. */
+  GG.DOGPARK_FACTS = [
+    'Dog\u2019s Paradise! When a dog drops its front end down with its bottom in the air, that is a play bow. It means: let\u2019s play!',
+    'Dog\u2019s Paradise! Big dogs often play gently with little ones, and even roll over and let them win. Scientists call it self-handicapping.',
+    'Dog\u2019s Paradise! A dog racing round in wild circles has the zoomies. Vets call them frenetic random activity periods, and they are perfectly normal.',
+    'Dog\u2019s Paradise! Never share grapes, raisins or onions with a dog. They are poisonous to dogs.',
+    'Dog\u2019s Paradise! Always ask a dog\u2019s person before you say hello, and leave dogs that are eating or sleeping alone.'
+  ];
+  var _lastPlace = '', _parkFact = 0, _parkAt = -1e9;
+  function parkNotice(place) {
+    if (place === _lastPlace) return;
+    var was = _lastPlace;
+    _lastPlace = place;
+    if (place !== 'Dog\u2019s Paradise' || !was) return;
+    var now = performance.now();
+    if (now - _parkAt < 30000) return;   // not again just for stepping out and back
+    _parkAt = now;
+    GG.UI.toast(GG.DOGPARK_FACTS[_parkFact++ % GG.DOGPARK_FACTS.length], 5200);
+  }
 
   /* ---------- "update ready" on the title screen ---------- */
   var swReg = null, updateAsked = false, updateReady = false, updateRaf = 0;
