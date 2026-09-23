@@ -1907,9 +1907,15 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.15.0';
+  GG.VERSION = '1.15.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.15.1', title: 'A new sign on the bookshelf',
+      lines: [
+        'The bookshelf at home says Collections now, because it holds all four of your books \u2014 bugs, fish, friends and fruit.'
+      ]
+    },
     {
       v: '1.15.0', title: 'The Critter Compendium, fishing in the marsh, and Cookie',
       lines: [
@@ -25328,7 +25334,7 @@ ul.tips li{margin-bottom:3px}
       c.moveTo(337, 82); c.lineTo(465, 82);
       c.stroke();
 
-      /* ---- bookshelf (the Bug Book) ---- */
+      /* ---- bookshelf (the Critter Compendium: all her collections) ---- */
       c.fillStyle = '#9a6f43';
       GG.roundRect(c, 92, 112, 108, 96, 5); c.fill();
       c.fillStyle = '#7d5733'; c.fillRect(97, 156, 98, 6);
@@ -25338,11 +25344,15 @@ ul.tips li{margin-bottom:3px}
         c.fillRect(102 + b * 19, 121, 14, 35);
       }
       c.fillStyle = '#f2e6cf';
-      GG.roundRect(c, 104, 166, 84, 34, 4); c.fill();
+      GG.roundRect(c, 97, 166, 98, 34, 4); c.fill();
       c.fillStyle = '#4b6b3a';
-      c.font = 'bold 16px "Trebuchet MS", sans-serif';
       c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-      c.fillText('BUGS', 146, 190);
+      /* the label is a plank of fixed width, so the word is sized to fit it */
+      var fs = 16;
+      do {
+        c.font = 'bold ' + fs + 'px "Trebuchet MS", sans-serif';
+      } while (c.measureText('Collections').width > 88 && --fs > 9);
+      c.fillText('Collections', 146, 189);
 
       /* ---- terrarium table ---- */
       c.fillStyle = '#9a6f43';
