@@ -1,5 +1,5 @@
 /* The Critter Compendium (v1.15): one big book with four books inside it -
-   the Bug Book, the Fish Book, the Friends Book and the Fruit Book - every
+   the Bug Book, the Fish Book, the Friends Book and the Garden Book - every
    creature and fruit Guin has met, with real facts. Opening it with no book
    named shows the contents page, a shelf of the four. */
 (function (GG) {
@@ -42,7 +42,7 @@
         GG.ANIMALS.forEach(function (a) { if (a.lookOnly && GG.Save.hasSeen(a.id)) met++; });
         return GG.Save.totalFriends() + met;
       } },
-    { id: 'fruit', name: 'Fruit Book', blurb: 'fruit and berries', col: '#d0813a',
+    { id: 'fruit', name: 'Garden Book', blurb: 'fruit, berries, vegetables and flowers', col: '#d0813a',
       show: function () { return GG.FRUIT_BY_ID && (GG.FRUIT_BY_ID.apple || GG.FRUITS[0]); },
       list: function () { return GG.FRUITS; },
       found: function () { return GG.Save.totalFruit(); } }
@@ -121,13 +121,13 @@
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
       $('book-tabs').style.display = '';
-      $('book-title').textContent = fruit ? 'Fruit Book'
+      $('book-title').textContent = fruit ? 'Garden Book'
         : (friends ? 'Friends Book' : (fish ? 'Fish Book' : 'Bug Book'));
       document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
         el.classList.toggle('on', el.getAttribute('data-book') === tab);
       });
       grid.innerHTML = '';
-      var list = fruit ? GG.FRUITS : (friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS));
+      var list = fruit ? (GG.fruitsInBookOrder ? GG.fruitsInBookOrder() : GG.FRUITS) : (friends ? GG.ANIMALS : (fish ? GG.FISH : GG.BUGS));
       /* the look-only friends are met, never befriended - but a page she has
          opened still counts towards the book, exactly as it does for bugs */
       var metOnly = 0;
@@ -142,7 +142,19 @@
       $('progress').textContent = found + ' / ' + list.length;
       if (friends) this.companionRow(grid);
       if (fruit) this.fruitRow(grid);
+      var shelf = null;
       list.forEach(function (def) {
+        /* the Garden Book has four shelves: fruit, berries, vegetables, flowers */
+        if (fruit && GG.FRUIT_KINDS && def.kind !== shelf) {
+          shelf = def.kind;
+          var kd = null;
+          GG.FRUIT_KINDS.forEach(function (k) { if (k.id === shelf) kd = k; });
+          var have = 0, all = 0;
+          list.forEach(function (f) { if (f.kind === shelf) { all++; if (GG.Save.hasFruit(f.id)) have++; } });
+          var hd = GG.el('div', 'book-shelf', (kd ? kd.name : 'More') + '  ' + have + ' / ' + all);
+          hd.style.gridColumn = '1/-1';
+          grid.appendChild(hd);
+        }
         var got = fruit ? GG.Save.hasFruit(def.id)
           : (friends ? (def.lookOnly ? GG.Save.hasSeen(def.id) : GG.Save.hasFriend(def.id))
             : (fish ? GG.Save.hasFish(def.id) : GG.Save.found(def)));
@@ -194,7 +206,7 @@
       txt.innerHTML = kinds
         ? '<b>' + kinds + ' of ' + GG.FRUITS.length + ' kinds picked.</b> Every new kind '
           + 'unlocks a decoration for your tanks.'
-        : 'Walk up to a tree in the <b>Apple Orchard</b> or a bush in the <b>Pebble Hills</b> '
+        : 'Walk up to a fruit tree, a vegetable bed, a wild berry bush or a clump of flowers '
           + 'and tap <b>PICK</b>. Every new kind unlocks a decoration.';
       row.appendChild(txt);
       grid.appendChild(row);
@@ -237,7 +249,7 @@
       var grid = $('book-grid'), det = $('book-detail');
       grid.style.display = 'none'; det.style.display = 'block';
       $('book-back').style.display = 'block';
-      $('book-back').textContent = def.isFruit ? 'All fruit'
+      $('book-back').textContent = def.isFruit ? 'The whole garden'
         : (def.isAnimal ? 'All friends'
           : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
@@ -263,9 +275,9 @@
       var rows;
       if (isFruit) {
         var un = GG.DECOR_BY_ID[def.unlock];
-        rows = [['Grows in', GG.FRUITS_WHERE[def.where] || def.where],
+        rows = [['Grows in', GG.fruitWhereName ? GG.fruitWhereName(def) : (GG.FRUITS_WHERE[def.where] || def.where)],
           ['On', GG.fruitOnName ? GG.fruitOnName(def) : (def.on === 'tree' ? 'a tree' : 'a bush')],
-          ['Ripe in', def.ripens], ['Size', def.measure],
+          [def.kind === 'flower' ? 'In bloom' : 'Ripe in', def.ripens], ['Size', def.measure],
           ['Picked', n + ' time' + (n === 1 ? '' : 's')]];
         if (un) rows.push(['Unlocked', un.name]);
       } else if (isAnimal) {

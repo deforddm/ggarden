@@ -16,7 +16,7 @@
         ['water', 'For fish tanks (and the pool of a hybrid)'],
         ['habitat', 'For a garden habitat'],
         ['any', 'For any tank'],
-        ['picked', 'Picked, not bought — from the orchard and the hills']
+        ['picked', 'Picked, not bought — from the orchard, the beds, the wild places and the flowers']
       ];
       groupsD.forEach(function (g) {
         grid.appendChild(GG.el('div', 'shop-group', g[1]));
@@ -52,7 +52,8 @@
           if (owned) { GG.UI.toast('You already have this one'); return; }
           if (fruitDef) {
             GG.UI.toast('Pick a ' + fruitDef.name + ' in '
-              + (GG.FRUITS_WHERE[fruitDef.where] || 'the garden') + ' and this is yours.', 3000);
+              + (GG.fruitWhereName ? GG.fruitWhereName(fruitDef) : (GG.FRUITS_WHERE[fruitDef.where] || 'the garden'))
+              + ' and this is yours.', 3000);
             return;
           }
           if (d.sparkles < dec.price) { GG.UI.toast('Not enough sparkles yet'); return; }

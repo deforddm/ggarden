@@ -152,7 +152,7 @@
       care.style.display = 'block';
       $('catch-reward').innerHTML = res.unlocked
         ? 'New decoration for your tanks: <b>' + res.unlocked.name + '</b>'
-        : (res.first ? 'New page in your Fruit Book!' : '&#10022; one for the basket');
+        : (res.first ? 'New page in your Garden Book!' : '&#10022; one for the basket');
       $('catch-pop').classList.remove('hidden');
       this._animCatch(true);
     },
