@@ -78,6 +78,8 @@
     var show = !!(busy || cand || ride);
     btn.classList.toggle('hidden', !show);
     btn.classList.toggle('waiting', !!busy);
+    /* getting on your own horse is an offer, not an alarm */
+    btn.classList.toggle('quiet', !!(ride && ride.quiet) && !busy && !cand);
     if (!show) { _friendLabel = ''; return null; }
     var main, sub;
     if (ride) { main = ride.main; sub = ride.sub; } else {
