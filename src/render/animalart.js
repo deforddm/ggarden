@@ -3311,6 +3311,51 @@
     snake: function () { return { x: 19, y: 0.4, r: 3.4, tilt: -0.1 }; }
   };
 
+  /* v1.16 - David: "improve the placement of silly hats, currently they sit
+     on top of ears etc. Make them fit more to the top of the head." Each hat
+     was being set down at the height of the ear tips, so on anything with
+     ears it perched on them. These nudges (in each animal's own drawing
+     units, measured off a grid laid over every head) bring the hat down onto
+     the crown of the skull, between or in front of the ears, and shrink its
+     brim to the width of the head so the ears stay visible either side. */
+  var HAT_FIT = {
+    hummingbird: { dx: 0.5, dy: 1.2, r: 3.0 },
+    frog: { dx: 0.2, dy: 0.6, r: 4.2 },
+    bat: { dx: 0, dy: 4.0, r: 3.0 },
+    'dog:up': { dx: 0.6, dy: 6.0, r: 3.4 },
+    dog: { dx: 1.8, dy: 0.5, r: 4.8 },
+    cat: { dx: 1.0, dy: 1.2, r: 4.0 },
+    parrot: { dx: 0, dy: 0.4, r: 4.4 },
+    rabbit: { dx: 1.8, dy: 0.6, r: 3.6 },
+    treesquirrel: { dx: 1.4, dy: 0.6, r: 3.8 },
+    groundsquirrel: { dx: 0.9, dy: 0.4, r: 3.3 },
+    turtle: { dx: 0.9, dy: 0.7, r: 3.2 },
+    bear: { dx: 0.4, dy: 2.4, r: 3.8 },
+    raccoon: { dx: 0, dy: 2.8, r: 3.3 },
+    fox: { dx: -0.6, dy: 3.4, r: 3.1 },
+    deer: { dx: 0.5, dy: 1.3, r: 3.4 },
+    moose: { dx: 1.8, dy: 0.9, r: 4.2 },
+    cow: { dx: 1.5, dy: 0.9, r: 4.2 },
+    horse: { dx: -0.3, dy: 1.3, r: 3.3 },
+    sheep: { dx: 1.8, dy: 1.1, r: 3.8 },
+    chicken: { dx: 0.4, dy: 0.3, r: 3.2 },
+    otter: { dx: 0.5, dy: -2.4, r: 3.8 },
+    owl: { dx: 0.4, dy: 0.2, r: 5.0 },
+    panda: { dx: -1.8, dy: 1.9, r: 3.5 },
+    koala: { dx: 1.8, dy: 2.0, r: 4.2 },
+    ocelot: { dx: 0.7, dy: 3.0, r: 3.4 },
+    redpanda: { dx: 0.7, dy: 3.2, r: 3.4 },
+    axolotl: { dx: 0.9, dy: -0.8, r: 4.0 },
+    songbird: { dx: 0.3, dy: 0.2, r: 4.0 },
+    snake: { dx: 3.0, dy: -1.0, r: 3.0 }
+  };
+  function fitHat(shape, a, at) {
+    var f = HAT_FIT[shape === 'dog' && a.ears === 'up' ? 'dog:up' : shape];
+    if (!f || !at) return at;
+    var k = a.calf ? (shape === 'moose' ? 0.7 : 0.74) : 1;
+    return { x: at.x + f.dx * k, y: at.y + f.dy * k, r: f.r * k, tilt: at.tilt };
+  }
+
   var HATS = GG.HATS = [
     { id: 'party', name: 'Party Hat' },
     { id: 'top', name: 'Top Hat' },
@@ -3507,7 +3552,7 @@
     var art = HAT_ART[hatId];
     var spot = HAT_SPOT[def.art.shape];
     if (!art || !spot) return;
-    var at = spot(def.art, t, gait);
+    var at = fitHat(def.art.shape, def.art, spot(def.art, t, gait));
     c.save();
     c.translate(at.x, at.y);
     c.rotate(at.tilt || 0);
@@ -3543,6 +3588,11 @@
   GG.AnimalArt = {
     shapes: S,
     SPAN: SPAN,
+    /* where the hat sits on this animal, in its own drawing units */
+    hatSpot: function (def, t, gait) {
+      var f = HAT_SPOT[def.art.shape];
+      return f ? fitHat(def.art.shape, def.art, f(def.art, t, gait)) : null;
+    },
 
     /* (x, y) is the animal's FEET. faceLeft mirrors it. */
     draw: function (c, def, x, y, scale, faceLeft, t, gait, hat) {
