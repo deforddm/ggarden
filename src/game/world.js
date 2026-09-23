@@ -7,7 +7,7 @@
   /* H hill  M meadow  G garden  F forest  O orchard  P pond bank
      T tundra  A taiga  N mountain  D desert  R rainforest  L forest glade
      B scablands  V oak savanna  W marsh  Y bamboo  C cherry  E bird town
-     K farmyard
+     K farmyard  Q Dog's Paradise
      The sea is in the south-east, so wet air comes off it, crosses the
      rainforest, climbs the mountains and drops its rain on the way up.
      What is left is dry, which is why the desert sits behind the ridge. */
@@ -23,9 +23,9 @@
     'BBBBBBBBBBDDDDDDNNNNHHHHMMEEEMFFFFFFFFFFFFFFFFFFFF',
     'BBBBBBBBBBDDDDDNNNNNHHHMMMEEEMFFFFFFLLFFFFFFFFFFFF',
     'BBBBBBBBBBDDDDDNNNNNHHMMMMMYYYMFFFFLLLLFFFFFFRRRRR',
-    'BBBBBBBBBBDDDDDNNNNHMMMMMMMYYYMMFFFLLLFFFFFFRRRRRR',
-    'BBBBBBBBBBDDDDDNNNNHMMMMMMMYYYGGOOOOOFFFFFFFRRRRRR',
-    'BBBBBBBBBBDDDDNNNNNHMMMMMMGGGGGGOOOOOOFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDDNNNNHQQQQQMMYYYMMFFFLLLFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDDNNNNHQQQQQMMYYYGGOOOOOFFFFFFFRRRRRR',
+    'BBBBBBBBBBDDDDNNNNNHQQQQQMGGGGGGOOOOOOFFFFFFRRRRRR',
     'BBBBBBBBBBDDDDNNNNNHPPMMMMGGGGGGGOOOOOOFFFFFRRRRRR',
     'VBBBBBBBBBDDDDNNNNHHPPPMMMGGGGGGGOOOOOOFFFFFRRRRRR',
     'VVBBBBBBBBDDDDNNNNHHPPPPMMGGGGGGGOOOOOCCCFFFRRRRRR',
@@ -42,7 +42,7 @@
   var LETTER = { M: 'meadow', G: 'garden', F: 'forest', P: 'pond', H: 'hill', O: 'orchard',
     T: 'tundra', A: 'taiga', N: 'mountain', D: 'desert', R: 'rainforest', L: 'glade',
     B: 'badlands', V: 'savanna', W: 'swamp', Y: 'bamboo', C: 'cherry',
-    E: 'birdtown', K: 'farmyard' };
+    E: 'birdtown', K: 'farmyard', Q: 'dogpark' };
 
   /* water kinds */
   var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6, MARSH = 7;
@@ -73,7 +73,9 @@
     cherry: ['#a3d46a', '#99cb60', '#aeda78'],
     birdtown: ['#8ecf63', '#83c55a', '#98d76d'],
     /* trodden dirt and dropped straw */
-    farmyard: ['#b9ac7e', '#b0a375', '#c2b68a']
+    farmyard: ['#b9ac7e', '#b0a375', '#c2b68a'],
+    /* a mown lawn, a shade brighter than the meadow round it */
+    dogpark: ['#93d668', '#8acd5f', '#9edd74']
   };
 
   /* The three shades above are a fine speckle, close enough together to read
@@ -95,7 +97,9 @@
     swamp: [[62, 74, 51, 70, 0.58, 191], [140, 160, 78, 48, 0.72, 193], [111, 106, 82, 58, 0.84, 197]],
     bamboo: [[92, 112, 60, 74, 0.60, 199], [196, 186, 126, 52, 0.78, 211]],
     cherry: [[236, 206, 214, 60, 0.74, 223], [150, 180, 96, 82, 0.60, 227]],
-    farmyard: [[150, 168, 92, 68, 0.58, 229], [142, 124, 86, 48, 0.80, 233]]
+    farmyard: [[150, 168, 92, 68, 0.58, 229], [142, 124, 86, 48, 0.80, 233]],
+    /* worn patches where the dogs always run the same way round */
+    dogpark: [[176, 164, 116, 54, 0.80, 241], [128, 192, 88, 80, 0.62, 251]]
   };
 
   var POND_E = { cx: 3820, cy: 2980, rx: 460, ry: 300 };
@@ -179,7 +183,8 @@
   /* Things that are part of the ground rather than standing on it. They are
      painted before anything that walks, and never sorted by depth. */
   var FLAT = { lilypad: 1, wetrock: 1, pebbles: 1, kelp: 1, soilCrust: 1, snowPatch: 1,
-    duckweed: 1, petalDrift: 1, scabPothole: 1, currentRipple: 1, acorns: 1 };
+    duckweed: 1, petalDrift: 1, scabPothole: 1, currentRipple: 1, acorns: 1,
+    tennisBall: 1, dogBowl: 1, boneToy: 1 };
 
   var MS = 8;   // water mask resolution, in pixels
 
@@ -362,7 +367,7 @@
         tundra: 'Lichen Tundra', rainforest: 'Mossy Rainforest', glade: 'Golden Glade',
         badlands: 'The Scablands', savanna: 'Oak Savanna', swamp: 'Cattail Marsh',
         bamboo: 'Bamboo Grove', cherry: 'Cherry Grove', birdtown: 'Bird Town',
-        farmyard: 'The Farmyard'
+        farmyard: 'The Farmyard', dogpark: 'Dog’s Paradise'
       }[this.biomeRaw(x, y)];
     },
 
@@ -373,8 +378,10 @@
       var rnd = GG.mulberry32(20260912);
       var self = this;
 
+      var skipAdd = false;
       function add(type, x, y, r, solid, rad, extra) {
         var p = { type: type, x: x, y: y, r: r, seed: rnd(), solid: !!solid, rad: rad || 0 };
+        if (skipAdd) return p;
         if (extra) for (var k in extra) p[k] = extra[k];
         self.props.push(p);
         if (p.solid) {
@@ -399,6 +406,12 @@
         if (nearHouse(x, y, 40)) continue;
         if (this.onBridge(x, y, 26)) continue;
         var b = this.biomeAt(x, y);
+        /* Dog's Paradise (v1.18) was meadow before it was a park. It still
+           rolls the meadow's dice, so nothing anywhere else on the map moves,
+           but it keeps none of what it rolls: the park is laid out by hand
+           further down. */
+        skipAdd = b === 'dogpark';
+        if (skipAdd) b = 'meadow';
         var v = rnd();
 
         if (b === 'forest') {
@@ -635,6 +648,7 @@
         var dxw = mp.x + Math.cos(ma) * mp.rx * mr, dyw = mp.y + Math.sin(ma) * mp.ry * mr;
         if (this.waterKind(dxw, dyw) === MARSH) add('duckweed', dxw, dyw, 22 + rnd() * 14);
       }
+      skipAdd = false;
       /* The lava tube, and the boot brush that opens it. */
       this.caveMouth = add('caveMouth', 2480, 2180, 52, true, 30);
       this.bootBrush = add('bootBrush', 2578, 2246, 24, false, 0, {});
@@ -647,9 +661,153 @@
       add('sign', 4380, 1420, 26, false, 0, { label: 'Bird Town' });
       add('sign', 4420, 3180, 26, false, 0, { label: 'Farmyard' });
 
+      /* v1.18, last of all so everything above keeps exactly the place and
+         the look it had: Dog's Paradise, and the new things to pick. */
+      this.buildDogPark(add);
+      this.plantPickables(add);
+
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
       this.props.sort(function (p, q) { return p.y - q.y; });
       this.chunks = {};
+    },
+
+    /* ---------- Dog's Paradise (v1.18) ----------
+       David: "add an area similar to bird town called Dog's Paradise". It
+       is an off-leash dog park on the lawn west of the Flower Garden: an
+       agility course in the middle, kennels to flop in, benches for the
+       grown-ups, water bowls, and balls and bones dropped all over. */
+    DOGPARK: { x0: 3200, y0: 1760, x1: 4000, y1: 2240, cx: 3600, cy: 2000 },
+    buildDogPark: function (add) {
+      var self = this, R = GG.mulberry32(20260922);
+      var P = this.DOGPARK;
+      function inPark(x, y, pad) {
+        return !self.isWater(x, y) && self.biomeAt(x, y) === 'dogpark' &&
+          self.biomeAt(x - pad, y) === 'dogpark' && self.biomeAt(x + pad, y) === 'dogpark' &&
+          self.biomeAt(x, y - pad * 0.6) === 'dogpark' && self.biomeAt(x, y + pad * 0.6) === 'dogpark';
+      }
+      function put(type, x, y, r, solid, rad, extra) {
+        if (self.isWater(x, y)) return null;
+        if (solid && self.blocked(x, y, rad + 4)) return null;
+        return add(type, x, y, r, solid, rad, extra);
+      }
+      /* the agility course: three jumps in a row, the weave poles, a tunnel */
+      put('dogJump', 3470, 1930, 24, true, 9);
+      put('dogJump', 3560, 1930, 24, true, 9);
+      put('dogJump', 3650, 1930, 24, true, 9);
+      put('dogWeave', 3780, 1950, 24, true, 10);
+      put('dogTunnel', 3440, 2060, 28, true, 18);
+      /* two kennels, with a bowl of water by each */
+      put('dogHouse', 3300, 1860, 26, true, 18);
+      put('dogBowl', 3342, 1880, 10);
+      put('dogHouse', 3880, 1850, 26, true, 18);
+      put('dogBowl', 3838, 1872, 10);
+      /* benches for the grown-ups along the bottom, and a bowl between */
+      put('parkBench', 3560, 2160, 24, true, 15);
+      put('parkBench', 3760, 2150, 24, true, 15);
+      put('dogBowl', 3660, 2168, 10);
+      put('hydrant', 3700, 2060, 14, true, 7);
+      put('hydrant', 3290, 2150, 14, true, 7);
+      /* shade trees at the corners */
+      put('tree', 3240, 1790, 40, true, 14);
+      put('tree', 3930, 2200, 38, true, 14);
+      put('tree', 3250, 2220, 36, true, 14);
+      /* the sign at the path in from the garden */
+      add('sign', 3960, 2080, 26, false, 0, { label: 'Dog’s Paradise' });
+      /* then the lawn itself, and everything the dogs have dropped on it */
+      var i, x, y, n;
+      for (i = 0, n = 0; i < 900 && n < 90; i++) {
+        x = P.x0 + R() * (P.x1 - P.x0); y = P.y0 + R() * (P.y1 - P.y0);
+        if (!inPark(x, y, 4)) continue;
+        n++;
+        if (n % 7 === 0) add('flower', x, y, 10 + R() * 4, false, 0, { col: R() < 0.5 ? '#fff0a8' : '#ffffff' });
+        else add('grassTuft', x, y, 12 + R() * 6);
+      }
+      for (i = 0, n = 0; i < 600 && n < 16; i++) {
+        x = P.x0 + R() * (P.x1 - P.x0); y = P.y0 + R() * (P.y1 - P.y0);
+        if (!inPark(x, y, 20) || this.blocked(x, y, 10)) continue;
+        n++;
+        if (n % 3 === 0) add('boneToy', x, y, 9, false, 0, { col: ['#f4f0e0', '#e0604a', '#5aa8e0'][n % 3] });
+        else add('tennisBall', x, y, 4 + R() * 0.8);
+      }
+    },
+
+    /* ---------- the new things to pick (v1.18) ----------
+       Each vegetable, wild berry and flower is planted where it really
+       grows, a few of each, and the plant knows what it carries from the
+       start (p.pick). The fruit trees and the grape vine go into the orchard
+       with the others instead. */
+    plantPickables: function (add) {
+      var self = this, R = GG.mulberry32(20260918);
+      var LET = {};
+      Object.keys(LETTER).forEach(function (k) { LET[LETTER[k]] = k; });
+      var cells = {};
+      for (var ry = 0; ry < ROWS; ry++) {
+        for (var cx = 0; cx < COLS; cx++) {
+          var L = MAP[ry][cx];
+          (cells[L] = cells[L] || []).push([cx, ry]);
+        }
+      }
+      var HOUSE = this.HOUSE;
+      var planted = [];
+      /* how many of each, per place */
+      var COUNT = { veg: 2, berry: 3, fruit: 3, flower: 3 };
+      function spot(biome, rad, gap) {
+        var list = cells[LET[biome]];
+        if (!list) return null;
+        for (var a = 0; a < (rad >= 40 ? 2000 : 500); a++) {
+          var c0 = list[Math.floor(R() * list.length)];
+          var x = (c0[0] + R()) * CELL, y = (c0[1] + R()) * CELL;
+          if (x < 60 || y < 80 || x > self.W - 60 || y > self.H - 60) continue;
+          if (self.isWater(x, y) || self.onBridge(x, y, 30)) continue;
+          if (self.biomeAt(x, y) !== biome) continue;
+          if (Math.abs(x - HOUSE.x) < HOUSE.w * 0.8 && y > HOUSE.y - HOUSE.w * 1.4 && y < HOUSE.y + 110) continue;
+          if (self.blocked(x, y, rad + 10)) continue;
+          if (rad >= 40 && self.solidWithin(x, y, 72)) continue;
+          var ok = true;
+          for (var k = 0; k < planted.length; k++) {
+            var q = planted[k];
+            var dx = q.x - x, dy = (q.y - y) * 1.3;
+            if (dx * dx + dy * dy < gap * gap) { ok = false; break; }
+          }
+          if (ok) return { x: x, y: y };
+        }
+        return null;
+      }
+      GG.FRUITS.forEach(function (def) {
+        if (!def.autoDecor) return;
+        var type = def.on === 'veg' ? 'vegPatch' : (def.on === 'flower' ? 'pickFlower'
+          : ((def.on === 'wild' || def.on === 'low') ? 'wildBerry' : null));
+        if (!type) return;
+        var wheres = Array.isArray(def.where) ? def.where : [def.where];
+        wheres.forEach(function (w) {
+          var n = COUNT[def.kind] || 2;
+          for (var i = 0; i < n; i++) {
+            var r = type === 'pickFlower' ? 18 + R() * 4 : (def.on === 'low' ? 17 + R() * 4 : 20 + R() * 4);
+            var solid = type === 'wildBerry' && def.on === 'wild';
+            /* a bush needs room round it: jammed against a trunk it looks
+               wrong and it walls in whoever is at the foot of the tree */
+            var at = spot(w, solid ? 40 : (type === 'pickFlower' ? 20 : 16), type === 'vegPatch' ? 58 : 70);
+            if (!at) break;
+            var p = add(type, at.x, at.y, r, solid, solid ? 11 : 0, { pick: def.id, biome: w });
+            planted.push(p);
+          }
+        });
+      });
+      this.pickables = planted;
+    },
+
+    /* is any solid thing's centre within d of (x, y)? */
+    solidWithin: function (x, y, d) {
+      for (var gx = -1; gx <= 1; gx++) {
+        for (var gy = -1; gy <= 1; gy++) {
+          var list = this.grid[(Math.floor(x / 200) + gx) + ',' + (Math.floor(y / 200) + gy)];
+          if (!list) continue;
+          for (var i = 0; i < list.length; i++) {
+            if (Math.hypot(list[i].x - x, list[i].y - y) < d) return true;
+          }
+        }
+      }
+      return false;
     },
 
     /* ---------- collision ---------- */

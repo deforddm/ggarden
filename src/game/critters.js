@@ -67,7 +67,8 @@
       birdtown: ['meadow', 'garden'], farmyard: ['meadow', 'garden'],
       cherry: ['orchard', 'meadow'], bamboo: ['garden', 'forest'],
       savanna: ['meadow', 'hill'], badlands: ['desert', 'hill'],
-      swamp: ['pond', 'riverbank']
+      swamp: ['pond', 'riverbank'],
+      dogpark: ['meadow', 'garden']
     },
 
     eligible: function (biome, phase, rain) {

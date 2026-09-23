@@ -30,6 +30,9 @@
                  vine: 'shrub', shrub: 'shrub', ground: 'ground' };
       var pools = {};
       GG.FRUITS.forEach(function (f) {
+        /* the v1.18 beds, wild bushes and flowers are planted by the world
+           itself, each with its own crop already on it (p.pick) */
+        if (typeof f.where !== 'string' || !ON[f.on]) return;
         var key = f.where + ':' + (ON[f.on] || 'shrub');
         (pools[key] = pools[key] || []).push(f);
       });
@@ -42,6 +45,12 @@
       if (!GG.FRUITS.length) return;
       for (var i = 0; i < W.props.length; i++) {
         var p = W.props[i];
+        if (p.pick) {
+          if (!GG.FRUIT_BY_ID[p.pick]) continue;
+          p.fruit = p.pick; p.ripe = 1; p.regrow = 0;
+          this.plants.push(p);
+          continue;
+        }
         var kind = PROP[p.type];
         if (!kind) continue;
         var where = (p.type === 'wildBush') ? 'hill' : 'orchard';

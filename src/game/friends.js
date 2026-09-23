@@ -194,8 +194,13 @@
         if (GG.dist(f.x, f.y, player.x, player.y) > outer * 1.3) this.list.splice(i, 1);
       }
       var guard = 0;
-      while (this.list.length < TARGET && guard++ < 4) {
-        if (!this.spawnNear(player.x, player.y, 200, outer * 0.85)) break;
+      /* Dog's Paradise is full of dogs: a couple more about, and close by,
+         so they turn up inside the park rather than out in the meadow */
+      var inPark = GG.World.biomeRaw(player.x, player.y) === 'dogpark';
+      var target = TARGET + (inPark ? 2 : 0);
+      while (this.list.length < target && guard++ < 4) {
+        if (!(inPark ? this.spawnNear(player.x, player.y, 150, 380)
+          : this.spawnNear(player.x, player.y, 200, outer * 0.85))) break;
       }
 
       for (i = 0; i < this.list.length; i++) this.stepAnimal(dt, this.list[i], player);
