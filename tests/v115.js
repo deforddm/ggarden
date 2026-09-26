@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
   await p.evaluate(() => localStorage.clear());
   await p.reload();
   await p.waitForTimeout(700);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(900);
   const r = [];
   const ok = (n, v) => r.push((v ? 'PASS ' : 'FAIL ') + n);

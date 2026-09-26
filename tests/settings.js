@@ -101,7 +101,7 @@ const { chromium } = require('playwright');
   ok('an up-to-date save is offered nothing', await p.evaluate(() => GG.changesSince(GG.VERSION).length === 0));
   ok('a brand new garden is offered nothing', await p.evaluate(() => GG.changesSince(null).length === 0));
 
-  await p.tap('#btn-play');
+  await p.tap('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(1600);
   ok('the What’s new card appears after an update', !(await hidden('screen-news')));
   const newsText = await p.$eval('#news-body', e => e.textContent);

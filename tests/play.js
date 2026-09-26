@@ -19,7 +19,7 @@ const ROOT = path.join(__dirname, '..');
   async function shot(name) { const f = path.join(__dirname, 'shots', (mobile?'m-':'') + name + '.png'); await p.screenshot({ path: f }); shots.push(f); }
 
   await shot('01-title');
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(1200);
   await shot('02-world');
 

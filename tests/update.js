@@ -48,7 +48,7 @@ const { chromium } = require('playwright');
   ok('but the menu still offers it', !(await hidden('#menu-update')));
 
   // it survives into the game and shows in the menu
-  await p.tap('#btn-play');
+  await p.tap('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(800);
   await p.tap('#btn-menu');
   await p.waitForTimeout(400);

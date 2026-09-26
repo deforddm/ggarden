@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
   await p.goto(process.argv[2] || 'http://localhost:8899/index.html');
   await p.evaluate(() => localStorage.clear()); await p.reload();
-  await p.waitForTimeout(700); await p.tap('#btn-play'); await p.waitForTimeout(900);
+  await p.waitForTimeout(700); await p.tap('#btn-play'); await require('./charskip')(p); await p.waitForTimeout(900);
   const r = [];
   const ok = (n, v) => r.push((v ? 'PASS ' : 'FAIL ') + n);
   await p.evaluate(() => {
@@ -42,8 +42,8 @@ const { chromium } = require('playwright');
       where: GG.fruitWhereName(F.carrot)
     };
   });
-  ok('forty-two new things to pick (' + data.n + ') ' + JSON.stringify(data.kinds), data.n === 42
-    && data.kinds.fruit === 6 && data.kinds.veg === 11 && data.kinds.berry === 12 && data.kinds.flower === 13);
+  ok('forty-three new things to pick (' + data.n + ') ' + JSON.stringify(data.kinds), data.n === 43
+    && data.kinds.fruit === 6 && data.kinds.veg === 11 && data.kinds.berry === 12 && data.kinds.flower === 14);
   ok('each has facts, a safe-to-eat rating, a care line, art and a decoration ' + JSON.stringify(data.bad), !data.bad.length);
   ok('every pickable, old and new, has a kind', data.all);
   ok('the poisonous ones are all marked never', data.poison);
@@ -122,7 +122,7 @@ const { chromium } = require('playwright');
   ok('it has shelves for fruit, berries, vegetables and flowers ' + JSON.stringify(book.shelves),
     book.shelves.length === 4 && /^Fruit/.test(book.shelves[0]) && /^Berries/.test(book.shelves[1])
     && /^Vegetables\s+1 \/ 11/.test(book.shelves[2]) && /^Flowers/.test(book.shelves[3]));
-  ok('and every page is there (' + book.cells + ')', book.cells === 58);
+  ok('and every page is there (' + book.cells + ')', book.cells === 59);
   ok('the carrot page says where it grows and what it unlocked', book.tags.some(t => /Grows in: the Farmyard and the Flower Garden/.test(t))
     && book.tags.some(t => /Unlocked: Crate of Carrots/.test(t)));
   ok('a flower page says In bloom rather than Ripe in', book.flowerTags.some(t => /^In bloom:/.test(t)));
@@ -176,7 +176,7 @@ const { chromium } = require('playwright');
     return { bad, n: GG.ANIMALS.length, parkDogs: parkDogs.length, onlyDogs: parkDogs.every(a => a.family === 'dog') };
   });
   ok('six new dog friends who draw and fit their frames ' + JSON.stringify(dogs.bad), !dogs.bad.length);
-  ok('sixty friends in all (' + dogs.n + ')', dogs.n === 60);
+  ok('sixty-two friends in all (' + dogs.n + ')', dogs.n === 62);
   ok('eleven dogs come to the park, and only dogs (' + dogs.parkDogs + ')', dogs.parkDogs === 11 && dogs.onlyDogs);
 
   /* walking in shows the notice board and fills the park with dogs */

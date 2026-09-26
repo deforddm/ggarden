@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
   await p.goto(process.argv[2] || 'http://localhost:8899/index.html');
   await p.waitForTimeout(800);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(700);
 
   const r = [];
@@ -25,7 +25,7 @@ const { chromium } = require('playwright');
        reaches into: the desert, the ridge, the taiga, the tundra, the glade,
        the rainforest and the beach */
     const PLACES = ['meadow', 'garden', 'forest', 'pond', 'hill', 'orchard', 'riverbank',
-      'beach', 'shore', 'desert', 'mountain', 'taiga', 'tundra', 'glade', 'rainforest', 'farmyard', 'dogpark'];
+      'beach', 'shore', 'desert', 'mountain', 'taiga', 'tundra', 'glade', 'rainforest', 'farmyard', 'dogpark', 'mesa', 'badlands'];
     const FAMS = Object.keys(GG.FAMILY_NAMES);
     const seen = {};
     GG.ANIMALS.forEach(a => {
@@ -51,7 +51,7 @@ const { chromium } = require('playwright');
     return { bad, count: GG.ANIMALS.length, fams, ways: Object.keys(GG.FRIEND_WAYS).length };
   });
   Object.keys(roster.bad).forEach(k => ok('roster ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('60 animals (got ' + roster.count + ')', roster.count === 60);
+  ok('62 animals (got ' + roster.count + ')', roster.count === 62);
   ok('twenty-five families present ' + JSON.stringify(roster.fams),
     Object.keys(roster.fams).length === 25);
   ok('fourteen befriending methods (got ' + roster.ways + ')', roster.ways === 14);
@@ -155,8 +155,8 @@ const { chromium } = require('playwright');
     row: !!document.getElementById('companion-row')
   }));
   ok('the Friends Book opens', book.title === 'Friends Book');
-  ok('it lists every animal', book.cells === 60);
-  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 60');
+  ok('it lists every animal', book.cells === 62);
+  ok('one is found (' + book.progress + ')', book.got === 1 && book.progress === '1 / 62');
   ok('the companion strip is there', book.row);
 
   const detail = await p.evaluate(() => {
@@ -261,7 +261,7 @@ const { chromium } = require('playwright');
 
   /* the reload above dropped us back to the title screen; start playing again
      so the game loop is actually running for the chases below */
-  await p.evaluate(() => { const b = document.getElementById('btn-play'); if (b) b.click(); });
+  await p.evaluate(() => { const b = document.getElementById('btn-play'); if (b) b.click(); }); await require('./charskip')(p);
   await p.waitForTimeout(900);
   await p.evaluate(() => { GG.UI.close('screen-news'); GG.UI.close('screen-book'); });
   await p.waitForTimeout(300);
@@ -481,7 +481,9 @@ const { chromium } = require('playwright');
         }
         if (!open) continue;
         let n = 0;
-        for (let j = 0; j < W.solids.length; j += 3) {
+        /* every solid, not every third one: with v1.20's Mesa the sample
+           landed on a tree in thick woods that "had nothing near it" */
+        for (let j = 0; j < W.solids.length; j++) {
           const q = W.solids[j];
           if (q === t) continue;
           if (Math.abs(q.x - t.x) < 150 && Math.abs(q.y - t.y) < 150) n++;
@@ -497,11 +499,13 @@ const { chromium } = require('playwright');
        a wall, which measures the wall and not the behaviour. */
     window.__runway = (west, east) => {
       const W = GG.World;
+      if (GG.Yard && GG.Yard.sync) GG.Yard.sync(true);   /* v1.20: habitats stand outside now */
       const clear = (x, y, dx, len) => {
         for (let d = 0; d <= len; d += 16) {
           const px = x + dx * d;
           if (W.isWater(px, y) || W.blocked(px, y, 14)) return false;
           if (W.isWater(px, y - 26) || W.blocked(px, y - 26, 14)) return false;
+          if (W.blocked(px, y - 48, 14)) return false;   /* v1.20: room above too - the yard sits by the house now */
         }
         return true;
       };
@@ -1010,7 +1014,7 @@ const { chromium } = require('playwright');
     P.reset(spot.x, spot.y);
     await new Promise(r => setTimeout(r, 200));
     const before = GG.Save.data.sparkles;
-    F.add(GG.ANIMAL_BY_ID.western_rattlesnake, P.x + 210, P.y);
+    F.add(GG.ANIMAL_BY_ID.western_rattlesnake, P.x + 140, P.y);   /* v1.20: back-away distances halved */
     await new Promise(r => setTimeout(r, 200));
     const cand = F.candidate(P);
     const began = F.begin(P);
@@ -1077,7 +1081,7 @@ const { chromium } = require('playwright');
     const spot = window.__runway(420, 380);
     P.reset(spot.x, spot.y);
     await new Promise(r => setTimeout(r, 200));
-    const bear = F.add(GG.ANIMAL_BY_ID.black_bear, P.x + 220, P.y);
+    const bear = F.add(GG.ANIMAL_BY_ID.black_bear, P.x + 130, P.y);
     await new Promise(r => setTimeout(r, 200));
     const began = F.begin(P);
     /* standing still does nothing much: it is going away that counts */

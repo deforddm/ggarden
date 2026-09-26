@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   p.on('pageerror', e => console.log('PAGEERROR: ' + e.message));
   await p.goto('http://localhost:8899/index.html');
   await p.waitForTimeout(700);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(900);
   const spots = [
     ['stream', 1100, 1300], ['river', 2200, 2120], ['inlet', 3200, 2600],

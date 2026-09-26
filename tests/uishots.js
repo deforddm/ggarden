@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   await p.screenshot({ path: __dirname + '/shots/s-guest.png' });
   await p.evaluate(() => GG.UI.close('screen-guest'));
   await p.evaluate(() => { GG.Save.data.version = '1.7.0'; GG.Save.save(); });
-  await p.tap('#btn-play'); await p.waitForTimeout(1800);
+  await p.tap('#btn-play'); await require('./charskip')(p); await p.waitForTimeout(1800);
   await p.screenshot({ path: __dirname + '/shots/s-news.png' });
   await p.evaluate(() => GG.UI.close('screen-news'));
   await p.evaluate(() => { GG.Save.data.sparkles = 99999; GG.Save.save(); GG.Shop.open(); });

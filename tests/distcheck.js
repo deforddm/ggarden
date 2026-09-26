@@ -29,7 +29,7 @@ const fs = require('fs'), path = require('path');
     p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
     await p.goto(url);
     await p.waitForTimeout(700);
-    await p.click('#btn-play');
+    await p.click('#btn-play'); await require('./charskip')(p);
     await p.waitForTimeout(1000);
     await p.keyboard.down('ArrowUp'); await p.waitForTimeout(700); await p.keyboard.up('ArrowUp');
     for (let i = 0; i < 10; i++) { await p.keyboard.press('Space'); await p.waitForTimeout(220); }

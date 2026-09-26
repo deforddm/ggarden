@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
   await p.goto(process.argv[2] || 'http://localhost:8899/index.html');
   await p.waitForTimeout(700);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(800);
 
   const r = [];

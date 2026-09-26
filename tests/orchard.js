@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
   await p.goto(process.argv[2] || 'http://localhost:8899/index.html');
   await p.waitForTimeout(800);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(800);
 
   const r = [];
@@ -42,7 +42,7 @@ const { chromium } = require('playwright');
   });
   Object.keys(roster.bad).forEach(k =>
     ok('fruit ' + k + ' ' + JSON.stringify(roster.bad[k]), !roster.bad[k].length));
-  ok('fifty-eight things to pick (got ' + roster.count + ')', roster.count === 58);
+  ok('fifty-nine things to pick (got ' + roster.count + ')', roster.count === 59);
   ok('five in the orchard and five in the hills',
     roster.orchard === 16 && roster.hill === 5);
   ok('all three eat ratings are used ' + JSON.stringify(roster.kinds),
@@ -100,7 +100,7 @@ const { chromium } = require('playwright');
   });
   Object.keys(decor.bad).forEach(k =>
     ok('fruit decor ' + k + ' ' + JSON.stringify(decor.bad[k]), !decor.bad[k].length));
-  ok('fifty-eight picked decorations (got ' + decor.count + ')', decor.count === 58);
+  ok('fifty-nine picked decorations (got ' + decor.count + ')', decor.count === 59);
   ok('none of them are unlocked to begin with', decor.startsLocked);
 
   /* ---------------- the plants out in the garden ---------------- */
@@ -222,8 +222,8 @@ const { chromium } = require('playwright');
     };
   });
   ok('the Garden Book opens', book.title === 'Garden Book' && book.tab);
-  ok('it lists every fruit (' + book.cells + ')', book.cells === 58);
-  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 58');
+  ok('it lists every fruit (' + book.cells + ')', book.cells === 59);
+  ok('and counts the two she has picked (' + book.progress + ')', book.progress === '2 / 59');
 
   const page = await p.evaluate(() => {
     GG.Book.showDetail(GG.FRUIT_BY_ID.chokecherry);
@@ -263,8 +263,8 @@ const { chromium } = require('playwright');
     };
   });
   ok('the shop has a picked-not-bought shelf', shop.pickedGroup);
-  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 56);
-  ok('and they say "pick one" instead of a price', shop.pickOne === 56);
+  ok('the ones she has not found are still a mystery (' + shop.hidden + ')', shop.hidden === 57);
+  ok('and they say "pick one" instead of a price', shop.pickOne === 57);
   ok('the apple plate she earned is hers', shop.plateOwned);
   await p.evaluate(() => GG.UI.close('screen-shop'));
 
@@ -272,7 +272,7 @@ const { chromium } = require('playwright');
   await p.evaluate(() => GG.Save.save());
   await p.reload();
   await p.waitForTimeout(800);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(700);
   await p.evaluate(() => {
     const n = document.getElementById('screen-news');
@@ -389,7 +389,7 @@ const { chromium } = require('playwright');
   });
   ok('all twenty new bugs are in the roster ' + JSON.stringify(bugs.missing), !bugs.missing.length);
   ok('and every one of them draws something ' + JSON.stringify(bugs.blank), !bugs.blank.length);
-  ok('the roster is 186 (got ' + bugs.total + ')', bugs.total === 186);
+  ok('the roster is 189 (got ' + bugs.total + ')', bugs.total === 189);
   ok('the orchard has plenty now (' + bugs.orchard + ')', bugs.orchard >= 25);
   ok('the hills are no longer empty (' + bugs.hill + ')', bugs.hill >= 13);
   ok('both have something out at night (' + bugs.orchardNight + ', ' + bugs.hillNight + ')',
@@ -559,7 +559,7 @@ const { chromium } = require('playwright');
       hunts: !!det.querySelector('.foodchain')
     };
   });
-  ok('the Bug Book lists 186 now (' + wbook.cells + ')', wbook.cells === 186);
+  ok('the Bug Book lists 189 now (' + wbook.cells + ')', wbook.cells === 189);
   ok('meeting her opened her page (' + wbook.progress + ')', wbook.got >= 1);
   ok('the page says Met, not Caught', wbook.tags.some(t => /^Met: /.test(t))
     && !wbook.tags.some(t => /^Caught: /.test(t)));
@@ -573,7 +573,7 @@ const { chromium } = require('playwright');
   await p.evaluate(() => GG.Save.save());
   await p.reload();
   await p.waitForTimeout(800);
-  await p.click('#btn-play');
+  await p.click('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(700);
   await p.evaluate(() => {
     const n = document.getElementById('screen-news');

@@ -27,7 +27,7 @@ const { chromium, devices } = require('playwright');
   check('help closes', await hidden('#screen-help'));
 
   // Play
-  await p.tap('#btn-play');
+  await p.tap('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(900);
   check('title: Play starts the game', await hidden('#screen-title'));
   check('game is running', await p.evaluate(() => GG.Critters.list.length > 0));

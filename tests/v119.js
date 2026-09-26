@@ -29,7 +29,7 @@ const { chromium } = require('playwright');
   ok('and it mentions picking', help.pick);
   await p.evaluate(() => GG.UI.close('screen-help'));
 
-  await p.tap('#btn-play'); await p.waitForTimeout(1000);
+  await p.tap('#btn-play'); await require('./charskip')(p); await p.waitForTimeout(1000);
   await p.evaluate(() => {
     ['catch-pop', 'friend-pop', 'warn-pop'].forEach(id => { const e = document.getElementById(id); if (e) e.className = 'hidden'; });
     GG.Critters.spawnNear = () => false; GG.Critters.clear();
