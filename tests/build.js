@@ -5,7 +5,10 @@ const ROOT = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const html = read('index.html');
-const css = read('css/style.css');
+/* v1.20.1: the fonts go inside the bundle too, as data URIs, so the
+   single-file page needs nothing from anywhere else */
+const css = read('css/style.css').replace(/url\("\.\.\/fonts\/([^"]+\.woff2)"\)/g, (m, f) =>
+  'url("data:font/woff2;base64,' + fs.readFileSync(path.join(ROOT, 'fonts', f)).toString('base64') + '")');
 
 /* The cache name has to CHANGE every release or the browser never notices a
    new service worker and the "Update ready" bar never appears. So it is
