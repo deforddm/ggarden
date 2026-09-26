@@ -7,7 +7,7 @@
   // habitats: meadow, garden, forest, pond, hill, orchard, riverbank,
   //           river, beach, shore, tidepool, desert, mountain, taiga, tundra,
   //           rainforest, glade, savanna, swamp, cave, badlands, bamboo,
-  //           cherry, farmyard, anywhere
+  //           cherry, farmyard, dogpark, mesa, anywhere
   // times:    morning, day, evening, night, any
   // behavior: flutter, hover, dart, crawl, hop, glow, skim, cling, slow, drift, tide
   // aquatic:  true means it needs water to live in, so it can only be kept in a
@@ -2493,9 +2493,46 @@
         'Before it jumps, it fastens a silk safety line, like a rock climber’s rope.',
         'Its big front eyes see very well, so it may turn round and look right at you. It loves sunny walls, fences and bamboo stems. It came from Europe.'
       ]
+    },
+
+    /* ---------- v1.20: the Mesa (Guin asked for it) ---------- */
+    {
+      id: 'anise_swallowtail', name: 'Anise Swallowtail',
+      habitats: ['mesa', 'hill'], times: ['morning', 'day'], rarity: 2, value: 36,
+      behavior: 'flutter', speed: 42, shy: 62, size: 1.15,
+      measure: 'about 3 inches across',
+      art: { shape: 'swallowtail', body: '#1e1c1a', wing: '#f4d23a', wing2: '#fbe78a', accent: '#1e1c1a', pattern: 'stripes' },
+      facts: [
+        'Boy anise swallowtails fly to the tops of hills and rocky tops to wait for girl butterflies. Scientists call this hilltopping.',
+        'Its caterpillars eat plants from the carrot family, like wild biscuitroot on dry hills, and dill, fennel and parsley in gardens.',
+        'It lives all over the western part of North America, from the seashore up into the mountains.'
+      ]
+    },
+    {
+      id: 'painted_lady', name: 'Painted Lady',
+      habitats: ['mesa', 'meadow', 'desert'], times: ['morning', 'day'], rarity: 2, value: 26,
+      behavior: 'flutter', speed: 40, shy: 52, size: 1.05,
+      measure: 'about 2 inches across',
+      art: { shape: 'butterfly', body: '#2a2420', wing: '#f08a2a', wing2: '#f6b060', accent: '#1e1a18', pattern: 'spots' },
+      facts: [
+        'Painted ladies live on every continent except Australia and Antarctica. That makes them one of the most widespread butterflies in the world.',
+        'Boy painted ladies like to perch on bushes on hilltops in the afternoon and watch for girls flying by.',
+        'Their caterpillars often eat thistles, so another name for them is the thistle butterfly.',
+        'Some years millions of them fly north together in spring. It is one of the great butterfly journeys.'
+      ]
+    },
+    {
+      id: 'clearwinged_grasshopper', name: 'Clearwinged Grasshopper',
+      habitats: ['mesa', 'badlands'], times: ['morning', 'day'], rarity: 1, value: 14,
+      behavior: 'hop', speed: 30, shy: 48, size: 0.95,
+      measure: 'about 1 inch long',
+      art: { shape: 'grasshopper', body: '#a8905e', wing: '#e6ddc6', accent: '#5e4c30', pattern: 'plain' },
+      facts: [
+        'Its back wings are see-through, like a window. You only see them when it flies.',
+        'It lives in dry grassy places and mountain meadows all over western North America.',
+        'Mother grasshoppers lay their eggs in the ground in bare, sunny spots, and many of them choose the very same patch.'
+      ]
     }
-
-
   ];
 
   /* Does this creature need water in its tank? */
@@ -2518,7 +2555,7 @@
     tundra: 'the Lichen Tundra', rainforest: 'the Mossy Rainforest', glade: 'the Golden Glade',
     savanna: 'the Oak Savanna', swamp: 'the Cattail Marsh', cave: 'the Lava Tube',
     badlands: 'the Scablands', bamboo: 'the Bamboo Grove', cherry: 'the Cherry Grove',
-    farmyard: 'the Farmyard', dogpark: 'Dog\u2019s Paradise',
+    farmyard: 'the Farmyard', dogpark: 'Dog\u2019s Paradise', mesa: 'the Mesa',
     anywhere: 'all over the garden'
   };
   GG.TIME_NAMES = { morning: 'morning', day: 'daytime', evening: 'evening', night: 'night', any: 'any time' };

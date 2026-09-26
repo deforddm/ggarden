@@ -526,7 +526,7 @@
       ]
     }),
     FL({
-      id: 'arrowleaf_balsamroot', name: 'Arrowleaf Balsamroot', where: ['desert', 'hill'],
+      id: 'arrowleaf_balsamroot', name: 'Arrowleaf Balsamroot', where: ['desert', 'hill', 'mesa'],
       shape: 'daisy', petal: '#f6c62a', petal2: '#e0a018', centre: '#d0a030', stemCol: '#8a9a7a',
       measure: 'a flower as wide as your palm, with leaves as long as your arm', ripens: 'April and May on the low hills near Pasco',
       eat: 'careful',
@@ -535,6 +535,20 @@
         'Every spring balsamroot turns the hills yellow, including Badger Mountain by the Tri-Cities.',
         'Its root can be as thick as your hand and reach several feet down into the ground.',
         'Native peoples ground its seeds into flour and ate the young stems. Lewis and Clark wrote about it.'
+      ]
+    }),
+    /* v1.20: Guin asked for a Mesa, and bitterroot grows on rocky tops like it */
+    FL({
+      id: 'bitterroot', name: 'Bitterroot', where: 'mesa',
+      shape: 'daisy', petal: '#e98bb0', petal2: '#d0628e', centre: '#f6e4a0', stemCol: '#8a9a7a',
+      measure: 'a tiny plant only one to three inches tall, with a flower as wide as a golf ball', ripens: 'April to June, on dry rocky ground',
+      eat: 'careful',
+      care: 'Native peoples dug its root for food, but it is not a snack for you. Look closely and leave it growing: it is small and easy to squash.',
+      facts: [
+        'Its scientific name, Lewisia rediviva, honours Meriwether Lewis, who collected it in 1806.',
+        'Rediviva means brought back to life. A dried bitterroot pressed for a plant collection sprouted again when it was planted.',
+        'Bitterroot is the state flower of Montana, and a river, a valley and a mountain range there are named after it.',
+        'Its leaves often dry up before it blooms, so the pink flowers seem to sit right on the bare rocks.'
       ]
     })
   ];
@@ -573,7 +587,7 @@
   W.glade = 'the Golden Glade'; W.mountain = 'Cloudtop Ridge'; W.taiga = 'the Spruce Taiga';
   W.tundra = 'the Lichen Tundra'; W.rainforest = 'the Mossy Rainforest'; W.desert = 'the Sagebrush Desert';
   W.savanna = 'the Oak Savanna'; W.farmyard = 'the Farmyard'; W.cherry = 'the Cherry Grove';
-  W.dogpark = 'Dog’s Paradise';
+  W.dogpark = 'Dog’s Paradise'; W.mesa = 'the Mesa';
   /* where it grows, in words, whether `where` is one place or a list */
   GG.fruitWhereName = function (def) {
     var list = Array.isArray(def.where) ? def.where : [def.where];

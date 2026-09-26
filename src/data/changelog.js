@@ -6,9 +6,23 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.19.0';
+  GG.VERSION = '1.20.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.20.0', title: 'Brighter, bouncier, and all about you',
+      lines: [
+        'Make your own character! Choose a girl or a boy, give them a name, and pick their skin, hair, hair colour, eyes, outfit and a hat or clip. Change it any time from My character in the Garden Menu.',
+        'The whole garden is brighter and more colourful, with petals, fluff and leaves drifting about, glowing light at sunrise and sunset, and sparkly water.',
+        'Confetti when you catch something new, and bouncy new buttons and menus.',
+        'Decorate your home! Use the easel by the window to choose the walls, the floor, a rug, a quilt, curtains, and 24 things to put in the room.',
+        'Your Garden Habitats are outside now. Each one is a fenced home in the Flower Garden round the cottage, sized for who lives in it, and you can watch your friends walking about inside. Walk up and press VISIT to open it.',
+        'The Mesa! Guin asked for it, so here it is: a big flat-topped rock out in the Scablands, in the far west, with one trail up the cliff. Find bitterroot and balsamroot on top, three new bugs, a yellow-bellied marmot and a canyon wren. Stay on the trail and back from the edge!',
+        'Play fetch at Dog\u2019s Paradise! Press THROW and a dog runs to bring the ball back. Two sparkles for every fetch.',
+        'Tap somewhere far away, even deep in the woods, and you find your own way round the trees to get there.',
+        'The bear, the moose and the rattlesnake need you to back away only half as far, so it fits on a phone screen.'
+      ]
+    },
     {
       v: '1.19.0', title: 'A tidier, smoother garden',
       lines: [

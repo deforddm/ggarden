@@ -686,6 +686,25 @@
       manners: 'Watch from where you are standing. A ground squirrel dives down its hole the moment you walk at it, and that hole is the only door it has.'
     },
 
+    {
+      /* v1.20: lives on the Mesa, where Guin asked to go */
+      id: 'yellow_bellied_marmot', name: 'Yellow-bellied Marmot', family: 'squirrel',
+      way: 'watch', patience: 4.6, keep: 96, rarity: 3, value: 150,
+      times: ['morning', 'day'], places: ['mesa', 'badlands'],
+      measure: 'about as big as a house cat', size: 0.5,
+      art: { shape: 'groundsquirrel', body: '#8a6a48', body2: '#6a5038', belly: '#e0b04a',
+        head: '#7a5c40', face: '#efe2c8', ear: '#6a5038', leg: '#6a5038',
+        tail: '#7a5c40', accent: '#e0b04a', eye: '#1e1913', nose: '#2a2018' },
+      facts: [
+        'A marmot is a big ground squirrel. It is part of the squirrel family, just like the chipmunk and the little squirrel in the garden.',
+        'It lives among the rocks, and it digs its burrow under a big boulder so nothing can dig it out.',
+        'When it sees danger it gives a loud, sharp whistle, and every marmot nearby runs for its hole. Some people call marmots whistle-pigs.',
+        'It sleeps underground for seven or eight months of the year, so it has to eat and eat all summer to get fat enough.',
+        'Its tummy is golden yellow, and that is how it got its name.'
+      ],
+      manners: 'Watch marmots from the trail and never feed them. People food makes them ill, and a marmot that is used to people stops being careful.'
+    },
+
     /* ---------------- turtles ---------------- */
     {
       id: 'painted_turtle', name: 'Western Painted Turtle', family: 'turtle',
@@ -707,7 +726,7 @@
     /* ---------------- bears ---------------- */
     {
       id: 'black_bear', name: 'Black Bear', family: 'bear',
-      way: 'backaway', patience: 6.5, keep: 190, rarity: 4, value: 280,
+      way: 'backaway', patience: 6.5, keep: 100, rarity: 4, value: 280,
       times: ['morning', 'evening'], places: ['forest', 'mountain', 'taiga'],
       measure: 'taller than a grown-up when it stands up', size: 1.25,
       art: { shape: 'bear', body: '#2a231e', body2: '#6b4327', belly: '#2a231e',
@@ -782,7 +801,7 @@
     },
     {
       id: 'moose', name: 'Moose', family: 'deer',
-      way: 'backaway', patience: 7.0, keep: 198, rarity: 5, value: 380,
+      way: 'backaway', patience: 7.0, keep: 105, rarity: 5, value: 380,
       times: ['morning', 'day', 'evening'], places: ['taiga', 'forest', 'mountain'],
       measure: 'nearly six feet tall at the shoulder, before you get to the head', size: 1.65,
       art: { shape: 'moose', body: '#3a2b22', body2: '#332619', belly: '#3a2b22',
@@ -1040,6 +1059,25 @@
        a method, because a child who learns "birds eat from my hand" will try
        it on gulls and geese, where it does real harm. */
     {
+      /* v1.20: a watch friend, not a feeder bird - it eats spiders and bugs from the rock cracks */
+      id: 'canyon_wren', name: 'Canyon Wren', family: 'songbird',
+      way: 'watch', patience: 4.0, keep: 84, rarity: 3, value: 120,
+      times: ['morning', 'day'], places: ['mesa', 'badlands'],
+      measure: 'about as long as your hand', size: 0.3,
+      art: { shape: 'songbird', body: '#9a5a32', body2: '#7e4a2a', wing: '#7e4a2a',
+        cap: '#8a5a3a', bib: '#faf6ee', face: '#faf6ee', belly: '#b0663a',
+        head: '#8a5a3a', leg: '#4a3a30', tail: '#a0623a', accent: '#faf6ee',
+        eye: '#141210', nose: '#3a3028' },
+      facts: [
+        'Its song is famous. It is a waterfall of clear whistles that start high and tumble down, and it echoes off the cliffs.',
+        'It lives on cliffs and in canyons, like the rocky canyons along the Columbia River.',
+        'Its head is flat and its beak is long and thin, so it can reach deep into cracks in the rock to catch spiders and bugs.',
+        'Nobody has ever seen a canyon wren drink water. Scientists think it gets all it needs from the bugs it eats.',
+        'Its throat is bright white, like a little bib, and the rest of it is rusty brown.'
+      ],
+      manners: 'Stand still and listen for the song first, then look for the white throat on the rocks. Stay on the trail and keep back from the cliff edge.'
+    },
+    {
       id: 'chickadee', name: 'Black-capped Chickadee', family: 'songbird',
       way: 'seedtray', patience: 3.0, keep: 70, rarity: 1, value: 45,
       times: ['morning', 'day'], places: ['garden', 'forest', 'orchard', 'glade'],
@@ -1214,9 +1252,9 @@
          black widow in the Bug Book: the same idea, the same `danger` line
          shown every single time. */
       id: 'western_rattlesnake', name: 'Western Rattlesnake', family: 'snake',
-      way: 'backaway', patience: 5.0, keep: 185, rarity: 5, value: 0,
+      way: 'backaway', patience: 5.0, keep: 95, rarity: 5, value: 0,
       lookOnly: true,
-      times: ['day', 'evening', 'night'], places: ['desert', 'hill'],
+      times: ['day', 'evening', 'night'], places: ['desert', 'hill', 'mesa'],
       measure: 'about two feet long, and thick with it', size: 0.71,
       danger: 'If you hear a buzz, or see a rattlesnake, stop. Step slowly backwards, and go and tell a grown-up. Never poke it, never chase it, never throw anything at it. And never put your hands or your feet anywhere you cannot see first — not under a rock, not into long grass.',
       art: { shape: 'snake', body: '#b9a480', body2: '#8a7452', stripe: '#4a3a28',
