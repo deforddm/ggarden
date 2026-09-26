@@ -38,14 +38,17 @@
 
   <!-- title -->
   <div class="panel" id="screen-title">
+    <canvas id="title-canvas" width="680" height="300"></canvas>
     <div id="title-card">
       <h1 id="title-logo">Guin's Garden</h1>
       <p id="title-sub">a gentle bug catching adventure</p>
-      <canvas id="title-canvas" width="680" height="300"></canvas>
-      <button class="btn primary" id="btn-play">Play</button>
-      <button class="btn" id="btn-howto">How to play</button>
-      <button class="btn" id="btn-settings">Settings</button>
-      <button class="btn" id="btn-guest">Let a friend play</button>
+      <div id="title-btns">
+        <button class="btn primary" id="btn-play">Play</button>
+        <button class="btn" id="btn-char">My character</button>
+        <button class="btn" id="btn-howto">How to play</button>
+        <button class="btn" id="btn-settings">Settings</button>
+        <button class="btn" id="btn-guest">Let a friend play</button>
+      </div>
 
       <div id="update-bar" class="update-bar" role="status" hidden>
         <canvas id="update-icon" width="88" height="88"></canvas>
@@ -74,6 +77,24 @@
         <p class="note howto-keys">On a computer: arrow keys or WASD to walk, shift to tiptoe, space to swing.</p>
       </div>
       <footer><button class="btn primary grow" data-close="screen-help">Got it</button></footer>
+    </div>
+  </div>
+
+  <!-- v1.20: who you play as (src/ui/charselect.js fills the rows) -->
+  <div class="panel hidden" id="screen-char">
+    <div class="sheet char-sheet">
+      <header><h2 id="char-title">Make your character</h2><button class="x" id="char-x" aria-label="Close">&times;</button></header>
+      <div class="body char-body">
+        <div class="char-stage">
+          <canvas id="char-preview" aria-label="Your character - tap to turn round"></canvas>
+          <button class="btn small char-turn" id="char-turn" type="button">&#8635; Turn</button>
+        </div>
+        <div id="char-rows"></div>
+      </div>
+      <footer>
+        <button class="btn pink char-surprise" id="char-surprise" type="button">&#10022; Surprise me!</button>
+        <button class="btn primary grow char-go" id="char-go" type="button">Let&rsquo;s go!</button>
+      </footer>
     </div>
   </div>
 
@@ -166,8 +187,9 @@
           <div class="grow"><b id="menu-progress">0 of 31 bugs found</b><div class="note" id="menu-place"></div></div>
         </div>
         <canvas id="minimap" width="640" height="480"></canvas>
-        <div class="note" style="text-align:center;margin:2px 0 10px">Guin is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
+        <div class="note" style="text-align:center;margin:2px 0 10px"><span id="map-me">Guin</span> is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
         <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Critter Compendium</button>
+        <button class="btn grow" id="menu-char" style="width:100%;margin-bottom:8px">My character</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
         <button class="btn grow" id="menu-settings" style="width:100%;margin-bottom:8px">Settings</button>
         <button class="btn grow pink" id="menu-endguest" style="width:100%" hidden>Finish the visit</button>
@@ -193,6 +215,21 @@
       </div>
       <footer><button class="btn grow" id="book-back" style="display:none">All bugs</button>
         <button class="btn primary grow" data-close="screen-book">Close</button></footer>
+    </div>
+  </div>
+
+  <!-- v1.20 decorate my home -->
+  <div class="panel hidden" id="screen-homedecor">
+    <div class="sheet hd-sheet">
+      <header><h2>Decorate</h2><span class="chip gold" id="hd-sparkles"></span><button class="btn hd-done" id="hd-done">Done</button></header>
+      <div class="hd-top">
+        <div class="hd-stage" id="hd-stage"><canvas id="hd-room"></canvas><div id="hd-hint" class="hidden"></div></div>
+        <div class="hd-bar"><div class="hd-name" id="hd-name"></div><div class="hd-actions" id="hd-actions"></div></div>
+        <div class="hd-tabs" id="hd-tabs">
+          <button class="hd-tab on" data-kind="wall"><canvas width="84" height="52"></canvas><span>Walls</span></button><button class="hd-tab" data-kind="floor"><canvas width="84" height="52"></canvas><span>Floor</span></button><button class="hd-tab" data-kind="rug"><canvas width="84" height="52"></canvas><span>Rug</span></button><button class="hd-tab" data-kind="quilt"><canvas width="84" height="52"></canvas><span>Bed</span></button><button class="hd-tab" data-kind="curtain"><canvas width="84" height="52"></canvas><span>Window</span></button><button class="hd-tab" data-kind="item"><canvas width="84" height="52"></canvas><span>Things</span></button>
+        </div>
+      </div>
+      <div class="body hd-body"><div class="hd-grid" id="hd-grid"></div></div>
     </div>
   </div>
 
@@ -361,29 +398,40 @@
 <script src="src/data/foodchain.js"></script>
 <script src="src/data/fruit.js"></script>
 <script src="src/data/pickables.js"></script>
+<script src="src/data/looks.js"></script>
+<script src="src/data/homedecor.js"></script>
 <script src="src/render/bugart.js"></script>
 <script src="src/render/fishart.js"></script>
 <script src="src/render/animalart.js"></script>
+<script src="src/render/playerart.js"></script>
 <script src="src/render/propart.js"></script>
 <script src="src/render/decorart.js"></script>
+<script src="src/render/homeart.js"></script>
 <script src="src/render/fruitart.js"></script>
 <script src="src/render/flowerart.js"></script>
 <script src="src/render/plantart.js"></script>
 <script src="src/render/pickdecor.js"></script>
 <script src="src/render/dogparkart.js"></script>
+<script src="src/render/fx.js"></script>
+<script src="src/render/yardart.js"></script>
 <script src="src/game/time.js"></script>
 <script src="src/game/world.js"></script>
 <script src="src/game/player.js"></script>
 <script src="src/game/critters.js"></script>
 <script src="src/game/fishing.js"></script>
 <script src="src/game/friends.js"></script>
+<script src="src/game/fetch.js"></script>
 <script src="src/game/orchard.js"></script>
+<script src="src/game/yard.js"></script>
 <script src="src/game/house.js"></script>
 <script src="src/game/cave.js"></script>
 <script src="src/ui/ui.js"></script>
+<script src="src/ui/fx-ui.js"></script>
 <script src="src/ui/book.js"></script>
 <script src="src/ui/terrarium.js"></script>
 <script src="src/ui/shop.js"></script>
+<script src="src/ui/charselect.js"></script>
+<script src="src/ui/homedecor.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>
