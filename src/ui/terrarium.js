@@ -94,8 +94,32 @@
       this.tab = this.firstTab(ty, this.tab);
       this.refresh();
       this.loop();
+      /* whatever she changes shows up in the yard when she goes back out */
+      if (GG.Yard) GG.Yard.dirty = true;
+    },
+    /* v1.20: straight to one tank - VISIT at a habitat in the yard */
+    openTank: function (i) {
+      var n = GG.Save.data.terrariums.length;
+      this.index = GG.clamp(i | 0, 0, Math.max(0, n - 1));
+      var tk = this.tank();
+      if (tk && tk.type === 'habitat') this.tab = 'friends';
+      this.open();
     },
     close: function () { cancelAnimationFrame(this._raf); },
+
+    /* v1.20: a habitat stands outside now, so the picture says where */
+    yardNote: function (tk) {
+      var wrap = $('tank-wrap');
+      if (!wrap) return;
+      var el = $('tank-yardnote');
+      if (!el) {
+        el = GG.el('div', 'yardnote');
+        el.id = 'tank-yardnote';
+        el.textContent = 'It is out in the garden by your house';
+        wrap.appendChild(el);
+      }
+      el.hidden = !(tk && tk.type === 'habitat');
+    },
 
     /* Water pieces put on a hybrid's bank before v1.15 go down into the water. */
     tidyDecor: function (tk) {
@@ -130,6 +154,7 @@
       var bg = GG.TANK_BY_ID[tk.bg] || GG.scenesFor(tk.type)[0];
       $('tank-name').textContent = tk.name;
       $('tank-kind').textContent = ty.name + ' · ' + bg.name;
+      this.yardNote(tk);
       $('tank-count').textContent = (this.index + 1) + ' / ' + d.terrariums.length;
       /* your only tank cannot be thrown away */
       $('tank-delete').hidden = d.terrariums.length <= 1;

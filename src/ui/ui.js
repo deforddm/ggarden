@@ -97,7 +97,9 @@
       $('catch-care').style.display = 'none';
       $('catch-ok').textContent = 'Nice!';
       this._cardAt = performance.now();
+      this._catchKind = def.isFish || def.isJunk ? 'fish' : 'bug';
       $('catch-pop').classList.remove('hidden');
+      this._celebrate('catch-pop', 'catch-card', isNew && !def.isJunk, this._catchKind);
       this._animCatch();
     },
 
@@ -174,7 +176,10 @@
       /* "Nice!" under "Never eat this one" sends the wrong message */
       $('catch-ok').textContent = def.eat === 'never' ? 'Got it' : 'Nice!';
       this._cardAt = performance.now();
+      this._catchKind = 'fruit';
       $('catch-pop').classList.remove('hidden');
+      /* a poisonous plant is a lesson, not a party: no confetti for it */
+      this._celebrate('catch-pop', 'catch-card', res.first && def.eat !== 'never', 'fruit');
       this._animCatch(true);
     },
 
@@ -183,26 +188,92 @@
       cancelAnimationFrame(this._raf);
       var cv = $('catch-art'), c = cv.getContext('2d');
       var start = performance.now();
+      var kind = isFruit ? 'fruit' : (this._catchKind || 'bug');
+      /* v1.20: brighter little stages - a sunny meadow for a bug, a bright
+         pool for a fish, warm peach for the garden - with soft turning rays */
+      var SKY = { bug: ['#aee8ff', '#e9fbd8'], fish: ['#8fe0ff', '#2f9fe0'], fruit: ['#fff1c4', '#ffc98a'] }[kind];
+      var RAY = kind === 'fish' ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.38)';
+      var W = cv.width, H = cv.height;
+      var bg = document.createElement('canvas');
+      bg.width = W; bg.height = H;
+      var b = bg.getContext('2d');
+      var g = b.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, SKY[0]); g.addColorStop(1, SKY[1]);
+      b.fillStyle = g; GG.roundRect(b, 0, 0, W, H, 26); b.fill();
+      var glow = b.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, 170);
+      glow.addColorStop(0, 'rgba(255,255,255,0.75)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+      b.fillStyle = glow; b.fillRect(0, 0, W, H);
+      if (kind === 'bug') {
+        /* a strip of grass and a few flowers along the bottom */
+        b.fillStyle = '#8ddc6a';
+        b.beginPath(); b.moveTo(0, H - 34); b.quadraticCurveTo(W / 2, H - 58, W, H - 34);
+        b.lineTo(W, H); b.lineTo(0, H); b.closePath(); b.fill();
+        var fc = ['#ff8fb8', '#ffd84a', '#c3a8ff', '#ffffff'];
+        for (var f = 0; f < 9; f++) {
+          var fx = 30 + f * 72, fy = H - 20 - (f % 2) * 8;
+          b.fillStyle = fc[f % 4];
+          for (var q = 0; q < 5; q++) {
+            var aa = q * 1.2566;
+            b.beginPath(); b.arc(fx + Math.cos(aa) * 6, fy + Math.sin(aa) * 6, 5, 0, 6.2832); b.fill();
+          }
+          b.fillStyle = '#ffb21f'; b.beginPath(); b.arc(fx, fy, 4, 0, 6.2832); b.fill();
+        }
+      } else if (kind === 'fish') {
+        b.fillStyle = 'rgba(255,255,255,0.25)';
+        for (var wv = 0; wv < 3; wv++) {
+          b.beginPath();
+          for (var x = 0; x <= W; x += 20) b.lineTo(x, 30 + wv * 16 + Math.sin(x / 40 + wv) * 5);
+          b.lineTo(W, 0); b.lineTo(0, 0); b.closePath(); b.fill();
+        }
+        b.fillStyle = '#f4dca0';
+        b.beginPath(); b.moveTo(0, H - 22); b.quadraticCurveTo(W / 2, H - 38, W, H - 22);
+        b.lineTo(W, H); b.lineTo(0, H); b.closePath(); b.fill();
+      } else {
+        b.fillStyle = 'rgba(255,255,255,0.4)';
+        for (var dx = 0; dx < W; dx += 40) for (var dy = 12; dy < H; dy += 40) {
+          b.beginPath(); b.arc(dx + ((dy / 40) % 2) * 20, dy, 4, 0, 6.2832); b.fill();
+        }
+      }
       function frame(now) {
         if ($('catch-pop').classList.contains('hidden')) return;
         var t = (now - start) / 1000;
-        c.clearRect(0, 0, cv.width, cv.height);
-        var g = c.createLinearGradient(0, 0, 0, cv.height);
-        if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#f2ddb4'); }
-        else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d9eed2'); }
-        c.fillStyle = g;
-        GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
+        c.clearRect(0, 0, W, H);
         c.save();
+        GG.roundRect(c, 0, 0, W, H, 26); c.clip();
+        c.drawImage(bg, 0, 0);
+        /* rays turning slowly behind the creature */
+        c.fillStyle = RAY;
+        c.beginPath();
+        for (var r = 0; r < 12; r++) {
+          var a0 = t * 0.25 + r * 0.5236;
+          c.moveTo(W / 2, H / 2);
+          c.arc(W / 2, H / 2, 420, a0, a0 + 0.22);
+          c.closePath();
+        }
+        c.fill();
+        if (kind === 'fish') {
+          c.fillStyle = 'rgba(255,255,255,0.55)';
+          for (var bb = 0; bb < 9; bb++) {
+            var by = H - ((t * (30 + bb * 7) + bb * 53) % (H + 20));
+            c.beginPath(); c.arc(60 + bb * 64 + Math.sin(t * 2 + bb) * 8, by, 3 + (bb % 3) * 2, 0, 6.2832); c.fill();
+          }
+        }
+        /* twinkling sparkles */
         for (var i = 0; i < 10; i++) {
           var a = t * 0.8 + i * 0.63;
-          c.fillStyle = 'rgba(255,255,255,' + (0.25 + 0.2 * Math.sin(a * 2)) + ')';
+          var sx = W / 2 + Math.cos(a) * (130 + i * 10), sy = H / 2 + Math.sin(a * 1.3) * 78;
+          var sr = (5 + (i % 3) * 2) * (0.6 + 0.4 * Math.sin(t * 5 + i * 1.7));
+          c.fillStyle = i % 2 ? '#fffbe0' : '#ffe45c';
           c.beginPath();
-          c.arc(cv.width / 2 + Math.cos(a) * (120 + i * 9), cv.height / 2 + Math.sin(a * 1.3) * 70, 3 + (i % 3), 0, Math.PI * 2);
-          c.fill();
+          c.moveTo(sx, sy - sr); c.quadraticCurveTo(sx, sy, sx + sr, sy);
+          c.quadraticCurveTo(sx, sy, sx, sy + sr); c.quadraticCurveTo(sx, sy, sx - sr, sy);
+          c.quadraticCurveTo(sx, sy, sx, sy - sr); c.fill();
         }
         c.restore();
         var bob = Math.sin(t * 2) * 6;
-        GG.drawAny(c, self._catchDef, cv.width / 2, cv.height / 2 + bob,
+        /* a happy hop when it is new */
+        var hop = self._isNew ? Math.max(0, Math.sin(Math.min(t, 1.2) * Math.PI * 2.5)) * 14 * Math.max(0, 1 - t / 1.2) : 0;
+        GG.drawAny(c, self._catchDef, W / 2, H / 2 + bob - hop,
           isFruit ? 8.6 : 7.2, -Math.PI / 2, t);
         self._raf = requestAnimationFrame(frame);
       }
@@ -211,6 +282,7 @@
 
     hideCatch: function () {
       $('catch-pop').classList.add('hidden');
+      $('catch-pop').classList.remove('celebrate');
       cancelAnimationFrame(this._raf);
       if (this.onCatchClosed) this.onCatchClosed();
     },
@@ -249,6 +321,8 @@
       this._friendLook = !!look;
       this._cardAt = performance.now();
       $('friend-pop').classList.remove('hidden');
+      /* a bear met from far away is not a party either */
+      this._celebrate('friend-pop', 'friend-card', isNew && !look, 'friend');
       this._animFriend();
     },
 
@@ -263,13 +337,24 @@
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
         if (self._friendLook) { g.addColorStop(0, '#f6efe4'); g.addColorStop(1, '#e8dcc8'); }
-        else { g.addColorStop(0, '#f0f6e2'); g.addColorStop(1, '#dbeed6'); }
+        else { g.addColorStop(0, '#ffe3ef'); g.addColorStop(0.62, '#fff4f8'); g.addColorStop(0.63, '#bdeaa0'); g.addColorStop(1, '#8fd873'); }
         c.fillStyle = g;
         GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.fill();
+        if (!self._friendLook) {
+          /* soft turning rays, like the catch card */
+          c.save(); GG.roundRect(c, 0, 0, cv.width, cv.height, 26); c.clip();
+          c.fillStyle = 'rgba(255,255,255,0.4)';
+          c.beginPath();
+          for (var r = 0; r < 12; r++) {
+            var a0 = t * 0.25 + r * 0.5236;
+            c.moveTo(cv.width / 2, cv.height / 2); c.arc(cv.width / 2, cv.height / 2, 420, a0, a0 + 0.22); c.closePath();
+          }
+          c.fill(); c.restore();
+        }
         for (var i = 0; i < (self._friendLook ? 0 : 9); i++) {
           var a = t * 0.7 + i * 0.7;
-          c.globalAlpha = 0.22 + 0.16 * Math.sin(a * 2);
-          c.fillStyle = '#ff8fb0';
+          c.globalAlpha = 0.45 + 0.25 * Math.sin(a * 2);
+          c.fillStyle = i % 3 ? '#ff7aa8' : '#ffb3cf';
           GG.Friends.heart(c, cv.width / 2 + Math.cos(a) * (130 + i * 8),
             cv.height / 2 + Math.sin(a * 1.25) * 74, 5);
           c.globalAlpha = 1;
@@ -288,12 +373,29 @@
 
     hideFriend: function () {
       $('friend-pop').classList.add('hidden');
+      $('friend-pop').classList.remove('celebrate');
       cancelAnimationFrame(this._fraf);
       if (this.onFriendClosed) this.onFriendClosed();
     },
 
+    /* v1.20: the NEW! moment - confetti, a bouncing card, a turning sunburst */
+    _celebrate: function (popId, cardId, on, palette) {
+      this._isNew = !!on;
+      if (!GG.FxUI) return;
+      if (on) GG.FxUI.celebrate(popId, cardId, palette);
+      else GG.FxUI.calm(popId);
+    },
+
+    /* v1.20: earning sparkles makes them fly up and count; spending them
+       just changes the number */
     refreshHud: function () {
-      $('chip-sparkles').innerHTML = '&#10022; ' + GG.Save.data.sparkles;
+      var v = GG.Save.data.sparkles;
+      if (GG.FxUI && this._hudReady) GG.FxUI.setSparkles(v);
+      else {
+        $('chip-sparkles').innerHTML = '&#10022; ' + v;
+        if (GG.FxUI) GG.FxUI._shown = v;
+      }
+      this._hudReady = true;
     }
   };
 })(window.GG = window.GG || {});

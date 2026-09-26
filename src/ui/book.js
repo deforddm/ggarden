@@ -60,15 +60,15 @@
 
   /* The books on the shelf, in shelf order. */
   var BOOKS = [
-    { id: 'bugs', name: 'Bug Book', blurb: 'bugs and mini-beasts', col: '#5f9f4a',
+    { id: 'bugs', name: 'Bug Book', blurb: 'bugs and mini-beasts', col: '#45b33d',
       show: function () { return GG.BUG_BY_ID.monarch || GG.BUGS[0]; },
       list: function () { return GG.BUGS; },
       found: function () { return GG.Save.totalSpecies(); } },
-    { id: 'fish', name: 'Fish Book', blurb: 'fish and river creatures', col: '#3f8fb8',
+    { id: 'fish', name: 'Fish Book', blurb: 'fish and river creatures', col: '#2a96da',
       show: function () { return GG.FISH_BY_ID.bluegill || GG.FISH[0]; },
       list: function () { return GG.FISH; },
       found: function () { return GG.Save.totalFish(); } },
-    { id: 'friends', name: 'Friends Book', blurb: 'animal friends', col: '#c9728a',
+    { id: 'friends', name: 'Friends Book', blurb: 'animal friends', col: '#e8568c',
       show: function () { return GG.ANIMAL_BY_ID.cookie || GG.ANIMALS[0]; },
       list: function () { return GG.ANIMALS; },
       found: function () {
@@ -76,7 +76,7 @@
         GG.ANIMALS.forEach(function (a) { if (a.lookOnly && GG.Save.hasSeen(a.id)) met++; });
         return GG.Save.totalFriends() + met;
       } },
-    { id: 'fruit', name: 'Garden Book', blurb: 'fruit, berries, vegetables and flowers', col: '#d0813a',
+    { id: 'fruit', name: 'Garden Book', blurb: 'fruit, berries, vegetables and flowers', col: '#f07d1a',
       show: function () { return GG.FRUIT_BY_ID && (GG.FRUIT_BY_ID.apple || GG.FRUITS[0]); },
       list: function () { return GG.FRUITS; },
       found: function () { return GG.Save.totalFruit(); } }
@@ -103,6 +103,7 @@
       $('book-back').style.display = 'none';
       $('book-tabs').style.display = '';
       $('book-title').textContent = 'Critter Compendium';
+      $('screen-book').setAttribute('data-book', 'home');
       $('book-kicker').classList.add('hide');
       document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
         el.classList.toggle('on', el.getAttribute('data-book') === 'home');
@@ -123,7 +124,7 @@
         var n = b.list().length, f = Math.min(b.found(), n);
         var card = GG.el('div', 'shelfbook');
         card.setAttribute('data-open', b.id);
-        card.style.background = b.col;
+        card.style.backgroundColor = b.col;   /* v1.20: keeps the CSS gloss on top */
         card.appendChild(GG.el('div', 'bk', b.name));
         var def = b.show();
         var cv = document.createElement('canvas');
@@ -155,6 +156,7 @@
       var tab = this.tab;
       $('book-kicker').classList.remove('hide');
       var fish = tab === 'fish', friends = tab === 'friends', fruit = tab === 'fruit';
+      $('screen-book').setAttribute('data-book', tab);
       grid.style.display = 'grid'; det.style.display = 'none';
       $('book-back').style.display = 'none';
       $('book-tabs').style.display = '';
@@ -296,6 +298,8 @@
         : (def.isAnimal ? 'All friends'
           : (def.isFish ? 'All fish' : 'All bugs'));
       $('book-tabs').style.display = 'none';
+      $('screen-book').setAttribute('data-book',
+        def.isFruit ? 'fruit' : (def.isAnimal ? 'friends' : (def.isFish ? 'fish' : 'bugs')));
       det.innerHTML = '';
       var isFish = !!def.isFish;
       var isAnimal = !!def.isAnimal;
@@ -550,10 +554,10 @@
         c.clearRect(0, 0, cv.width, cv.height);
         var g = c.createLinearGradient(0, 0, 0, cv.height);
         if (def.lookOnly) { g.addColorStop(0, '#3a3340'); g.addColorStop(1, '#241f28'); }
-        else if (isFruit) { g.addColorStop(0, '#fdf0d8'); g.addColorStop(1, '#e9d4a8'); }
-        else if (isAnimal) { g.addColorStop(0, '#cfeeff'); g.addColorStop(1, '#9ed98a'); }
-        else if (isFish) { g.addColorStop(0, '#9fd8ee'); g.addColorStop(1, '#3f93b8'); }
-        else { g.addColorStop(0, '#eaf6e4'); g.addColorStop(1, '#d3e9cb'); }
+        else if (isFruit) { g.addColorStop(0, '#fff3cc'); g.addColorStop(1, '#ffc98a'); }
+        else if (isAnimal) { g.addColorStop(0, '#bfeaff'); g.addColorStop(1, '#8fd873'); }
+        else if (isFish) { g.addColorStop(0, '#8fe0ff'); g.addColorStop(1, '#2f9fe0'); }
+        else { g.addColorStop(0, '#b8ecff'); g.addColorStop(1, '#dff7c8'); }
         c.fillStyle = g; GG.roundRect(c, 0, 0, cv.width, cv.height, 22); c.fill();
         /* soft clouds along the bottom - but the look-only page is a dark
            night scene, so they become faint web strands instead */
