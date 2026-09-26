@@ -6,9 +6,15 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.20.0';
+  GG.VERSION = '1.20.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.20.1', title: 'Round letters everywhere',
+      lines: [
+        'The bouncy rounded letters on the buttons and signs are part of the game now, so they show up even with no internet.'
+      ]
+    },
     {
       v: '1.20.0', title: 'Brighter, bouncier, and all about you',
       lines: [
