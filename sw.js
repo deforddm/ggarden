@@ -1,5 +1,5 @@
 /* Guin's Garden service worker - lets the game work with no internet. */
-const CACHE = 'guins-garden-v1.20.0';
+const CACHE = 'guins-garden-v1.20.1';
 const ASSETS = [
   /* v1.20: every script the page loads, so the whole game works offline
      from the first visit (the list had not been updated since v1.1) */
@@ -17,7 +17,8 @@ const ASSETS = [
   './src/game/friends.js', './src/game/fetch.js', './src/game/orchard.js', './src/game/yard.js',
   './src/game/house.js', './src/game/cave.js', './src/ui/ui.js', './src/ui/fx-ui.js',
   './src/ui/book.js', './src/ui/terrarium.js', './src/ui/shop.js', './src/ui/charselect.js',
-  './src/ui/homedecor.js', './src/main.js', './icons/icon-192.png', './icons/icon-512.png',
+  './src/ui/homedecor.js', './src/main.js', './fonts/fredoka-latin.woff2', './fonts/nunito-latin.woff2',
+  './icons/icon-192.png', './icons/icon-512.png',
   './icons/icon-512-maskable.png'
 ];
 
