@@ -39,24 +39,52 @@
       return { morning: 'Morning', day: 'Daytime', evening: 'Evening', night: 'Night' }[this.phase()];
     },
 
-    /* A colour wash painted over the world. */
+    /* A colour wash painted over the world (kept for anything that wants
+       one string; the world itself uses grade() below since v1.20). */
     tint: function () {
-      var h = this.minutes / 60;
-      function mix(a, b, t) {
-        return [GG.lerp(a[0], b[0], t), GG.lerp(a[1], b[1], t), GG.lerp(a[2], b[2], t), GG.lerp(a[3], b[3], t)];
+      var g = this.grade();
+      return 'rgba(' + (g.or | 0) + ',' + (g.og | 0) + ',' + (g.ob | 0) + ',' + g.oa.toFixed(3) + ')';
+    },
+
+    /* v1.20: the light of the hour, in two parts. mul is multiplied over
+       the world, so night goes a deep clear blue without washing the
+       colours out, and golden hour warms everything; over is a thin wash
+       on top. night (0-1) tells the lights - windows, fireflies, the glow
+       round Guin - how much to shine. The same object is reused. */
+    grade: function () {
+      var h = this.minutes / 60, G = this._g || (this._g = {});
+      /*          mul r, g, b        over r, g, b, a         night */
+      var NIGHT = [104, 124, 198, 22, 30, 90, 0.07, 1],
+          DUSK = [255, 196, 160, 255, 120, 70, 0.10, 0.25],
+          GOLD = [255, 226, 186, 255, 176, 90, 0.10, 0],
+          DAY = [255, 255, 255, 255, 255, 255, 0, 0],
+          MORN = [255, 232, 200, 255, 214, 140, 0.10, 0],
+          DAWN = [196, 180, 214, 255, 170, 150, 0.08, 0.35];
+      var A, B, u;
+      if (h < 4.5) { A = NIGHT; B = NIGHT; u = 0; }
+      else if (h < 5.5) { A = NIGHT; B = DAWN; u = h - 4.5; }
+      else if (h < 6.5) { A = DAWN; B = MORN; u = h - 5.5; }
+      else if (h < 9) { A = MORN; B = DAY; u = (h - 6.5) / 2.5; }
+      else if (h < 16) { A = DAY; B = DAY; u = 0; }
+      else if (h < 18) { A = DAY; B = GOLD; u = (h - 16) / 2; }
+      else if (h < 19.3) { A = GOLD; B = DUSK; u = (h - 18) / 1.3; }
+      else if (h < 21) { A = DUSK; B = NIGHT; u = (h - 19.3) / 1.7; }
+      else { A = NIGHT; B = NIGHT; u = 0; }
+      u = u * u * (3 - 2 * u);
+      function m(i) { return A[i] + (B[i] - A[i]) * u; }
+      G.mr = m(0); G.mg = m(1); G.mb = m(2);
+      G.or = m(3); G.og = m(4); G.ob = m(5); G.oa = m(6); G.night = m(7);
+      if (this.rain) {
+        /* a grey, soft, rainy light - but still daylight in the day */
+        G.mr *= 0.86; G.mg *= 0.88; G.mb *= 0.92;
+        G.or = G.or * 0.5 + 60; G.og = G.og * 0.5 + 70; G.ob = G.ob * 0.5 + 90;
+        G.oa = Math.max(G.oa, 0.10);
       }
-      var NIGHT = [26, 38, 92, 0.52], DUSK = [255, 138, 70, 0.26],
-          DAY = [255, 255, 255, 0], MORN = [255, 226, 150, 0.16];
-      var col;
-      if (h < 4.5) col = NIGHT;
-      else if (h < 6) col = mix(NIGHT, MORN, (h - 4.5) / 1.5);
-      else if (h < 9) col = mix(MORN, DAY, (h - 6) / 3);
-      else if (h < 16.5) col = DAY;
-      else if (h < 19) col = mix(DAY, DUSK, (h - 16.5) / 2.5);
-      else if (h < 21) col = mix(DUSK, NIGHT, (h - 19) / 2);
-      else col = NIGHT;
-      if (this.rain) { col = [col[0] * 0.7 + 90 * 0.3, col[1] * 0.7 + 110 * 0.3, col[2] * 0.7 + 140 * 0.3, Math.max(col[3], 0.22)]; }
-      return 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',' + col[3].toFixed(3) + ')';
+      G.mul = (G.mr > 253 && G.mg > 253 && G.mb > 253) ? null
+        : 'rgb(' + (G.mr | 0) + ',' + (G.mg | 0) + ',' + (G.mb | 0) + ')';
+      G.over = G.oa < 0.004 ? null
+        : 'rgba(' + (G.or | 0) + ',' + (G.og | 0) + ',' + (G.ob | 0) + ',' + G.oa.toFixed(3) + ')';
+      return G;
     },
 
     isDark: function () { var h = this.minutes / 60; return h < 5.5 || h > 19.5; }

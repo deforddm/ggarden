@@ -68,7 +68,8 @@
       cherry: ['orchard', 'meadow'], bamboo: ['garden', 'forest'],
       savanna: ['meadow', 'hill'], badlands: ['desert', 'hill'],
       swamp: ['pond', 'riverbank'],
-      dogpark: ['meadow', 'garden']
+      dogpark: ['meadow', 'garden'],
+      mesa: ['desert', 'badlands']
     },
 
     eligible: function (biome, phase, rain) {

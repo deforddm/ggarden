@@ -147,6 +147,9 @@
         /* and a unique friend who is indoors or visiting a habitat is not
            also out here */
         if (GG.animalIsUnique(def) && this.uniqueWhere(def.id)) continue;
+        /* v1.20: nor is a friend who lives in one of the habitats in the
+           yard - she is at home in there, not also out wandering */
+        if (GG.Yard && GG.Yard.houses(def.id)) continue;
         for (var j = 0; j < this.list.length; j++) {
           if (this.list[j].def.id === def.id) { def = null; break; }
         }
@@ -805,6 +808,8 @@
     },
 
     stepAnimal: function (dt, f, player) {
+      /* v1.20: a dog playing fetch is moved by GG.Fetch until it drops the ball */
+      if (f.fetchCtl) return;
       var d = f.def;
       f.t += dt;
       var busy = this.busy && this.busy.animal === f;
@@ -933,7 +938,7 @@
       /* too close, and it backs away rather than bolting. The three you
          befriend by leaving alone start doing it much further out, so she can
          never end up standing next to a bear or a moose. */
-      if (d.way === 'backaway' && near < d.keep * 0.95) {
+      if (d.way === 'backaway' && near < d.keep * 1.1) {
         var far = Math.atan2(f.y - player.y, f.x - player.x);
         f.ang = GG.angLerp(f.ang, far, Math.min(1, dt * 4));
         /* and it is faster than she is. A bear runs as fast as a racehorse
@@ -989,14 +994,16 @@
       var best = null, bd = 1e9;
       for (var i = 0; i < this.list.length; i++) {
         var f = this.list[i];
-        if (f.friend) continue;
+        if (f.friend || f.fetchCtl) continue;
         var d = GG.dist(f.x, f.y, player.x, player.y);
         if (d < d0(f.def) && d < bd) { bd = d; best = f; }
       }
       return best;
       /* The three you befriend by going away are offered from much further
          off, because walking up to them is the whole thing you must not do. */
-      function d0(def) { return def.way === 'backaway' ? def.keep + 92 : def.keep + 46; }
+      /* v1.20 (David): the whole back-away dance used about twice the width
+         of a phone screen, so every distance in it was halved */
+      function d0(def) { return def.way === 'backaway' ? def.keep + 60 : def.keep + 46; }
     },
 
     /* ---------- the ritual ---------- */
@@ -1058,7 +1065,7 @@
 
         /* and walking at it - giving back the room she had given - stops the
            whole thing, whatever the ring says */
-        if (away < b.best - 70) { this.cancel('closer'); return; }
+        if (away < b.best - 40) { this.cancel('closer'); return; }
         if (b.ring >= 1) this.finish();
         return;
       }

@@ -47,35 +47,40 @@
   /* water kinds */
   var NONE = 0, POND = 1, STREAM = 2, RIVER = 3, ESTUARY = 4, SEA = 5, TIDEPOOL = 6, MARSH = 7;
 
+  /* v1.20: a sunnier, more saturated set (David: "more bright, more
+     vibrant, more fun"), each place still itself - the desert dry, the
+     tundra cool, the woods deep. */
   var GROUND = {
-    meadow: ['#8ecf63', '#83c55a', '#98d76d'],
-    garden: ['#9ad96f', '#90d065', '#a5e17b'],
-    forest: ['#4f9450', '#478a49', '#589c58'],
-    pond: ['#9dcf7e', '#94c777', '#a7d78a'],
-    hill: ['#c3bf94', '#b8b489', '#cdc9a0'],
-    orchard: ['#a3d46a', '#99cb60', '#aeda78'],
-    riverbank: ['#7fc472', '#74ba67', '#8cd07f'],
-    beach: ['#efe0b4', '#e8d6a6', '#f5e9c2'],
-    shore: ['#b9b3a4', '#aaa595', '#c6c0b0'],
-    desert: ['#cdb68c', '#c6ae82', '#d4bf97'],
-    mountain: ['#918e86', '#8a8781', '#9b978f'],
-    taiga: ['#4a6b3e', '#446238', '#527446'],
-    tundra: ['#8d8a68', '#86835f', '#97946f'],
-    rainforest: ['#3f6b35', '#396430', '#46743a'],
-    glade: ['#b8a85e', '#b2a256', '#c0b168'],
+    meadow: ['#7fd354', '#76ca4c', '#89dc5e'],
+    garden: ['#8ade5e', '#80d555', '#95e56a'],
+    forest: ['#45a04e', '#3d9646', '#4faa57'],
+    pond: ['#8cd872', '#83cf6a', '#96e07c'],
+    hill: ['#cdd08c', '#c3c682', '#d7d998'],
+    orchard: ['#97d95a', '#8ed052', '#a2e166'],
+    riverbank: ['#6fcf6a', '#66c562', '#79d873'],
+    beach: ['#f8e6b0', '#f2dea2', '#fcedc0'],
+    shore: ['#c6c0ac', '#bab39f', '#d0cab8'],
+    desert: ['#e2c189', '#d9b77d', '#e9cb96'],
+    mountain: ['#a5a096', '#9c978d', '#aeaa9f'],
+    taiga: ['#548a4a', '#4c8043', '#5e9553'],
+    tundra: ['#a2ae88', '#99a57f', '#acb792'],
+    rainforest: ['#3c8240', '#36793a', '#458c48'],
+    glade: ['#b8c864', '#aebf5b', '#c2d06f'],
     /* pale loess over dark basalt - the flood country */
-    badlands: ['#a89a7e', '#9e9075', '#b3a58a'],
+    badlands: ['#bda985', '#b29e7b', '#c7b491'],
     /* cured bunchgrass gold, and the gaps between the bunches are the point */
-    savanna: ['#c9b172', '#bea567', '#d3bc7f'],
+    savanna: ['#dfbe72', '#d4b267', '#e7c880'],
     /* wet organic mud at the walkable edge of the water */
-    swamp: ['#5e6b47', '#556343', '#67744f'],
-    bamboo: ['#7a9450', '#728c49', '#84a05a'],
-    cherry: ['#a3d46a', '#99cb60', '#aeda78'],
-    birdtown: ['#8ecf63', '#83c55a', '#98d76d'],
+    swamp: ['#687e4b', '#607445', '#728855'],
+    bamboo: ['#88ad55', '#80a44d', '#92b660'],
+    cherry: ['#9edc6a', '#95d362', '#a8e374'],
+    birdtown: ['#7fd354', '#76ca4c', '#89dc5e'],
     /* trodden dirt and dropped straw */
-    farmyard: ['#b9ac7e', '#b0a375', '#c2b68a'],
+    farmyard: ['#cdb780', '#c3ad75', '#d6c28c'],
     /* a mown lawn, a shade brighter than the meadow round it */
-    dogpark: ['#93d668', '#8acd5f', '#9edd74']
+    dogpark: ['#86dc58', '#7dd350', '#90e362'],
+    /* the Mesa's flat top: bunchgrass going gold, with a spring green in it */
+    mesa: ['#c8c07a', '#bdb46e', '#d3cb88']
   };
 
   var GROUND_RGB = {};
@@ -109,6 +114,16 @@
     /* worn patches where the dogs always run the same way round */
     dogpark: [[176, 164, 116, 54, 0.80, 241], [128, 192, 88, 80, 0.62, 251]]
   };
+
+  /* v1.20: the blotches get the same lift as the ground under them -
+     a touch more colour and light, so they read as sunny patches rather
+     than stains */
+  Object.keys(PATCH).forEach(function (k) {
+    PATCH[k].forEach(function (q) {
+      var m = (q[0] + q[1] + q[2]) / 3;
+      for (var i = 0; i < 3; i++) q[i] = Math.max(0, Math.min(255, Math.round(m + (q[i] - m) * 1.3 + 8)));
+    });
+  });
 
   var POND_E = { cx: 3820, cy: 2980, rx: 460, ry: 300 };
 
@@ -171,6 +186,51 @@
   })();
 
   var SHELF = { x0: 6820, x1: 8000, pad: 210 };
+
+  /* The Mesa (v1.20 - Guin: "Mesa"). A table of dark basalt standing up out
+     of the Scablands, the way the Ice Age Floods left flat-topped hills all
+     over the Columbia Basin. The top is an ellipse; its south side is a
+     cliff face you see from below; a switchback trail climbs the east end.
+     Everything about it is worked out from these numbers. */
+  var MESA = { cx: 880, cy: 2330, rx: 290, ry: 170, face: 66 };
+  function mesaU(x) { return (x - MESA.cx) / MESA.rx; }
+  function mesaV(x, y) {
+    var u = (x - MESA.cx) / MESA.rx, v = (y - MESA.cy) / MESA.ry;
+    return u * u + v * v;
+  }
+  function mesaEdge(x) {           // the south rim, where the cliff face starts
+    var u = mesaU(x);
+    return MESA.cy + MESA.ry * Math.sqrt(Math.max(0, 1 - u * u));
+  }
+  function mesaFaceH(x) {          // how tall the face is here (lower at the ends)
+    var u = mesaU(x);
+    return MESA.face * (0.3 + 0.7 * Math.sqrt(Math.max(0, 1 - u * u)));
+  }
+  /* the trail: a foot on the flat, a turn half way up the face, a top */
+  var MESA_TRAIL = (function () {
+    var x0 = MESA.cx + 175, x1 = MESA.cx + 235, x2 = MESA.cx + 150;
+    return [
+      { x: x0, y: mesaEdge(x0) + mesaFaceH(x0) + 26 },
+      { x: x1, y: mesaEdge(x1) + mesaFaceH(x1) * 0.5 },
+      { x: x2, y: mesaEdge(x2) - 32 }
+    ];
+  })();
+  function segDist(px, py, a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y, L = dx * dx + dy * dy;
+    var t = L ? GG.clamp(((px - a.x) * dx + (py - a.y) * dy) / L, 0, 1) : 0;
+    var qx = a.x + dx * t - px, qy = a.y + dy * t - py;
+    return Math.sqrt(qx * qx + qy * qy);
+  }
+  function onMesaTrail(x, y) {
+    return segDist(x, y, MESA_TRAIL[0], MESA_TRAIL[1]) < 17 || segDist(x, y, MESA_TRAIL[1], MESA_TRAIL[2]) < 17;
+  }
+  function inMesaTop(x, y) { return mesaV(x, y) <= 1; }
+  /* the whole footprint: the top, the rim, the face and the rubble below it */
+  function inMesaFoot(x, y) {
+    if (mesaV(x, y) < 1.5) return true;   // squared: about 1.22 radii out
+    var u = mesaU(x);
+    return Math.abs(u) < 1.05 && y > MESA.cy && y < mesaEdge(x) + mesaFaceH(x) + 40;
+  }
 
   /* The footbridge near Shell Beach. It crosses the water where the river
      opens out into Gull Inlet, so she can walk over instead of all the way
@@ -394,6 +454,7 @@
       if (this.dPool[i] < 13 + wob * 0.5) return 'shore';
       if (this.dSea[i] < 26 + wob) return 'beach';
       if (this.dRiver[i] < 15 + wob * 0.7) return 'riverbank';
+      if (inMesaTop(x, y)) return 'mesa';
       return LETTER[this.biomeLetter(x, y)];
     },
     biomeAt: function (x, y) {
@@ -401,9 +462,9 @@
       var wy = y + (GG.noise2(x / 110, y / 110, 13) - 0.5) * 150 + (GG.noise2(x / 34, y / 34, 23) - 0.5) * 44;
       // the water-led biomes must not wobble, or the sand walks into the sea
       var hard = this.biomeRaw(x, y);
-      if (hard === 'beach' || hard === 'shore' || hard === 'riverbank' || hard === 'pond') return hard;
+      if (hard === 'beach' || hard === 'shore' || hard === 'riverbank' || hard === 'pond' || hard === 'mesa') return hard;
       var soft = this.biomeRaw(wx, wy);
-      if (soft === 'beach' || soft === 'shore' || soft === 'riverbank') return hard;
+      if (soft === 'beach' || soft === 'shore' || soft === 'riverbank' || soft === 'mesa') return hard;
       return soft;
     },
 
@@ -416,6 +477,7 @@
       if (k === TIDEPOOL) return 'The Tidepools';
       if (k === POND) return 'Lily Pond';
       if (k === MARSH) return 'Cattail Marsh';
+      if (inMesaFoot(x, y) || onMesaTrail(x, y)) return 'The Mesa';
       return {
         meadow: 'Sunny Meadow', garden: 'Flower Garden', forest: 'Whispering Woods',
         pond: 'Lily Pond', hill: 'Pebble Hills', orchard: 'Apple Orchard',
@@ -424,7 +486,7 @@
         tundra: 'Lichen Tundra', rainforest: 'Mossy Rainforest', glade: 'Golden Glade',
         badlands: 'The Scablands', savanna: 'Oak Savanna', swamp: 'Cattail Marsh',
         bamboo: 'Bamboo Grove', cherry: 'Cherry Grove', birdtown: 'Bird Town',
-        farmyard: 'The Farmyard', dogpark: 'Dog’s Paradise'
+        farmyard: 'The Farmyard', dogpark: 'Dog’s Paradise', mesa: 'The Mesa'
       }[this.biomeRaw(x, y)];
     },
 
@@ -471,6 +533,8 @@
            further down. */
         skipAdd = b === 'dogpark';
         if (skipAdd) b = 'meadow';
+        /* the Mesa (v1.20) was Scablands before: same dice, nothing kept */
+        if (b === 'mesa' || mesaV(x, y) < 3.4 || inMesaFoot(x, y)) { skipAdd = true; if (b === 'mesa') b = 'badlands'; }
         var v = rnd();
 
         if (b === 'forest') {
@@ -730,6 +794,7 @@
          the look it had: Dog's Paradise, and the new things to pick. */
       this.buildDogPark(add);
       this.buildBirdTown(add);
+      this.buildMesa(add);
       this._clearSigns();
       this.plantPickables(add);
       this._lookAlikes();
@@ -1170,6 +1235,197 @@
       return false;
     },
 
+    /* ---------- the Mesa (v1.20) ---------- */
+    MESA: MESA,
+    MESA_TRAIL: MESA_TRAIL,
+    inMesaTop: inMesaTop,
+    onMesaTrail: onMesaTrail,
+    /* The cliff is solid, and so is a band just inside the rim: she walks
+       the top well back from the edge, which is the rule on any real cliff
+       (the National Park Service says six feet). Only the trail goes up. */
+    mesaBlocked: function (x, y, rad) {
+      if (onMesaTrail(x, y)) return false;
+      var v = mesaV(x, y);
+      if (v <= 0.86) return false;
+      var u = mesaU(x);
+      if (Math.abs(u) < 1 && y > MESA.cy && y > mesaEdge(x) - 10 &&
+          y < mesaEdge(x) + mesaFaceH(x) + rad * 0.5 + 4) return true;
+      return v < 1.32;
+    },
+    buildMesa: function (add) {
+      var self = this, R = GG.mulberry32(20260926), M = MESA;
+      var placed = [];
+      function clearOf(x, y, gap) {
+        for (var i = 0; i < placed.length; i++) {
+          if (Math.hypot(placed[i].x - x, (placed[i].y - y) * 1.3) < gap) return false;
+        }
+        return true;
+      }
+      function onTop(maxV, gap, tries) {
+        for (var a = 0; a < (tries || 300); a++) {
+          var ang = R() * Math.PI * 2, rr = Math.sqrt(R()) * Math.sqrt(maxV);
+          var x = M.cx + Math.cos(ang) * M.rx * rr, y = M.cy + Math.sin(ang) * M.ry * rr;
+          if (onMesaTrail(x, y) || segDist(x, y, MESA_TRAIL[1], MESA_TRAIL[2]) < 34) continue;
+          if (!clearOf(x, y, gap)) continue;
+          return { x: x, y: y };
+        }
+        return null;
+      }
+      var i, at;
+      /* granite boulders the ice sheet left on top (true of Steamboat Rock) */
+      for (i = 0; i < 3; i++) {
+        at = onTop(0.6, 90); if (!at) break;
+        placed.push(add('erratic', at.x, at.y, 22 + R() * 10, true, 17));
+      }
+      for (i = 0; i < 9; i++) {
+        at = onTop(0.72, 64); if (!at) break;
+        placed.push(add('sagebrush', at.x, at.y, 24 + R() * 10, true, 12));
+      }
+      for (i = 0; i < 4; i++) {
+        at = onTop(0.72, 60); if (!at) break;
+        placed.push(add('rabbitbrush', at.x, at.y, 20 + R() * 8, true, 11));
+      }
+      /* flowers to pick: balsamroot and bitterroot */
+      [['arrowleaf_balsamroot', 2], ['bitterroot', 3]].forEach(function (pp) {
+        for (var k = 0; k < pp[1]; k++) {
+          var q = onTop(0.7, 58); if (!q) break;
+          placed.push(add('pickFlower', q.x, q.y, 18 + R() * 3, false, 0, { pick: pp[0], biome: 'mesa' }));
+        }
+      });
+      for (i = 0; i < 8; i++) {
+        at = onTop(0.8, 40); if (!at) break;
+        placed.push(add('balsamroot', at.x, at.y, 15 + R() * 5));
+      }
+      for (i = 0, at = null; i < 46; i++) {
+        at = onTop(0.84, 22, 40); if (!at) continue;
+        placed.push(add('bunchgrass', at.x, at.y, 13 + R() * 7));
+      }
+      /* the rubble fallen off the face, along its foot */
+      for (i = 0; i < 16; i++) {
+        var tx = M.cx - M.rx * 0.92 + R() * M.rx * 1.84;
+        var ty = mesaEdge(tx) + mesaFaceH(tx) + 8 + R() * 22;
+        if (onMesaTrail(tx, ty) || segDist(tx, ty, MESA_TRAIL[0], MESA_TRAIL[1]) < 40) continue;
+        add('talus', tx, ty, 12 + R() * 10, false, 0);
+      }
+      var T0 = MESA_TRAIL[0];
+      add('sign', T0.x - 56, T0.y + 12, 26, false, 0, { label: 'The Mesa' });
+      add('sign', M.cx - 40, M.cy - 40, 26, false, 0, { label: 'Lookout' });
+      void self;
+    },
+    /* Paint the cliff face, its rim and the trail into a ground chunk, so
+       the whole mesa costs nothing a frame. World units, chunk-local. */
+    _paintMesa: function (c, cx, cy) {
+      var C = this.CHUNK, M = MESA;
+      var bx0 = M.cx - M.rx - 70, bx1 = M.cx + M.rx + 70, by0 = M.cy - M.ry - 60, by1 = M.cy + M.ry + M.face + 90;
+      if (cx * C > bx1 || (cx + 1) * C < bx0 || cy * C > by1 || (cy + 1) * C < by0) return;
+      var R = GG.mulberry32(4242), x, i;
+      c.save();
+      c.translate(-cx * C, -cy * C);
+      c.beginPath(); c.rect(cx * C, cy * C, C, C); c.clip();
+      function ellipsePath(k) {
+        c.beginPath(); c.ellipse(M.cx, M.cy, M.rx * k, M.ry * k, 0, 0, Math.PI * 2);
+      }
+      /* the drop round the north side: a shadow falling away from the rim */
+      var sh = c.createRadialGradient(M.cx, M.cy, M.ry * 0.95, M.cx, M.cy, M.ry * 1.25);
+      c.save(); c.scale(M.rx / M.ry, 1);
+      c.restore();
+      c.fillStyle = 'rgba(48,38,30,0.16)';
+      ellipsePath(1.16); c.fill();
+      c.fillStyle = 'rgba(48,38,30,0.12)';
+      ellipsePath(1.08); c.fill();
+      /* repaint the top over the shadow in its own grass colours */
+      c.save();
+      ellipsePath(1); c.clip();
+      var g = c.createLinearGradient(0, M.cy - M.ry, 0, M.cy + M.ry);
+      g.addColorStop(0, 'rgba(214,206,140,0.55)'); g.addColorStop(1, 'rgba(186,176,104,0.35)');
+      c.fillStyle = g; c.fillRect(M.cx - M.rx, M.cy - M.ry, M.rx * 2, M.ry * 2);
+      /* tufts of grass and a few sage-grey shrubs painted into the top */
+      for (i = 0; i < 260; i++) {
+        var a = R() * Math.PI * 2, rr = Math.sqrt(R());
+        var px = M.cx + Math.cos(a) * M.rx * rr, py = M.cy + Math.sin(a) * M.ry * rr;
+        c.strokeStyle = R() < 0.5 ? 'rgba(150,140,76,0.55)' : 'rgba(206,196,120,0.7)';
+        c.lineWidth = 1.1;
+        c.beginPath(); c.moveTo(px, py); c.lineTo(px - 2 + R() * 4, py - 4 - R() * 4); c.stroke();
+      }
+      c.restore();
+      /* the caprock rim all the way round */
+      c.lineWidth = 7; c.strokeStyle = '#46423f';
+      ellipsePath(1); c.stroke();
+      c.lineWidth = 2; c.strokeStyle = 'rgba(160,150,120,0.8)';
+      ellipsePath(0.975); c.stroke();
+      /* the south face: the part you see from down on the flat */
+      var x0 = M.cx - M.rx + 1, x1 = M.cx + M.rx - 1, step = 4;
+      c.beginPath();
+      c.moveTo(x0, mesaEdge(x0));
+      for (x = x0; x <= x1; x += step) c.lineTo(x, mesaEdge(x));
+      for (x = x1; x >= x0; x -= step) c.lineTo(x, mesaEdge(x) + mesaFaceH(x));
+      c.closePath();
+      c.save();
+      c.clip();
+      c.fillStyle = '#4a4440';
+      c.fillRect(x0, M.cy, x1 - x0, M.ry + M.face + 10);
+      for (x = x0; x <= x1; x += 3) {
+        var e = mesaEdge(x), h = mesaFaceH(x);
+        /* caprock band */
+        c.fillStyle = '#3b3a3d'; c.fillRect(x, e, 3.2, h * 0.16);
+        /* the colonnade: tall six-sided columns, catching the sun on one side */
+        c.fillStyle = (Math.floor(x / 7) % 2) ? '#57504a' : '#4a4440';
+        c.fillRect(x, e + h * 0.16, 3.2, h * 0.42);
+        /* a rusty weathered stripe and a yellow-brown one */
+        c.fillStyle = '#8a5a3c'; c.fillRect(x, e + h * 0.58, 3.2, h * 0.07);
+        c.fillStyle = '#5e5550'; c.fillRect(x, e + h * 0.65, 3.2, h * 0.2);
+        c.fillStyle = '#a07a4a'; c.fillRect(x, e + h * 0.85, 3.2, h * 0.05);
+        c.fillStyle = '#4f4843'; c.fillRect(x, e + h * 0.9, 3.2, h * 0.1 + 1);
+      }
+      /* column joints */
+      c.strokeStyle = 'rgba(30,26,24,0.55)'; c.lineWidth = 1;
+      for (x = x0 + 3; x <= x1; x += 7) {
+        var e2 = mesaEdge(x), h2 = mesaFaceH(x);
+        c.beginPath(); c.moveTo(x, e2 + h2 * 0.17); c.lineTo(x + (R() - 0.5), e2 + h2 * 0.57); c.stroke();
+      }
+      /* the jumbled entablature: short broken joints every which way */
+      c.strokeStyle = 'rgba(34,30,27,0.5)';
+      for (i = 0; i < 180; i++) {
+        var jx = x0 + R() * (x1 - x0), je = mesaEdge(jx), jh = mesaFaceH(jx);
+        var jy = je + jh * (0.66 + R() * 0.18), ja = R() * Math.PI, jl = 2 + R() * 4;
+        c.beginPath(); c.moveTo(jx, jy); c.lineTo(jx + Math.cos(ja) * jl, jy + Math.sin(ja) * jl); c.stroke();
+      }
+      /* sunlight across the top of the face, shade at its foot */
+      var fg = c.createLinearGradient(0, M.cy + M.ry * 0.3, 0, M.cy + M.ry + M.face);
+      fg.addColorStop(0, 'rgba(255,236,190,0.16)'); fg.addColorStop(1, 'rgba(20,14,10,0.18)');
+      c.fillStyle = fg; c.fillRect(x0, M.cy, x1 - x0, M.ry + M.face + 10);
+      c.restore();
+      /* the talus apron along the foot */
+      for (i = 0; i < 420; i++) {
+        var tx = x0 + R() * (x1 - x0), tb = mesaEdge(tx) + mesaFaceH(tx);
+        var ty = tb + Math.pow(R(), 1.8) * 30 - 2;
+        c.fillStyle = R() < 0.5 ? '#6f6660' : '#85796e';
+        c.beginPath(); c.ellipse(tx, ty, 1.5 + R() * 2.6, 1 + R() * 1.6, 0, 0, Math.PI * 2); c.fill();
+      }
+      /* the trail: packed tan earth edged with stones, with steps up the face */
+      var T = MESA_TRAIL;
+      c.lineCap = 'round'; c.lineJoin = 'round';
+      c.strokeStyle = '#8f7a58'; c.lineWidth = 30;
+      c.beginPath(); c.moveTo(T[0].x, T[0].y); c.lineTo(T[1].x, T[1].y); c.lineTo(T[2].x, T[2].y); c.stroke();
+      c.strokeStyle = '#cdb88c'; c.lineWidth = 24;
+      c.beginPath(); c.moveTo(T[0].x, T[0].y); c.lineTo(T[1].x, T[1].y); c.lineTo(T[2].x, T[2].y); c.stroke();
+      c.strokeStyle = 'rgba(120,98,66,0.55)'; c.lineWidth = 1.6;
+      for (var sgi = 0; sgi < 2; sgi++) {
+        var A = T[sgi], B = T[sgi + 1], L = Math.hypot(B.x - A.x, B.y - A.y);
+        var ux = (B.x - A.x) / L, uy = (B.y - A.y) / L;
+        for (var d = 9; d < L - 4; d += 9) {
+          var mx = A.x + ux * d, my = A.y + uy * d;
+          c.beginPath(); c.moveTo(mx - uy * 10, my + ux * 10); c.lineTo(mx + uy * 10, my - ux * 10); c.stroke();
+        }
+        for (d = 5; d < L; d += 11) {
+          c.fillStyle = '#7d7266';
+          c.beginPath(); c.ellipse(A.x + ux * d - uy * 14, A.y + uy * d + ux * 14, 2.4, 1.6, 0, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.ellipse(A.x + ux * d + uy * 14, A.y + uy * d - ux * 14, 2.4, 1.6, 0, 0, Math.PI * 2); c.fill();
+        }
+      }
+      c.restore();
+    },
+
     /* ---------- collision ---------- */
     blocked: function (x, y, rad) {
       if (x < 24 || y < 40 || x > this.W - 24 || y > this.H - 24) return true;
@@ -1177,6 +1433,8 @@
       var H = this.HOUSE;
       if (x > H.x - H.w / 2 - rad && x < H.x + H.w / 2 + rad &&
           y > H.y - H.w * 0.72 - rad && y < H.y + 3) return true;   // to the very front of the wall, so she is never hidden behind it
+      if (GG.Yard && GG.Yard.blocked(x, y, rad)) return true;   // v1.20: the habitats out in the yard (src/game/yard.js)
+      if (x > 520 && x < 1240 && y > 2100 && y < 2640 && this.mesaBlocked(x, y, rad || 0)) return true;
       var G = this.gridN, cx = Math.floor(x / GS), cy = Math.floor(y / GS);
       for (var gx = -1; gx <= 1; gx++) {
         for (var gy = -1; gy <= 1; gy++) {
@@ -1196,13 +1454,15 @@
     /* ---------- painting the ground ---------- */
     waterRGB: function (kind, depth) {
       var shallow, deep;
-      if (kind === SEA) { shallow = [126, 214, 224]; deep = [26, 92, 150]; }
-      else if (kind === ESTUARY) { shallow = [148, 198, 190]; deep = [56, 118, 136]; }
-      else if (kind === RIVER) { shallow = [126, 198, 214]; deep = [58, 134, 168]; }
-      else if (kind === STREAM) { shallow = [160, 220, 228]; deep = [96, 176, 200]; }
-      else if (kind === TIDEPOOL) { shallow = [150, 214, 216]; deep = [86, 168, 178]; }
-      else if (kind === MARSH) { shallow = [122, 150, 112]; deep = [52, 82, 66]; }   // tea-dark marsh water
-      else { shallow = [126, 200, 214]; deep = [61, 147, 184]; }
+      /* v1.20: clearer, brighter water - turquoise shallows over a deep
+         blue, the marsh still tea-dark */
+      if (kind === SEA) { shallow = [112, 226, 232]; deep = [28, 116, 196]; }
+      else if (kind === ESTUARY) { shallow = [138, 214, 204]; deep = [46, 130, 160]; }
+      else if (kind === RIVER) { shallow = [118, 214, 232]; deep = [48, 142, 196]; }
+      else if (kind === STREAM) { shallow = [150, 232, 240]; deep = [80, 186, 222]; }
+      else if (kind === TIDEPOOL) { shallow = [140, 232, 226]; deep = [60, 178, 196]; }
+      else if (kind === MARSH) { shallow = [126, 160, 108]; deep = [54, 92, 70]; }   // tea-dark marsh water
+      else { shallow = [118, 214, 230]; deep = [50, 152, 206]; }
       var t = GG.clamp(depth, 0, 1);
       return [shallow[0] + (deep[0] - shallow[0]) * t,
               shallow[1] + (deep[1] - shallow[1]) * t,
@@ -1243,46 +1503,249 @@
       return sand >= 4 || (sand === 3 && this.dSea[this.maskIndex(x, y)] < 30) ? 'beach' : b;
     },
 
+    /* ---------- v1.20 ground art ----------
+       The ground used to be painted at one canvas pixel per world pixel and
+       then blown up three times on a phone, so every edge went soft and the
+       grass was a mosaic of hard 8 px squares. Now each chunk is painted at
+       the screen's own resolution (capped, see _groundScale), the blotches
+       and the water are real curves traced round the samples (marching
+       squares, below) instead of blurred squares, and the grass is little
+       stamped tufts, pebbles, straw and sand grains in each place's own
+       colours. It is all still painted once per chunk, never per frame. */
+
+    /* How many canvas pixels to paint per world pixel: the screen's scale,
+       capped at 2.5 (a 400 px chunk is then 1000 x 1000, about 4 MB). */
+    _groundScale: function () {
+      var d = Math.min(window.devicePixelRatio || 1, 2);
+      var s = d * ((GG.view && GG.view.zoom) || 1);
+      return GG.clamp(Math.round(s * 4) / 4, 1, 2.5);
+    },
+    /* keep the painted chunks under about 56 MB whatever the scale */
+    _chunkCap: function () {
+      var s = this._gs || 1, bytes = 4 * (this.CHUNK * s) * (this.CHUNK * s);
+      return GG.clamp(Math.floor(56e6 / bytes), 12, CHUNK_CAP);
+    },
+
+    /* Marching squares. V is an n x n lattice of numbers, point (i, j) sits
+       at (ox + i*step, oy + j*step). Adds to c's current path the region
+       where V > iso, as one polygon per lattice square (whole squares are
+       merged into runs), so a single fill() paints it with clean,
+       anti-aliased curves and no seams. If seg is an array, the boundary
+       is pushed onto it as x1, y1, x2, y2 quadruples, for stroking. */
+    _march: function (c, V, n, step, ox, oy, iso, seg) {
+      var i, j, run, a, b, d, e, code, m, k, px = this._mpx || (this._mpx = new Float32Array(16)),
+          py = this._mpy || (this._mpy = new Float32Array(16)), cr = this._mcr || (this._mcr = new Uint8Array(16));
+      var cvx = [0, 1, 1, 0], cvy = [0, 0, 1, 1], val = [0, 0, 0, 0];
+      for (j = 0; j < n - 1; j++) {
+        run = -1;
+        for (i = 0; i < n - 1; i++) {
+          a = V[j * n + i] - iso; b = V[j * n + i + 1] - iso;
+          d = V[(j + 1) * n + i + 1] - iso; e = V[(j + 1) * n + i] - iso;
+          code = (a > 0 ? 8 : 0) | (b > 0 ? 4 : 0) | (d > 0 ? 2 : 0) | (e > 0 ? 1 : 0);
+          if (code === 15) { if (run < 0) run = i; continue; }
+          if (run >= 0) { c.rect(ox + run * step, oy + j * step, (i - run) * step, step); run = -1; }
+          if (code === 0) continue;
+          val[0] = a; val[1] = b; val[2] = d; val[3] = e;
+          m = 0;
+          for (k = 0; k < 4; k++) {
+            var v0 = val[k], v1 = val[(k + 1) & 3];
+            var x0 = cvx[k], y0 = cvy[k], x1 = cvx[(k + 1) & 3], y1 = cvy[(k + 1) & 3];
+            if (v0 > 0) { px[m] = x0; py[m] = y0; cr[m] = 0; m++; }
+            if ((v0 > 0) !== (v1 > 0)) {
+              var f = v0 / (v0 - v1);
+              px[m] = x0 + (x1 - x0) * f; py[m] = y0 + (y1 - y0) * f; cr[m] = 1; m++;
+            }
+          }
+          var bx = ox + i * step, by = oy + j * step;
+          c.moveTo(bx + px[0] * step, by + py[0] * step);
+          for (k = 1; k < m; k++) c.lineTo(bx + px[k] * step, by + py[k] * step);
+          c.closePath();
+          if (seg) {
+            for (k = 0; k < m; k++) {
+              var k2 = (k + 1) % m;
+              if (cr[k] && cr[k2]) seg.push(bx + px[k] * step, by + py[k] * step, bx + px[k2] * step, by + py[k2] * step);
+            }
+          }
+        }
+        if (run >= 0) c.rect(ox + run * step, oy + j * step, (n - 1 - run) * step, step);
+      }
+    },
+    _segPath: function (c, seg) {
+      c.beginPath();
+      for (var i = 0; i < seg.length; i += 4) { c.moveTo(seg[i], seg[i + 1]); c.lineTo(seg[i + 2], seg[i + 3]); }
+    },
+
+    /* The big blotches of the newer places - drifts of straw between the
+       sagebrush, lichen heath on the tundra, a patch of alpine turf between
+       two slabs of talus - traced as curves round the samples. A place's
+       first blotch wins where two overlap, so they are laid last first. */
     _blotch: function (c, cx, cy, bio) {
       var C = this.CHUNK, PS = GSTEP, pad = GPADC;
-      var n = Math.ceil(C / PS) + pad * 2;
-      var lay = document.createElement('canvas');
-      lay.width = n; lay.height = n;
-      var lc = lay.getContext('2d');
-      var img = lc.createImageData(n, n), px = img.data;
-      var any = false, x, y, q;
+      var n = C / PS + pad * 2, x, y, q;
+      var seen = {}, list = [];
+      for (x = 0; x < bio.length; x++) if (PATCH[bio[x]] && !seen[bio[x]]) { seen[bio[x]] = 1; list.push(bio[x]); }
+      if (!list.length) return;
+      var V = new Float32Array(n * n), JX = new Float32Array(n * n), JY = new Float32Array(n * n);
       for (y = 0; y < n; y++) {
         for (x = 0; x < n; x++) {
-          var wx = cx * C + (x - pad) * PS + PS / 2;
-          var wy = cy * C + (y - pad) * PS + PS / 2;
-          var o = (y * n + x) * 4;
-          var pt = PATCH[bio[y * n + x]];
-          if (!pt) { px[o + 3] = 0; continue; }
+          var wx = cx * C + (x - pad) * PS + PS / 2, wy = cy * C + (y - pad) * PS + PS / 2;
           /* a wobble on the sample point, so a patch ends in a crumbly line */
-          var jx = wx + (GG.noise2(wx / 11, wy / 11, 53) - 0.5) * 26;
-          var jy = wy + (GG.noise2(wx / 11, wy / 11, 59) - 0.5) * 26;
-          var hit = null;
-          for (q = 0; q < pt.length; q++) {
-            if (GG.noise2(jx / pt[q][3], jy / pt[q][3], pt[q][5]) > pt[q][4]) { hit = pt[q]; break; }
-          }
-          if (!hit) { px[o + 3] = 0; continue; }
-          any = true;
-          px[o] = hit[0]; px[o + 1] = hit[1]; px[o + 2] = hit[2]; px[o + 3] = 255;
+          JX[y * n + x] = wx + (GG.noise2(wx / 11, wy / 11, 53) - 0.5) * 26;
+          JY[y * n + x] = wy + (GG.noise2(wx / 11, wy / 11, 59) - 0.5) * 26;
         }
       }
-      if (!any) return;
-      lc.putImageData(img, 0, 0);
+      var o = -pad * PS + PS / 2;
       c.save();
-      c.globalAlpha = 0.88;
-      c.imageSmoothingEnabled = true;
-      c.imageSmoothingQuality = 'high';
-      c.drawImage(lay, 0, 0, n, n, -pad * PS, -pad * PS, n * PS, n * PS);
+      c.globalAlpha = 0.8;
+      for (var b = 0; b < list.length; b++) {
+        var pt = PATCH[list[b]];
+        for (q = pt.length - 1; q >= 0; q--) {
+          var L = pt[q], any = false;
+          for (y = 0; y < n * n; y++) {
+            if (bio[y] !== list[b]) { V[y] = -0.3; continue; }
+            V[y] = GG.noise2(JX[y] / L[3], JY[y] / L[3], L[5]) - L[4];
+            if (V[y] > 0) any = true;
+          }
+          if (!any) continue;
+          c.beginPath();
+          this._march(c, V, n, PS, o, o, 0, null);
+          c.fillStyle = 'rgb(' + L[0] + ',' + L[1] + ',' + L[2] + ')';
+          c.fill();
+          /* a soft lit rim on the top edge of each patch, for a little depth */
+        }
+      }
       c.restore();
     },
 
+    /* ---- the stamps: tufts of grass, grains of sand, pebbles, straw ---- */
+    /* per place: [style, grid spacing, how many cells get one (0-1)] */
+    _STAMP: {
+      meadow: ['grass', 12, 0.46], garden: ['grass', 12, 0.44], pond: ['grass', 12, 0.42],
+      orchard: ['grass', 12, 0.44], riverbank: ['grass', 12, 0.46], cherry: ['grass', 12, 0.42],
+      birdtown: ['grass', 12, 0.44], dogpark: ['lawn', 12, 0.4], glade: ['grass', 13, 0.46],
+      bamboo: ['grass', 13, 0.45], forest: ['litter', 13, 0.6], rainforest: ['litter', 12, 0.66],
+      taiga: ['litter', 13, 0.6], hill: ['dry', 13, 0.55], savanna: ['dry', 12, 0.6],
+      farmyard: ['straw', 13, 0.55], beach: ['sand', 14, 0.55], desert: ['sand', 13, 0.6],
+      mountain: ['stone', 15, 0.42], badlands: ['stone', 15, 0.42], shore: ['stone', 14, 0.4],
+      tundra: ['lichen', 13, 0.55], swamp: ['mud', 13, 0.55], mesa: ['dry', 13, 0.55]
+    },
+    _stamps: function (bioName) {
+      var S = this._gs, key = bioName;
+      var cache = this._stampCache || (this._stampCache = {});
+      if (cache[key]) return cache[key];
+      var st = this._STAMP[bioName];
+      if (!st) return (cache[key] = null);
+      var pal = GROUND[bioName] || GROUND.meadow;
+      var out = [], rnd = GG.mulberry32(9151 + bioName.length * 131 + bioName.charCodeAt(0));
+      for (var v = 0; v < 6; v++) out.push(this._makeStamp(st[0], pal, v, rnd, S));
+      return (cache[key] = out);
+    },
+    _makeStamp: function (style, pal, v, rnd, S) {
+      var W = 16, H = 14;
+      var cv = document.createElement('canvas');
+      cv.width = Math.ceil(W * S); cv.height = Math.ceil(H * S);
+      var g = cv.getContext('2d');
+      g.setTransform(S, 0, 0, S, 0, 0);
+      g.lineCap = 'round';
+      var dark = GG.shade(pal[1], -0.2), deep = GG.shade(pal[1], -0.32), lite = GG.shade(pal[2], 0.2);
+      var bx = W / 2, by = H - 1.5, i, n, a;
+      function blade(x0, lean, h, w, col) {
+        g.strokeStyle = col; g.lineWidth = w;
+        g.beginPath(); g.moveTo(x0, by);
+        g.quadraticCurveTo(x0 + lean * 0.3, by - h * 0.6, x0 + lean, by - h); g.stroke();
+      }
+      function dot(x, y, r, col) { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+      if (style === 'grass' || style === 'lawn' || style === 'dry') {
+        dark = GG.shade(pal[1], -0.13); lite = GG.shade(pal[2], 0.22);
+        if (v === 5 && style !== 'lawn') {
+          /* a scatter of tiny light flecks - sun on the blades */
+          for (i = 0; i < 4; i++) dot(3 + rnd() * 10, 4 + rnd() * 8, 0.6 + rnd() * 0.4, lite);
+        } else {
+          n = style === 'lawn' ? 3 : 3 + (v % 3);
+          var hh = style === 'lawn' ? 4.5 : (style === 'dry' ? 7.5 : 6.5);
+          for (i = 0; i < n; i++) {
+            a = (i - (n - 1) / 2);
+            blade(bx + a * 1.6, a * 1.9 + (rnd() - 0.5) * 1.2, hh * (0.7 + rnd() * 0.4), 1.15, style === 'dry' ? GG.shade(pal[1], -0.16) : dark);
+          }
+          blade(bx + 0.6, 1.2 + (rnd() - 0.5), hh * 0.8, 1, lite);
+        }
+      } else if (style === 'litter') {
+        if (v < 3) {
+          n = 3 + v;
+          for (i = 0; i < n; i++) blade(bx + (i - n / 2) * 1.5, (i - n / 2) * 1.6, 5.5 + rnd() * 2, 1.1, i === 1 ? lite : dark);
+        } else {
+          /* a fallen leaf or two, and moss */
+          var lc = v === 3 ? '#b88a3e' : (v === 4 ? '#8a6a36' : GG.shade(pal[2], 0.12));
+          g.fillStyle = lc;
+          g.save(); g.translate(bx, by - 4); g.rotate(rnd() * 3);
+          g.beginPath(); g.ellipse(0, 0, 2.8, 1.4, 0, 0, Math.PI * 2); g.fill();
+          g.restore();
+          dot(bx + 4, by - 2, 1.1, deep); dot(bx - 3.5, by - 1, 0.9, lite);
+        }
+      } else if (style === 'straw') {
+        for (i = 0; i < 3; i++) {
+          g.strokeStyle = i ? '#e8cf86' : '#b6964e'; g.lineWidth = 0.9;
+          var sx = bx + (rnd() - 0.5) * 8, sy = by - 2 - rnd() * 6, an = rnd() * 3;
+          g.beginPath(); g.moveTo(sx - Math.cos(an) * 3, sy - Math.sin(an) * 3); g.lineTo(sx + Math.cos(an) * 3, sy + Math.sin(an) * 3); g.stroke();
+        }
+        if (v > 3) blade(bx, 1, 5, 1.1, '#7fa24c');
+      } else if (style === 'sand') {
+        for (i = 0; i < 5; i++) dot(2 + rnd() * 12, 3 + rnd() * 9, 0.45 + rnd() * 0.4, i % 2 ? GG.shade(pal[1], -0.16) : lite);
+        if (v === 4) {
+          /* a little wind ripple */
+          g.strokeStyle = GG.shade(pal[1], -0.1); g.lineWidth = 0.9;
+          g.beginPath(); g.moveTo(2, by - 3); g.quadraticCurveTo(bx, by - 6, W - 2, by - 3); g.stroke();
+          g.strokeStyle = lite; g.beginPath(); g.moveTo(3, by - 4.2); g.quadraticCurveTo(bx, by - 7.2, W - 3, by - 4.2); g.stroke();
+        }
+      } else if (style === 'stone') {
+        n = v < 3 ? 1 : 2;
+        for (i = 0; i < n; i++) {
+          var rx = 1.6 + rnd() * 1.6, px = bx + (rnd() - 0.5) * 8, py = by - 2 - rnd() * 4;
+          g.fillStyle = GG.shade(pal[1], -0.28); g.beginPath(); g.ellipse(px, py + 0.6, rx, rx * 0.7, 0, 0, Math.PI * 2); g.fill();
+          g.fillStyle = GG.shade(pal[2], 0.06); g.beginPath(); g.ellipse(px, py, rx, rx * 0.66, 0, 0, Math.PI * 2); g.fill();
+          g.fillStyle = GG.shade(pal[2], 0.3); g.beginPath(); g.ellipse(px - rx * 0.25, py - rx * 0.25, rx * 0.45, rx * 0.28, 0, 0, Math.PI * 2); g.fill();
+        }
+        if (v === 5) for (i = 0; i < 4; i++) dot(2 + rnd() * 12, 4 + rnd() * 8, 0.5, GG.shade(pal[1], -0.2));
+      } else if (style === 'lichen') {
+        if (v < 3) {
+          for (i = 0; i < 5; i++) dot(3 + rnd() * 10, 5 + rnd() * 7, 0.7 + rnd() * 0.6, i % 2 ? '#eef3e4' : '#cfdcb4');
+        } else {
+          for (i = 0; i < 3; i++) blade(bx + (i - 1) * 1.6, (i - 1) * 1.8, 5 + rnd() * 1.5, 1.05, i === 1 ? lite : dark);
+        }
+      } else if (style === 'mud') {
+        if (v < 3) {
+          for (i = 0; i < 3; i++) blade(bx + (i - 1) * 1.6, (i - 1) * 1.6, 6, 1.1, i === 1 ? '#9cbc5a' : GG.shade(pal[1], -0.2));
+        } else {
+          dot(bx, by - 3, 1.8, 'rgba(160,200,190,0.35)');
+          dot(bx - 0.5, by - 3.5, 0.6, 'rgba(255,255,255,0.6)');
+          dot(bx + 4, by - 1, 1, GG.shade(pal[1], -0.25));
+        }
+      }
+      cv._w = W; cv._h = H;
+      return cv;
+    },
+
+    /* a soft round spot of warm light, for the sun through the leaves */
+    _dappleSprite: function () {
+      if (this._dapple && this._dappleS === this._gs) return this._dapple;
+      var S = this._gs, R = 32;
+      var cv = document.createElement('canvas');
+      cv.width = cv.height = Math.ceil(R * 2 * S);
+      var g = cv.getContext('2d');
+      var gr = g.createRadialGradient(cv.width / 2, cv.height / 2, 0, cv.width / 2, cv.height / 2, cv.width / 2);
+      gr.addColorStop(0, 'rgba(255,248,190,0.62)');
+      gr.addColorStop(0.55, 'rgba(255,244,170,0.34)');
+      gr.addColorStop(1, 'rgba(255,240,160,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+      this._dapple = cv; this._dappleS = S;
+      return cv;
+    },
+
     /* The painted ground is cached a chunk at a time. Only the most
-       recently used CHUNK_CAP chunks are kept (a Map remembers the order
-       they were put in, so the first key is always the stalest one). */
+       recently used chunks are kept (a Map remembers the order they were
+       put in, so the first key is always the stalest one). A chunk pushed
+       out gives its canvas to the next one painted - making a fresh
+       1000 x 1000 canvas costs more than painting it. */
     chunkCanvas: function (cx, cy) {
       var key = cy * 1000 + cx;
       var M = this.chunks || (this.chunks = new Map());
@@ -1291,19 +1754,51 @@
         M.delete(key); M.set(key, hit);
         return hit;
       }
-      var cv = this._paintChunk(cx, cy);
+      var J = this._job;
+      if (!J || J.key !== key) J = this._chunkJob(cx, cy);
+      else this._job = null;
+      while (!J.done) this._chunkStep(J);
+      this._keepChunk(key, J.cv);
+      return J.cv;
+    },
+    _keepChunk: function (key, cv) {
+      var M = this.chunks;
       M.set(key, cv);
-      if (M.size > CHUNK_CAP) M.delete(M.keys().next().value);
-      return cv;
+      while (M.size > this._chunkCap()) {
+        var old = M.keys().next().value;
+        this._spare = M.get(old);
+        M.delete(old);
+      }
     },
     hasChunk: function (cx, cy) { return !!(this.chunks && this.chunks.has(cy * 1000 + cx)); },
 
-    /* Paint at most one ground chunk that is not on screen yet but is about
+    /* the screen's scale changed (a new zoom, a phone turned round): the
+       chunks, stamps and sprites painted for the old one are thrown away */
+    _checkScale: function () {
+      var s = this._groundScale();
+      if (s !== this._gs) {
+        this._gs = s;
+        if (this.chunks) this.chunks.clear();
+        this._stampCache = null;
+        this._spare = null;
+        this._job = null;
+      }
+    },
+
+    /* Paint a bit of a ground chunk that is not on screen yet but is about
        to be - the next row or column the way she is walking - so the frame
-       that scrolls it in does not have to paint it. Call it once a frame
-       from the main loop when there is time to spare. Returns true if it
-       painted one. */
+       that scrolls it in does not have to paint it. A chunk is painted in
+       eight steps over eight frames (v1.20), so no single frame pays for a
+       whole one. Call it once a frame from the main loop when there is time
+       to spare. Returns true if it painted anything. */
     prewarm: function (cam, vw, vh, dirx, diry) {
+      this._checkScale();
+      if (this._job) {
+        var J = this._job;
+        this._chunkStep(J);
+        if (J.done) { this._job = null; if (!this.hasChunk(J.cx, J.cy)) this._keepChunk(J.key, J.cv); }
+        return true;
+      }
       var C = this.CHUNK;
       var x0 = Math.floor(cam.x / C), x1 = Math.floor((cam.x + vw) / C);
       var y0 = Math.floor(cam.y / C), y1 = Math.floor((cam.y + vh) / C);
@@ -1323,121 +1818,280 @@
       if (!cand.length) return false;
       cand.sort(function (a, b) { return a.s - b.s; });
       /* never let prewarming push out a chunk that is on screen */
-      if (cand[0].s === 2 && this.chunks && this.chunks.size >= CHUNK_CAP) return false;
-      this.chunkCanvas(cand[0].cx, cand[0].cy);
+      if (cand[0].s === 2 && this.chunks && this.chunks.size >= this._chunkCap()) return false;
+      if (cand[0].s === 0) { this.chunkCanvas(cand[0].cx, cand[0].cy); return true; }
+      this._job = this._chunkJob(cand[0].cx, cand[0].cy);
+      this._chunkStep(this._job);
       return true;
     },
 
+    /* the whole chunk at once (tests and tools use this) */
     _paintChunk: function (cx, cy) {
+      var J = this._chunkJob(cx, cy);
+      while (!J.done) this._chunkStep(J);
+      return J.cv;
+    },
+    _chunkJob: function (cx, cy) {
+      if (!this._gs) this._checkScale();
+      return { cx: cx, cy: cy, key: cy * 1000 + cx, step: 0, done: false, cv: null, c: null, bio: null, n: 0 };
+    },
+    _chunkStep: function (J) {
+      var C = this.CHUNK, S = this._gs, cx = J.cx, cy = J.cy;
+      var x, y, wx, wy, k, c, n, bio;
+      if (J.step === 0) {
+        var cv = this._spare, side = Math.ceil(C * S);
+        this._spare = null;
+        if (!cv || cv.width !== side) { cv = document.createElement('canvas'); cv.width = side; cv.height = side; }
+        c = cv.getContext('2d');
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+        c.clearRect(0, 0, side, side);
+        c.setTransform(S, 0, 0, S, 0, 0);
+        J.cv = cv; J.c = c;
+        J.step = 1;
+        return;
+      }
+      if (J.step === 1) {
+
+        /* The ground colour, one sample per GSTEP cell, blown up smoothly, so
+           the edge between two places blends over a few pixels. A slow swell
+           of light and shade across the land keeps a big meadow from looking
+           like a bedsheet. The damp sand at the water's edge goes in here too. */
+        J.bio = this._bioGrid(cx, cy);
+        n = J.n = C / GSTEP + GPADC * 2;
+        J.glay = document.createElement('canvas');
+        J.glay.width = n; J.glay.height = n;
+        J.gimg = J.glay.getContext('2d').createImageData(n, n);
+        J.step = 2;
+        return;
+      }
+      c = J.c; bio = J.bio; n = J.n;
+      if (J.step === 2 || J.step === 3) {
+        /* the colour samples, half the rows on each step */
+        var gp = J.gimg.data, half = n >> 1;
+        for (y = J.step === 2 ? 0 : half; y < (J.step === 2 ? half : n); y++) {
+          for (x = 0; x < n; x++) {
+            k = y * n + x;
+            wx = cx * C + (x - GPADC) * GSTEP + GSTEP / 2;
+            wy = cy * C + (y - GPADC) * GSTEP + GSTEP / 2;
+            var pal = GROUND_RGB[bio[k]] || GROUND_RGB.meadow;
+            /* the three shades, blended smoothly (dark - mid - light) rather
+               than stepped, so the mottle never shows the sample squares */
+            var sh3 = GG.clamp((GG.noise2(wx / 30, wy / 30, 21) - 0.5) * 2.6, -1, 1);
+            var pa = pal[0], pb = sh3 < 0 ? pal[1] : pal[2], at = sh3 < 0 ? -sh3 : sh3;
+            var lift = (GG.noise2(wx / 150, wy / 150, 29) - 0.5) * 18;
+            var r0 = pa[0] + (pb[0] - pa[0]) * at + lift, g0 = pa[1] + (pb[1] - pa[1]) * at + lift,
+                b0 = pa[2] + (pb[2] - pa[2]) * at + lift * 0.6;
+            var mi = this.maskIndex(wx, wy);
+            if (this.mask[mi] === NONE) {
+              var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
+              /* shaded in over a couple of cells, not stepped */
+              var wet = Math.max(GG.clamp((5.5 + damp - this.dSea[mi]) / 2.5, 0, 1),
+                                 GG.clamp((3.5 + damp - this.dPool[mi]) / 2, 0, 1)) * 0.55;
+              if (wet > 0) { r0 += (214 - r0) * wet; g0 += (190 - g0) * wet; b0 += (140 - b0) * wet; }
+            }
+            var o4 = k * 4;
+            gp[o4] = r0; gp[o4 + 1] = g0; gp[o4 + 2] = b0; gp[o4 + 3] = 255;
+          }
+        }
+        if (J.step === 2) { J.step = 3; return; }
+        J.glay.getContext('2d').putImageData(J.gimg, 0, 0);
+        c.imageSmoothingEnabled = true;
+        c.imageSmoothingQuality = 'high';
+        c.drawImage(J.glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
+        J.glay = J.gimg = null;
+        J.step = 4;
+        return;
+      }
+      var gx, gy, h, px2, py2;
+      if (J.step === 4) {
+        this._blotch(c, cx, cy, bio);
+        /* sun through the leaves: soft warm spots on the woodland floor */
+        var WOODS = { forest: 1, rainforest: 1, glade: 1, taiga: 1, bamboo: 1, cherry: 1, orchard: 1 };
+        var dsp = null;
+        var D = 70, dx0 = Math.floor((cx * C - 40) / D), dx1 = Math.floor((cx * C + C + 40) / D);
+        var dy0 = Math.floor((cy * C - 40) / D), dy1 = Math.floor((cy * C + C + 40) / D);
+        for (gy = dy0; gy <= dy1; gy++) {
+          for (gx = dx0; gx <= dx1; gx++) {
+            h = GG.hash2(gx, gy, 811);
+            if (h > 0.55) continue;
+            px2 = gx * D + GG.hash2(gx, gy, 812) * D; py2 = gy * D + GG.hash2(gx, gy, 813) * D;
+            var bb = this._bioAtGrid(bio, n, cx, cy, px2, py2);
+            if (!WOODS[bb] || this.isWater(px2, py2)) continue;
+            dsp = dsp || this._dappleSprite();
+            var rr = 16 + h * 34, ws = bb === 'glade' ? 1.25 : 1;
+            c.globalAlpha = (bb === 'glade' ? 0.7 : 0.5) * (0.6 + GG.hash2(gx, gy, 814) * 0.4);
+            c.drawImage(dsp, px2 - cx * C - rr * ws, py2 - cy * C - rr * 0.62, rr * 2 * ws, rr * 1.24);
+          }
+        }
+        c.globalAlpha = 1;
+        J.step = 5;
+        return;
+      }
+      if (J.step === 5 || J.step === 6) {
+        /* tufts, grains, pebbles and straw, one stamp per grid cell, the
+           top half of the chunk on one step and the bottom on the next */
+        var sc = J.sc || (J.sc = {});
+        var G0 = 12, M0 = 10;
+        var gyA = Math.floor((cy * C - M0) / G0), gyB = Math.floor((cy * C + C + M0) / G0);
+        var mid = (gyA + gyB) >> 1;
+        var fromY = J.step === 5 ? gyA : mid + 1, toY = J.step === 5 ? mid : gyB;
+        var M = this.mask;
+        for (gy = fromY; gy <= toY; gy++) {
+          for (gx = Math.floor((cx * C - M0) / G0); gx <= Math.floor((cx * C + C + M0) / G0); gx++) {
+            h = GG.hash2(gx, gy, 903);
+            if (h > 0.66) continue;
+            px2 = (gx + 0.15 + GG.hash2(gx, gy, 901) * 0.7) * G0;
+            py2 = (gy + 0.15 + GG.hash2(gx, gy, 902) * 0.7) * G0;
+            var b2 = this._bioAtGrid(bio, n, cx, cy, px2, py2);
+            var st = this._STAMP[b2];
+            if (!st || h > st[2]) continue;
+            /* keep the stamps off the water and its very edge */
+            var mk = this.maskIndex(px2, py2);
+            if (M[mk] !== NONE || M[this.maskIndex(px2, py2 + 6)] !== NONE ||
+                M[this.maskIndex(px2 - 6, py2)] !== NONE || M[this.maskIndex(px2 + 6, py2)] !== NONE) continue;
+            if ((st[0] === 'grass' || st[0] === 'lawn') && (this.dSea[mk] <= 5 || this.dPool[mk] <= 3)) continue;
+            var set = sc[b2] || (sc[b2] = this._stamps(b2));
+            if (!set) continue;
+            var spr = set[(GG.hash2(gx, gy, 904) * set.length) | 0];
+            c.drawImage(spr, px2 - cx * C - spr._w / 2, py2 - cy * C - spr._h, spr._w, spr._h);
+          }
+        }
+        J.step++;
+        return;
+      }
+      this._paintMesa(c, cx, cy);
+      this._paintWater(c, cx, cy);
+      J.step = 8; J.done = true; J.c = null; J.bio = null; J.sc = null;
+    },
+    /* the biome at a world point, read from the chunk's own sample grid */
+    _bioAtGrid: function (bio, n, cx, cy, x, y) {
       var C = this.CHUNK;
-      var cv = document.createElement('canvas');
-      cv.width = C; cv.height = C;
-      var c = cv.getContext('2d');
-      var x, y, wx, wy, k;
+      var ix = Math.floor((x - cx * C) / GSTEP) + GPADC, iy = Math.floor((y - cy * C) / GSTEP) + GPADC;
+      if (ix < 0 || iy < 0 || ix >= n || iy >= n) return this._paintBiome(x, y);
+      return bio[iy * n + ix];
+    },
 
-      /* The ground colour, one sample per GSTEP cell, blown up smoothly (the
-         same trick as the water and the blotches), so the edge between two
-         places curves instead of stepping in big squares. Each sample also
-         gets a tiny grain of its own, so the grass stays speckled instead of
-         going soft. The damp sand at the water's edge goes in here too. */
-      var bio = this._bioGrid(cx, cy);
-      var n = C / GSTEP + GPADC * 2;
-      var glay = document.createElement('canvas');
-      glay.width = n; glay.height = n;
-      var gctx = glay.getContext('2d');
-      var gimg = gctx.createImageData(n, n), gp = gimg.data;
-      for (y = 0; y < n; y++) {
-        for (x = 0; x < n; x++) {
-          k = y * n + x;
-          wx = cx * C + (x - GPADC) * GSTEP + GSTEP / 2;
-          wy = cy * C + (y - GPADC) * GSTEP + GSTEP / 2;
-          var pal = GROUND_RGB[bio[k]] || GROUND_RGB.meadow;
-          var sh3 = GG.noise2(wx / 26, wy / 26, 21);
-          var rgb = pal[GG.clamp((sh3 * 3) | 0, 0, 2)];
-          var grain = (GG.hash2(Math.floor(wx / GSTEP), Math.floor(wy / GSTEP), 77) - 0.5) * GRAIN;
-          var r0 = rgb[0] + grain, g0 = rgb[1] + grain, b0 = rgb[2] + grain;
-          var mi = this.maskIndex(wx, wy);
-          if (this.mask[mi] === NONE) {
-            var damp = (GG.noise2(wx / 30, wy / 30, 41) - 0.5) * 3.4;
-            if (this.dSea[mi] <= 4.5 + damp || this.dPool[mi] <= 2.5 + damp) {
-              r0 += (196 - r0) * 0.55; g0 += (176 - g0) * 0.55; b0 += (132 - b0) * 0.55;
-            }
-          }
-          var o4 = k * 4;
-          gp[o4] = r0; gp[o4 + 1] = g0; gp[o4 + 2] = b0; gp[o4 + 3] = 255;
+    /* The water, traced as curves round the mask: a damp dark line on the
+       bank, the water itself (its colours blown up smoothly underneath a
+       crisp outline), a pale shallow band just inside the edge, and a thin
+       line of foam where it meets the land. */
+    _paintWater: function (c, cx, cy) {
+      var C = this.CHUNK, pad = 3, x, y, i;
+      var mw = Math.ceil(C / MS) + pad * 2, mh = mw, N = mw * mh;
+      var KIND = new Uint8Array(N), any = false;
+      for (y = 0; y < mh; y++) {
+        for (x = 0; x < mw; x++) {
+          var wx = cx * C + (x - pad) * MS + MS / 2, wy = cy * C + (y - pad) * MS + MS / 2;
+          var kk = (wx < 0 || wy < 0 || wx >= this.W || wy >= this.H) ? NONE : this.mask[this.maskIndex(wx, wy)];
+          KIND[y * mw + x] = kk;
+          if (kk !== NONE && x >= pad - 1 && y >= pad - 1 && x <= mw - pad && y <= mh - pad) any = true;
         }
       }
-      gctx.putImageData(gimg, 0, 0);
-      c.imageSmoothingEnabled = true;
-      c.imageSmoothingQuality = 'high';
-      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
-      /* Smoothed all over, the grass goes soft and loses its speckle. So the
-         same samples go down again as crisp little squares everywhere except
-         in a band two cells wide along the edge between two places, where
-         the smooth layer underneath is left to show. */
-      var edge = new Uint8Array(n * n);
-      for (y = 0; y < n; y++) {
-        for (x = 0; x < n; x++) {
-          var bb = bio[y * n + x];
-          if ((x + 1 < n && bio[y * n + x + 1] !== bb) || (y + 1 < n && bio[(y + 1) * n + x] !== bb)) {
-            for (var ey = Math.max(0, y - 1); ey <= Math.min(n - 1, y + 2); ey++) {
-              for (var ex = Math.max(0, x - 1); ex <= Math.min(n - 1, x + 2); ex++) edge[ey * n + ex] = 1;
-            }
-          }
-        }
-      }
-      for (k = 0; k < n * n; k++) if (edge[k]) gp[k * 4 + 3] = 0;
-      gctx.putImageData(gimg, 0, 0);
-      c.imageSmoothingEnabled = false;
-      c.drawImage(glay, 0, 0, n, n, -GPADC * GSTEP, -GPADC * GSTEP, n * GSTEP, n * GSTEP);
-      c.imageSmoothingEnabled = true;
-
-      /* The big blotches of the newer places - drifts of straw between the
-         sagebrush, lichen heath on the tundra, a patch of alpine turf between
-         two slabs of talus. Painted at one pixel per eight and then blown up
-         smoothly, the same trick as the water, so they melt into each other
-         instead of stepping. Real ground is a patchwork, and one flat colour
-         per place looks like a bedsheet. */
-      this._blotch(c, cx, cy, bio);
-
-      /* The water goes onto a little canvas one pixel per mask cell, then gets
-         blown up smoothly over the ground, so the banks curve instead of
-         stepping. One extra cell all round keeps the edges honest. */
-      var pad = 3;
-      var mw = Math.ceil(C / MS) + pad * 2, mh = mw;
+      if (!any) return;
+      /* colours, bled one cell out onto the land so the smooth blow-up never
+         fades to nothing inside the outline */
       var lay = document.createElement('canvas');
       lay.width = mw; lay.height = mh;
       var lc = lay.getContext('2d');
-      var img = lc.createImageData(mw, mh);
-      var px = img.data;
+      var img = lc.createImageData(mw, mh), px = img.data;
       for (y = 0; y < mh; y++) {
         for (x = 0; x < mw; x++) {
-          wx = cx * C + (x - pad) * MS + MS / 2;
-          wy = cy * C + (y - pad) * MS + MS / 2;
-          var idx = this.maskIndex(wx, wy);
-          var k = this.mask[idx];
-          var o = (y * mw + x) * 4;
-          if (k === NONE ||
-              wx < 0 || wy < 0 || wx >= this.W || wy >= this.H) { px[o + 3] = 0; continue; }
-          var dep = Math.min(1, this.dShore[idx] / 10);
-          var rgb = this.waterRGB(k, dep);
-          if (this.dShore[idx] <= 1) {
-            rgb = [rgb[0] + (255 - rgb[0]) * 0.34,
-                   rgb[1] + (255 - rgb[1]) * 0.34,
-                   rgb[2] + (255 - rgb[2]) * 0.34];
+          i = y * mw + x;
+          var k = KIND[i];
+          if (k === NONE) continue;
+          var wx2 = cx * C + (x - pad) * MS + MS / 2, wy2 = cy * C + (y - pad) * MS + MS / 2;
+          var idx = this.maskIndex(wx2, wy2);
+          /* the depth, softened over a few cells: the raw distance steps a
+             whole cell at a time and drew straight lines across the sea */
+          var ds = 0, dw = 0;
+          for (var qy = -2; qy <= 2; qy++) {
+            for (var qx = -2; qx <= 2; qx++) {
+              var qw = (3 - Math.abs(qx)) * (3 - Math.abs(qy));
+              ds += this.dShore[this.maskIndex(wx2 + qx * MS, wy2 + qy * MS)] * qw; dw += qw;
+            }
           }
-          px[o] = rgb[0]; px[o + 1] = rgb[1]; px[o + 2] = rgb[2]; px[o + 3] = 255;
+          var rgb = this.waterRGB(k, Math.min(1, ds / dw / 10));
+          if (this.dShore[idx] <= 1) {
+            rgb[0] += (255 - rgb[0]) * 0.22; rgb[1] += (255 - rgb[1]) * 0.22; rgb[2] += (255 - rgb[2]) * 0.22;
+          }
+          px[i * 4] = rgb[0]; px[i * 4 + 1] = rgb[1]; px[i * 4 + 2] = rgb[2]; px[i * 4 + 3] = 255;
+        }
+      }
+      for (y = 0; y < mh; y++) {
+        for (x = 0; x < mw; x++) {
+          i = y * mw + x;
+          if (KIND[i] !== NONE) continue;
+          for (var q = 0; q < 8; q++) {
+            var ax = x + [1, -1, 0, 0, 1, 1, -1, -1][q], ay = y + [0, 0, 1, -1, 1, -1, 1, -1][q];
+            if (ax < 0 || ay < 0 || ax >= mw || ay >= mh) continue;
+            var j = ay * mw + ax;
+            if (KIND[j] === NONE) continue;
+            px[i * 4] = px[j * 4]; px[i * 4 + 1] = px[j * 4 + 1]; px[i * 4 + 2] = px[j * 4 + 2]; px[i * 4 + 3] = 255;
+            break;
+          }
         }
       }
       lc.putImageData(img, 0, 0);
+
+      /* the outline: wetness blurred a little so the banks run in curves,
+         but never so much that a thin trickle or a tiny pool vanishes */
+      var V = new Float32Array(N), MV = new Float32Array(N);
+      for (y = 0; y < mh; y++) {
+        for (x = 0; x < mw; x++) {
+          var s = 0, wsum = 0;
+          for (var dy = -1; dy <= 1; dy++) {
+            for (var dx = -1; dx <= 1; dx++) {
+              var xx = x + dx, yy = y + dy;
+              if (xx < 0 || yy < 0 || xx >= mw || yy >= mh) continue;
+              var w = (dx ? 1 : 2) * (dy ? 1 : 2);
+              wsum += w;
+              var kd = KIND[yy * mw + xx];
+              if (kd !== NONE) { s += w; if (kd === MARSH) MV[y * mw + x] += w; }
+            }
+          }
+          i = y * mw + x;
+          V[i] = Math.max(s / wsum, KIND[i] !== NONE ? 0.6 : 0);
+          MV[i] = s ? MV[i] / s : 0;
+        }
+      }
+      var o = -pad * MS + MS / 2, seg = [];
+      c.beginPath();
+      this._march(c, V, mw, MS, o, o, 0.5, seg);
+      var water = new Path2D();
+      /* the same outline again as a Path2D, to clip to */
+      this._march(water, V, mw, MS, o, o, 0.5, null);
+
+      c.lineCap = 'round'; c.lineJoin = 'round';
+      /* the damp bank */
+      this._segPath(c, seg);
+      c.strokeStyle = 'rgba(70,64,30,0.20)'; c.lineWidth = 7; c.stroke();
+      /* the water */
+      c.save();
+      c.clip(water);
       c.imageSmoothingEnabled = true;
       c.imageSmoothingQuality = 'high';
       c.drawImage(lay, 0, 0, mw, mh, -pad * MS, -pad * MS, mw * MS, mh * MS);
-
-      return cv;
+      /* the foam line (a quieter, greener edge on the marsh's still water) */
+      var sa = [], sm = [];
+      for (i = 0; i < seg.length; i += 4) {
+        var mxs = Math.round(((seg[i] + seg[i + 2]) / 2 - o) / MS), mys = Math.round(((seg[i + 1] + seg[i + 3]) / 2 - o) / MS);
+        var mv = MV[GG.clamp(mys, 0, mh - 1) * mw + GG.clamp(mxs, 0, mw - 1)];
+        (mv > 0.5 ? sm : sa).push(seg[i], seg[i + 1], seg[i + 2], seg[i + 3]);
+      }
+      this._segPath(c, sa);
+      c.strokeStyle = 'rgba(235,255,250,0.22)'; c.lineWidth = 12; c.stroke();
+      c.restore();
+      this._segPath(c, sa);
+      c.strokeStyle = 'rgba(255,255,255,0.72)'; c.lineWidth = 2; c.stroke();
+      if (sm.length) {
+        this._segPath(c, sm);
+        c.strokeStyle = 'rgba(200,225,170,0.4)'; c.lineWidth = 1.6; c.stroke();
+      }
     },
 
     drawGround: function (c, cam, vw, vh) {
+      this._checkScale();
       var C = this.CHUNK;
       var x0 = Math.floor(cam.x / C), x1 = Math.floor((cam.x + vw) / C);
       var y0 = Math.floor(cam.y / C), y1 = Math.floor((cam.y + vh) / C);
@@ -1451,71 +2105,99 @@
       }
     },
 
-    /* sparkles, currents and surf, drawn live on top of the water */
+    /* sparkles, currents and surf, drawn live on top of the water (v1.20:
+       sun glints that twinkle, soft swells, and foam that laps in and out
+       along the sea's edge) */
     drawWater: function (c, cam, t, vw, vh) {
       var step = 26;
       var x0 = Math.floor(cam.x / step) * step, y0 = Math.floor(cam.y / step) * step;
+      var dS = this.dShore, M = this.mask;
       c.save();
       c.lineCap = 'round';
-      for (var y = y0; y < cam.y + vh + step; y += step) {
-        for (var x = x0; x < cam.x + vw + step; x += step) {
-          var i = this.maskIndex(x, y);
-          var k = this.mask[i];
-          if (k === NONE) continue;
-          var sx = x - cam.x, sy = y - cam.y;
-          var h = GG.hash2(x / step | 0, y / step | 0, 5);
-          var edge = this.dShore[i];
-
-          if (k === SEA || k === ESTUARY) {
-            if (edge <= 3) {
-              // surf along the shore
-              var f = 0.5 + 0.5 * Math.sin(t * 1.5 + x * 0.01);
-              c.strokeStyle = 'rgba(255,255,255,' + (0.30 + 0.4 * f).toFixed(2) + ')';
-              c.lineWidth = 2.4;
-              c.beginPath();
-              c.moveTo(sx - 12, sy + Math.sin(x * 0.05 + t * 2) * 2);
-              c.lineTo(sx + 12, sy + Math.sin(x * 0.05 + 1 + t * 2) * 2);
-              c.stroke();
-            } else if (h > 0.72) {
-              c.strokeStyle = 'rgba(255,255,255,0.26)';
-              c.lineWidth = 2;
-              var off = Math.sin(t * 0.8 + h * 9) * 7;
-              c.beginPath();
-              c.moveTo(sx - 9 + off, sy);
-              c.quadraticCurveTo(sx + off, sy - 3.5, sx + 9 + off, sy);
-              c.stroke();
-            }
-          } else if (k === RIVER || k === STREAM) {
-            if (h > 0.55) {
-              // current streaks that slide downstream
-              var slide = ((t * 34 + h * 200) % 90) - 45;
-              c.strokeStyle = 'rgba(255,255,255,' + (k === STREAM ? 0.34 : 0.24) + ')';
-              c.lineWidth = 1.6;
-              c.beginPath();
-              c.moveTo(sx - 7 + slide * 0.55, sy - 5 + slide * 0.42);
-              c.lineTo(sx + 5 + slide * 0.55, sy + 3 + slide * 0.42);
-              c.stroke();
-            }
-          } else if (k === TIDEPOOL) {
-            if (h > 0.6) {
-              c.strokeStyle = 'rgba(255,255,255,0.30)';
-              c.lineWidth = 1.4;
-              c.beginPath();
-              c.arc(sx, sy, 5 + Math.sin(t * 1.6 + h * 8) * 1.6, 0.3, 2.4);
-              c.stroke();
-            }
-          } else if (k === POND || k === MARSH) {
-            if (h > (k === MARSH ? 0.82 : 0.7)) {
-              c.strokeStyle = 'rgba(255,255,255,0.28)';
-              c.lineWidth = 2.2;
-              var o2 = Math.sin(t * 0.9 + h * 9) * 7;
-              c.beginPath();
-              c.moveTo(sx - 9 + o2, sy);
-              c.quadraticCurveTo(sx + o2, sy - 3.5, sx + 9 + o2, sy);
-              c.stroke();
+      /* strokes of one look are gathered into one path each */
+      var glint = this._glintPts || (this._glintPts = []), ng = 0;
+      c.beginPath();
+      var nWave = 0;
+      for (var pass = 0; pass < 2; pass++) {
+        if (pass === 1) {
+          if (nWave) { c.strokeStyle = 'rgba(255,255,255,0.30)'; c.lineWidth = 2; c.stroke(); }
+          c.beginPath(); nWave = 0;
+        }
+        for (var y = y0; y < cam.y + vh + step; y += step) {
+          for (var x = x0; x < cam.x + vw + step; x += step) {
+            var i = this.maskIndex(x, y);
+            var k = M[i];
+            if (k === NONE) continue;
+            var sx = x - cam.x, sy = y - cam.y;
+            var h = GG.hash2(x / step | 0, y / step | 0, 5);
+            var edge = dS[i];
+            if (pass === 0) {
+              /* swells and current lines, all white, all one stroke */
+              if (k === SEA || k === ESTUARY) {
+                if (edge > 3 && h > 0.7) {
+                  var off = Math.sin(t * 0.8 + h * 9) * 7, lift = Math.sin(t * 1.3 + h * 5) * 1.2;
+                  c.moveTo(sx - 10 + off, sy + lift);
+                  c.quadraticCurveTo(sx + off, sy - 4 + lift, sx + 10 + off, sy + lift);
+                  nWave++;
+                }
+              } else if (k === RIVER || k === STREAM) {
+                if (h > 0.5) {
+                  var slide = ((t * 34 + h * 200) % 90) - 45;
+                  c.moveTo(sx - 7 + slide * 0.55, sy - 5 + slide * 0.42);
+                  c.lineTo(sx + 5 + slide * 0.55, sy + 3 + slide * 0.42);
+                  nWave++;
+                }
+              } else if (k === POND || k === TIDEPOOL || k === MARSH) {
+                if (h > (k === MARSH ? 0.84 : 0.68)) {
+                  var o2 = Math.sin(t * 0.9 + h * 9) * 6;
+                  c.moveTo(sx - 8 + o2, sy);
+                  c.quadraticCurveTo(sx + o2, sy - 3.2, sx + 8 + o2, sy);
+                  nWave++;
+                }
+              }
+              /* a glint of sun: a little star that flashes now and then */
+              if (k !== MARSH && edge > 1 && h < 0.3) {
+                var ph = Math.sin(t * 1.7 + h * 61);
+                if (ph > 0.55 && ng < 60) {
+                  glint[ng++] = sx + (h * 97 % 1) * 14 - 7;
+                  glint[ng++] = sy + (h * 53 % 1) * 12 - 6;
+                  glint[ng++] = (ph - 0.55) / 0.45;
+                }
+              }
+            } else if (k === SEA || k === ESTUARY) {
+              /* foam that washes up the sand and slides back */
+              if (edge <= 2.5) {
+                var gx = dS[this.maskIndex(x + 8, y)] - dS[this.maskIndex(x - 8, y)];
+                var gy = dS[this.maskIndex(x, y + 8)] - dS[this.maskIndex(x, y - 8)];
+                var gl = Math.sqrt(gx * gx + gy * gy) || 1;
+                gx /= gl; gy /= gl;   /* points out to sea */
+                var wash = Math.sin(t * 1.1 + x * 0.006 + y * 0.004);
+                var ox = sx - gx * (3 + wash * 4), oy = sy - gy * (3 + wash * 4);
+                c.moveTo(ox + gy * 13, oy - gx * 13);
+                c.quadraticCurveTo(ox - gx * 2.5, oy - gy * 2.5, ox - gy * 13, oy + gx * 13);
+                nWave++;
+              }
             }
           }
         }
+      }
+      if (nWave) {
+        var f = 0.5 + 0.5 * Math.sin(t * 1.1);
+        c.strokeStyle = 'rgba(255,255,255,' + (0.45 + 0.3 * f).toFixed(2) + ')'; c.lineWidth = 2.6; c.stroke();
+      }
+      /* the glints, on top */
+      if (ng) {
+        c.fillStyle = '#ffffff';
+        for (var g = 0; g < ng; g += 3) {
+          var gxs = glint[g], gys = glint[g + 1], a = glint[g + 2], r = 1.2 + a * 3.2;
+          c.globalAlpha = 0.35 + a * 0.6;
+          c.beginPath();
+          c.moveTo(gxs, gys - r); c.quadraticCurveTo(gxs, gys, gxs + r, gys);
+          c.quadraticCurveTo(gxs, gys, gxs, gys + r); c.quadraticCurveTo(gxs, gys, gxs - r, gys);
+          c.quadraticCurveTo(gxs, gys, gxs, gys - r);
+          c.fill();
+        }
+        c.globalAlpha = 1;
       }
       c.restore();
     },

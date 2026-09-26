@@ -13,6 +13,7 @@
     stepTimer: 0,
     stun: 0,           // seeing stars after a bee sting
     stingCool: 0,      // no second sting straight away
+    _artOpts: { moving: false, bob: 0, lean: 0, noHat: false },   // reused every frame (v1.20)
 
     reset: function (x, y) {
       this.x = x; this.y = y; this.vx = this.vy = 0; this.swing = 0;
@@ -97,6 +98,19 @@
       var rodding = GG.Fishing && GG.Fishing.active();
       var behind = (d === 'up');
       if (behind) { if (rodding) GG.Fishing.drawRod(c, sx, sy, this); else this._net(c, sx, sy, t); }
+
+      /* v1.20: whoever she chose to be on the "My character" screen, drawn
+         by GG.PlayerArt from a cached sprite. The old hand-drawn Guin below
+         stays only as a fallback if that file is missing. */
+      if (GG.PlayerArt && GG.playerLook) {
+        var o = this._artOpts;
+        o.moving = this.speed > 20; o.bob = bob; o.lean = lean;
+        o.noHat = !!(GG.Friends && GG.Friends.riding);   // the riding helmet goes on instead
+        GG.PlayerArt.draw(c, GG.playerLook(), sx, sy, d, this.walk, t, o);
+        if (!behind) { if (rodding) GG.Fishing.drawRod(c, sx, sy, this); else this._net(c, sx, sy, t); }
+        if (this.stun > 0) this._stars(c, sx, sy - bob, t);
+        return;
+      }
 
       c.save();
       c.translate(sx, sy - bob);
