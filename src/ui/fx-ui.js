@@ -16,29 +16,19 @@
   } catch (e) { reduced = false; }
 
   /* ---------- fonts ----------
-     Fredoka for headings and buttons, Nunito for reading. Loaded without
-     blocking anything (media=print, swapped to all once it has arrived), so
-     offline - or on a slow connection - the page shows straight away in the
-     fallback fonts from the stack in style.css. The service worker caches
-     whatever does arrive, so after one online visit they work offline too. */
+     Fredoka for headings and buttons, Nunito for reading. Since v1.20.1 they
+     are part of the game (fonts/, declared in style.css), so they work on
+     the first visit and with no internet. The browser only fetches a font
+     when something uses it; this asks for both straight away so the title
+     screen is never drawn in the fallback font first, and tells the minimap
+     (canvas text) when they are ready. */
   function loadFonts() {
-    if (document.getElementById('gg-fonts')) return;
-    /* the automated tests run with no internet; a failed font request would
-       only put noise in their error logs */
-    if (navigator.webdriver) return;
     try {
-      var l = document.createElement('link');
-      l.id = 'gg-fonts';
-      l.rel = 'stylesheet';
-      l.href = 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap';
-      l.media = 'print';
-      l.onload = function () {
-        l.media = 'all';
-        /* the minimap labels are canvas text; a fresh paint picks the font up */
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { FX._fontsReady = true; });
-      };
-      l.onerror = function () { l.remove(); };
-      document.head.appendChild(l);
+      if (!document.fonts || !document.fonts.load) return;
+      Promise.all([
+        document.fonts.load('600 20px "Fredoka"'),
+        document.fonts.load('800 16px "Nunito"')
+      ]).then(function () { FX._fontsReady = true; }, function () { /* the fallback stack is fine */ });
     } catch (e) { /* the fallback stack is fine */ }
   }
 
