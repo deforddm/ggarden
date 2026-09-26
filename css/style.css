@@ -1,3 +1,11 @@
+/* v1.20.1: the two rounded fonts live in the game itself (fonts/), so they
+   show on the very first visit and with no internet at all. Both are free
+   under the SIL Open Font License (fonts/OFL-*.txt). Latin letters only,
+   which covers every word in the game, curly quotes and dashes included. */
+@font-face{font-family:"Fredoka";font-style:normal;font-weight:300 700;font-display:swap;
+  src:url("../fonts/fredoka-latin.woff2") format("woff2")}
+@font-face{font-family:"Nunito";font-style:normal;font-weight:200 1000;font-display:swap;
+  src:url("../fonts/nunito-latin.woff2") format("woff2")}
 :root{
   /* v1.20: sunnier, candier - warm cream paper, meadow greens, sky blues */
   --cream:#fffaf0; --cream2:#fff1d8; --line:#f3dfb8; --ink:#3a2e20; --ink2:#645137;
