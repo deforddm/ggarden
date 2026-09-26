@@ -40,7 +40,10 @@
       settings: { music: 0.5, ambience: 0.7, sfx: 0.8 },
       version: null,            // the build she last played; drives "What's new"
       guest: false,
-      guestName: ''
+      guestName: '',
+      player: null,        // v1.20: her character - null until she makes one (see src/data/looks.js)
+      home: null,          // v1.20: how the cottage is decorated - null = as built (see src/data/homedecor.js)
+      yard: null           // v1.20: where each garden habitat stands outside (see src/game/yard.js)
     };
   }
 

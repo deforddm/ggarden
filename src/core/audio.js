@@ -238,6 +238,19 @@
       /* turtle and salamander: nothing. They have no voice, and pretending
          otherwise would be the only untrue sound in the game. */
     },
+    /* v1.20: a tiny bright "ding" for each step of the sparkle count - it
+       climbs as the number climbs. k runs 0..1. */
+    ding: function (k) {
+      var f = 1320 + (k || 0) * 660;
+      tone(f, 0.07, 'triangle', 0.035);
+      tone(f * 1.5, 0.05, 'sine', 0.018, null, 0.015);
+    },
+    /* v1.20: a soft party-popper puff under the NEW! confetti */
+    popper: function () {
+      noise(0.09, 0.05, 2400);
+      tone(1568, 0.12, 'triangle', 0.035, null, 0.06);
+      tone(2093, 0.14, 'triangle', 0.03, null, 0.12);
+    },
     ouch: function () {
       tone(560, 0.13, 'square', 0.11, 170);
       noise(0.16, 0.07, 900);

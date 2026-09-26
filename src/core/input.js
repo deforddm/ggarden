@@ -207,11 +207,147 @@
     /* Walking to a tapped spot: head straight for it, ease off at the end,
        and give up quietly if she stops getting any closer (a tree, the
        river, the edge of the room) rather than treading on the spot. */
+    /* v1.20: find a way there first. A tap far away through thick woods
+       used to stop her short about one time in five, because "head straight
+       for it and slip round what is in front" cannot get out of a pocket of
+       trees. So on the first frame of a walk she plans a route on a little
+       grid (A*, 12 px squares, only the box round her and the spot, and a
+       hard cap on the work), pulls it tight into a few straight legs, and
+       then walks the legs. No route (the spot is across the river, say):
+       she walks the old way and stops politely when she gets no closer. */
+    plan: function (T, P, B) {
+      var CELL = 12, RAD = 12, MAXN = 9000;
+      var sx = P.x, sy = P.y, tx = T.x, ty = T.y;
+      var pad = 240;
+      var minX = Math.min(sx, tx) - pad, minY = Math.min(sy, ty) - pad;
+      var nx = Math.ceil((Math.max(sx, tx) + pad - minX) / CELL), ny = Math.ceil((Math.max(sy, ty) + pad - minY) / CELL);
+      if (nx * ny > 90000) return null;          // too far to plan: walk the old way
+      function cx(x) { return Math.round((x - minX) / CELL); }
+      function cy(y) { return Math.round((y - minY) / CELL); }
+      var N = nx * ny, state = new Uint8Array(N);   // 0 unknown, 1 free, 2 blocked
+      function free(i) {
+        if (!state[i]) state[i] = B(minX + (i % nx) * CELL, minY + ((i / nx) | 0) * CELL, RAD) ? 2 : 1;
+        return state[i] === 1;
+      }
+      var si = cy(sy) * nx + cx(sx), gx = cx(tx), gy = cy(ty), gi = gy * nx + gx;
+      var moved = false;
+      /* the spot itself is inside a bush or a rock: aim for the nearest free square to it */
+      if (gi < 0 || gi >= N || !free(gi)) {
+        var best = -1, bestD = 1e9;
+        for (var r = 1; r <= 4 && best < 0; r++) {
+          for (var oy = -r; oy <= r; oy++) for (var ox = -r; ox <= r; ox++) {
+            if (Math.max(Math.abs(ox), Math.abs(oy)) !== r) continue;
+            var ax = gx + ox, ay = gy + oy;
+            if (ax < 0 || ay < 0 || ax >= nx || ay >= ny) continue;
+            var ai = ay * nx + ax;
+            if (free(ai) && ox * ox + oy * oy < bestD) { best = ai; bestD = ox * ox + oy * oy; }
+          }
+        }
+        if (best < 0) return null;
+        gi = best; gx = gi % nx; gy = (gi / nx) | 0; moved = true;
+      }
+      state[si] = 1;                              // she is standing here, so it is free
+      var g = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), shut = new Uint8Array(N);
+      var heap = [], hf = [];
+      function push(i, f) {
+        heap.push(i); hf.push(f);
+        var k = heap.length - 1;
+        while (k > 0) {
+          var q = (k - 1) >> 1;
+          if (hf[q] <= hf[k]) break;
+          var t = heap[q]; heap[q] = heap[k]; heap[k] = t; t = hf[q]; hf[q] = hf[k]; hf[k] = t; k = q;
+        }
+      }
+      function pop() {
+        var top = heap[0], li = heap.pop(), lf = hf.pop();
+        if (heap.length) {
+          heap[0] = li; hf[0] = lf;
+          var k = 0, n = heap.length;
+          for (;;) {
+            var a = 2 * k + 1, b = a + 1, m = k;
+            if (a < n && hf[a] < hf[m]) m = a;
+            if (b < n && hf[b] < hf[m]) m = b;
+            if (m === k) break;
+            var t = heap[m]; heap[m] = heap[k]; heap[k] = t; t = hf[m]; hf[m] = hf[k]; hf[k] = t; k = m;
+          }
+        }
+        return top;
+      }
+      function h(i) { var ax = i % nx - gx, ay = ((i / nx) | 0) - gy; ax = Math.abs(ax); ay = Math.abs(ay); return Math.max(ax, ay) + 0.414 * Math.min(ax, ay); }
+      var DX = [1, -1, 0, 0, 1, 1, -1, -1], DY = [0, 0, 1, -1, 1, -1, 1, -1];
+      g[si] = 0; push(si, h(si));
+      var work = 0, found = false;
+      while (heap.length && work < MAXN) {
+        var cur = pop();
+        if (shut[cur]) continue;
+        shut[cur] = 1; work++;
+        if (cur === gi) { found = true; break; }
+        var ux = cur % nx, uy = (cur / nx) | 0;
+        for (var k = 0; k < 8; k++) {
+          var vx = ux + DX[k], vy = uy + DY[k];
+          if (vx < 0 || vy < 0 || vx >= nx || vy >= ny) continue;
+          var vi = vy * nx + vx;
+          if (shut[vi] || !free(vi)) continue;
+          /* no squeezing diagonally between two trunks */
+          if (k >= 4 && (!free(uy * nx + vx) || !free(vy * nx + ux))) continue;
+          var ng = g[cur] + (k < 4 ? 1 : 1.414);
+          if (ng < g[vi]) { g[vi] = ng; from[vi] = cur; push(vi, ng + h(vi)); }
+        }
+      }
+      if (!found) return null;
+      /* she tapped the water or a rock, and the nearest dry spot to it is
+         the far bank: do not march her all the way round by the bridge -
+         walk the old way and stop at the edge */
+      if (moved) {
+        var straight = Math.sqrt((tx - sx) * (tx - sx) + (ty - sy) * (ty - sy));
+        if (g[gi] * CELL > straight * 1.6 + 80) return null;
+      }
+      var pts = [];
+      for (var c = gi; c >= 0 && c !== si; c = from[c]) pts.push({ x: minX + (c % nx) * CELL, y: minY + ((c / nx) | 0) * CELL });
+      pts.reverse();
+      /* the last leg ends on the spot she tapped, if she can stand there */
+      var tapFree = !B(tx, ty, RAD);
+      if (gi === cy(ty) * nx + cx(tx)) pts[pts.length - 1] = { x: tx, y: ty };
+      /* pull it tight: from each corner, go to the furthest point she can see */
+      function clear(ax, ay, bx, by) {
+        var L = Math.sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)), n = Math.ceil(L / 5);
+        for (var i = 1; i <= n; i++) if (B(ax + (bx - ax) * i / n, ay + (by - ay) * i / n, RAD)) return false;
+        return true;
+      }
+      var out = [], ax0 = sx, ay0 = sy, at = 0;
+      while (at < pts.length) {
+        var far = at;
+        for (var j = pts.length - 1; j > at; j--) if (clear(ax0, ay0, pts[j].x, pts[j].y)) { far = j; break; }
+        out.push(pts[far]); ax0 = pts[far].x; ay0 = pts[far].y; at = far + 1;
+      }
+      var end = out[out.length - 1];
+      if (tapFree && end && (end.x !== tx || end.y !== ty) && clear(end.x, end.y, tx, ty)) out.push({ x: tx, y: ty });
+      return out;
+    },
+
     steer: function () {
       var T = this.moveTarget, P = GG.Player;
-      var dx = T.x - P.x, dy = T.y - P.y;
+      var B0 = this.blockedFn;
+      if (T.path === undefined) {
+        T.path = null; T.ox = P.x; T.oy = P.y;
+        if (B0) {
+          var d0 = Math.sqrt((T.x - P.x) * (T.x - P.x) + (T.y - P.y) * (T.y - P.y));
+          if (d0 > 40) { try { T.path = this.plan(T, P, B0); } catch (e) { T.path = null; } }
+        }
+        if (T.path && T.path.length) {
+          var last = T.path[T.path.length - 1];
+          T.x = last.x; T.y = last.y;           // aiming for the nearest free spot, if the tap was in a bush
+        }
+      }
+      /* walk the legs of the route one at a time; the last one is the spot itself */
+      var W = (T.path && T.path.length > 1) ? T.path[0] : T;
+      if (W !== T) {
+        var wdx = W.x - P.x, wdy = W.y - P.y;
+        if (wdx * wdx + wdy * wdy < 12 * 12) { T.path.shift(); T.best = 1e9; T.at = 0; W = T.path.length > 1 ? T.path[0] : T; }
+      }
+      var dx = W.x - P.x, dy = W.y - P.y;
       var d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 3) {
+      if (W === T && d < 3) {
         /* arrived: settle on the spot rather than skidding past it */
         this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0;
         P.vx *= 0.25; P.vy *= 0.25;
@@ -220,7 +356,21 @@
       var now = Date.now();
       if (!T.at) T.at = now;
       if (d < T.best - 2) { T.best = d; T.at = now; }
-      else if (now - T.at > (T.side ? 1600 : 450)) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
+      else if (T.path && now - T.at > 450 && Math.abs(P.x - T.ox) + Math.abs(P.y - T.oy) < 6) {
+        /* she could not even get started (hemmed in): stop, the old way */
+        this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return;
+      }
+      else if (T.path && now - T.at > 700 && (T.replans || 0) < 2 && this.blockedFn) {
+        /* snagged on a corner of the route: plan again from right here */
+        T.replans = (T.replans || 0) + 1;
+        var fin = { x: T.x, y: T.y };
+        var again = null;
+        try { again = this.plan(fin, P, this.blockedFn); } catch (e) { again = null; }
+        T.path = again && again.length ? again : T.path;
+        T.best = 1e9; T.at = now; T.side = 0;
+        return;
+      }
+      else if (now - T.at > (T.side || T.path ? 1600 : 450)) { this.moveTarget = null; this.x = 0; this.y = 0; this.mag = 0; return; }
       var ux = dx / d, uy = dy / d;
       /* v1.19: something in the way? Look a little to one side, then the
          other, and slip round it - a tree trunk or a bush should not stop
@@ -247,7 +397,8 @@
         }
       }
       this.x = ux; this.y = uy;
-      this.mag = GG.clamp(d / 48, 0.18, 1);   // full speed, easing off over the last few steps
+      /* full speed along the route, easing off over the last few steps */
+      this.mag = W === T ? GG.clamp(d / 48, 0.18, 1) : 1;
     },
 
     // Called once per frame, after the stick values are read.
