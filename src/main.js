@@ -195,6 +195,10 @@
       /* v1.20: a tap on a habitat in the yard walks her to its gate */
       else if (GG.Yard && (tapYard = GG.Yard.at(tap.x, tap.y))) { GG.Input.walkTo(tapYard.gx, tapYard.gy); GG.Yard.tapped = tapYard; }
       else GG.Orchard.want(tap.x, tap.y);
+    } else if (tap) {
+      /* the line is out: that tap is the catch tap (handled below), so she
+         must not take even one step towards it this frame */
+      GG.Input.clearTarget(); GG.Input.x = GG.Input.y = 0; GG.Input.mag = 0;
     }
 
     var doorD = GG.dist(P.x, P.y, W.DOOR.x, W.DOOR.y + 34);
