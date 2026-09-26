@@ -13,6 +13,8 @@
     c.beginPath(); c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot || 0, 0, TAU); c.fill();
   }
   function shadow(c, x, y, rx) {
+    /* v1.20: the same soft shadow as every other prop (propart.js) */
+    if (GG.softShadow) { GG.softShadow(c, x, y, rx); return; }
     c.fillStyle = 'rgba(30,60,25,0.16)';
     ell(c, x, y, rx, rx * 0.38);
   }

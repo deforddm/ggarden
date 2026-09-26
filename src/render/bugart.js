@@ -4243,6 +4243,20 @@
 
   };
 
+  var haloCv = null;
+  function haloSprite() {
+    if (haloCv) return haloCv;
+    haloCv = document.createElement('canvas');
+    haloCv.width = haloCv.height = 64;
+    var g = haloCv.getContext('2d');
+    var gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,240,0.5)');
+    gr.addColorStop(0.45, 'rgba(255,255,235,0.3)');
+    gr.addColorStop(1, 'rgba(255,255,230,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return haloCv;
+  }
+
   GG.BugArt = {
     shapes: S,
     /* Draw a bug. (x,y) is its centre, angle is where it is heading (radians),
@@ -4251,6 +4265,13 @@
       opts = opts || {};
       var a = bug.art;
       var fn = S[a.shape] || S.beetle;
+      /* v1.20: out in the world a bug stands in a faint soft halo of light,
+         so it reads against any ground - bright grass, dark woods, sand.
+         Nothing about the bug itself changes. */
+      if (opts.alpha == null && !opts.silhouette && c.canvas && c.canvas.id === 'game') {
+        var R = 15 * scale * (bug.size || 1);
+        c.drawImage(haloSprite(), x - R, y - R, R * 2, R * 2);
+      }
       c.save();
       c.translate(x, y);
       if (angle != null) c.rotate(angle + Math.PI / 2);
