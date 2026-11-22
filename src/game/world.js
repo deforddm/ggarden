@@ -301,6 +301,7 @@
     marshPools: MARSH_POOLS,
     props: [], solids: [], hive: null, grid: {}, gridN: [], chunks: null,
     caveMouth: null, bootBrush: null,
+    telescopes: [],      // v1.21: where she can look up at the night sky
     CHUNK: 400,
     pond: POND_E,
     flow: FLOW,
@@ -799,6 +800,7 @@
       this.plantPickables(add);
       this._lookAlikes();
       this._clearAroundPickables();
+      this.buildTelescopes(add);   // v1.21, last of all, so nothing else moves
 
       this.props.push({ type: 'house', x: HOUSE.x, y: HOUSE.y, r: HOUSE.w, seed: 0.5, solid: false });
       this.chunks = null;
@@ -1252,6 +1254,48 @@
           y < mesaEdge(x) + mesaFaceH(x) + rad * 0.5 + 4) return true;
       return v < 1.32;
     },
+    /* v1.21: two telescopes. One in the cottage garden, between the cottage
+       and the beehive, and one on top of the Mesa, a long walk from any
+       lamp, where the sky is properly dark. Each is set down on the first
+       clear spot of a short list, and anything small standing right on top
+       of it is cleared away. */
+    buildTelescopes: function (add) {
+      var self = this, H = this.HOUSE, M = MESA;
+      this.telescopes = [];
+      function place(site, spots) {
+        var at = null;
+        for (var i = 0; i < spots.length && !at; i++) {
+          var s = spots[i], ok = !self.blocked(s[0], s[1], 20) && !self.isWater(s[0], s[1]);
+          /* and she must be able to stand just in front of it */
+          if (ok && self.blocked(s[0], s[1] + 26, 9)) ok = false;
+          if (ok) self.props.forEach(function (q) {
+            if (ok && (q.type === 'sign' || q.pick) && Math.hypot(q.x - s[0], q.y - s[1]) < 44) ok = false;
+          });
+          if (ok) at = s;
+        }
+        if (!at) at = spots[0];
+        var dead = new Set();
+        self.props.forEach(function (q) {
+          if (q.solid || q.type === 'sign' || q.pick || q.type === 'house') return;
+          if (Math.abs(q.x - at[0]) < 26 && q.y > at[1] - 14 && q.y < at[1] + 40) dead.add(q);
+        });
+        if (dead.size) self._removeProps(dead);
+        var p = add('telescope', at[0], at[1], 26, true, 9, { site: site });
+        self.telescopes.push(p);
+      }
+      place('home', [[H.x + 185, H.y + 22], [H.x + 195, H.y + 44], [H.x + 210, H.y + 64], [H.x + 230, H.y + 30]]);
+      place('mesa', [[M.cx + 30, M.cy - 10], [M.cx - 30, M.cy + 10], [M.cx + 70, M.cy + 20], [M.cx - 80, M.cy - 30], [M.cx, M.cy + 50], [M.cx + 110, M.cy - 20]]);
+    },
+    /* the telescope she is standing at, if any */
+    telescopeNear: function (x, y, reach) {
+      for (var i = 0; i < this.telescopes.length; i++) {
+        var p = this.telescopes[i];
+        if (Math.abs(p.x - x) < (reach || 46) && y - p.y > -30 && y - p.y < (reach || 46) + 6 &&
+            Math.hypot(p.x - x, p.y - y) < (reach || 46) + 8) return p;
+      }
+      return null;
+    },
+
     buildMesa: function (add) {
       var self = this, R = GG.mulberry32(20260926), M = MESA;
       var placed = [];
