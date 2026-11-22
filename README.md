@@ -25,6 +25,18 @@ Way, and the faint things that need one. Code: `src/ui/sky.js`; words:
 `src/data/sky.js`; star data (generated, BSD-3 notice inside):
 `src/data/stars.js`; test: `tests/v121sky.js`.
 
+## Favours and ranks (v1.22)
+
+A **Favour Board** beside the cottage (and in the Garden Menu): each real day
+three animals ask a small favour - one about bugs, one about fishing or
+picking, one about being kind (a hello, fetch, a wish on a shooting star).
+12 sparkles each, 20 more for all three, no streaks and nothing lost by
+missing a day. **Ranks**: every page in the five books plus every favour is
+one step, thirteen ranks from Seedling to Guardian of the Garden, each with a
+medal and a card when she goes up. An older save is told the rank it has
+already earned the first time it opens. Code: `src/game/favours.js`; test:
+`tests/v122favours.js`.
+
 ## How the game works
 
 * Walk around one open world, 8000 x 4160, with twenty-five places: Sunny

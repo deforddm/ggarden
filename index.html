@@ -188,6 +188,7 @@
         </div>
         <canvas id="minimap" width="640" height="480"></canvas>
         <div class="note" style="text-align:center;margin:2px 0 10px"><span id="map-me">Guin</span> is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
+        <button class="btn grow" id="menu-favours" style="width:100%;margin-bottom:8px">Favour Board</button>
         <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Critter Compendium</button>
         <button class="btn grow" id="menu-char" style="width:100%;margin-bottom:8px">My character</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
@@ -220,6 +221,39 @@
   </div>
 
   <!-- v1.20 decorate my home -->
+  <!-- v1.22: the Favour Board and the ranks -->
+  <div class="panel hidden" id="screen-favours">
+    <div class="sheet">
+      <header><h2>Favour Board</h2><button class="x" data-close="screen-favours">&times;</button></header>
+      <div class="body">
+        <div id="fav-rankbox">
+          <canvas id="fav-medal" width="160" height="180"></canvas>
+          <div class="grow">
+            <div class="kick">Your rank</div>
+            <div id="fav-rank">Seedling</div>
+            <div class="favbar"><i id="fav-bar"></i></div>
+            <div id="fav-next"></div>
+          </div>
+        </div>
+        <div class="note" id="fav-points" style="text-align:center;margin:4px 0 10px"></div>
+        <div class="favhead">Today&rsquo;s favours</div>
+        <div id="fav-list"></div>
+        <div class="note" id="fav-foot" style="text-align:center;margin-top:8px"></div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-favours">Off I go!</button></footer>
+    </div>
+  </div>
+  <div class="panel hidden" id="screen-rank">
+    <div id="rank-card">
+      <div id="rank-kicker">You went up a rank!</div>
+      <canvas id="rank-medal" width="320" height="360"></canvas>
+      <div id="rank-name"></div>
+      <div id="rank-line"></div>
+      <div id="rank-reward"></div>
+      <button class="btn primary" id="rank-ok">Hooray!</button>
+    </div>
+  </div>
+
   <!-- v1.21: the night sky, through the telescope -->
   <div class="panel hidden" id="screen-sky">
     <canvas id="sky-canvas"></canvas>
@@ -470,6 +504,7 @@
 <script src="src/ui/charselect.js"></script>
 <script src="src/ui/homedecor.js"></script>
 <script src="src/ui/sky.js"></script>
+<script src="src/game/favours.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>
