@@ -6,9 +6,20 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.22.0';
+  GG.VERSION = '1.23.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.23.0', title: 'A polish, top to toe',
+      lines: [
+        'The girl and the boy really look different now. He is broader with a big toothy grin and thick eyebrows, and he swings his arms when he walks. She has taller eyes with long lashes and rosy cheeks, and a lighter step.',
+        'Switch between girl and boy in My character and the hair and clothes change to suit. You can still pick any hair and any outfit you like.',
+        'Listen to your feet! Grass, sand, stone, snow, the wooden bridge and splashing through the stream all sound different.',
+        'The music rings on with a soft echo, and a little harp joins in now and then.',
+        'Cloud shadows drift across the garden in the daytime.',
+        'Your feet kick up dust, sand and snow, and make rings on the water. The net leaves a swoosh, and a catch goes off in a ring of sparkles.'
+      ]
+    },
     {
       v: '1.22.0', title: 'Favours and ranks',
       lines: [
