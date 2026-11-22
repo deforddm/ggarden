@@ -1,5 +1,5 @@
 /* Guin's Garden service worker - lets the game work with no internet. */
-const CACHE = 'guins-garden-v1.22.0';
+const CACHE = 'guins-garden-v1.23.0';
 const ASSETS = [
   /* v1.20: every script the page loads, so the whole game works offline
      from the first visit (the list had not been updated since v1.1) */
@@ -12,7 +12,7 @@ const ASSETS = [
   './src/render/playerart.js', './src/render/propart.js', './src/render/decorart.js',
   './src/render/homeart.js', './src/render/fruitart.js', './src/render/flowerart.js',
   './src/render/plantart.js', './src/render/pickdecor.js', './src/render/dogparkart.js',
-  './src/render/fx.js', './src/render/yardart.js', './src/game/time.js', './src/game/world.js',
+  './src/render/fx.js', './src/render/yardart.js', './src/render/polish.js', './src/game/time.js', './src/game/world.js',
   './src/game/player.js', './src/game/critters.js', './src/game/fishing.js',
   './src/game/friends.js', './src/game/fetch.js', './src/game/orchard.js', './src/game/yard.js',
   './src/game/house.js', './src/game/cave.js', './src/ui/ui.js', './src/ui/fx-ui.js',

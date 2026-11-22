@@ -25,6 +25,17 @@ Way, and the faint things that need one. Code: `src/ui/sky.js`; words:
 `src/data/sky.js`; star data (generated, BSD-3 notice inside):
 `src/data/stars.js`; test: `tests/v121sky.js`.
 
+## The polish pass (v1.23)
+
+The girl and the boy are built differently (shoulders, stance, legs, arm
+swing, brows, eyes, lashes, cheeks, mouth - all driven from `resolve()` in
+`src/render/playerart.js`), and switching body in the creator swaps anything
+that belongs only to the other one. Footsteps sound like the ground
+(`GG.stepSurface`, `GG.Sfx.step(surface)`), the music has an echo and a harp
+line, and `src/render/polish.js` adds cloud shadows, footstep dust and
+ripples, the net's streak, catch sparkles and a soft vignette. Test:
+`tests/v123polish.js`.
+
 ## Favours and ranks (v1.22)
 
 A **Favour Board** beside the cottage (and in the Garden Menu): each real day
