@@ -2139,6 +2139,15 @@ ul.tips li{margin-bottom:3px}
       busSfx = ctx.createGain(); busSfx.connect(master);
       busMusic = ctx.createGain(); busMusic.connect(master);
       busAmb = ctx.createGain(); busAmb.connect(master);
+      /* v1.23: a little room. The music, and a touch of the effects, also
+         go through one soft echo, so the notes ring on instead of stopping
+         dead. Its own gains only - nothing here is a volume control. */
+      try {
+        var echoIn = ctx.createGain(), dl = ctx.createDelay(1), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain(), sfxSend = ctx.createGain();
+        dl.delayTime.value = 0.27; fb.gain.value = 0.3; lp.type = 'lowpass'; lp.frequency.value = 2300; wet.gain.value = 0.26; sfxSend.gain.value = 0.4;
+        busMusic.connect(echoIn); busSfx.connect(sfxSend); sfxSend.connect(echoIn);
+        echoIn.connect(dl); dl.connect(lp); lp.connect(wet); wet.connect(master); lp.connect(fb); fb.connect(dl);
+      } catch (e) {}
       GG.Audio.applyVolumes();
     }
     if (ctx.state === 'suspended') ctx.resume();
@@ -2222,14 +2231,24 @@ ul.tips li{margin-bottom:3px}
 
   GG.Sfx = {
     unlock: function () { ac(); GG.Audio.applyVolumes(); },
-    swing: function () { noise(0.14, 0.07, 2200); },
-    step: function () { noise(0.05, 0.02, 700); },
+    swing: function () { noise(0.14, 0.06, 2200); tone(980, 0.13, 'sine', 0.022, 320); },
+    /* v1.23: a footstep sounds like what she is walking on, and the left
+       foot is not quite the same as the right */
+    step: function (surface) {
+      var f = (this._foot = !this._foot) ? 1 : 0.86, j = 0.92 + Math.random() * 0.16;
+      if (surface === 'wood') { tone(150 * f * j, 0.07, 'triangle', 0.06, 96); noise(0.03, 0.012, 1000); }
+      else if (surface === 'stone') { noise(0.035, 0.032, 2300 * f * j); tone(480 * f, 0.03, 'sine', 0.012); }
+      else if (surface === 'sand') { noise(0.1, 0.022, 1500 * f * j); }
+      else if (surface === 'snow') { noise(0.11, 0.034, 380 * f * j); noise(0.05, 0.012, 2600, 0.03); }
+      else if (surface === 'water') { noise(0.15, 0.036, 820 * f * j); tone(360 * f, 0.1, 'sine', 0.03, 640); }
+      else noise(0.06, 0.022, 600 * f * j);
+    },
     catchSmall: function () { tone(660, 0.10, 'triangle', 0.13); tone(880, 0.14, 'triangle', 0.11, null, 0.08); },
     catchNew: function () {
       [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.20, 'triangle', 0.12, null, i * 0.075); });
     },
     escape: function () { tone(520, 0.18, 'sine', 0.08, 260); },
-    click: function () { tone(760, 0.05, 'square', 0.05); },
+    click: function () { tone(880, 0.05, 'triangle', 0.06); tone(1320, 0.06, 'sine', 0.028, null, 0.022); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
     warn: function () {
@@ -2513,6 +2532,13 @@ ul.tips li{margin-bottom:3px}
         var n = PENT[GG.clamp(deg + lift + 3, 0, PENT.length - 1)];
         this._note(root * semis(n + chord[0]), t, spbOf(mood) * 0.62,
           mood.wave, mood.lead * 0.34, 0.012);
+      }
+
+      /* v1.23: a harp underneath, every other phrase - the notes of the
+         chord picked out one at a time on the off-beats */
+      if ((phrase === 1 || phrase === 3) && (inBar % 2 === 1)) {
+        var tone = chord[((inBar - 1) / 2 + bar) % chord.length];
+        this._note(root * semis(tone) * 2, t, spbOf(mood) * 0.9, 'triangle', mood.bell * 0.11, 0.008);
       }
 
       /* a sparkle on the off-beat, once a bar */
@@ -2816,9 +2842,20 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.22.0';
+  GG.VERSION = '1.23.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.23.0', title: 'A polish, top to toe',
+      lines: [
+        'The girl and the boy really look different now. He is broader with a big toothy grin and thick eyebrows, and he swings his arms when he walks. She has taller eyes with long lashes and rosy cheeks, and a lighter step.',
+        'Switch between girl and boy in My character and the hair and clothes change to suit. You can still pick any hair and any outfit you like.',
+        'Listen to your feet! Grass, sand, stone, snow, the wooden bridge and splashing through the stream all sound different.',
+        'The music rings on with a soft echo, and a little harp joins in now and then.',
+        'Cloud shadows drift across the garden in the daytime.',
+        'Your feet kick up dust, sand and snow, and make rings on the water. The net leaves a swoosh, and a catch goes off in a ring of sparkles.'
+      ]
+    },
     {
       v: '1.22.0', title: 'Favours and ranks',
       lines: [
@@ -18774,6 +18811,19 @@ ul.tips li{margin-bottom:3px}
       ink: INK
     };
     R.brow = mix(hair, '#2a1a14', 0.35);
+    /* v1.23: the two bodies are built differently, not just dressed
+       differently. The boy is broader and squarer through the shoulders,
+       stands with his feet further apart on sturdier legs and swings his
+       arms more; the girl is narrower with a softer, rounder outline and a
+       lighter step. Their faces differ too (see drawFace and eye). */
+    R.tw = R.girl ? 12.3 : 13.9;        // how wide the chest is, from the front
+    R.tr = R.girl ? 4.8 : 3.3;          // how round its corners are
+    R.sh = R.girl ? 5.1 : 5.9;          // where the arms hang from
+    R.hip = R.girl ? 2.7 : 3.4;         // how far apart the feet are
+    R.leg = R.girl ? 3.5 : 4.0;         // how thick a leg is
+    R.swing = R.girl ? 1.7 : 2.6;       // how far the arms swing
+    R.stride = R.girl ? 3.1 : 3.8;      // how long a step is, from the side
+    R.lift = R.girl ? 1.8 : 2.3;        // how high a foot comes up
     return R;
   }
 
@@ -18790,7 +18840,7 @@ ul.tips li{margin-bottom:3px}
   function drawLeg(c, R, hx, hy, fx, fy, far) {
     var col = legCol(R);
     var d = mix(col, '#2e1838', 0.18);
-    line(c, hx, hy, fx, fy - 1, far ? d : col, 3.7);
+    line(c, hx, hy, fx, fy - 1, far ? d : col, R.leg || 3.7);
     if (!far) line(c, hx - 0.8, hy + 0.5, fx - 0.8, fy - 1.6, 'rgba(255,255,255,0.18)', 0.9);
     /* socks and boot tops */
     if (R.outfit === 'sporty') {
@@ -18843,7 +18893,7 @@ ul.tips li{margin-bottom:3px}
   function drawBottom(c, R, v) {
     var side = v === 'right', o = R.outfit;
     var cx = side ? -0.2 : 0;
-    var w0 = side ? 4.9 : 6.3;
+    var w0 = (side ? 4.9 : 6.3) * (R.tw / 12.8);
     function flare(hem, spread, top) {
       return function (c) {
         c.moveTo(cx - w0, top);
@@ -18959,16 +19009,17 @@ ul.tips li{margin-bottom:3px}
     fillE(c, x1 - 0.2, y1 + 0.2, 1.3, 1.2, 0, skin);
   }
 
-  function torsoPath(v) {
+  function torsoPath(v, R) {
     var side = v === 'right';
-    var tx = side ? -0.2 : 0, tw = side ? 9.8 : 12.8;
-    return function (c) { rr(c, tx - tw / 2, -21, tw, 11.6, 4.4); };
+    var full = (R && R.tw) || 12.8;
+    var tx = side ? -0.2 : 0, tw = side ? full * 0.766 : full;
+    return function (c) { rr(c, tx - tw / 2, -21, tw, 11.6, (R && R.tr) || 4.4); };
   }
 
   function drawTorso(c, R, v) {
     var side = v === 'right', back = v === 'up', o = R.outfit;
-    var tp = torsoPath(v);
-    var cx = side ? -0.2 : 0, hw = side ? 4.9 : 6.4;
+    var tp = torsoPath(v, R);
+    var cx = side ? -0.2 : 0, hw = (side ? 4.9 : 6.4) * (R.tw / 12.8);
     var base = (o === 'overalls' || o === 'explorer') ? R.b : R.a;
     shade3(c, tp, base, dark(base), light(base));
     c.save(); c.beginPath(); tp(c); c.clip();
@@ -19090,12 +19141,12 @@ ul.tips li{margin-bottom:3px}
   function drawBody(c, R, v, ph, o) {
     var side = v === 'right';
     var s = ph == null ? 0 : Math.sin(ph), co = ph == null ? 0 : Math.cos(ph);
-    var armS = s * 2.1;
+    var armS = s * R.swing, st = R.stride, hip = R.hip, sh = R.sh;
     if (side) {
-      var nf = ph == null ? 1.3 : s * 3.4, ff = ph == null ? -1.5 : -s * 3.4;
+      var nf = ph == null ? 1.3 : s * st, ff = ph == null ? -1.5 : -s * st;
       var nl = ph == null ? 0 : Math.max(0, co) * 1.5, fl = ph == null ? 0 : Math.max(0, -co) * 1.5;
       /* far arm and leg first, a shade darker */
-      if (!o.wave) drawArm(c, R, -0.4, -18.6, -0.4 + (ph == null ? -0.8 : s * 3.4), -11.2, true);
+      if (!o.wave) drawArm(c, R, -0.4, -18.6, -0.4 + (ph == null ? -0.8 : s * st), -11.2, true);
       drawLeg(c, R, -0.6, -10.2, ff, -1.2 - fl, true);
       drawShoe(c, R, ff, -1.2 - fl, true, true);
       drawLeg(c, R, 0.4, -10.2, nf, -1.2 - nl, false);
@@ -19103,26 +19154,26 @@ ul.tips li{margin-bottom:3px}
       drawBottom(c, R, v);
       drawTorso(c, R, v);
       drawHood(c, R, v);
-      drawArm(c, R, 0.4, -18.6, 0.4 + (ph == null ? 0.9 : -s * 3.4), -11.2, false);
+      drawArm(c, R, 0.4, -18.6, 0.4 + (ph == null ? 0.9 : -s * st), -11.2, false);
       return;
     }
-    var lL = Math.max(0, s) * 2.0, lR = Math.max(0, -s) * 2.0;
-    drawLeg(c, R, -3.0, -10.2, -3.1, -1.2 - lL, false);
-    drawLeg(c, R, 3.0, -10.2, 3.1, -1.2 - lR, false);
-    drawShoe(c, R, -3.1, -1.2 - lL, false, false);
-    drawShoe(c, R, 3.1, -1.2 - lR, false, false);
+    var lL = Math.max(0, s) * R.lift, lR = Math.max(0, -s) * R.lift;
+    drawLeg(c, R, -hip + 0.1, -10.2, -hip, -1.2 - lL, false);
+    drawLeg(c, R, hip - 0.1, -10.2, hip, -1.2 - lR, false);
+    drawShoe(c, R, -hip, -1.2 - lL, false, false);
+    drawShoe(c, R, hip, -1.2 - lR, false, false);
     drawBottom(c, R, v);
     drawTorso(c, R, v);
     if (v === 'up') drawHood(c, R, v);
     /* arms. Waving uses her right hand (our left when she faces us). */
     if (o.wave != null && v === 'down') {
       var w = Math.sin(o.wave) * 2.4;
-      drawArm(c, R, -5.2, -18.8, -11.2 + w * 0.4, -26.6 + Math.abs(w) * 0.2, false);
+      drawArm(c, R, -sh + 0.1, -18.8, -11.2 + w * 0.4, -26.6 + Math.abs(w) * 0.2, false);
       fillE(c, -11.2 + w * 0.4, -27.4, 2.4, 2.4, 0, R.skin);
     } else {
-      drawArm(c, R, -5.3, -18.8, -8.2, -11.2 + armS * 0.7, false);
+      drawArm(c, R, -sh, -18.8, -sh - 2.9, -11.2 + armS * 0.7, false);
     }
-    drawArm(c, R, 5.3, -18.8, 8.2, -11.2 - armS * 0.7, false);
+    drawArm(c, R, sh, -18.8, sh + 2.9, -11.2 - armS * 0.7, false);
     if (v === 'down') drawHood(c, R, v);
   }
 
@@ -19136,7 +19187,8 @@ ul.tips li{margin-bottom:3px}
 
   function drawNeck(c, R) {
     c.fillStyle = R.skinD;
-    c.fillRect(-1.9, -20.4, 3.8, 2.4);
+    var nw = R.girl ? 3.4 : 4.6;
+    c.fillRect(-nw / 2, -20.4, nw, 2.4);
   }
 
   function drawEars(c, R, v) {
@@ -19158,23 +19210,52 @@ ul.tips li{margin-bottom:3px}
     var ey = -25.4;
     var ex0 = side ? fx - 2.8 : -3.5, ex1 = side ? fx + 3.4 : 3.5;
     /* brows (bangs will cover them on some styles) */
-    c.strokeStyle = R.brow; c.lineWidth = R.girl ? 0.75 : 1.0; c.lineCap = 'round';
-    c.beginPath(); c.arc(ex0, ey - 1.4, 2.1, Math.PI * 1.25, Math.PI * 1.72); c.stroke();
-    c.beginPath(); c.arc(ex1, ey - 1.4, side ? 1.7 : 2.1, Math.PI * 1.28, Math.PI * 1.75); c.stroke();
-    /* cheeks */
+    c.strokeStyle = R.brow; c.lineCap = 'round';
+    if (R.girl) {
+      /* fine, high, arched */
+      c.lineWidth = 0.7;
+      c.beginPath(); c.arc(ex0, ey - 1.5, 2.1, Math.PI * 1.25, Math.PI * 1.72); c.stroke();
+      c.beginPath(); c.arc(ex1, ey - 1.5, side ? 1.7 : 2.1, Math.PI * 1.28, Math.PI * 1.75); c.stroke();
+    } else {
+      /* thick, low and nearly straight, lifting a little in the middle
+         so he looks keen rather than cross */
+      c.lineWidth = 1.35;
+      var bw = 1.9;
+      c.beginPath(); c.moveTo(ex0 - bw, ey - 3.15); c.lineTo(ex0 + bw * 0.8, ey - 3.45); c.stroke();
+      c.beginPath(); c.moveTo(ex1 - (side ? bw * 0.6 : bw * 0.8), ey - 3.45); c.lineTo(ex1 + (side ? bw * 0.7 : bw), ey - 3.15); c.stroke();
+    }
+    /* cheeks: rosy on her, only a touch on him */
     c.fillStyle = R.blush;
+    c.save();
+    if (!R.girl) c.globalAlpha *= 0.45;
     if (side) {
       c.beginPath(); ell(c, fx - 4.2, -22.6, 2.0, 1.25); c.fill();
       c.beginPath(); ell(c, fx + 5.5, -22.4, 1.0, 0.9); c.fill();
     } else {
       c.beginPath(); ell(c, -6.1, -22.6, 2.1, 1.25); ell(c, 6.1, -22.6, 2.1, 1.25); c.fill();
     }
+    c.restore();
     eye(c, R, ex0, ey, 1, blink, -1);
     eye(c, R, ex1, ey, side ? 0.82 : 1, blink, 1);
     /* nose */
     fillE(c, fx + (side ? 1.4 : 0), -23.5, 0.7, 0.45, 0, mix(R.skin, '#8a3040', 0.22));
-    /* a big open smile */
     var mx = fx + (side ? 1.2 : 0);
+    if (!R.girl) {
+      /* a wide, toothy grin, a little lopsided */
+      c.fillStyle = '#8c2f40';
+      c.beginPath();
+      c.moveTo(mx - 2.7, -21.9);
+      c.quadraticCurveTo(mx + 0.2, -21.5, mx + 2.9, -22.3);
+      c.quadraticCurveTo(mx + 2.3, -19.4, mx + 0.2, -19.5);
+      c.quadraticCurveTo(mx - 1.9, -19.5, mx - 2.7, -21.9);
+      c.closePath(); c.fill();
+      c.save(); c.clip();
+      c.fillStyle = '#ffffff';
+      c.fillRect(mx - 3, -22.6, 6.2, 1.75);
+      c.restore();
+      return;
+    }
+    /* a big open smile */
     c.fillStyle = '#9c3446';
     c.beginPath();
     c.moveTo(mx - 1.9, -21.9);
@@ -19191,7 +19272,9 @@ ul.tips li{margin-bottom:3px}
       c.beginPath(); c.arc(x, y - 0.9, 1.6 * wk, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
       return;
     }
-    var rx = 1.7 * wk, ry = 2.2;
+    /* hers are taller with a dark upper lid and three lashes; his are
+       rounder and plain */
+    var rx = (R.girl ? 1.7 : 1.8) * wk, ry = R.girl ? 2.35 : 2.0;
     fillE(c, x, y, rx, ry, 0, '#24161a');
     fillE(c, x, y + 0.5, rx * 0.76, ry * 0.7, 0, R.eye);
     fillE(c, x, y + 0.9, rx * 0.5, ry * 0.4, 0, light(R.eye, 0.28));
@@ -19199,11 +19282,14 @@ ul.tips li{margin-bottom:3px}
     fillE(c, x - 0.55 * wk, y - 0.85, 0.72 * wk, 0.72, 0, '#ffffff');
     fillE(c, x + 0.55 * wk, y + 0.85, 0.32, 0.32, 0, 'rgba(255,255,255,0.9)');
     if (R.girl) {
-      /* two little lashes at the outer corner */
-      c.strokeStyle = '#24161a'; c.lineWidth = 0.6; c.lineCap = 'round';
+      /* a dark upper lid that sweeps out past the corner, and three lashes */
+      c.strokeStyle = '#24161a'; c.lineWidth = 0.75; c.lineCap = 'round';
+      c.beginPath(); c.ellipse(x, y, rx * 1.05, ry * 1.02, 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
+      c.lineWidth = 0.6;
       var ox = x + outer * rx * 0.8, oy = y - ry * 0.55;
-      c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + outer * 1.2, oy - 0.7); c.stroke();
-      c.beginPath(); c.moveTo(ox - outer * 0.4, oy - 0.6); c.lineTo(ox + outer * 0.5, oy - 1.6); c.stroke();
+      c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + outer * 1.5, oy - 0.6); c.stroke();
+      c.beginPath(); c.moveTo(ox - outer * 0.4, oy - 0.6); c.lineTo(ox + outer * 0.8, oy - 1.7); c.stroke();
+      c.beginPath(); c.moveTo(ox - outer * 1.0, oy - 1.0); c.lineTo(ox - outer * 0.5, oy - 2.1); c.stroke();
     }
   }
 
@@ -31033,6 +31119,178 @@ ul.tips li{margin-bottom:3px}
   };
 })(window.GG = window.GG || {});
 
+/* ==== src/render/polish.js ==== */
+/* v1.23: the polish pass - small things that make the garden feel alive.
+
+   - cloud shadows drifting slowly over the ground by day
+   - a puff of dust, sand, snow or a few flecks of grass at every footstep,
+     and a ring on the water when she wades
+   - a soft white streak behind the net as it swings
+   - a ring of sparkles where a bug is caught
+   - a faint darkening at the corners of the screen, so the eye rests on her
+
+   Nothing here changes how the game plays. Everything is pooled and cheap:
+   a few dozen small shapes a frame at the very most. */
+(function (GG) {
+  'use strict';
+  var TAU = Math.PI * 2;
+  var puffs = [], rings = [], sparks = [], trail = [];
+  var blob = null, vig = null, vigKey = '';
+  var DUST = { sand: '#e9d5a0', stone: '#b9b3a6', snow: '#ffffff', grass: '#7fc75f', wood: null, water: null };
+
+  function soft() {
+    if (blob) return blob;
+    blob = document.createElement('canvas'); blob.width = blob.height = 128;
+    var g = blob.getContext('2d'), gr = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(18,36,60,1)'); gr.addColorStop(0.55, 'rgba(18,36,60,0.6)'); gr.addColorStop(1, 'rgba(18,36,60,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+    return blob;
+  }
+
+  /* the clouds: fixed shapes in a patch of sky that repeats, sliding east */
+  var FIELD_W = 2600, FIELD_H = 1900;
+  var CLOUDS = [];
+  (function () {
+    var R = GG.mulberry32 ? GG.mulberry32(20261123) : Math.random;
+    for (var i = 0; i < 7; i++) {
+      var lumps = [], n = 3 + Math.floor(R() * 2);
+      for (var k = 0; k < n; k++) lumps.push({ dx: (k - (n - 1) / 2) * (110 + R() * 50), dy: (R() - 0.5) * 70, rx: 150 + R() * 110, ry: 90 + R() * 60 });
+      CLOUDS.push({ x: R() * FIELD_W, y: R() * FIELD_H, v: 9 + R() * 7, lumps: lumps });
+    }
+  })();
+
+  var Polish = GG.Polish = {
+    on: true,
+
+    step: function (x, y, surf) {
+      if (!this.on) return;
+      if (surf === 'water') {
+        if (rings.length < 14) rings.push({ x: x, y: y + 3, age: 0, life: 0.9 });
+        return;
+      }
+      var col = DUST[surf == null ? 'grass' : surf];
+      if (!col) return;
+      var n = surf === 'grass' ? 2 : 3;
+      for (var i = 0; i < n && puffs.length < 40; i++) {
+        puffs.push({ x: x + (Math.random() - 0.5) * 8, y: y + 2 + Math.random() * 2, vx: (Math.random() - 0.5) * 16,
+          vy: -(surf === 'grass' ? 26 : 10) - Math.random() * 12, r: surf === 'grass' ? 1.1 : 2.2 + Math.random() * 1.6,
+          age: 0, life: surf === 'grass' ? 0.42 : 0.6, col: col, fleck: surf === 'grass' });
+      }
+    },
+
+    burst: function (x, y, col) {
+      if (!this.on) return;
+      for (var i = 0; i < 9 && sparks.length < 36; i++) {
+        var a = i / 9 * TAU + Math.random() * 0.3;
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * 62, vy: Math.sin(a) * 62 - 14, age: 0, life: 0.5 + Math.random() * 0.2,
+          col: i % 3 ? '#fff6b8' : (col || '#ffffff'), r: 2 + Math.random() * 1.6 });
+      }
+    },
+
+    update: function (dt, P) {
+      var i;
+      for (i = puffs.length - 1; i >= 0; i--) {
+        var p = puffs[i]; p.age += dt;
+        if (p.age >= p.life) { puffs.splice(i, 1); continue; }
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.fleck ? 110 : 14) * dt; p.vx *= 0.94;
+      }
+      for (i = rings.length - 1; i >= 0; i--) { rings[i].age += dt; if (rings[i].age >= rings[i].life) rings.splice(i, 1); }
+      for (i = sparks.length - 1; i >= 0; i--) {
+        var s = sparks[i]; s.age += dt;
+        if (s.age >= s.life) { sparks.splice(i, 1); continue; }
+        s.x += s.vx * dt; s.y += s.vy * dt; s.vx *= 0.9; s.vy *= 0.9;
+      }
+      /* the net leaves a streak while it is moving */
+      if (P && P.swinging && P.swinging() && P.netPoint) {
+        var np = P.netPoint();
+        if (np) trail.push({ x: np.x, y: np.y, age: 0 });
+      }
+      for (i = trail.length - 1; i >= 0; i--) { trail[i].age += dt; if (trail[i].age > 0.2) trail.splice(i, 1); }
+      for (i = 0; i < CLOUDS.length; i++) CLOUDS[i].x = (CLOUDS[i].x + CLOUDS[i].v * dt) % FIELD_W;
+    },
+
+    /* on the ground, under everything that stands up */
+    drawGround: function (c, cam) {
+      var i;
+      for (i = 0; i < rings.length; i++) {
+        var r = rings[i], k = r.age / r.life;
+        c.strokeStyle = 'rgba(255,255,255,' + (0.55 * (1 - k)).toFixed(3) + ')';
+        c.lineWidth = 1.4;
+        c.beginPath(); c.ellipse(r.x - cam.x, r.y - cam.y, 4 + k * 15, 2 + k * 6.5, 0, 0, TAU); c.stroke();
+        if (k > 0.3) { c.beginPath(); c.ellipse(r.x - cam.x, r.y - cam.y, 2 + (k - 0.3) * 12, 1 + (k - 0.3) * 5, 0, 0, TAU); c.stroke(); }
+      }
+      for (i = 0; i < puffs.length; i++) {
+        var p = puffs[i], q = p.age / p.life;
+        c.globalAlpha = (p.fleck ? 0.9 : 0.5) * (1 - q);
+        c.fillStyle = p.col;
+        if (p.fleck) c.fillRect(p.x - cam.x - 0.7, p.y - cam.y - 1.4, 1.4, 2.8);
+        else { c.beginPath(); c.arc(p.x - cam.x, p.y - cam.y, p.r * (0.7 + q * 0.9), 0, TAU); c.fill(); }
+      }
+      c.globalAlpha = 1;
+    },
+
+    /* over the world: the net's streak and the sparkles of a catch */
+    drawOver: function (c, cam) {
+      var i;
+      if (trail.length > 1) {
+        c.lineCap = 'round'; c.lineJoin = 'round';
+        for (i = 1; i < trail.length; i++) {
+          var a = trail[i - 1], b = trail[i], k = 1 - b.age / 0.2;
+          if (k <= 0) continue;
+          c.strokeStyle = 'rgba(255,255,255,' + (0.5 * k).toFixed(3) + ')';
+          c.lineWidth = 2 + 7 * k;
+          c.beginPath(); c.moveTo(a.x - cam.x, a.y - cam.y); c.lineTo(b.x - cam.x, b.y - cam.y); c.stroke();
+        }
+      }
+      for (i = 0; i < sparks.length; i++) {
+        var s = sparks[i], q = s.age / s.life, r = s.r * (1 - q * 0.5), x = s.x - cam.x, y = s.y - cam.y;
+        c.globalAlpha = 1 - q;
+        c.fillStyle = s.col;
+        c.beginPath();
+        c.moveTo(x, y - r * 2); c.quadraticCurveTo(x, y, x + r * 2, y); c.quadraticCurveTo(x, y, x, y + r * 2);
+        c.quadraticCurveTo(x, y, x - r * 2, y); c.quadraticCurveTo(x, y, x, y - r * 2); c.fill();
+      }
+      c.globalAlpha = 1;
+    },
+
+    /* cloud shadows: only in daylight, and not under a grey rainy sky */
+    drawClouds: function (c, cam, vw, vh, night, rain) {
+      if (!this.on || rain || night > 0.6) return;
+      var img = soft(), a = 0.16 * (1 - night / 0.6);
+      c.globalAlpha = a;
+      for (var i = 0; i < CLOUDS.length; i++) {
+        var cl = CLOUDS[i];
+        /* where this cloud's nearest copy is, relative to the screen */
+        var x = ((cl.x - cam.x * 1.0) % FIELD_W + FIELD_W) % FIELD_W, y = ((cl.y - cam.y) % FIELD_H + FIELD_H) % FIELD_H;
+        if (x > FIELD_W - 500) x -= FIELD_W;
+        if (y > FIELD_H - 300) y -= FIELD_H;
+        if (x < -500 || x > vw + 500 || y < -300 || y > vh + 300) continue;
+        for (var k = 0; k < cl.lumps.length; k++) {
+          var L = cl.lumps[k];
+          c.drawImage(img, x + L.dx - L.rx, y + L.dy - L.ry, L.rx * 2, L.ry * 2);
+        }
+      }
+      c.globalAlpha = 1;
+    },
+
+    drawVignette: function (c, vw, vh) {
+      if (!this.on) return;
+      var key = Math.round(vw) + 'x' + Math.round(vh);
+      if (!vig || vigKey !== key) {
+        vigKey = key;
+        vig = document.createElement('canvas'); vig.width = 160; vig.height = 160;
+        var g = vig.getContext('2d'), gr = g.createRadialGradient(80, 76, 52, 80, 80, 116);
+        gr.addColorStop(0, 'rgba(10,24,30,0)'); gr.addColorStop(1, 'rgba(10,24,30,0.34)');
+        g.fillStyle = gr; g.fillRect(0, 0, 160, 160);
+      }
+      c.drawImage(vig, 0, 0, vw, vh);
+    },
+
+    clear: function () { puffs.length = rings.length = sparks.length = trail.length = 0; },
+    counts: function () { return { puffs: puffs.length, rings: rings.length, sparks: sparks.length, trail: trail.length, clouds: CLOUDS.length }; }
+  };
+})(window.GG = window.GG || {});
+
 /* ==== src/game/time.js ==== */
 /* The in-game clock. A whole day and night takes about twelve minutes. */
 (function (GG) {
@@ -33572,7 +33830,10 @@ ul.tips li{margin-bottom:3px}
 
       this.stepTimer -= dt;
       if (this.speed > 40 && this.stepTimer <= 0) {
-        GG.Sfx.step(); this.stepTimer = 0.34 - Math.min(0.16, this.speed / 1400);
+        var surf = GG.stepSurface ? GG.stepSurface(this.x, this.y) : null;   // v1.23
+        GG.Sfx.step(surf);
+        if (GG.Polish) GG.Polish.step(this.x, this.y, surf);
+        this.stepTimer = 0.34 - Math.min(0.16, this.speed / 1400);
       }
     },
 
@@ -41784,6 +42045,21 @@ ul.tips li{margin-bottom:3px}
     _set: function (field, value) {
       var nl = L().copy(this.look);
       nl[field] = value;
+      if (field === 'body' && value !== this.look.body) {
+        /* v1.23: switching between girl and boy swaps anything that
+           belongs only to the other one for something that suits - so the
+           boy does not arrive in pigtails and a sundress. Hair and clothes
+           from the "both" lists stay, and every style can still be picked
+           by hand afterwards. */
+        var LK = L(), other = value === 'girl' ? 'boy' : 'girl';
+        var hd = LK.HAIRS.filter(function (h) { return h.id === nl.hair; })[0];
+        if (hd && hd.group === other) nl.hair = value === 'boy' ? 'short' : 'pigtails';
+        var od = LK.OUTFIT_BY_ID[nl.outfit];
+        if (od && od.group === other) { nl.outfit = value === 'boy' ? 'tee' : 'sundress'; nl.outfitCol = 0; }
+        if (value === 'boy' && (nl.acc === 'flower' || nl.acc === 'bow')) nl.acc = 'none';
+        if (value === 'girl' && nl.acc === 'none' && this.look.acc === 'none' && this._accWas) nl.acc = this._accWas;
+        if (value === 'boy' && this.look.acc !== 'none') this._accWas = this.look.acc;
+      }
       if (field === 'outfit') {
         /* keep the same colour slot where the new style has one */
         var n = L().OUTFIT_BY_ID[value].colors.length;
@@ -44114,6 +44390,20 @@ ul.tips li{margin-bottom:3px}
     GG.Terrarium.openTank(e.index);
   }
 
+  /* ---------- v1.23: what is under her feet ---------- */
+  GG.stepSurface = function (x, y) {
+    if (scene === 'house') return 'wood';
+    if (scene === 'cave') return 'stone';
+    var W = GG.World;
+    if (W.onBridge && W.bridge && W.onBridge(x, y, 6)) return 'wood';
+    if (W.isWater(x, y)) return 'water';
+    var b = W.biomeAt(x, y);
+    if (b === 'beach' || b === 'desert') return 'sand';
+    if (b === 'tundra') return 'snow';
+    if (b === 'shore' || b === 'hill' || b === 'mountain' || b === 'ridge' || b === 'scablands' || b === 'badlands' || b === 'mesa') return 'stone';
+    return 'grass';
+  };
+
   /* ---------- v1.21: the telescopes ---------- */
   var wantScope = null;
   function scopeAt(x, y) {
@@ -44183,6 +44473,7 @@ ul.tips li{margin-bottom:3px}
     GG.Friends.update(dt, P, 'world');
     GG.Friends.stepCompanion(dt, P);
     if (GG.Yard) GG.Yard.update(dt);   // v1.20: the habitats out in the yard
+    if (GG.Polish) GG.Polish.update(dt, P);   // v1.23
 
     GG.Orchard.update(dt);
     GG.Orchard.stepPops(dt);
@@ -44313,6 +44604,7 @@ ul.tips li{margin-bottom:3px}
     W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
     if (GG.FX) { GG.FX.update(t, cam, GG.view.w, GG.view.h); GG.FX.drawGround(ctx, cam, t, GG.view.w, GG.view.h); }   // v1.20 art
+    if (GG.Polish) GG.Polish.drawGround(ctx, cam);   // v1.23: footstep puffs and ripples
     if (lastPickable && scene === 'world') GG.Orchard.drawTarget(ctx, cam, lastPickable, t);
 
     // everything that stands up gets sorted so Guin walks behind trees
@@ -44370,6 +44662,7 @@ ul.tips li{margin-bottom:3px}
     /* v1.20 art: the light of the hour - multiplied (a clear blue night,
        a warm golden evening), a thin wash over it, then what shines */
     var grade = GG.Time.grade();
+    if (GG.Polish) { GG.Polish.drawOver(ctx, cam); GG.Polish.drawClouds(ctx, cam, GG.view.w, GG.view.h, grade.night, GG.Time.rain); }   // v1.23
     if (grade.mul) {
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = grade.mul;
@@ -44383,6 +44676,7 @@ ul.tips li{margin-bottom:3px}
     if (GG.FX) GG.FX.drawLights(ctx, cam, t, grade.night, GG.view.w, GG.view.h);
     if (GG.YardArt) GG.YardArt.drawLights(ctx, cam, t, grade.night);   // v1.20 yard: string lights, lanterns
     drawRain();
+    if (GG.Polish) GG.Polish.drawVignette(ctx, GG.view.w, GG.view.h);   // v1.23
     if (hurtFlash > 0) {
       ctx.fillStyle = 'rgba(255,70,70,' + (0.34 * (hurtFlash / 0.55)).toFixed(3) + ')';
       ctx.fillRect(0, 0, GG.view.w, GG.view.h);
@@ -44671,6 +44965,7 @@ ul.tips li{margin-bottom:3px}
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
     GG.UI.showCatch(def, isNew, reward);
+    if (GG.Polish) { var np = GG.Player.netPoint(); if (np) GG.Polish.burst(np.x, np.y, GG.RARITY_COLORS && GG.RARITY_COLORS[def.rarity]); }   // v1.23
     if (GG.Favours) GG.Favours.note('bug', def);   // v1.22
   }
 
