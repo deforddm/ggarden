@@ -188,7 +188,7 @@
   /* ---------- v1.21: the telescopes ---------- */
   var wantScope = null;
   function scopeAt(x, y) {
-    var T = GG.World.telescopes || [];
+    var T = (GG.World.telescopes || []).concat(GG.World.board ? [GG.World.board] : []);
     for (var i = 0; i < T.length; i++) {
       if (Math.abs(T[i].x - x) < 26 && y < T[i].y + 12 && y > T[i].y - 56) return T[i];
     }
@@ -278,7 +278,12 @@
       ? W.telescopeNear(P.x, P.y) : null;
     if (scope && scope !== wantScope && GG.Critters.catchableNear(P, 56)) scope = null;
     if (scope && pickable && pickable === GG.Orchard.wanted) scope = null;
-    if (scope) { pickable = null; yardAt = null; }
+    /* v1.22: the Favour Board beside the cottage */
+    var board = (!scope && !fishing && !atDoor && !lookAt && !GG.Friends.busy && !GG.Friends.riding && W.board)
+      ? (W.standingAt(W.board, P.x, P.y) ? W.board : null) : null;
+    if (board && board !== wantScope && GG.Critters.catchableNear(P, 56)) board = null;
+    if (board && pickable && pickable === GG.Orchard.wanted) board = null;
+    if (scope || board) { pickable = null; yardAt = null; }
     lastPickable = pickable;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     /* v1.20: fetch at Dog's Paradise */
@@ -310,6 +315,7 @@
       }
       if (lookAt) { lookAtCreature(lookAt); return; }
       if (scope) { useTelescope(scope); return; }
+      if (board) { wantScope = null; GG.Input.clearTarget(); GG.Sfx.click(); GG.Favours.open(); return; }
       if (yardAt) { visitYard(yardAt); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
@@ -350,8 +356,9 @@
       : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
         : (lookAt ? 'Look \u2014 but this one is not for catching'
           : (scope ? (starsOut() ? 'Tap to look through the telescope' : 'Tap to wait here until the stars come out')
+            : (board ? 'Tap to read the Favour Board'
             : (yardAt ? GG.Yard.promptOf(yardAt)
-              : (pickable ? pickPrompt(pickable) : null))))));
+              : (pickable ? pickPrompt(pickable) : null)))))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (GG.Friends.riding) setActionLabel('\u2014', 'riding');
@@ -360,6 +367,7 @@
     else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
     else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (scope) setActionLabel('STARS', starsOut() ? 'look up' : 'wait for dark');
+    else if (board) setActionLabel('READ', GG.Favours.left() ? 'favours' : 'all done');
     else if (yardAt) setActionLabel('VISIT', GG.Yard.shortName(yardAt));
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
@@ -689,6 +697,7 @@
       GG.UI.refreshHud();
       if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
       GG.UI.showCatch(def, isNew, reward);
+      if (GG.Favours) GG.Favours.note('fish', def);   // v1.22
       return;
     }
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
@@ -721,6 +730,7 @@
     if (res.unlocked) GG.Sfx.unlocked(); else GG.Sfx.pick();
     GG.UI.refreshHud();
     GG.UI.showFruit(res);
+    if (GG.Favours) GG.Favours.note('pick', res.def);   // v1.22
   }
 
   /* ---------- catching ---------- */
@@ -732,6 +742,7 @@
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
     GG.UI.showCatch(def, isNew, reward);
+    if (GG.Favours) GG.Favours.note('bug', def);   // v1.22
   }
 
   /* ---------- little map ---------- */
@@ -1246,6 +1257,7 @@
     GG.UI.close('screen-title');
     setScene('world');
     checkNews();
+    if (GG.Favours) GG.Favours.start();   // v1.22: today's favours, and the rank already earned
     if (!GG.Save.data.seenIntro) {
       GG.Save.data.seenIntro = true; GG.Save.save();
       setTimeout(function () { GG.UI.toast('Tap where you want to go, or slide your thumb anywhere to walk', 3200); }, 600);
@@ -1506,6 +1518,7 @@
     GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'), $('btn-fish'), $('btn-friend'));
     GG.UI.init();
     if (GG.Sky) GG.Sky.init();   // v1.21
+    if (GG.Favours) GG.Favours.init();   // v1.22
     GG.UI.openPanels.push('screen-title');
     GG.UI.refreshHud();
     GG.Terrarium.initEvents();
@@ -1551,6 +1564,7 @@
     GG.UI.onWarningClosed = function () { swingChecked = true; };
     GG.Friends.onFriend = function (def, isNew, reward) {
       GG.UI.showFriend(def, isNew, reward);
+      if (GG.Favours) GG.Favours.note('friend', def);   // v1.22
     };
 
     document.addEventListener('visibilitychange', function () {
