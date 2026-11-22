@@ -46,7 +46,10 @@
       yard: null,          // v1.20: where each garden habitat stands outside (see src/game/yard.js)
       stars: {},           // v1.21: constellations and sky treasures found - id -> { first(ms), site }
       wishes: 0,           // v1.21: shooting stars wished on
-      mesaSky: false       // v1.21: has she looked up from the Mesa yet?
+      mesaSky: false,      // v1.21: has she looked up from the Mesa yet?
+      favours: null,       // v1.22: today's three favours and how many done ever (see src/game/favours.js)
+      favoursSeen: '',     // v1.22: the day whose board she has read
+      rank: 0              // v1.22: the rank she has been told about
     };
   }
 
