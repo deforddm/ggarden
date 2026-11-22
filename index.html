@@ -209,6 +209,7 @@
           <div class="tab" data-book="fish">Fish</div>
           <div class="tab" data-book="friends">Friends</div>
           <div class="tab" data-book="fruit">Garden</div>
+          <div class="tab" data-book="stars">Stars</div>
         </div>
         <div id="book-grid"></div>
         <div id="book-detail"></div>
@@ -219,6 +220,40 @@
   </div>
 
   <!-- v1.20 decorate my home -->
+  <!-- v1.21: the night sky, through the telescope -->
+  <div class="panel hidden" id="screen-sky">
+    <canvas id="sky-canvas"></canvas>
+    <div id="sky-top">
+      <div class="grow"><div id="sky-title">Tonight&rsquo;s sky</div><div id="sky-date"></div></div>
+      <span id="sky-count"></span>
+      <button class="x" id="sky-close" aria-label="Back to the garden">&times;</button>
+    </div>
+    <button id="sky-wish" class="hidden">WISH!<small>a shooting star</small></button>
+    <div id="sky-bottom">
+      <div id="sky-caption"></div>
+      <div id="sky-timerow">
+        <span class="lbl">dusk</span>
+        <input type="range" id="sky-time" min="0" max="1000" value="100" aria-label="Slide the night along">
+        <span class="lbl">dawn</span>
+        <span id="sky-clock"></span>
+        <button id="sky-lines">Lines: on</button>
+      </div>
+      <div id="sky-chips"></div>
+    </div>
+    <div id="sky-card-wrap" class="hidden">
+      <div id="sky-card">
+        <div id="sky-card-new">NEW!</div>
+        <canvas id="sky-card-art" width="520" height="300"></canvas>
+        <div id="sky-card-name"></div>
+        <div id="sky-card-latin"></div>
+        <div id="sky-card-fact"></div>
+        <div id="sky-card-extra"></div>
+        <div id="sky-card-reward"></div>
+        <button class="btn primary" id="sky-card-ok">Wow!</button>
+      </div>
+    </div>
+  </div>
+
   <div class="panel hidden" id="screen-homedecor">
     <div class="sheet hd-sheet">
       <header><h2>Decorate</h2><span class="chip gold" id="hd-sparkles"></span><button class="btn hd-done" id="hd-done">Done</button></header>
@@ -400,6 +435,8 @@
 <script src="src/data/pickables.js"></script>
 <script src="src/data/looks.js"></script>
 <script src="src/data/homedecor.js"></script>
+<script src="src/data/stars.js"></script>
+<script src="src/data/sky.js"></script>
 <script src="src/render/bugart.js"></script>
 <script src="src/render/fishart.js"></script>
 <script src="src/render/animalart.js"></script>
@@ -432,6 +469,7 @@
 <script src="src/ui/shop.js"></script>
 <script src="src/ui/charselect.js"></script>
 <script src="src/ui/homedecor.js"></script>
+<script src="src/ui/sky.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>

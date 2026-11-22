@@ -11,6 +11,20 @@ tools needed, installable to a phone home screen, works offline).
 * **Locally:** open `index.html` in a browser, or `dist/index.html`
   (single self-contained file, no other files needed).
 
+## The night sky (v1.21)
+
+Two telescopes: one in the cottage garden, one on top of the Mesa. After dark
+the action button says **STARS**. What opens is the real sky over eastern
+Washington for the real date: about 1,350 stars from the Hipparcos catalogue in
+their true places and colours, turning round Polaris as the night is slid
+along, and the real Moon in its real phase. Tap a star to start a
+join-the-dots puzzle; touch every ringed star and the constellation goes in
+the new **Star Book** (26 constellations and 5 sky treasures). The sky is
+seasonal, as the real one is. The Mesa is a dark site: more stars, the Milky
+Way, and the faint things that need one. Code: `src/ui/sky.js`; words:
+`src/data/sky.js`; star data (generated, BSD-3 notice inside):
+`src/data/stars.js`; test: `tests/v121sky.js`.
+
 ## How the game works
 
 * Walk around one open world, 8000 x 4160, with twenty-five places: Sunny
