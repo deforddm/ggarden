@@ -185,6 +185,20 @@
     GG.Terrarium.openTank(e.index);
   }
 
+  /* ---------- v1.23: what is under her feet ---------- */
+  GG.stepSurface = function (x, y) {
+    if (scene === 'house') return 'wood';
+    if (scene === 'cave') return 'stone';
+    var W = GG.World;
+    if (W.onBridge && W.bridge && W.onBridge(x, y, 6)) return 'wood';
+    if (W.isWater(x, y)) return 'water';
+    var b = W.biomeAt(x, y);
+    if (b === 'beach' || b === 'desert') return 'sand';
+    if (b === 'tundra') return 'snow';
+    if (b === 'shore' || b === 'hill' || b === 'mountain' || b === 'ridge' || b === 'scablands' || b === 'badlands' || b === 'mesa') return 'stone';
+    return 'grass';
+  };
+
   /* ---------- v1.21: the telescopes ---------- */
   var wantScope = null;
   function scopeAt(x, y) {
@@ -254,6 +268,7 @@
     GG.Friends.update(dt, P, 'world');
     GG.Friends.stepCompanion(dt, P);
     if (GG.Yard) GG.Yard.update(dt);   // v1.20: the habitats out in the yard
+    if (GG.Polish) GG.Polish.update(dt, P);   // v1.23
 
     GG.Orchard.update(dt);
     GG.Orchard.stepPops(dt);
@@ -384,6 +399,7 @@
     W.drawBridge(ctx, cam, t);
     W.drawProps(ctx, cam, GG.view.w, GG.view.h, t, 'flat');
     if (GG.FX) { GG.FX.update(t, cam, GG.view.w, GG.view.h); GG.FX.drawGround(ctx, cam, t, GG.view.w, GG.view.h); }   // v1.20 art
+    if (GG.Polish) GG.Polish.drawGround(ctx, cam);   // v1.23: footstep puffs and ripples
     if (lastPickable && scene === 'world') GG.Orchard.drawTarget(ctx, cam, lastPickable, t);
 
     // everything that stands up gets sorted so Guin walks behind trees
@@ -441,6 +457,7 @@
     /* v1.20 art: the light of the hour - multiplied (a clear blue night,
        a warm golden evening), a thin wash over it, then what shines */
     var grade = GG.Time.grade();
+    if (GG.Polish) { GG.Polish.drawOver(ctx, cam); GG.Polish.drawClouds(ctx, cam, GG.view.w, GG.view.h, grade.night, GG.Time.rain); }   // v1.23
     if (grade.mul) {
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = grade.mul;
@@ -454,6 +471,7 @@
     if (GG.FX) GG.FX.drawLights(ctx, cam, t, grade.night, GG.view.w, GG.view.h);
     if (GG.YardArt) GG.YardArt.drawLights(ctx, cam, t, grade.night);   // v1.20 yard: string lights, lanterns
     drawRain();
+    if (GG.Polish) GG.Polish.drawVignette(ctx, GG.view.w, GG.view.h);   // v1.23
     if (hurtFlash > 0) {
       ctx.fillStyle = 'rgba(255,70,70,' + (0.34 * (hurtFlash / 0.55)).toFixed(3) + ')';
       ctx.fillRect(0, 0, GG.view.w, GG.view.h);
@@ -742,6 +760,7 @@
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
     GG.UI.showCatch(def, isNew, reward);
+    if (GG.Polish) { var np = GG.Player.netPoint(); if (np) GG.Polish.burst(np.x, np.y, GG.RARITY_COLORS && GG.RARITY_COLORS[def.rarity]); }   // v1.23
     if (GG.Favours) GG.Favours.note('bug', def);   // v1.22
   }
 
