@@ -6,9 +6,18 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.21.0';
+  GG.VERSION = '1.22.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.22.0', title: 'Favours and ranks',
+      lines: [
+        'You have a rank now! Every page in your books counts as one step, and the steps add up: Seedling, Sprout, Bug Spotter, all the way to Guardian of the Garden. Everything you have already found counts.',
+        'There is a Favour Board beside the cottage, next to the telescope. Every day three of the animals ask you a small favour, like catching a bug that hops, picking a flower or throwing the ball for the dogs.',
+        'Each favour gives you sparkles, and doing all three gets a big thank-you. Tomorrow there are three new ones. If you miss a day, nothing is lost.',
+        'You can read the board from the Garden Menu too, and see your medal and how far it is to the next rank.'
+      ]
+    },
     {
       v: '1.21.0', title: 'The night sky',
       lines: [
