@@ -177,7 +177,7 @@ const { chromium, devices } = require('playwright');
   await p.tap('#btn-play'); await require('./charskip')(p);
   await p.waitForTimeout(3200);
   check('and not again after a reload', (await hidden('#screen-rank')) && (await ev(() => GG.Save.data.rank)) === old.rank);
-  check('the version is 1.22.0', await ev(() => GG.VERSION === '1.22.0'));
+  check('the What\u2019s new list has the 1.22.0 entry', await ev(() => GG.CHANGELOG.some(c => c.v === '1.22.0')));
 
   results.forEach(r => console.log(r));
   if (errs.length) console.log(errs.join('\n'));
