@@ -298,7 +298,7 @@ const { chromium, devices } = require('playwright');
   await p.waitForTimeout(800);
   const kept = await ev(() => ({ n: Object.keys(GG.Save.data.stars).sort(), w: GG.Save.data.wishes, site: GG.Save.data.stars.m31.site }));
   check('a reload keeps the Star Book and the wishes', kept.n.join() === 'Cas,CMi,m31,pleiades'.split(',').sort().join() && kept.w === 1 && kept.site === 'mesa', kept);
-  check('the news card tells her about the night sky', await ev(() => GG.VERSION === '1.21.0' && GG.CHANGELOG[0].v === '1.21.0' && /telescope/.test(GG.CHANGELOG[0].lines[0])));
+  check('the news card tells her about the night sky', await ev(() => { const e = GG.CHANGELOG.find(c => c.v === '1.21.0'); return !!e && /telescope/.test(e.lines[0]); }));
 
   results.forEach(r => console.log(r));
   if (errs.length) console.log(errs.join('\n'));
