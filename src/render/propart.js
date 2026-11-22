@@ -3716,5 +3716,42 @@
     }
   };
 
+  /* v1.22: the Favour Board - a noticeboard on two posts with a little
+     roof, and three notes pinned to it. */
+  P.noticeboard = function (c, x, y, r, t, seed, col, p) {
+    shadow(c, x + 1, y, r * 0.8, r * 0.2);
+    c.fillStyle = '#7a5530';
+    c.fillRect(x - r * 0.72, y - r * 1.5, r * 0.14, r * 1.5);
+    c.fillRect(x + r * 0.58, y - r * 1.5, r * 0.14, r * 1.5);
+    c.fillStyle = '#8a6238';
+    GG.roundRect(c, x - r * 0.86, y - r * 1.62, r * 1.72, r * 1.02, r * 0.08); c.fill();
+    c.fillStyle = '#d9b77a';
+    GG.roundRect(c, x - r * 0.78, y - r * 1.54, r * 1.56, r * 0.86, r * 0.05); c.fill();
+    /* the roof */
+    c.fillStyle = '#c0483c';
+    c.beginPath(); c.moveTo(x - r * 1.02, y - r * 1.58); c.lineTo(x, y - r * 2.02); c.lineTo(x + r * 1.02, y - r * 1.58); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.25)';
+    c.beginPath(); c.moveTo(x - r * 0.9, y - r * 1.62); c.lineTo(x, y - r * 1.98); c.lineTo(x, y - r * 1.88); c.lineTo(x - r * 0.7, y - r * 1.62); c.closePath(); c.fill();
+    /* three notes, each with a pin; a done favour's note turns green */
+    var list = (GG.Save && GG.Save.data.favours && GG.Save.data.favours.list) || [];
+    [[-0.5, '#fff6c8', -0.08], [0, '#ffd9e6', 0.05], [0.5, '#d8ecff', -0.04]].forEach(function (n, i) {
+      var done = list[i] && list[i].done;
+      c.save();
+      c.translate(x + n[0] * r, y - r * 1.12); c.rotate(n[2]);
+      c.fillStyle = done ? '#bfeeb0' : n[1];
+      c.fillRect(-r * 0.19, -r * 0.26, r * 0.38, r * 0.52);
+      if (done) {
+        c.strokeStyle = '#3d9a35'; c.lineWidth = Math.max(1.4, r * 0.07); c.lineCap = 'round';
+        c.beginPath(); c.moveTo(-r * 0.1, 0); c.lineTo(-r * 0.02, r * 0.1); c.lineTo(r * 0.12, -r * 0.1); c.stroke();
+      } else {
+        c.fillStyle = 'rgba(90,70,40,0.45)';
+        for (var k = 0; k < 3; k++) c.fillRect(-r * 0.13, -r * 0.1 + k * r * 0.11, r * 0.26, r * 0.035);
+      }
+      c.fillStyle = '#e8473f';
+      c.beginPath(); c.arc(0, -r * 0.2, r * 0.045, 0, 6.2832); c.fill();
+      c.restore();
+    });
+  };
+
   GG.Props = P;
 })(window.GG = window.GG || {});
