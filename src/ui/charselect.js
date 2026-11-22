@@ -211,6 +211,21 @@
     _set: function (field, value) {
       var nl = L().copy(this.look);
       nl[field] = value;
+      if (field === 'body' && value !== this.look.body) {
+        /* v1.23: switching between girl and boy swaps anything that
+           belongs only to the other one for something that suits - so the
+           boy does not arrive in pigtails and a sundress. Hair and clothes
+           from the "both" lists stay, and every style can still be picked
+           by hand afterwards. */
+        var LK = L(), other = value === 'girl' ? 'boy' : 'girl';
+        var hd = LK.HAIRS.filter(function (h) { return h.id === nl.hair; })[0];
+        if (hd && hd.group === other) nl.hair = value === 'boy' ? 'short' : 'pigtails';
+        var od = LK.OUTFIT_BY_ID[nl.outfit];
+        if (od && od.group === other) { nl.outfit = value === 'boy' ? 'tee' : 'sundress'; nl.outfitCol = 0; }
+        if (value === 'boy' && (nl.acc === 'flower' || nl.acc === 'bow')) nl.acc = 'none';
+        if (value === 'girl' && nl.acc === 'none' && this.look.acc === 'none' && this._accWas) nl.acc = this._accWas;
+        if (value === 'boy' && this.look.acc !== 'none') this._accWas = this.look.acc;
+      }
       if (field === 'outfit') {
         /* keep the same colour slot where the new style has one */
         var n = L().OUTFIT_BY_ID[value].colors.length;
