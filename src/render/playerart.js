@@ -123,6 +123,19 @@
       ink: INK
     };
     R.brow = mix(hair, '#2a1a14', 0.35);
+    /* v1.23: the two bodies are built differently, not just dressed
+       differently. The boy is broader and squarer through the shoulders,
+       stands with his feet further apart on sturdier legs and swings his
+       arms more; the girl is narrower with a softer, rounder outline and a
+       lighter step. Their faces differ too (see drawFace and eye). */
+    R.tw = R.girl ? 12.3 : 13.9;        // how wide the chest is, from the front
+    R.tr = R.girl ? 4.8 : 3.3;          // how round its corners are
+    R.sh = R.girl ? 5.1 : 5.9;          // where the arms hang from
+    R.hip = R.girl ? 2.7 : 3.4;         // how far apart the feet are
+    R.leg = R.girl ? 3.5 : 4.0;         // how thick a leg is
+    R.swing = R.girl ? 1.7 : 2.6;       // how far the arms swing
+    R.stride = R.girl ? 3.1 : 3.8;      // how long a step is, from the side
+    R.lift = R.girl ? 1.8 : 2.3;        // how high a foot comes up
     return R;
   }
 
@@ -139,7 +152,7 @@
   function drawLeg(c, R, hx, hy, fx, fy, far) {
     var col = legCol(R);
     var d = mix(col, '#2e1838', 0.18);
-    line(c, hx, hy, fx, fy - 1, far ? d : col, 3.7);
+    line(c, hx, hy, fx, fy - 1, far ? d : col, R.leg || 3.7);
     if (!far) line(c, hx - 0.8, hy + 0.5, fx - 0.8, fy - 1.6, 'rgba(255,255,255,0.18)', 0.9);
     /* socks and boot tops */
     if (R.outfit === 'sporty') {
@@ -192,7 +205,7 @@
   function drawBottom(c, R, v) {
     var side = v === 'right', o = R.outfit;
     var cx = side ? -0.2 : 0;
-    var w0 = side ? 4.9 : 6.3;
+    var w0 = (side ? 4.9 : 6.3) * (R.tw / 12.8);
     function flare(hem, spread, top) {
       return function (c) {
         c.moveTo(cx - w0, top);
@@ -308,16 +321,17 @@
     fillE(c, x1 - 0.2, y1 + 0.2, 1.3, 1.2, 0, skin);
   }
 
-  function torsoPath(v) {
+  function torsoPath(v, R) {
     var side = v === 'right';
-    var tx = side ? -0.2 : 0, tw = side ? 9.8 : 12.8;
-    return function (c) { rr(c, tx - tw / 2, -21, tw, 11.6, 4.4); };
+    var full = (R && R.tw) || 12.8;
+    var tx = side ? -0.2 : 0, tw = side ? full * 0.766 : full;
+    return function (c) { rr(c, tx - tw / 2, -21, tw, 11.6, (R && R.tr) || 4.4); };
   }
 
   function drawTorso(c, R, v) {
     var side = v === 'right', back = v === 'up', o = R.outfit;
-    var tp = torsoPath(v);
-    var cx = side ? -0.2 : 0, hw = side ? 4.9 : 6.4;
+    var tp = torsoPath(v, R);
+    var cx = side ? -0.2 : 0, hw = (side ? 4.9 : 6.4) * (R.tw / 12.8);
     var base = (o === 'overalls' || o === 'explorer') ? R.b : R.a;
     shade3(c, tp, base, dark(base), light(base));
     c.save(); c.beginPath(); tp(c); c.clip();
@@ -439,12 +453,12 @@
   function drawBody(c, R, v, ph, o) {
     var side = v === 'right';
     var s = ph == null ? 0 : Math.sin(ph), co = ph == null ? 0 : Math.cos(ph);
-    var armS = s * 2.1;
+    var armS = s * R.swing, st = R.stride, hip = R.hip, sh = R.sh;
     if (side) {
-      var nf = ph == null ? 1.3 : s * 3.4, ff = ph == null ? -1.5 : -s * 3.4;
+      var nf = ph == null ? 1.3 : s * st, ff = ph == null ? -1.5 : -s * st;
       var nl = ph == null ? 0 : Math.max(0, co) * 1.5, fl = ph == null ? 0 : Math.max(0, -co) * 1.5;
       /* far arm and leg first, a shade darker */
-      if (!o.wave) drawArm(c, R, -0.4, -18.6, -0.4 + (ph == null ? -0.8 : s * 3.4), -11.2, true);
+      if (!o.wave) drawArm(c, R, -0.4, -18.6, -0.4 + (ph == null ? -0.8 : s * st), -11.2, true);
       drawLeg(c, R, -0.6, -10.2, ff, -1.2 - fl, true);
       drawShoe(c, R, ff, -1.2 - fl, true, true);
       drawLeg(c, R, 0.4, -10.2, nf, -1.2 - nl, false);
@@ -452,26 +466,26 @@
       drawBottom(c, R, v);
       drawTorso(c, R, v);
       drawHood(c, R, v);
-      drawArm(c, R, 0.4, -18.6, 0.4 + (ph == null ? 0.9 : -s * 3.4), -11.2, false);
+      drawArm(c, R, 0.4, -18.6, 0.4 + (ph == null ? 0.9 : -s * st), -11.2, false);
       return;
     }
-    var lL = Math.max(0, s) * 2.0, lR = Math.max(0, -s) * 2.0;
-    drawLeg(c, R, -3.0, -10.2, -3.1, -1.2 - lL, false);
-    drawLeg(c, R, 3.0, -10.2, 3.1, -1.2 - lR, false);
-    drawShoe(c, R, -3.1, -1.2 - lL, false, false);
-    drawShoe(c, R, 3.1, -1.2 - lR, false, false);
+    var lL = Math.max(0, s) * R.lift, lR = Math.max(0, -s) * R.lift;
+    drawLeg(c, R, -hip + 0.1, -10.2, -hip, -1.2 - lL, false);
+    drawLeg(c, R, hip - 0.1, -10.2, hip, -1.2 - lR, false);
+    drawShoe(c, R, -hip, -1.2 - lL, false, false);
+    drawShoe(c, R, hip, -1.2 - lR, false, false);
     drawBottom(c, R, v);
     drawTorso(c, R, v);
     if (v === 'up') drawHood(c, R, v);
     /* arms. Waving uses her right hand (our left when she faces us). */
     if (o.wave != null && v === 'down') {
       var w = Math.sin(o.wave) * 2.4;
-      drawArm(c, R, -5.2, -18.8, -11.2 + w * 0.4, -26.6 + Math.abs(w) * 0.2, false);
+      drawArm(c, R, -sh + 0.1, -18.8, -11.2 + w * 0.4, -26.6 + Math.abs(w) * 0.2, false);
       fillE(c, -11.2 + w * 0.4, -27.4, 2.4, 2.4, 0, R.skin);
     } else {
-      drawArm(c, R, -5.3, -18.8, -8.2, -11.2 + armS * 0.7, false);
+      drawArm(c, R, -sh, -18.8, -sh - 2.9, -11.2 + armS * 0.7, false);
     }
-    drawArm(c, R, 5.3, -18.8, 8.2, -11.2 - armS * 0.7, false);
+    drawArm(c, R, sh, -18.8, sh + 2.9, -11.2 - armS * 0.7, false);
     if (v === 'down') drawHood(c, R, v);
   }
 
@@ -485,7 +499,8 @@
 
   function drawNeck(c, R) {
     c.fillStyle = R.skinD;
-    c.fillRect(-1.9, -20.4, 3.8, 2.4);
+    var nw = R.girl ? 3.4 : 4.6;
+    c.fillRect(-nw / 2, -20.4, nw, 2.4);
   }
 
   function drawEars(c, R, v) {
@@ -507,23 +522,52 @@
     var ey = -25.4;
     var ex0 = side ? fx - 2.8 : -3.5, ex1 = side ? fx + 3.4 : 3.5;
     /* brows (bangs will cover them on some styles) */
-    c.strokeStyle = R.brow; c.lineWidth = R.girl ? 0.75 : 1.0; c.lineCap = 'round';
-    c.beginPath(); c.arc(ex0, ey - 1.4, 2.1, Math.PI * 1.25, Math.PI * 1.72); c.stroke();
-    c.beginPath(); c.arc(ex1, ey - 1.4, side ? 1.7 : 2.1, Math.PI * 1.28, Math.PI * 1.75); c.stroke();
-    /* cheeks */
+    c.strokeStyle = R.brow; c.lineCap = 'round';
+    if (R.girl) {
+      /* fine, high, arched */
+      c.lineWidth = 0.7;
+      c.beginPath(); c.arc(ex0, ey - 1.5, 2.1, Math.PI * 1.25, Math.PI * 1.72); c.stroke();
+      c.beginPath(); c.arc(ex1, ey - 1.5, side ? 1.7 : 2.1, Math.PI * 1.28, Math.PI * 1.75); c.stroke();
+    } else {
+      /* thick, low and nearly straight, lifting a little in the middle
+         so he looks keen rather than cross */
+      c.lineWidth = 1.35;
+      var bw = 1.9;
+      c.beginPath(); c.moveTo(ex0 - bw, ey - 3.15); c.lineTo(ex0 + bw * 0.8, ey - 3.45); c.stroke();
+      c.beginPath(); c.moveTo(ex1 - (side ? bw * 0.6 : bw * 0.8), ey - 3.45); c.lineTo(ex1 + (side ? bw * 0.7 : bw), ey - 3.15); c.stroke();
+    }
+    /* cheeks: rosy on her, only a touch on him */
     c.fillStyle = R.blush;
+    c.save();
+    if (!R.girl) c.globalAlpha *= 0.45;
     if (side) {
       c.beginPath(); ell(c, fx - 4.2, -22.6, 2.0, 1.25); c.fill();
       c.beginPath(); ell(c, fx + 5.5, -22.4, 1.0, 0.9); c.fill();
     } else {
       c.beginPath(); ell(c, -6.1, -22.6, 2.1, 1.25); ell(c, 6.1, -22.6, 2.1, 1.25); c.fill();
     }
+    c.restore();
     eye(c, R, ex0, ey, 1, blink, -1);
     eye(c, R, ex1, ey, side ? 0.82 : 1, blink, 1);
     /* nose */
     fillE(c, fx + (side ? 1.4 : 0), -23.5, 0.7, 0.45, 0, mix(R.skin, '#8a3040', 0.22));
-    /* a big open smile */
     var mx = fx + (side ? 1.2 : 0);
+    if (!R.girl) {
+      /* a wide, toothy grin, a little lopsided */
+      c.fillStyle = '#8c2f40';
+      c.beginPath();
+      c.moveTo(mx - 2.7, -21.9);
+      c.quadraticCurveTo(mx + 0.2, -21.5, mx + 2.9, -22.3);
+      c.quadraticCurveTo(mx + 2.3, -19.4, mx + 0.2, -19.5);
+      c.quadraticCurveTo(mx - 1.9, -19.5, mx - 2.7, -21.9);
+      c.closePath(); c.fill();
+      c.save(); c.clip();
+      c.fillStyle = '#ffffff';
+      c.fillRect(mx - 3, -22.6, 6.2, 1.75);
+      c.restore();
+      return;
+    }
+    /* a big open smile */
     c.fillStyle = '#9c3446';
     c.beginPath();
     c.moveTo(mx - 1.9, -21.9);
@@ -540,7 +584,9 @@
       c.beginPath(); c.arc(x, y - 0.9, 1.6 * wk, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
       return;
     }
-    var rx = 1.7 * wk, ry = 2.2;
+    /* hers are taller with a dark upper lid and three lashes; his are
+       rounder and plain */
+    var rx = (R.girl ? 1.7 : 1.8) * wk, ry = R.girl ? 2.35 : 2.0;
     fillE(c, x, y, rx, ry, 0, '#24161a');
     fillE(c, x, y + 0.5, rx * 0.76, ry * 0.7, 0, R.eye);
     fillE(c, x, y + 0.9, rx * 0.5, ry * 0.4, 0, light(R.eye, 0.28));
@@ -548,11 +594,14 @@
     fillE(c, x - 0.55 * wk, y - 0.85, 0.72 * wk, 0.72, 0, '#ffffff');
     fillE(c, x + 0.55 * wk, y + 0.85, 0.32, 0.32, 0, 'rgba(255,255,255,0.9)');
     if (R.girl) {
-      /* two little lashes at the outer corner */
-      c.strokeStyle = '#24161a'; c.lineWidth = 0.6; c.lineCap = 'round';
+      /* a dark upper lid that sweeps out past the corner, and three lashes */
+      c.strokeStyle = '#24161a'; c.lineWidth = 0.75; c.lineCap = 'round';
+      c.beginPath(); c.ellipse(x, y, rx * 1.05, ry * 1.02, 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
+      c.lineWidth = 0.6;
       var ox = x + outer * rx * 0.8, oy = y - ry * 0.55;
-      c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + outer * 1.2, oy - 0.7); c.stroke();
-      c.beginPath(); c.moveTo(ox - outer * 0.4, oy - 0.6); c.lineTo(ox + outer * 0.5, oy - 1.6); c.stroke();
+      c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + outer * 1.5, oy - 0.6); c.stroke();
+      c.beginPath(); c.moveTo(ox - outer * 0.4, oy - 0.6); c.lineTo(ox + outer * 0.8, oy - 1.7); c.stroke();
+      c.beginPath(); c.moveTo(ox - outer * 1.0, oy - 1.0); c.lineTo(ox - outer * 0.5, oy - 2.1); c.stroke();
     }
   }
 
