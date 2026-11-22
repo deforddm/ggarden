@@ -185,16 +185,45 @@
     GG.Terrarium.openTank(e.index);
   }
 
+  /* ---------- v1.21: the telescopes ---------- */
+  var wantScope = null;
+  function scopeAt(x, y) {
+    var T = GG.World.telescopes || [];
+    for (var i = 0; i < T.length; i++) {
+      if (Math.abs(T[i].x - x) < 26 && y < T[i].y + 12 && y > T[i].y - 56) return T[i];
+    }
+    return null;
+  }
+  function starsOut() { var h = GG.Time.minutes / 60; return h >= 20.5 || h < 4.75; }
+  function useTelescope(p) {
+    wantScope = null;
+    GG.Input.clearTarget();
+    if (starsOut()) { GG.Sfx.click(); GG.Sky.open(p.site); return; }
+    /* in the daytime she waits by it until dark - the stars are still up
+       there, the Sun is just far too bright to see them */
+    var T = GG.Time;
+    T.minutes = 21 * 60;
+    T.rain = false; T.rainTimer = GG.rand(160, 320);
+    GG.Save.data.clock = T.minutes; GG.Save.data.day = T.day;
+    GG.Save.save();
+    GG.Sfx.night();
+    GG.UI.toast('The stars are always up there, but the Sun is too bright to see them. You wait until dark\u2026', 3600);
+    sceneLock = 0.6;
+    setTimeout(function () { if (scene === 'world' && !GG.UI.anyOpen()) GG.Sky.open(p.site); }, 1500);
+  }
+
   function updateWorld(dt) {
     var W = GG.World, P = GG.Player;
     GG.Time.update(dt);
     GG.Input.blockedFn = _blockedWorld;
-    var tap = GG.Input.tapPressed, tapYard = null;
+    var tap = GG.Input.tapPressed, tapYard = null, tapScope = null;
     if (tap && !GG.Fishing.active()) {
       if (onHouse(tap.x, tap.y)) GG.Input.walkTo(W.DOOR.x, W.DOOR.y + 40);
       /* v1.20: a tap on a habitat in the yard walks her to its gate */
       else if (GG.Yard && (tapYard = GG.Yard.at(tap.x, tap.y))) { GG.Input.walkTo(tapYard.gx, tapYard.gy); GG.Yard.tapped = tapYard; }
-      else GG.Orchard.want(tap.x, tap.y);
+      /* v1.21: a tap on a telescope walks her round to the eyepiece */
+      else if ((tapScope = scopeAt(tap.x, tap.y))) { GG.Input.walkTo(tapScope.x, tapScope.y + 26); wantScope = tapScope; }
+      else { wantScope = null; GG.Orchard.want(tap.x, tap.y); }
     } else if (tap) {
       /* the line is out: that tap is the catch tap (handled below), so she
          must not take even one step towards it this frame */
@@ -243,6 +272,13 @@
     if (yardAt && yardAt !== GG.Yard.tapped && GG.Critters.catchableNear(P, 60)) yardAt = null;
     if (yardAt && pickable && pickable === GG.Orchard.wanted) yardAt = null;
     else if (yardAt) pickable = null;
+    /* v1.21: a telescope she is standing at says STARS - unless a bug is
+       right there (NET), and unless she walked up to it on purpose */
+    var scope = (!fishing && !atDoor && !atCave && !lookAt && !GG.Friends.busy && !GG.Friends.riding)
+      ? W.telescopeNear(P.x, P.y) : null;
+    if (scope && scope !== wantScope && GG.Critters.catchableNear(P, 56)) scope = null;
+    if (scope && pickable && pickable === GG.Orchard.wanted) scope = null;
+    if (scope) { pickable = null; yardAt = null; }
     lastPickable = pickable;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     /* v1.20: fetch at Dog's Paradise */
@@ -273,6 +309,7 @@
         enterCave(); return;
       }
       if (lookAt) { lookAtCreature(lookAt); return; }
+      if (scope) { useTelescope(scope); return; }
       if (yardAt) { visitYard(yardAt); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
@@ -312,8 +349,9 @@
     GG.UI.prompt(atDoor ? 'Tap to go inside'
       : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
         : (lookAt ? 'Look \u2014 but this one is not for catching'
-          : (yardAt ? GG.Yard.promptOf(yardAt)
-            : (pickable ? pickPrompt(pickable) : null)))));
+          : (scope ? (starsOut() ? 'Tap to look through the telescope' : 'Tap to wait here until the stars come out')
+            : (yardAt ? GG.Yard.promptOf(yardAt)
+              : (pickable ? pickPrompt(pickable) : null))))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (GG.Friends.riding) setActionLabel('\u2014', 'riding');
@@ -321,6 +359,7 @@
     else if (atDoor) setActionLabel('GO IN', 'door');
     else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
     else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
+    else if (scope) setActionLabel('STARS', starsOut() ? 'look up' : 'wait for dark');
     else if (yardAt) setActionLabel('VISIT', GG.Yard.shortName(yardAt));
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
@@ -802,6 +841,20 @@
       for (var pl = -7; pl <= 7; pl += 7) { c.beginPath(); c.moveTo(pl, -5); c.lineTo(pl, 5); c.stroke(); }
       c.restore();
     }
+    /* v1.21: the telescopes, each a little gold star on a dark blue dot */
+    (W.telescopes || []).forEach(function (tp) {
+      var tx = tp.x * sx, ty = tp.y * sy;
+      c.fillStyle = '#26347c';
+      c.beginPath(); c.arc(tx, ty, 11, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = '#ffffff'; c.lineWidth = 2.5; c.stroke();
+      c.fillStyle = '#ffe36e';
+      c.beginPath();
+      for (var sp = 0; sp < 10; sp++) {
+        var sa = -Math.PI / 2 + sp * Math.PI / 5, sr = sp % 2 ? 3.2 : 7.5;
+        c.lineTo(tx + Math.cos(sa) * sr, ty + Math.sin(sa) * sr);
+      }
+      c.closePath(); c.fill();
+    });
     /* Guin: a pink dot in a soft pink glow */
     var gx = GG.Player.x * sx, gy = GG.Player.y * sy;
     c.fillStyle = 'rgba(255,95,146,0.28)';
@@ -1417,6 +1470,7 @@
     GG.Friends.loadCompanion();
     GG.UI.refreshHud();
     refreshGuestChrome();
+    if (GG.Sky && GG.Sky.isOpen()) GG.Sky.close();
     ['screen-menu', 'screen-settings', 'screen-book', 'screen-terrarium', 'screen-shop'].forEach(function (id) {
       GG.UI.close(id);
     });
@@ -1451,6 +1505,7 @@
 
     GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'), $('btn-fish'), $('btn-friend'));
     GG.UI.init();
+    if (GG.Sky) GG.Sky.init();   // v1.21
     GG.UI.openPanels.push('screen-title');
     GG.UI.refreshHud();
     GG.Terrarium.initEvents();
