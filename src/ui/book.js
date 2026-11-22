@@ -79,7 +79,14 @@
     { id: 'fruit', name: 'Garden Book', blurb: 'fruit, berries, vegetables and flowers', col: '#f07d1a',
       show: function () { return GG.FRUIT_BY_ID && (GG.FRUIT_BY_ID.apple || GG.FRUITS[0]); },
       list: function () { return GG.FRUITS; },
-      found: function () { return GG.Save.totalFruit(); } }
+      found: function () { return GG.Save.totalFruit(); } },
+    /* v1.21: the fifth book. It is not a book of creatures, so it draws its
+       own cover, its own cells and its own pages (see the "stars" branches). */
+    { id: 'stars', name: 'Star Book', blurb: 'constellations and sky treasures', col: '#4254b8', custom: true,
+      show: function () { return null; },
+      art: function (cv) { if (GG.Sky) GG.Sky.drawThumb(cv, GG.SKY_BY_ID.Ori, true); },
+      list: function () { return GG.SKY_ALL || []; },
+      found: function () { return GG.Sky ? GG.Sky.found() : 0; } }
   ];
   var BOOK_BY_ID = {};
   BOOKS.forEach(function (b) { BOOK_BY_ID[b.id] = b; });
@@ -114,8 +121,8 @@
       $('progress').textContent = got + ' / ' + all;
 
       var note = GG.el('div', 'shelfnote');
-      note.innerHTML = '<b>Your Critter Compendium.</b> Four books in one. Everything you catch, '
-        + 'meet, befriend or pick gets its own page. You have found <b>' + got + '</b> of <b>'
+      note.innerHTML = '<b>Your Critter Compendium.</b> Five books in one. Everything you catch, '
+        + 'meet, befriend, pick or find in the sky gets its own page. You have found <b>' + got + '</b> of <b>'
         + all + '</b> so far.';
       grid.appendChild(note);
 
@@ -129,7 +136,9 @@
         var def = b.show();
         var cv = document.createElement('canvas');
         cv.width = 280; cv.height = 156;
-        var c = cv.getContext('2d'); c.scale(2, 2);
+        var c = cv.getContext('2d');
+        if (b.art) b.art(cv);
+        c.scale(2, 2);
         if (def) {
           if (def.isAnimal) GG.AnimalArt.draw(c, def, 70, 64, GG.animalFit(def, 58), false, 1.2);
           else GG.drawAny(c, def, 70, 39, def.isFish ? 2.2 : 2.1, def.isFish ? 0 : -Math.PI / 2, 1.1);
@@ -152,6 +161,7 @@
 
     showGrid: function () {
       if (!BOOK_BY_ID[this.tab]) { this.showContents(); return; }
+      if (this.tab === 'stars') { this.showStars(); return; }
       var grid = $('book-grid'), det = $('book-detail');
       var tab = this.tab;
       $('book-kicker').classList.remove('hide');
@@ -232,6 +242,102 @@
               : (fish ? 'You have not caught this one yet!' : 'You have not met this one yet!')));
         });
         grid.appendChild(cell);
+      });
+    },
+
+    /* ---------- v1.21: the Star Book ---------- */
+    showStars: function () {
+      var grid = $('book-grid'), det = $('book-detail');
+      $('book-kicker').classList.remove('hide');
+      $('screen-book').setAttribute('data-book', 'stars');
+      grid.style.display = 'grid'; det.style.display = 'none';
+      $('book-back').style.display = 'none';
+      $('book-tabs').style.display = '';
+      $('book-title').textContent = 'Star Book';
+      document.querySelectorAll('#book-tabs .tab').forEach(function (el) {
+        el.classList.toggle('on', el.getAttribute('data-book') === 'stars');
+      });
+      grid.innerHTML = '';
+      var all = GG.SKY_ALL || [], got = GG.Sky.found();
+      $('progress').textContent = got + ' / ' + all.length;
+      var row = GG.el('div', '', null);
+      row.id = 'companion-row';
+      row.style.gridColumn = '1/-1';
+      var txt = GG.el('div', 'grow');
+      txt.innerHTML = got
+        ? '<b>' + got + ' of ' + all.length + ' found.</b> The sky in this game is the real sky for tonight, '
+          + 'so some of these can only be found at the right time of year.'
+        : 'Walk up to the <b>telescope</b> by the cottage after dark and tap <b>STARS</b>. '
+          + 'It shows the real sky for tonight.';
+      row.appendChild(txt);
+      grid.appendChild(row);
+      var shelf = null;
+      all.forEach(function (def) {
+        var kind = def.treasure ? 'Sky treasures' : 'Constellations';
+        if (kind !== shelf) {
+          shelf = kind;
+          var have = 0, n = 0;
+          all.forEach(function (d) { if (!!d.treasure === !!def.treasure) { n++; if (GG.Sky.has(d.id)) have++; } });
+          var hd = GG.el('div', 'book-shelf', kind + '  ' + have + ' / ' + n);
+          hd.style.gridColumn = '1/-1';
+          grid.appendChild(hd);
+        }
+        var have1 = GG.Sky.has(def.id);
+        var cell = GG.el('div', 'bugcell sky' + (have1 ? ' got' : ''));
+        cell.setAttribute('data-sky', def.id);
+        var cv = document.createElement('canvas');
+        cv.width = 168; cv.height = 108;
+        cv.style.width = '100%'; cv.style.height = '54px';
+        GG.Sky.drawThumb(cv, def, have1);
+        cell.appendChild(cv);
+        cell.appendChild(GG.el('div', 'nm', have1 ? def.name : '???'));
+        cell.addEventListener('click', function () {
+          GG.Sfx.click();
+          if (have1) Book.showStarPage(def);
+          else GG.UI.toast(def.dark
+            ? 'Not found yet. This one needs a really dark sky — try the telescope up on the Mesa. Best seen: ' + def.when + '.'
+            : 'Not found yet. Look through a telescope after dark. Best seen: ' + def.when + '.', 4200);
+        });
+        grid.appendChild(cell);
+      });
+    },
+
+    showStarPage: function (def) {
+      var grid = $('book-grid'), det = $('book-detail');
+      var body = document.querySelector('#screen-book .body');
+      if (body && grid.style.display !== 'none') this._gridScroll = body.scrollTop;
+      grid.style.display = 'none'; det.style.display = 'block';
+      if (body) body.scrollTop = 0;
+      $('book-back').style.display = 'block';
+      $('book-back').textContent = 'All the sky';
+      $('book-tabs').style.display = 'none';
+      $('screen-book').setAttribute('data-book', 'stars');
+      det.innerHTML = '';
+      var cv = GG.el('canvas', 'starpage-art'); cv.id = 'star-art';
+      cv.width = 640; cv.height = 340;
+      GG.Sky.drawThumb(cv, def, true);
+      det.appendChild(cv);
+      var h = GG.el('h2', null, def.name);
+      h.style.margin = '10px 0 2px'; h.style.fontSize = '21px';
+      det.appendChild(h);
+      var meta = GG.el('div', 'meta');
+      var rec = (GG.Save.data.stars || {})[def.id] || {};
+      var rows = [[def.treasure ? 'It is' : 'Proper name', def.latin], ['Best seen', def.when]];
+      if (def.star) rows.push(['Look for', def.star]);
+      if (def.dark) rows.push(['Needs', 'a dark sky']);
+      rows.push(['Found from', rec.site === 'mesa' ? 'the Mesa' : 'the garden']);
+      rows.forEach(function (r) {
+        var tg = GG.el('span', 'tag');
+        tg.innerHTML = r[0] + ': <b>' + r[1] + '</b>';
+        meta.appendChild(tg);
+      });
+      det.appendChild(meta);
+      [['How to find it', def.look], ['Did you know?', def.fact], ['And', def.extra]].forEach(function (f) {
+        if (!f[1]) return;
+        var line = GG.el('div', 'factline');
+        line.innerHTML = '<b>' + f[0] + '</b> ';
+        line.appendChild(document.createTextNode(f[1]));
+        det.appendChild(line);
       });
     },
 
