@@ -889,6 +889,7 @@
     if (GG.Sfx.starFound) GG.Sfx.starFound();
     setCaption('', 0);
     chipsDirty = true;
+    if (GG.Favours) setTimeout(function () { GG.Favours.checkRank(); }, 300);   // v1.22
     pendingCard = { def: def, reward: reward, at: performance.now() + (con ? 1900 : 350) };
   }
 
@@ -1201,6 +1202,7 @@
       if (GG.Sfx.coin) GG.Sfx.coin();
       var F = GG.METEOR_FACTS;
       setCaption('Wish made! ✦ +2. ' + F[(d.wishes - 1) % F.length], 8000);
+      if (GG.Favours) GG.Favours.note('wish');   // v1.22
     },
 
     /* ---- for the Star Book and the card: a little picture of one thing ---- */
