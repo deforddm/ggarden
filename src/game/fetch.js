@@ -206,6 +206,7 @@
       if (S) {
         S.sparkles += 2;
         S.fetches = (S.fetches || 0) + 1;
+        if (GG.Favours) GG.Favours.note('fetch');   // v1.22
       }
       if (GG.Friends && f) {
         for (var i = 0; i < 4; i++) {

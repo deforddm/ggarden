@@ -302,6 +302,7 @@
     props: [], solids: [], hive: null, grid: {}, gridN: [], chunks: null,
     caveMouth: null, bootBrush: null,
     telescopes: [],      // v1.21: where she can look up at the night sky
+    board: null,         // v1.22: the Favour Board by the cottage
     CHUNK: 400,
     pond: POND_E,
     flow: FLOW,
@@ -1280,11 +1281,20 @@
           if (Math.abs(q.x - at[0]) < 26 && q.y > at[1] - 14 && q.y < at[1] + 40) dead.add(q);
         });
         if (dead.size) self._removeProps(dead);
+        if (site === 'board') { self.board = add('noticeboard', at[0], at[1], 30, true, 11, {}); return; }
         var p = add('telescope', at[0], at[1], 26, true, 9, { site: site });
         self.telescopes.push(p);
       }
       place('home', [[H.x + 185, H.y + 22], [H.x + 195, H.y + 44], [H.x + 210, H.y + 64], [H.x + 230, H.y + 30]]);
+      /* v1.22: the Favour Board, further along the same side, in the gap
+         between two yard slots (F2 ends at x 4990, F3 starts at 5025) */
+      place('board', [[H.x + 288, H.y + 115], [H.x + 292, H.y + 108], [H.x + 296, H.y + 100], [H.x + 300, H.y + 92]]);
       place('mesa', [[M.cx + 30, M.cy - 10], [M.cx - 30, M.cy + 10], [M.cx + 70, M.cy + 20], [M.cx - 80, M.cy - 30], [M.cx, M.cy + 50], [M.cx + 110, M.cy - 20]]);
+    },
+    /* is she standing in front of this thing (a telescope, the board)? */
+    standingAt: function (p, x, y, reach) {
+      return Math.abs(p.x - x) < (reach || 46) && y - p.y > -30 && y - p.y < (reach || 46) + 6 &&
+        Math.hypot(p.x - x, p.y - y) < (reach || 46) + 8;
     },
     /* the telescope she is standing at, if any */
     telescopeNear: function (x, y, reach) {
