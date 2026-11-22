@@ -121,6 +121,13 @@
           mood.wave, mood.lead * 0.34, 0.012);
       }
 
+      /* v1.23: a harp underneath, every other phrase - the notes of the
+         chord picked out one at a time on the off-beats */
+      if ((phrase === 1 || phrase === 3) && (inBar % 2 === 1)) {
+        var tone = chord[((inBar - 1) / 2 + bar) % chord.length];
+        this._note(root * semis(tone) * 2, t, spbOf(mood) * 0.9, 'triangle', mood.bell * 0.11, 0.008);
+      }
+
       /* a sparkle on the off-beat, once a bar */
       if (inBar === 6 && (bar % 2 === 1)) {
         var hi = PENT[6 + (bar % 3)];

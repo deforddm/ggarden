@@ -22,6 +22,15 @@
       busSfx = ctx.createGain(); busSfx.connect(master);
       busMusic = ctx.createGain(); busMusic.connect(master);
       busAmb = ctx.createGain(); busAmb.connect(master);
+      /* v1.23: a little room. The music, and a touch of the effects, also
+         go through one soft echo, so the notes ring on instead of stopping
+         dead. Its own gains only - nothing here is a volume control. */
+      try {
+        var echoIn = ctx.createGain(), dl = ctx.createDelay(1), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain(), sfxSend = ctx.createGain();
+        dl.delayTime.value = 0.27; fb.gain.value = 0.3; lp.type = 'lowpass'; lp.frequency.value = 2300; wet.gain.value = 0.26; sfxSend.gain.value = 0.4;
+        busMusic.connect(echoIn); busSfx.connect(sfxSend); sfxSend.connect(echoIn);
+        echoIn.connect(dl); dl.connect(lp); lp.connect(wet); wet.connect(master); lp.connect(fb); fb.connect(dl);
+      } catch (e) {}
       GG.Audio.applyVolumes();
     }
     if (ctx.state === 'suspended') ctx.resume();
@@ -105,14 +114,24 @@
 
   GG.Sfx = {
     unlock: function () { ac(); GG.Audio.applyVolumes(); },
-    swing: function () { noise(0.14, 0.07, 2200); },
-    step: function () { noise(0.05, 0.02, 700); },
+    swing: function () { noise(0.14, 0.06, 2200); tone(980, 0.13, 'sine', 0.022, 320); },
+    /* v1.23: a footstep sounds like what she is walking on, and the left
+       foot is not quite the same as the right */
+    step: function (surface) {
+      var f = (this._foot = !this._foot) ? 1 : 0.86, j = 0.92 + Math.random() * 0.16;
+      if (surface === 'wood') { tone(150 * f * j, 0.07, 'triangle', 0.06, 96); noise(0.03, 0.012, 1000); }
+      else if (surface === 'stone') { noise(0.035, 0.032, 2300 * f * j); tone(480 * f, 0.03, 'sine', 0.012); }
+      else if (surface === 'sand') { noise(0.1, 0.022, 1500 * f * j); }
+      else if (surface === 'snow') { noise(0.11, 0.034, 380 * f * j); noise(0.05, 0.012, 2600, 0.03); }
+      else if (surface === 'water') { noise(0.15, 0.036, 820 * f * j); tone(360 * f, 0.1, 'sine', 0.03, 640); }
+      else noise(0.06, 0.022, 600 * f * j);
+    },
     catchSmall: function () { tone(660, 0.10, 'triangle', 0.13); tone(880, 0.14, 'triangle', 0.11, null, 0.08); },
     catchNew: function () {
       [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.20, 'triangle', 0.12, null, i * 0.075); });
     },
     escape: function () { tone(520, 0.18, 'sine', 0.08, 260); },
-    click: function () { tone(760, 0.05, 'square', 0.05); },
+    click: function () { tone(880, 0.05, 'triangle', 0.06); tone(1320, 0.06, 'sine', 0.028, null, 0.022); },
     door: function () { tone(300, 0.16, 'sine', 0.08, 200); },
     place: function () { tone(880, 0.07, 'triangle', 0.08); },
     warn: function () {
