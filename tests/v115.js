@@ -179,8 +179,8 @@ const { chromium } = require('playwright');
   });
   await p.screenshot({ path: __dirname + '/shots/v115-compendium.png' });
   ok('it opens on the contents page', comp.title === 'Critter Compendium' && comp.home);
-  ok('with four books on the shelf', comp.cards.join() === 'bugs,fish,friends,fruit');
-  ok('named Bug, Fish, Friends and Garden Book', comp.names.join() === 'Bug Book,Fish Book,Friends Book,Garden Book');
+  ok('with five books on the shelf (the Star Book since v1.21)', comp.cards.join() === 'bugs,fish,friends,fruit,stars');
+  ok('named Bug, Fish, Friends and Garden Book', comp.names.join() === 'Bug Book,Fish Book,Friends Book,Garden Book,Star Book');
   ok('each with a picture on it', comp.drawn);
   await p.click('.shelfbook[data-open="fish"]'); await p.waitForTimeout(300);
   const fishBook = await p.evaluate(() => ({ title: document.getElementById('book-title').textContent,
@@ -188,7 +188,7 @@ const { chromium } = require('playwright');
   ok('tapping a book opens it inside the Compendium', fishBook.title === 'Fish Book' && /Compendium/.test(fishBook.kicker) && fishBook.cells === GGcount(36));
   function GGcount(n) { return n; }
   await p.click('#book-tabs .tab[data-book="home"]'); await p.waitForTimeout(300);
-  ok('and the shelf tab goes back to all four', await p.evaluate(() => document.querySelectorAll('.shelfbook').length === 4));
+  ok('and the shelf tab goes back to all five', await p.evaluate(() => document.querySelectorAll('.shelfbook').length === 5));
   await p.evaluate(() => GG.UI.close('screen-book'));
 
   /* ---------- Cookie is unique ---------- */

@@ -38,7 +38,7 @@ const { chromium } = require('playwright');
     ok(tag + ': the Play button is set in Fredoka (' + f.play.split(',')[0] + ')', /^"?Fredoka/.test(f.play));
     ok(tag + ': the minimap is told the fonts are ready', f.ready);
     ok(tag + ': nothing is fetched from outside the game (' + outside.length + ')', outside.length === 0);
-    ok(tag + ': no page errors (' + errs.length + ') on version ' + f.v, !errs.length && f.v === '1.20.1');
+    ok(tag + ': no page errors (' + errs.length + ') on version ' + f.v, !errs.length && /^1\.\d+\.\d+$/.test(f.v));
     await ctx.close();
   }
   r.forEach(l => console.log(l));
