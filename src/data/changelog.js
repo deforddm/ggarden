@@ -6,9 +6,22 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.20.1';
+  GG.VERSION = '1.21.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.21.0', title: 'The night sky',
+      lines: [
+        'There is a telescope in the garden now, beside the cottage. Walk up to it after dark and press STARS to look up. In the daytime it lets you wait until the stars come out.',
+        'It is the REAL sky! The stars are in the right places for tonight, where you live. So is the Moon, with tonight\u2019s real shape. Afterwards, go outside and find the same stars for real.',
+        'Tap a bright star to start a join-the-dots puzzle. Touch every star with a ring round it and you have found a constellation. There are 26 to find, like the Hunter, the Great Bear and the Swan.',
+        'Slide the night along from dusk to dawn and watch the whole sky turn round the North Star.',
+        'Some constellations only come out in summer, and some only in winter, exactly like the real sky. Your new Star Book tells you when to look.',
+        'Watch for shooting stars. Press WISH quickly when you see one!',
+        'There is a second telescope up on top of the Mesa. It is far from the cottage lights, so the sky there is much darker. Climb up to see the Milky Way and the faint treasures you cannot see from home.',
+        'A new Star Book in your Compendium, with a page for everything you find up there.'
+      ]
+    },
     {
       v: '1.20.1', title: 'Round letters everywhere',
       lines: [
