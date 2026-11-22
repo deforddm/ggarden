@@ -63,7 +63,10 @@
 
       this.stepTimer -= dt;
       if (this.speed > 40 && this.stepTimer <= 0) {
-        GG.Sfx.step(); this.stepTimer = 0.34 - Math.min(0.16, this.speed / 1400);
+        var surf = GG.stepSurface ? GG.stepSurface(this.x, this.y) : null;   // v1.23
+        GG.Sfx.step(surf);
+        if (GG.Polish) GG.Polish.step(this.x, this.y, surf);
+        this.stepTimer = 0.34 - Math.min(0.16, this.speed / 1400);
       }
     },
 
