@@ -3669,5 +3669,52 @@
     for (var k = 0; k < 3; k++) c.fillRect(x + r * 0.28, y - r * 1.14 + k * r * 0.1, r * 0.56, r * 0.04);
   };
 
+  /* v1.21: a brass telescope on a wooden tripod, pointed up at the sky.
+     After dark the eyepiece end glints and a star or two twinkles over it,
+     so she can find it across the garden. */
+  P.telescope = function (c, x, y, r, t, seed, col, p) {
+    shadow(c, x + 1, y, r * 0.62);
+    c.lineCap = 'round';
+    /* the tripod */
+    c.strokeStyle = '#6b4a2a'; c.lineWidth = Math.max(2, r * 0.11);
+    var hx = x, hy = y - r * 1.05;
+    [[-0.5, 0], [0.5, 0], [0.06, -0.18]].forEach(function (l) {
+      c.beginPath(); c.moveTo(hx, hy); c.lineTo(x + l[0] * r, y + l[1] * r); c.stroke();
+    });
+    c.strokeStyle = '#8a6238'; c.lineWidth = Math.max(1, r * 0.045);
+    c.beginPath(); c.moveTo(x - r * 0.3, y - r * 0.42); c.lineTo(x + r * 0.3, y - r * 0.42); c.stroke();
+    /* the tube, tilted up and to the right */
+    c.save();
+    c.translate(hx, hy - r * 0.08); c.rotate(-0.72);
+    c.fillStyle = '#3a4a8c';
+    GG.roundRect(c, -r * 0.62, -r * 0.17, r * 1.3, r * 0.34, r * 0.08); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    GG.roundRect(c, -r * 0.58, -r * 0.14, r * 1.2, r * 0.1, r * 0.05); c.fill();
+    c.fillStyle = '#e2b24a';
+    GG.roundRect(c, r * 0.56, -r * 0.21, r * 0.2, r * 0.42, r * 0.05); c.fill();   // the brass rim
+    GG.roundRect(c, -r * 0.2, -r * 0.19, r * 0.1, r * 0.38, r * 0.03); c.fill();   // a brass band
+    c.fillStyle = '#c9952e';
+    GG.roundRect(c, -r * 0.84, -r * 0.09, r * 0.26, r * 0.18, r * 0.04); c.fill(); // the eyepiece
+    c.fillStyle = '#9fd0ff';
+    c.beginPath(); c.ellipse(r * 0.77, 0, r * 0.035, r * 0.16, 0, 0, 6.2832); c.fill(); // the glass
+    c.restore();
+    /* the pivot */
+    c.fillStyle = '#4a3420';
+    c.beginPath(); c.arc(hx, hy, r * 0.11, 0, 6.2832); c.fill();
+    /* twinkles after dark */
+    var night = GG.Time && GG.Time.grade ? GG.Time.grade().night : 0;
+    if (night > 0.3) {
+      for (var i = 0; i < 3; i++) {
+        var k = 0.5 + 0.5 * Math.sin(t * 3 + i * 2.1 + seed * 9);
+        var sx = x + r * (0.55 + i * 0.32), sy = y - r * (1.9 + i * 0.36 + (i % 2) * 0.2), s = r * (0.07 + 0.09 * k);
+        c.fillStyle = 'rgba(255,246,190,' + (night * (0.45 + 0.55 * k)).toFixed(3) + ')';
+        c.beginPath();
+        c.moveTo(sx, sy - s * 2); c.quadraticCurveTo(sx, sy, sx + s * 2, sy);
+        c.quadraticCurveTo(sx, sy, sx, sy + s * 2); c.quadraticCurveTo(sx, sy, sx - s * 2, sy);
+        c.quadraticCurveTo(sx, sy, sx, sy - s * 2); c.fill();
+      }
+    }
+  };
+
   GG.Props = P;
 })(window.GG = window.GG || {});
