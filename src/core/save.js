@@ -43,7 +43,10 @@
       guestName: '',
       player: null,        // v1.20: her character - null until she makes one (see src/data/looks.js)
       home: null,          // v1.20: how the cottage is decorated - null = as built (see src/data/homedecor.js)
-      yard: null           // v1.20: where each garden habitat stands outside (see src/game/yard.js)
+      yard: null,          // v1.20: where each garden habitat stands outside (see src/game/yard.js)
+      stars: {},           // v1.21: constellations and sky treasures found - id -> { first(ms), site }
+      wishes: 0,           // v1.21: shooting stars wished on
+      mesaSky: false       // v1.21: has she looked up from the Mesa yet?
     };
   }
 

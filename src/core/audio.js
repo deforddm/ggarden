@@ -251,6 +251,21 @@
       tone(1568, 0.12, 'triangle', 0.035, null, 0.06);
       tone(2093, 0.14, 'triangle', 0.03, null, 0.12);
     },
+    /* v1.21, the night sky: every star she joins up rings one note higher
+       up a pentatonic scale, so any order makes a tune */
+    starNote: function (i) {
+      var scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5, 1568, 1760];
+      var f = scale[(i || 0) % scale.length] * ((i || 0) >= scale.length ? 2 : 1);
+      tone(f, 0.55, 'sine', 0.07);
+      tone(f * 2, 0.3, 'triangle', 0.018, null, 0.01);
+    },
+    starFound: function () {
+      [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568].forEach(function (f, k) {
+        tone(f, 0.7, 'sine', 0.06, null, k * 0.11);
+        tone(f * 2, 0.4, 'triangle', 0.015, null, k * 0.11);
+      });
+    },
+    shootingStar: function () { tone(2400, 0.5, 'sine', 0.03, 700); noise(0.35, 0.012, 5200); },
     ouch: function () {
       tone(560, 0.13, 'square', 0.11, 170);
       noise(0.16, 0.07, 900);
