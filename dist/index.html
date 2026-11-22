@@ -794,6 +794,40 @@ ul.tips li{margin-bottom:3px}
 .bugcell.sky canvas{border-radius:10px;display:block}
 .starpage-art{width:100%;height:auto;border-radius:18px;border:4px solid #fff;box-shadow:0 4px 0 #cfd6fb,0 8px 18px rgba(0,0,0,.12);display:block}
 
+/* ---------- v1.22: the Favour Board and the ranks ---------- */
+#screen-favours{--hdr1:#ffc070;--hdr2:#e9742a;--hdr3:#c2561a}
+#fav-rankbox{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:18px;padding:8px 12px}
+#fav-medal{width:80px;height:90px;flex:none}
+#fav-rankbox .kick{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+#fav-rank{font-family:var(--display);font-weight:600;font-size:23px;line-height:1.1;color:var(--ink)}
+#fav-next{font-size:12.5px;font-weight:800;color:var(--ink2)}
+.favbar{height:12px;border-radius:8px;background:#f1e2c2;margin:5px 0 4px;overflow:hidden}
+.favbar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#ffd45c,#ff9838);transition:width .5s}
+.favhead{font-family:var(--display);font-weight:600;font-size:16px;color:#b3570a;margin:2px 2px 6px}
+.favrow{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-left:6px solid #f5841f;
+  border-radius:16px;padding:6px 10px 6px 6px;margin-bottom:7px}
+.favrow canvas{width:64px;height:56px;flex:none}
+.favrow .who{font-size:11.5px;font-weight:800;color:#b3570a;text-transform:uppercase;letter-spacing:.04em}
+.favrow .what{font-family:var(--display);font-weight:600;font-size:16px;line-height:1.2;color:var(--ink)}
+.favrow .why{font-size:12.5px;font-weight:700;color:var(--ink2);line-height:1.3}
+.favrow .tick{flex:none;min-width:44px;text-align:center;font-family:var(--display);font-weight:600;font-size:14px;color:#8a5a00;
+  background:linear-gradient(#fff8cf,#ffd555);border:2px solid #fff6c2;border-radius:999px;padding:4px 8px}
+.favrow.done{border-left-color:var(--green);background:#f3fbef}
+.favrow.done .tick{background:linear-gradient(#8fe57f,#34a02f);border-color:#c9f2bf;color:#fff;font-size:18px}
+.favrow.done .what{text-decoration:line-through;text-decoration-color:rgba(60,120,50,.5)}
+#btn-menu.has-news::after{content:"";position:absolute;top:-3px;right:-3px;width:15px;height:15px;border-radius:50%;
+  background:#ff4f8a;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+#btn-menu{position:relative}
+#screen-rank{background:radial-gradient(ellipse at 50% 40%,rgba(255,214,90,.55),rgba(30,40,20,.86))}
+#rank-card{position:relative;background:linear-gradient(#fffdf6,var(--cream));border-radius:28px;border:4px solid #fff;box-shadow:var(--shadow);
+  width:100%;max-width:340px;text-align:center;padding:16px 16px 14px;animation:pop .34s cubic-bezier(.2,1.5,.4,1)}
+#rank-kicker{font-family:var(--display);font-weight:600;font-size:16px;color:#d9731d}
+#rank-medal{width:160px;height:180px;display:block;margin:2px auto 0}
+#rank-name{font-family:var(--display);font-weight:700;font-size:29px;line-height:1.1;color:var(--ink)}
+#rank-line{font-size:14px;font-weight:700;line-height:1.4;color:var(--ink2);margin:6px 4px}
+#rank-reward{font-family:var(--display);font-weight:600;font-size:17px;color:#b07a00;margin:4px 0 10px}
+#rank-ok{width:100%}
+
 </style>
 </head>
 <body>
@@ -970,6 +1004,7 @@ ul.tips li{margin-bottom:3px}
         </div>
         <canvas id="minimap" width="640" height="480"></canvas>
         <div class="note" style="text-align:center;margin:2px 0 10px"><span id="map-me">Guin</span> is the pink dot. Home is the little house, the lava tube is the dark arch, and the footbridge is the little plank.</div>
+        <button class="btn grow" id="menu-favours" style="width:100%;margin-bottom:8px">Favour Board</button>
         <button class="btn grow" id="menu-book" style="width:100%;margin-bottom:8px">Critter Compendium</button>
         <button class="btn grow" id="menu-char" style="width:100%;margin-bottom:8px">My character</button>
         <button class="btn grow" id="menu-help" style="width:100%;margin-bottom:8px">How to play</button>
@@ -1002,6 +1037,39 @@ ul.tips li{margin-bottom:3px}
   </div>
 
   <!-- v1.20 decorate my home -->
+  <!-- v1.22: the Favour Board and the ranks -->
+  <div class="panel hidden" id="screen-favours">
+    <div class="sheet">
+      <header><h2>Favour Board</h2><button class="x" data-close="screen-favours">&times;</button></header>
+      <div class="body">
+        <div id="fav-rankbox">
+          <canvas id="fav-medal" width="160" height="180"></canvas>
+          <div class="grow">
+            <div class="kick">Your rank</div>
+            <div id="fav-rank">Seedling</div>
+            <div class="favbar"><i id="fav-bar"></i></div>
+            <div id="fav-next"></div>
+          </div>
+        </div>
+        <div class="note" id="fav-points" style="text-align:center;margin:4px 0 10px"></div>
+        <div class="favhead">Today&rsquo;s favours</div>
+        <div id="fav-list"></div>
+        <div class="note" id="fav-foot" style="text-align:center;margin-top:8px"></div>
+      </div>
+      <footer><button class="btn primary grow" data-close="screen-favours">Off I go!</button></footer>
+    </div>
+  </div>
+  <div class="panel hidden" id="screen-rank">
+    <div id="rank-card">
+      <div id="rank-kicker">You went up a rank!</div>
+      <canvas id="rank-medal" width="320" height="360"></canvas>
+      <div id="rank-name"></div>
+      <div id="rank-line"></div>
+      <div id="rank-reward"></div>
+      <button class="btn primary" id="rank-ok">Hooray!</button>
+    </div>
+  </div>
+
   <!-- v1.21: the night sky, through the telescope -->
   <div class="panel hidden" id="screen-sky">
     <canvas id="sky-canvas"></canvas>
@@ -1332,7 +1400,10 @@ ul.tips li{margin-bottom:3px}
       yard: null,          // v1.20: where each garden habitat stands outside (see src/game/yard.js)
       stars: {},           // v1.21: constellations and sky treasures found - id -> { first(ms), site }
       wishes: 0,           // v1.21: shooting stars wished on
-      mesaSky: false       // v1.21: has she looked up from the Mesa yet?
+      mesaSky: false,      // v1.21: has she looked up from the Mesa yet?
+      favours: null,       // v1.22: today's three favours and how many done ever (see src/game/favours.js)
+      favoursSeen: '',     // v1.22: the day whose board she has read
+      rank: 0              // v1.22: the rank she has been told about
     };
   }
 
@@ -2760,9 +2831,18 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.21.0';
+  GG.VERSION = '1.22.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.22.0', title: 'Favours and ranks',
+      lines: [
+        'You have a rank now! Every page in your books counts as one step, and the steps add up: Seedling, Sprout, Bug Spotter, all the way to Guardian of the Garden. Everything you have already found counts.',
+        'There is a Favour Board beside the cottage, next to the telescope. Every day three of the animals ask you a small favour, like catching a bug that hops, picking a flower or throwing the ball for the dogs.',
+        'Each favour gives you sparkles, and doing all three gets a big thank-you. Tomorrow there are three new ones. If you miss a day, nothing is lost.',
+        'You can read the board from the Garden Menu too, and see your medal and how far it is to the next rank.'
+      ]
+    },
     {
       v: '1.21.0', title: 'The night sky',
       lines: [
@@ -23637,6 +23717,43 @@ ul.tips li{margin-bottom:3px}
     }
   };
 
+  /* v1.22: the Favour Board - a noticeboard on two posts with a little
+     roof, and three notes pinned to it. */
+  P.noticeboard = function (c, x, y, r, t, seed, col, p) {
+    shadow(c, x + 1, y, r * 0.8, r * 0.2);
+    c.fillStyle = '#7a5530';
+    c.fillRect(x - r * 0.72, y - r * 1.5, r * 0.14, r * 1.5);
+    c.fillRect(x + r * 0.58, y - r * 1.5, r * 0.14, r * 1.5);
+    c.fillStyle = '#8a6238';
+    GG.roundRect(c, x - r * 0.86, y - r * 1.62, r * 1.72, r * 1.02, r * 0.08); c.fill();
+    c.fillStyle = '#d9b77a';
+    GG.roundRect(c, x - r * 0.78, y - r * 1.54, r * 1.56, r * 0.86, r * 0.05); c.fill();
+    /* the roof */
+    c.fillStyle = '#c0483c';
+    c.beginPath(); c.moveTo(x - r * 1.02, y - r * 1.58); c.lineTo(x, y - r * 2.02); c.lineTo(x + r * 1.02, y - r * 1.58); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.25)';
+    c.beginPath(); c.moveTo(x - r * 0.9, y - r * 1.62); c.lineTo(x, y - r * 1.98); c.lineTo(x, y - r * 1.88); c.lineTo(x - r * 0.7, y - r * 1.62); c.closePath(); c.fill();
+    /* three notes, each with a pin; a done favour's note turns green */
+    var list = (GG.Save && GG.Save.data.favours && GG.Save.data.favours.list) || [];
+    [[-0.5, '#fff6c8', -0.08], [0, '#ffd9e6', 0.05], [0.5, '#d8ecff', -0.04]].forEach(function (n, i) {
+      var done = list[i] && list[i].done;
+      c.save();
+      c.translate(x + n[0] * r, y - r * 1.12); c.rotate(n[2]);
+      c.fillStyle = done ? '#bfeeb0' : n[1];
+      c.fillRect(-r * 0.19, -r * 0.26, r * 0.38, r * 0.52);
+      if (done) {
+        c.strokeStyle = '#3d9a35'; c.lineWidth = Math.max(1.4, r * 0.07); c.lineCap = 'round';
+        c.beginPath(); c.moveTo(-r * 0.1, 0); c.lineTo(-r * 0.02, r * 0.1); c.lineTo(r * 0.12, -r * 0.1); c.stroke();
+      } else {
+        c.fillStyle = 'rgba(90,70,40,0.45)';
+        for (var k = 0; k < 3; k++) c.fillRect(-r * 0.13, -r * 0.1 + k * r * 0.11, r * 0.26, r * 0.035);
+      }
+      c.fillStyle = '#e8473f';
+      c.beginPath(); c.arc(0, -r * 0.2, r * 0.045, 0, 6.2832); c.fill();
+      c.restore();
+    });
+  };
+
   GG.Props = P;
 })(window.GG = window.GG || {});
 
@@ -31330,6 +31447,7 @@ ul.tips li{margin-bottom:3px}
     props: [], solids: [], hive: null, grid: {}, gridN: [], chunks: null,
     caveMouth: null, bootBrush: null,
     telescopes: [],      // v1.21: where she can look up at the night sky
+    board: null,         // v1.22: the Favour Board by the cottage
     CHUNK: 400,
     pond: POND_E,
     flow: FLOW,
@@ -32308,11 +32426,20 @@ ul.tips li{margin-bottom:3px}
           if (Math.abs(q.x - at[0]) < 26 && q.y > at[1] - 14 && q.y < at[1] + 40) dead.add(q);
         });
         if (dead.size) self._removeProps(dead);
+        if (site === 'board') { self.board = add('noticeboard', at[0], at[1], 30, true, 11, {}); return; }
         var p = add('telescope', at[0], at[1], 26, true, 9, { site: site });
         self.telescopes.push(p);
       }
       place('home', [[H.x + 185, H.y + 22], [H.x + 195, H.y + 44], [H.x + 210, H.y + 64], [H.x + 230, H.y + 30]]);
+      /* v1.22: the Favour Board, further along the same side, in the gap
+         between two yard slots (F2 ends at x 4990, F3 starts at 5025) */
+      place('board', [[H.x + 288, H.y + 115], [H.x + 292, H.y + 108], [H.x + 296, H.y + 100], [H.x + 300, H.y + 92]]);
       place('mesa', [[M.cx + 30, M.cy - 10], [M.cx - 30, M.cy + 10], [M.cx + 70, M.cy + 20], [M.cx - 80, M.cy - 30], [M.cx, M.cy + 50], [M.cx + 110, M.cy - 20]]);
+    },
+    /* is she standing in front of this thing (a telescope, the board)? */
+    standingAt: function (p, x, y, reach) {
+      return Math.abs(p.x - x) < (reach || 46) && y - p.y > -30 && y - p.y < (reach || 46) + 6 &&
+        Math.hypot(p.x - x, p.y - y) < (reach || 46) + 8;
     },
     /* the telescope she is standing at, if any */
     telescopeNear: function (x, y, reach) {
@@ -36773,6 +36900,7 @@ ul.tips li{margin-bottom:3px}
       if (S) {
         S.sparkles += 2;
         S.fetches = (S.fetches || 0) + 1;
+        if (GG.Favours) GG.Favours.note('fetch');   // v1.22
       }
       if (GG.Friends && f) {
         for (var i = 0; i < 4; i++) {
@@ -43055,6 +43183,7 @@ ul.tips li{margin-bottom:3px}
     if (GG.Sfx.starFound) GG.Sfx.starFound();
     setCaption('', 0);
     chipsDirty = true;
+    if (GG.Favours) setTimeout(function () { GG.Favours.checkRank(); }, 300);   // v1.22
     pendingCard = { def: def, reward: reward, at: performance.now() + (con ? 1900 : 350) };
   }
 
@@ -43367,6 +43496,7 @@ ul.tips li{margin-bottom:3px}
       if (GG.Sfx.coin) GG.Sfx.coin();
       var F = GG.METEOR_FACTS;
       setCaption('Wish made! ✦ +2. ' + F[(d.wishes - 1) % F.length], 8000);
+      if (GG.Favours) GG.Favours.note('wish');   // v1.22
     },
 
     /* ---- for the Star Book and the card: a little picture of one thing ---- */
@@ -43481,6 +43611,333 @@ ul.tips li{margin-bottom:3px}
     _tap: tapAt,
     _astro: { moonPos: moonPos, sunPos: sunPos, julian: julian, gmst: gmst, phaseName: phaseName,
       pacificOffset: pacificOffset, altOf: altOf, eqVec: eqVec, galToEq: galToEq }
+  };
+})(window.GG = window.GG || {});
+
+/* ==== src/game/favours.js ==== */
+/* v1.22: FAVOURS AND RANKS - something to set out to do each day, and a way
+   to see how far she has come.
+
+   THE FAVOUR BOARD. Every real day three of the animals ask a small favour:
+   catch a bug that hops, pick a flower, play fetch with a dog. They are
+   things the game already does, so nothing new has to be learned, and every
+   one of them can be done on any day, in any weather, at any hour. Each
+   gives a few sparkles and all three give a thank-you on top. There is no
+   streak and nothing is lost by missing a day: tomorrow there are simply
+   three new ones.
+
+   RANKS. Every page in the five books, and every favour done, is one step.
+   The steps add up to a rank, from Seedling to Guardian of the Garden, with
+   a medal that changes as it grows. A save from before v1.22 gets the rank
+   it has already earned the first time it opens - which is the surprise. */
+(function (GG) {
+  'use strict';
+  var $ = GG.$;
+
+  var RANKS = [
+    { at: 0, name: 'Seedling', col: '#8fce6a', rim: '#4f9a35' },
+    { at: 5, name: 'Sprout', col: '#6cd65e', rim: '#2f8f2a' },
+    { at: 15, name: 'Bug Spotter', col: '#9be0c8', rim: '#2f9a80' },
+    { at: 30, name: 'Pond Dipper', col: '#7fd0f5', rim: '#2389c4' },
+    { at: 50, name: 'Trail Walker', col: '#9fb4ff', rim: '#4a60cf' },
+    { at: 75, name: 'Garden Scout', col: '#c3a8ff', rim: '#7a55d8' },
+    { at: 105, name: 'Field Sketcher', col: '#ffa6c6', rim: '#d64f84' },
+    { at: 140, name: 'Creature Keeper', col: '#ffb27a', rim: '#d9731d' },
+    { at: 180, name: 'Wild Explorer', col: '#ffd45c', rim: '#c98d0c' },
+    { at: 225, name: 'Naturalist', col: '#e8e8f2', rim: '#8d93ad' },
+    { at: 275, name: 'Master Naturalist', col: '#ffe36e', rim: '#c58a00' },
+    { at: 330, name: 'Garden Legend', col: '#ffd9f4', rim: '#c2409c' },
+    { at: 390, name: 'Guardian of the Garden', col: '#fff6c8', rim: '#e0a400' }
+  ];
+
+  /* What can be asked. group keeps the three of a day different in kind.
+     need: how many times. test(kind, def): does this thing she just did count? */
+  var MOVES = { flutter: 'flutters', hop: 'hops', crawl: 'crawls' };
+  var HOMES = { garden: 'the Flower Garden', meadow: 'the Sunny Meadow', forest: 'the Whispering Woods', pond: 'the Lily Pond' };
+  var PICKS = { flower: 'a flower', berry: 'some berries', veg: 'a vegetable', fruit: 'a fruit from a tree' };
+  var ASKS = [];
+  ASKS.push({ id: 'bug3', group: 'bug', need: 3, text: 'Catch three bugs, any kind you like', why: 'I love hearing what you found!',
+    test: function (k) { return k === 'bug'; } });
+  Object.keys(MOVES).forEach(function (m) {
+    ASKS.push({ id: 'move-' + m, group: 'bug', need: 1, text: 'Catch a bug that ' + MOVES[m], why: 'I want to see how it moves.',
+      test: function (k, d) { return k === 'bug' && d && d.behavior === m; } });
+  });
+  Object.keys(HOMES).forEach(function (h) {
+    ASKS.push({ id: 'home-' + h, group: 'bug', need: 1, text: 'Catch a bug that lives in ' + HOMES[h], why: 'That is my favourite place.',
+      test: function (k, d) { return k === 'bug' && d && d.habitats && d.habitats.indexOf(h) >= 0; } });
+  });
+  ASKS.push({ id: 'fish', group: 'find', need: 1, text: 'Catch a fish', why: 'I like to watch them swim.',
+    test: function (k, d) { return k === 'fish' && d && !d.isJunk; } });
+  Object.keys(PICKS).forEach(function (p) {
+    ASKS.push({ id: 'pick-' + p, group: 'find', need: 1, text: 'Pick ' + PICKS[p], why: 'Only take what you need, and leave some for the bees.',
+      test: function (k, d) { return k === 'pick' && d && d.kind === p; } });
+  });
+  ASKS.push({ id: 'hello', group: 'kind', need: 1, text: 'Say hello to an animal, the proper way', why: 'Remember your good manners!',
+    test: function (k) { return k === 'friend'; } });
+  ASKS.push({ id: 'fetch', group: 'kind', need: 2, text: 'Throw the ball twice at Dog’s Paradise', why: 'The dogs have been waiting all day.',
+    test: function (k) { return k === 'fetch'; } });
+  ASKS.push({ id: 'wish', group: 'kind', need: 1, text: 'Wish on a shooting star', why: 'Look through the telescope after dark and be quick!',
+    test: function (k) { return k === 'wish'; } });
+  var ASK_BY_ID = {};
+  ASKS.forEach(function (a) { ASK_BY_ID[a.id] = a; });
+
+  var EACH = 12, ALL_THREE = 20;
+
+  /* The Pacific calendar day, whatever clock the device keeps (the same
+     rule the night sky uses). A new day starts at 4 in the morning, so a
+     late night does not swap the favours under her. */
+  function today(now) {
+    var d = new Date(now == null ? Date.now() : now);
+    var off = 8;
+    if (GG.Sky && GG.Sky._astro) off = GG.Sky._astro.pacificOffset(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    var p = new Date(d.getTime() - (off + 4) * 3600000);
+    var m = p.getUTCMonth() + 1, day = p.getUTCDate();
+    return p.getUTCFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+  function seedOf(str) {
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+
+  var Fav = GG.Favours = {
+    RANKS: RANKS, ASKS: ASKS, _now: null,
+
+    data: function () {
+      var d = GG.Save.data;
+      if (!d.favours || typeof d.favours !== 'object') d.favours = { day: '', list: [], done: 0, days: 0, thanked: false };
+      return d.favours;
+    },
+
+    /* Make today's three if the day has turned. Returns true when it did. */
+    roll: function () {
+      var f = this.data(), day = today(this._now);
+      if (f.day === day && f.list && f.list.length === 3) return false;
+      var R = GG.mulberry32(seedOf(day + '|' + (GG.Save.data.name || '')));
+      function pick(arr) { return arr[Math.floor(R() * arr.length)]; }
+      /* who asks: friends she has made, or else a few who live nearby */
+      var mine = GG.ANIMALS.filter(function (a) { return !a.lookOnly && GG.Save.hasFriend(a.id); });
+      if (mine.length < 3) {
+        mine = mine.concat(GG.ANIMALS.filter(function (a) {
+          return !a.lookOnly && mine.indexOf(a) < 0 && a.places && (a.places.indexOf('garden') >= 0 || a.places.indexOf('meadow') >= 0);
+        }));
+      }
+      var who = [];
+      while (who.length < 3 && mine.length) who.push(mine.splice(Math.floor(R() * mine.length), 1)[0]);
+      var prev = (f.list || []).map(function (x) { return x.id; });
+      f.list = ['bug', 'find', 'kind'].map(function (g, i) {
+        var pool = ASKS.filter(function (a) { return a.group === g && prev.indexOf(a.id) < 0; });
+        var a = pick(pool);
+        return { id: a.id, n: 0, done: false, who: who[i] ? who[i].id : null };
+      });
+      f.day = day; f.thanked = false;
+      GG.Save.save();
+      return true;
+    },
+
+    list: function () {
+      this.roll();
+      return this.data().list.map(function (it) {
+        var a = ASK_BY_ID[it.id];
+        return { it: it, ask: a, who: it.who && GG.ANIMAL_BY_ID[it.who] };
+      }).filter(function (x) { return !!x.ask; });
+    },
+    left: function () { return this.list().filter(function (x) { return !x.it.done; }).length; },
+
+    /* Something happened: a bug caught, a fish, a pick, a hello, a throw, a
+       wish. Count it towards any favour it fits, then look at the rank. */
+    note: function (kind, def) {
+      var f = this.data(), self = this, told = false;
+      this.list().forEach(function (x) {
+        if (x.it.done || !x.ask.test(kind, def)) return;
+        x.it.n++;
+        if (x.it.n < x.ask.need) return;
+        x.it.done = true;
+        f.done = (f.done || 0) + 1;
+        GG.Save.data.sparkles += EACH;
+        var name = x.who ? x.who.name : 'A friend';
+        self._say(name + ' says thank you! Favour done. ✦ +' + EACH, 3400);
+        told = true;
+      });
+      if (told) {
+        if (!f.thanked && f.list.every(function (it) { return it.done; })) {
+          f.thanked = true; f.days = (f.days || 0) + 1;
+          GG.Save.data.sparkles += ALL_THREE;
+          setTimeout(function () { self._say('All three favours done today! A big thank-you: ✦ +' + ALL_THREE, 4200); }, 3600);
+        }
+        GG.Save.save();
+        GG.UI.refreshHud();
+        if (GG.Sfx.unlocked) GG.Sfx.unlocked();
+        this.dot();
+      }
+      this.checkRank();
+    },
+    _say: function (msg, ms) { GG.UI.toast(msg, ms); },
+
+    /* ---------- ranks ---------- */
+    points: function () {
+      var n = 0;
+      (GG.Book.BOOKS || []).forEach(function (b) { n += Math.min(b.found(), b.list().length); });
+      return n + (this.data().done || 0);
+    },
+    most: function () {
+      var n = 0;
+      (GG.Book.BOOKS || []).forEach(function (b) { n += b.list().length; });
+      return n;
+    },
+    rankAt: function (pts) {
+      var r = 0;
+      for (var i = 0; i < RANKS.length; i++) if (pts >= RANKS[i].at) r = i;
+      return r;
+    },
+    rank: function () { return this.rankAt(this.points()); },
+
+    /* Has she gone up? Wait until nothing else is on the screen, then say so. */
+    checkRank: function () {
+      var d = GG.Save.data, self = this;
+      if (typeof d.rank !== 'number') d.rank = 0;
+      if (this.rank() <= d.rank || this._waiting) return;
+      this._waiting = true;
+      var tries = 0;
+      (function wait() {
+        if (GG.UI.anyOpen() && tries++ < 240) { setTimeout(wait, 500); return; }
+        self._waiting = false;
+        if (GG.UI.anyOpen()) return;
+        self.celebrate();
+      })();
+    },
+    celebrate: function () {
+      var d = GG.Save.data, now = this.rank();
+      if (now <= (d.rank || 0)) return;
+      var gained = now - (d.rank || 0), reward = 0;
+      for (var i = (d.rank || 0) + 1; i <= now; i++) reward += 15 + i * 10;
+      d.rank = now;
+      d.sparkles += reward;
+      GG.Save.save();
+      GG.UI.refreshHud();
+      var R = RANKS[now];
+      this.drawMedal($('rank-medal'), now);
+      $('rank-kicker').textContent = gained > 1 ? 'You went up ' + gained + ' ranks!' : 'You went up a rank!';
+      $('rank-name').textContent = R.name;
+      $('rank-line').textContent = this.points() + ' discoveries and favours so far. '
+        + (now < RANKS.length - 1 ? (RANKS[now + 1].at - this.points()) + ' more to become a ' + RANKS[now + 1].name + '.'
+          : 'That is the very top. The whole garden knows your name.');
+      $('rank-reward').textContent = '✦ +' + reward + ' sparkles';
+      GG.UI.open('screen-rank');
+      this._rankAt = performance.now();
+      if (GG.Sfx.catchNew) GG.Sfx.catchNew();
+      if (GG.FxUI && GG.FxUI.burst) {
+        var r = $('rank-card').getBoundingClientRect(), a = $('app').getBoundingClientRect();
+        GG.FxUI.burst(r.left - a.left + r.width / 2, r.top - a.top + 60, { count: 80, speed: 560, spread: 2.8 });
+      }
+    },
+
+    /* A medal: a scalloped disc in the rank's colour, a ribbon, and one
+       leaf for every rank so far round a number. */
+    drawMedal: function (cv, idx) {
+      if (!cv) return;
+      var c = cv.getContext('2d'), w = cv.width, h = cv.height, R = RANKS[idx], cx = w / 2, cy = h * 0.44, r = Math.min(w, h) * 0.3;
+      c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+      /* ribbon tails */
+      [[-1, '#e8568c'], [1, '#4f8fe8']].forEach(function (s) {
+        c.fillStyle = s[1];
+        c.beginPath();
+        c.moveTo(cx + s[0] * r * 0.15, cy + r * 0.5); c.lineTo(cx + s[0] * r * 0.85, cy + r * 0.6);
+        c.lineTo(cx + s[0] * r * 0.95, cy + r * 1.75); c.lineTo(cx + s[0] * r * 0.55, cy + r * 1.45);
+        c.lineTo(cx + s[0] * r * 0.2, cy + r * 1.8); c.closePath(); c.fill();
+      });
+      /* scalloped edge */
+      c.fillStyle = R.rim;
+      for (var i = 0; i < 16; i++) {
+        var a = i / 16 * Math.PI * 2;
+        c.beginPath(); c.arc(cx + Math.cos(a) * r * 1.02, cy + Math.sin(a) * r * 1.02, r * 0.22, 0, 6.2832); c.fill();
+      }
+      c.beginPath(); c.arc(cx, cy, r * 1.04, 0, 6.2832); c.fill();
+      var g = c.createRadialGradient(cx - r * 0.3, cy - r * 0.4, r * 0.1, cx, cy, r);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, R.col); g.addColorStop(1, R.col);
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, r * 0.88, 0, 6.2832); c.fill();
+      /* leaves round the rim, one per rank */
+      c.fillStyle = R.rim;
+      for (var k = 0; k < idx; k++) {
+        var la = -Math.PI / 2 + (k - (idx - 1) / 2) * 0.44;
+        c.save(); c.translate(cx + Math.cos(la) * r * 0.66, cy + Math.sin(la) * r * 0.66); c.rotate(la + Math.PI / 2);
+        c.beginPath(); c.ellipse(0, 0, r * 0.07, r * 0.15, 0, 0, 6.2832); c.fill(); c.restore();
+      }
+      c.fillStyle = R.rim; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.font = '700 ' + Math.round(r * 0.8) + 'px Fredoka, Nunito, sans-serif';
+      c.fillText(String(idx + 1), cx, cy + r * 0.12);
+    },
+
+    /* ---------- the board ---------- */
+    open: function () {
+      this.roll();
+      this.checkRank();
+      this.render();
+      GG.UI.open('screen-favours');
+      GG.Save.data.favoursSeen = this.data().day;
+      this.dot();
+    },
+    render: function () {
+      var box = $('fav-list'), self = this;
+      if (!box) return;
+      var idx = this.rank(), pts = this.points(), R = RANKS[idx], next = RANKS[idx + 1];
+      this.drawMedal($('fav-medal'), idx);
+      $('fav-rank').textContent = R.name;
+      $('fav-next').textContent = next ? (next.at - pts) + ' more to become a ' + next.name : 'The very top rank!';
+      $('fav-bar').style.width = (next ? Math.round((pts - R.at) / (next.at - R.at) * 100) : 100) + '%';
+      $('fav-points').textContent = pts + ' steps: every page in your books and every favour is one';
+      box.innerHTML = '';
+      var list = this.list();
+      list.forEach(function (x) {
+        var row = GG.el('div', 'favrow' + (x.it.done ? ' done' : ''));
+        row.setAttribute('data-fav', x.ask.id);
+        var cv = document.createElement('canvas'); cv.width = 128; cv.height = 112;
+        if (x.who) { var c = cv.getContext('2d'); c.scale(2, 2); GG.AnimalArt.draw(c, x.who, 32, 48, GG.animalFit(x.who, 42), false, 1.2); }
+        row.appendChild(cv);
+        var tx = GG.el('div', 'grow');
+        tx.appendChild(GG.el('div', 'who', (x.who ? x.who.name : 'A friend') + ' asks'));
+        tx.appendChild(GG.el('div', 'what', x.ask.text));
+        tx.appendChild(GG.el('div', 'why', x.it.done ? 'Thank you!' : '“' + x.ask.why + '”'));
+        row.appendChild(tx);
+        row.appendChild(GG.el('div', 'tick', x.it.done ? '✓' : (x.ask.need > 1 ? x.it.n + '/' + x.ask.need : '✦' + EACH)));
+        box.appendChild(row);
+      });
+      var f = this.data(), left = list.filter(function (x) { return !x.it.done; }).length;
+      $('fav-foot').textContent = left
+        ? 'Three new favours every day. Do all three for a big thank-you. Miss a day? Nothing is lost.'
+        : 'All done for today! Three new favours tomorrow. You have done ' + (f.done || 0) + ' favours altogether.';
+    },
+    /* a little dot on the menu button while today's board has not been read */
+    dot: function () {
+      var b = $('btn-menu'), m = $('menu-favours');
+      var fresh = this.left() > 0 && GG.Save.data.favoursSeen !== this.data().day;
+      if (b) b.classList.toggle('has-news', fresh);
+      if (m) m.textContent = 'Favour Board' + (this.left() ? '  ·  ' + this.left() + ' to do' : '  ·  all done ✓');
+    },
+
+    init: function () {
+      var self = this;
+      if ($('menu-favours')) $('menu-favours').addEventListener('click', function () {
+        GG.Sfx.click(); GG.UI.close('screen-menu'); self.open();
+      });
+      if ($('rank-ok')) $('rank-ok').addEventListener('click', function () {
+        if (performance.now() - (self._rankAt || 0) < 500) return;
+        GG.Sfx.click(); GG.UI.close('screen-rank');
+      });
+    },
+
+    /* when the garden opens: today's favours, and the rank already earned */
+    start: function () {
+      var self = this, fresh = this.roll();
+      this.dot();
+      if (fresh || GG.Save.data.favoursSeen !== this.data().day) {
+        setTimeout(function () {
+          if (!GG.UI.anyOpen()) self._say('Three friends have a favour to ask today. Look at the Favour Board by the cottage!', 4600);
+        }, 7000);
+      }
+      setTimeout(function () { self.checkRank(); }, 2200);
+    },
+    _today: today
   };
 })(window.GG = window.GG || {});
 
@@ -43675,7 +44132,7 @@ ul.tips li{margin-bottom:3px}
   /* ---------- v1.21: the telescopes ---------- */
   var wantScope = null;
   function scopeAt(x, y) {
-    var T = GG.World.telescopes || [];
+    var T = (GG.World.telescopes || []).concat(GG.World.board ? [GG.World.board] : []);
     for (var i = 0; i < T.length; i++) {
       if (Math.abs(T[i].x - x) < 26 && y < T[i].y + 12 && y > T[i].y - 56) return T[i];
     }
@@ -43765,7 +44222,12 @@ ul.tips li{margin-bottom:3px}
       ? W.telescopeNear(P.x, P.y) : null;
     if (scope && scope !== wantScope && GG.Critters.catchableNear(P, 56)) scope = null;
     if (scope && pickable && pickable === GG.Orchard.wanted) scope = null;
-    if (scope) { pickable = null; yardAt = null; }
+    /* v1.22: the Favour Board beside the cottage */
+    var board = (!scope && !fishing && !atDoor && !lookAt && !GG.Friends.busy && !GG.Friends.riding && W.board)
+      ? (W.standingAt(W.board, P.x, P.y) ? W.board : null) : null;
+    if (board && board !== wantScope && GG.Critters.catchableNear(P, 56)) board = null;
+    if (board && pickable && pickable === GG.Orchard.wanted) board = null;
+    if (scope || board) { pickable = null; yardAt = null; }
     lastPickable = pickable;
     var castable = !fishing && !atDoor ? Fi.castTarget(P) : null;
     /* v1.20: fetch at Dog's Paradise */
@@ -43797,6 +44259,7 @@ ul.tips li{margin-bottom:3px}
       }
       if (lookAt) { lookAtCreature(lookAt); return; }
       if (scope) { useTelescope(scope); return; }
+      if (board) { wantScope = null; GG.Input.clearTarget(); GG.Sfx.click(); GG.Favours.open(); return; }
       if (yardAt) { visitYard(yardAt); return; }
       if (pickable) { pickFruit(pickable); return; }
       if (GG.Friends.busy) GG.UI.toast('Keep still — no net for this one', 1800);
@@ -43837,8 +44300,9 @@ ul.tips li{margin-bottom:3px}
       : (atCave ? (caveReady ? 'Tap to go into the lava tube' : 'Wipe your boots on the brush first')
         : (lookAt ? 'Look \u2014 but this one is not for catching'
           : (scope ? (starsOut() ? 'Tap to look through the telescope' : 'Tap to wait here until the stars come out')
+            : (board ? 'Tap to read the Favour Board'
             : (yardAt ? GG.Yard.promptOf(yardAt)
-              : (pickable ? pickPrompt(pickable) : null))))));
+              : (pickable ? pickPrompt(pickable) : null)))))));
     if (P.stun > 0) setActionLabel('OUCH', 'dizzy');
     else if (GG.Friends.busy) setActionLabel('\u2014', 'keep still');
     else if (GG.Friends.riding) setActionLabel('\u2014', 'riding');
@@ -43847,6 +44311,7 @@ ul.tips li{margin-bottom:3px}
     else if (atCave) setActionLabel(caveReady ? 'GO IN' : 'BOOTS', caveReady ? 'lava tube' : 'brush first');
     else if (lookAt) setActionLabel('LOOK', 'don\u2019t catch');
     else if (scope) setActionLabel('STARS', starsOut() ? 'look up' : 'wait for dark');
+    else if (board) setActionLabel('READ', GG.Favours.left() ? 'favours' : 'all done');
     else if (yardAt) setActionLabel('VISIT', GG.Yard.shortName(yardAt));
     else if (pickable) {
       var pf = GG.FRUIT_BY_ID[pickable.fruit];
@@ -44176,6 +44641,7 @@ ul.tips li{margin-bottom:3px}
       GG.UI.refreshHud();
       if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
       GG.UI.showCatch(def, isNew, reward);
+      if (GG.Favours) GG.Favours.note('fish', def);   // v1.22
       return;
     }
     if (r.kind === 'early') GG.UI.toast('Too soon! Wait for the bobber to go under.', 2200);
@@ -44208,6 +44674,7 @@ ul.tips li{margin-bottom:3px}
     if (res.unlocked) GG.Sfx.unlocked(); else GG.Sfx.pick();
     GG.UI.refreshHud();
     GG.UI.showFruit(res);
+    if (GG.Favours) GG.Favours.note('pick', res.def);   // v1.22
   }
 
   /* ---------- catching ---------- */
@@ -44219,6 +44686,7 @@ ul.tips li{margin-bottom:3px}
     GG.UI.refreshHud();
     if (isNew) GG.Sfx.catchNew(); else GG.Sfx.catchSmall();
     GG.UI.showCatch(def, isNew, reward);
+    if (GG.Favours) GG.Favours.note('bug', def);   // v1.22
   }
 
   /* ---------- little map ---------- */
@@ -44733,6 +45201,7 @@ ul.tips li{margin-bottom:3px}
     GG.UI.close('screen-title');
     setScene('world');
     checkNews();
+    if (GG.Favours) GG.Favours.start();   // v1.22: today's favours, and the rank already earned
     if (!GG.Save.data.seenIntro) {
       GG.Save.data.seenIntro = true; GG.Save.save();
       setTimeout(function () { GG.UI.toast('Tap where you want to go, or slide your thumb anywhere to walk', 3200); }, 600);
@@ -44993,6 +45462,7 @@ ul.tips li{margin-bottom:3px}
     GG.Input.init($('app'), $('stick'), $('knob'), $('btn-a'), $('btn-fish'), $('btn-friend'));
     GG.UI.init();
     if (GG.Sky) GG.Sky.init();   // v1.21
+    if (GG.Favours) GG.Favours.init();   // v1.22
     GG.UI.openPanels.push('screen-title');
     GG.UI.refreshHud();
     GG.Terrarium.initEvents();
@@ -45038,6 +45508,7 @@ ul.tips li{margin-bottom:3px}
     GG.UI.onWarningClosed = function () { swingChecked = true; };
     GG.Friends.onFriend = function (def, isNew, reward) {
       GG.UI.showFriend(def, isNew, reward);
+      if (GG.Favours) GG.Favours.note('friend', def);   // v1.22
     };
 
     document.addEventListener('visibilitychange', function () {
