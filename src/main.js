@@ -140,6 +140,10 @@
     if (_label === main + '|' + sub) return;
     _label = main + '|' + sub;
     $('btn-a').innerHTML = main + '<small>' + sub + '</small>';
+    /* v1.24: which picture goes on the button (see the css) */
+    var verb = String(main).toLowerCase();
+    if (verb === 'go in' || verb === 'go out' || verb === 'go home') verb = 'home';
+    $('btn-a').setAttribute('data-verb', /^(net|pick|look|stars|read|sleep|home|visit|tanks|boots|decorate)$/.test(verb) ? verb : 'none');
   }
 
   /* ---------- rain ---------- */
