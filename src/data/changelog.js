@@ -6,9 +6,18 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.23.0';
+  GG.VERSION = '1.24.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.0', title: 'Better buttons and livelier fish',
+      lines: [
+        'Every button has had a polish. The menu buttons each have a little picture now, so you can find the one you want at a glance.',
+        'The big round button shows a picture of what it will do: a net, a flower, an eye, a star, a book.',
+        'The fish in the water really swim now. Their bodies bend and their tails beat, their fins scull, and they leave a little wake behind them.',
+        'Different fish have different shapes. A pike is long, a sunfish is round, an eel wriggles like a ribbon, and crabs scuttle with their claws out. Can you guess what it is before you catch it?'
+      ]
+    },
     {
       v: '1.23.0', title: 'A polish, top to toe',
       lines: [
