@@ -402,39 +402,151 @@
     },
 
     /* ---------- drawing ---------- */
+    /* v1.24: what a fish looks like from above. A family for each art
+       shape: how long, how deep, what kind of tail. Still a shadow - the
+       surprise of what it is stays for the catch - but a living one. */
+    _form: function (def) {
+      var sh = (def.art && def.art.shape) || 'torpedo';
+      if (def.isJunk || sh === 'boot' || sh === 'can' || sh === 'news') return { junk: true };
+      if (sh === 'seacrab' || sh === 'crayfish') return { crab: true, cray: sh === 'crayfish' };
+      if (sh === 'eel' || sh === 'lamprey') return { k: 1.5, deep: 0.13, tail: 'none', wave: 1.9, fins: 0 };
+      if (sh === 'pike' || sh === 'sturgeon') return { k: 1.38, deep: 0.17, tail: 'fork', wave: 1.1, fins: 0.8 };
+      if (sh === 'flatfish') return { k: 0.9, deep: 0.62, tail: 'fan', wave: 0.5, fins: 0, flat: true };
+      if (sh === 'sunfish' || sh === 'mola' || sh === 'goldfish' || sh === 'carp' || sh === 'tench') return { k: 0.84, deep: 0.58, tail: 'fan', wave: 0.7, fins: 1 };
+      if (sh === 'catfish' || sh === 'sculpin') return { k: 1.05, deep: 0.36, tail: 'fan', wave: 1, fins: 1.3, head: 1.25 };
+      return { k: 1.05, deep: 0.29, tail: 'fork', wave: 1, fins: 1 };
+    },
+
     drawShadows: function (c, cam, t) {
+      var N = 8, px = this._px || (this._px = new Float32Array(N + 1)), py = this._py || (this._py = new Float32Array(N + 1)),
+        pw = this._pw || (this._pw = new Float32Array(N + 1));
       for (var i = 0; i < this.swimmers.length; i++) {
         var s = this.swimmers[i];
         var sx = s.x - cam.x, sy = s.y - cam.y;
-        if (sx < -80 || sy < -80 || sx > GG.view.w + 80 || sy > GG.view.h + 80) continue;
-        var len = 8 + s.def.shadow * 5.2;
-        var wob = Math.sin(s.t * 4) * 0.12;
+        if (sx < -90 || sy < -90 || sx > GG.view.w + 90 || sy > GG.view.h + 90) continue;
+        var F = s._form || (s._form = this._form(s.def));
+        var len = (8 + s.def.shadow * 5.2) * (F.k || 1);
         /* the C-start: for two frames the whole fish is bent into a C */
         var cst = s.spook > 0 ? GG.clamp(s.spook / 0.16, 0, 1) : 0;
+        var fade = Math.min(1, (s.age || 0) / 1.2);        /* swims up out of the deep */
+        var hurry = GG.clamp((s.sp || 20) / 30, 0.6, 2.2) * (s.flee > 0 ? 1.6 : 1);
         c.save();
         c.translate(sx, sy);
-        c.rotate(s.ang + wob);
-        c.globalAlpha = Math.min(1, (s.age || 0) / 1.2);   /* swims up out of the deep */
-        c.fillStyle = 'rgba(12,44,62,0.36)';
-        c.beginPath();
-        c.ellipse(0, 0, len, len * (0.36 + cst * 0.16), cst * 0.5, 0, Math.PI * 2);
+        c.rotate(s.ang);
+        if (F.junk) {
+          c.globalAlpha = fade;
+          c.fillStyle = 'rgba(12,44,62,0.34)';
+          c.beginPath(); c.ellipse(0, 0, len, len * 0.42, 0.2, 0, Math.PI * 2); c.fill();
+          c.restore();
+          continue;
+        }
+        if (F.crab) {
+          /* a round body, eight legs that scuttle, two claws out in front */
+          c.globalAlpha = fade;
+          var r0 = len * 0.42;
+          c.strokeStyle = 'rgba(12,44,62,0.42)'; c.lineWidth = Math.max(1.2, r0 * 0.16); c.lineCap = 'round';
+          for (var lg = 0; lg < 4; lg++) {
+            var la = 0.5 + lg * 0.42, kick = Math.sin(s.t * 9 + lg * 1.6) * 0.18;
+            for (var sd = -1; sd <= 1; sd += 2) {
+              c.beginPath();
+              c.moveTo(Math.cos(la) * r0 * 0.7 * -1 + r0 * 0.3, sd * r0 * 0.7);
+              c.lineTo(-Math.cos(la + kick) * r0 * 1.5 + r0 * 0.5, sd * (r0 * 1.55 + Math.sin(la) * r0 * 0.2));
+              c.stroke();
+            }
+          }
+          c.fillStyle = 'rgba(12,44,62,0.46)';
+          c.beginPath(); c.ellipse(0, 0, r0 * (F.cray ? 1.5 : 1.05), r0 * (F.cray ? 0.62 : 0.86), 0, 0, Math.PI * 2); c.fill();
+          for (var cl = -1; cl <= 1; cl += 2) {
+            var open = 0.25 + 0.2 * Math.sin(s.t * 2.2 + cl);
+            c.save(); c.translate(r0 * (F.cray ? 1.5 : 0.95), cl * r0 * 0.75); c.rotate(cl * (0.5 - open));
+            c.beginPath(); c.ellipse(r0 * 0.4, 0, r0 * 0.5, r0 * 0.26, 0, 0, Math.PI * 2); c.fill();
+            c.restore();
+          }
+          if (F.cray) { c.beginPath(); c.moveTo(-r0 * 1.4, 0); c.lineTo(-r0 * 2.2, -r0 * 0.6); c.lineTo(-r0 * 2.2, r0 * 0.6); c.closePath(); c.fill(); }
+          c.restore();
+          continue;
+        }
+        /* the spine: nose at +len, tail at -len, a wave running down it that
+           grows towards the tail and quickens when the fish hurries */
+        var k, u;
+        for (k = 0; k <= N; k++) {
+          u = k / N;
+          var amp = len * 0.2 * F.wave * Math.pow(u, 1.5) * Math.min(1.5, 0.55 + hurry * 0.4);
+          px[k] = len * (1 - 2 * u);
+          py[k] = Math.sin(s.t * (4.4 + hurry * 2.4) - u * 3.4 * F.wave) * amp + cst * len * 0.7 * u * u;
+          /* how wide the body is here: a round head, fullest a third of
+             the way back, tapering to the wrist of the tail */
+          var prof = u < 0.3 ? Math.sqrt(u / 0.3) * (F.head || 1) : 1 - Math.pow((u - 0.3) / 0.7, F.flat ? 2.6 : 1.5) * (F.tail === 'none' ? 0.72 : 0.84);
+          pw[k] = Math.max(0.12, Math.min(1.15, prof)) * len * F.deep * (1 + cst * 0.3);
+        }
+        function outline(ox, oy) {
+          c.beginPath();
+          c.moveTo(px[0] + ox + pw[0] * 0.6, py[0] + oy);
+          for (k = 0; k <= N; k++) c.lineTo(px[k] + ox, py[k] + oy - pw[k]);
+          /* the tail */
+          var tx = px[N] + ox, ty = py[N] + oy, slope = (py[N] - py[N - 1]) / (px[N] - px[N - 1] || -1);
+          var ta = Math.atan(slope), tl = len * (F.tail === 'fan' ? 0.42 : 0.55), tw = len * (F.tail === 'fan' ? 0.34 : 0.42) * (F.deep > 0.4 ? 1.15 : 1);
+          if (F.tail !== 'none') {
+            var cs = Math.cos(ta), sn = Math.sin(ta);
+            var ax = tx - cs * tl + sn * tw, ay = ty - sn * tl - cs * tw, bx = tx - cs * tl - sn * tw, by = ty - sn * tl + cs * tw;
+            c.lineTo(ax, ay);
+            if (F.tail === 'fork') c.lineTo(tx - cs * tl * 0.45, ty - sn * tl * 0.45);
+            else c.quadraticCurveTo(tx - cs * tl * 1.25, ty - sn * tl * 1.25, bx, by);
+            c.lineTo(bx, by);
+          } else c.lineTo(tx - len * 0.12, ty);
+          for (k = N; k >= 0; k--) c.lineTo(px[k] + ox, py[k] + oy + pw[k]);
+          c.closePath();
+        }
+        /* its shadow on the bed, a little way off: that is what makes the
+           fish look as if it is hanging in the water */
+        c.globalAlpha = fade * 0.5;
+        c.fillStyle = 'rgba(8,30,44,0.2)';
+        outline(Math.cos(-s.ang + 1.1) * 4, Math.sin(-s.ang + 1.1) * 4 + 0);
         c.fill();
-        c.save();
-        c.translate(-len * 0.9, 0);
-        c.rotate(cst * 1.05);                      /* the tail whipped over */
+        /* the paired fins, sculling */
+        c.globalAlpha = fade;
+        if (F.fins) {
+          var fl = len * 0.34 * F.fins, flap = 0.75 + Math.sin(s.t * 5.5) * 0.25, fk = Math.round(N * 0.3);
+          c.fillStyle = 'rgba(12,44,62,0.26)';
+          for (var side = -1; side <= 1; side += 2) {
+            c.beginPath();
+            c.moveTo(px[fk] + len * 0.1, py[fk] + side * pw[fk] * 0.8);
+            c.lineTo(px[fk] - fl * 0.9, py[fk] + side * (pw[fk] + fl * flap));
+            c.lineTo(px[fk] - fl * 0.5, py[fk] + side * pw[fk] * 0.8);
+            c.closePath(); c.fill();
+          }
+        }
+        /* the fish itself: deep water colour, with a breath of its own
+           colour in it - enough to wonder, not enough to know */
+        outline(0, 0);
+        c.fillStyle = 'rgba(12,44,62,0.44)';
+        c.fill();
+        var tint = s.def.art && s.def.art.back;
+        if (tint) { c.globalAlpha = fade * 0.16; c.fillStyle = tint; c.fill(); c.globalAlpha = fade; }
+        /* light along its back */
+        c.strokeStyle = 'rgba(255,255,255,0.13)'; c.lineWidth = Math.max(1, len * F.deep * 0.3); c.lineCap = 'round';
         c.beginPath();
-        c.moveTo(0, 0);
-        c.lineTo(-len * 0.6, -len * 0.3);
-        c.lineTo(-len * 0.6, len * 0.3);
-        c.closePath(); c.fill();
-        c.restore();
-        c.restore();
-        // a faint wake
-        c.strokeStyle = 'rgba(255,255,255,0.16)'; c.lineWidth = 1.4;
-        c.beginPath();
-        c.arc(sx - Math.cos(s.ang) * len, sy - Math.sin(s.ang) * len, len * 0.8,
-          s.ang - 0.9, s.ang + 0.9);
+        c.moveTo(px[1], py[1]);
+        for (k = 2; k <= N - 2; k++) c.lineTo(px[k], py[k]);
         c.stroke();
+        c.restore();
+        /* a V of wake behind a fish that is moving, and now and then a
+           ring where it comes up to the top */
+        var wk = GG.clamp((hurry - 0.7) * 0.22, 0.05, 0.3) * fade;
+        c.strokeStyle = 'rgba(255,255,255,' + wk.toFixed(3) + ')'; c.lineWidth = 1.3; c.lineCap = 'round';
+        var bx0 = sx + Math.cos(s.ang) * len * 0.7, by0 = sy + Math.sin(s.ang) * len * 0.7;
+        for (var w = -1; w <= 1; w += 2) {
+          c.beginPath(); c.moveTo(bx0, by0);
+          c.lineTo(bx0 - Math.cos(s.ang + w * 0.42) * len * 1.5, by0 - Math.sin(s.ang + w * 0.42) * len * 1.5);
+          c.stroke();
+        }
+        var beat = Math.floor(s.t / 2.6);
+        if (beat !== s._beat) {
+          s._beat = beat;
+          if (((beat * 7919 + i * 104729) % 10) < 3 && this.ripples.length < 24 && fade >= 1) {
+            this.ripples.push({ x: s.x + Math.cos(s.ang) * len * 0.8, y: s.y + Math.sin(s.ang) * len * 0.8, r: 1, grow: 16, life: 0.9, max: 0.9 });
+          }
+        }
       }
     },
 
