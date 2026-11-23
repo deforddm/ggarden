@@ -828,6 +828,95 @@ ul.tips li{margin-bottom:3px}
 #rank-reward{font-family:var(--display);font-weight:600;font-size:17px;color:#b07a00;margin:4px 0 10px}
 #rank-ok{width:100%}
 
+/* ---------- v1.24: a second look at every button ---------- */
+:root{
+  --i-person:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%228%22 r=%224.2%22/%3E%3Cpath d=%22M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8z%22/%3E%3C/svg%3E");
+  --i-question:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8.6 9.2a3.4 3.4 0 1 1 5.6 2.6c-1.2 1-2 1.6-2 3.2%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222.8%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2212.2%22 cy=%2219%22 r=%221.8%22/%3E%3C/svg%3E");
+  --i-sliders:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z%22/%3E%3Ccircle cx=%2215%22 cy=%227%22 r=%223%22/%3E%3Ccircle cx=%228%22 cy=%2212%22 r=%223%22/%3E%3Ccircle cx=%2216%22 cy=%2217%22 r=%223%22/%3E%3C/svg%3E");
+  --i-friends:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%228%22 cy=%228.5%22 r=%223.4%22/%3E%3Ccircle cx=%2216.5%22 cy=%229.5%22 r=%222.8%22/%3E%3Cpath d=%22M1.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5zM16 20c0-1.8-.6-3.5-1.6-4.8 3.6-2 8.1.4 8.1 4.8z%22/%3E%3C/svg%3E");
+  --i-heart:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 21C12 21 3.5 15.5 3.5 9.7 3.5 5.5 9.3 4 12 7.5 14.7 4 20.5 5.5 20.5 9.7 20.5 15.5 12 21 12 21z%22/%3E%3C/svg%3E");
+  --i-book:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 5h6.5c1.4 0 2.5 1.1 2.5 2.5V20c0-1.1-1.1-2-2.5-2H3zM21 5h-6.5C13.1 5 12 6.1 12 7.5V20c0-1.1 1.1-2 2.5-2H21z%22/%3E%3C/svg%3E");
+  --i-net:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%229.5%22 cy=%229%22 r=%225.6%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222.4%22/%3E%3Cpath d=%22M13.3 14.4l1.7-1.7 6.8 6.8-1.7 1.7z%22/%3E%3Cpath d=%22M6 7.5h7M6 10.5h7M8 5v8M11 5v8%22 stroke=%22black%22 stroke-width=%221%22 opacity=%22.55%22/%3E%3C/svg%3E");
+  --i-flower:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%226%22 r=%223.4%22/%3E%3Ccircle cx=%226.2%22 cy=%2210.2%22 r=%223.4%22/%3E%3Ccircle cx=%2217.8%22 cy=%2210.2%22 r=%223.4%22/%3E%3Ccircle cx=%228.4%22 cy=%2217%22 r=%223.4%22/%3E%3Ccircle cx=%2215.6%22 cy=%2217%22 r=%223.4%22/%3E%3C/svg%3E");
+  --i-eye:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222.2%22/%3E%3C/svg%3E");
+  --i-star:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8z%22/%3E%3C/svg%3E");
+  --i-house:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 2.5l10 9h-3V21h-5v-6h-4v6H5v-9.5H2z%22/%3E%3C/svg%3E");
+  --i-moon:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M20.5 14.5A9 9 0 0 1 9.5 3.5a9 9 0 1 0 11 11z%22/%3E%3C/svg%3E");
+  --i-fish:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M1.5 12c3-5.2 8.5-6.3 12.5-4.2 2 1 3.5 2.5 4.5 4.2-1 1.7-2.5 3.2-4.5 4.2-4 2.1-9.5 1-12.5-4.2z%22/%3E%3Cpath d=%22M17 12l5.5-4.5v9z%22/%3E%3C/svg%3E");
+  --i-paw:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cellipse cx=%2212%22 cy=%2215.5%22 rx=%225%22 ry=%224.2%22/%3E%3Ccircle cx=%225.5%22 cy=%2210.5%22 r=%222.3%22/%3E%3Ccircle cx=%229.5%22 cy=%226%22 r=%222.4%22/%3E%3Ccircle cx=%2214.5%22 cy=%226%22 r=%222.4%22/%3E%3Ccircle cx=%2218.5%22 cy=%2210.5%22 r=%222.3%22/%3E%3C/svg%3E");
+  --i-boot:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8 2h6v10l6 3.5V20H6v-6l2-2z%22/%3E%3Cpath d=%22M5 20.5h16V22H5z%22/%3E%3C/svg%3E");
+  --i-brush:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M14 3l7 7-8 4-3-3z%22/%3E%3Cpath d=%22M9.5 12l3 3-4 5.5c-2 .5-4.5 0-5.5-.5 2-1 2.5-3 3-5z%22/%3E%3C/svg%3E");
+}
+/* every .btn: a soft lip along the bottom edge, crisper lettering, a clear
+   pressed state and a ring when it has the keyboard */
+.btn{box-shadow:inset 0 -4px 0 rgba(190,140,50,.13),inset 0 2px 0 rgba(255,255,255,.9),0 4px 0 #e3c48c,0 7px 14px rgba(120,80,20,.18);
+  text-shadow:0 1px 0 rgba(255,255,255,.8);-webkit-tap-highlight-color:transparent}
+.btn:active{box-shadow:inset 0 2px 5px rgba(120,80,20,.18),0 1px 0 #e3c48c,0 2px 5px rgba(120,80,20,.14)}
+.btn.primary{box-shadow:inset 0 -4px 0 rgba(0,70,0,.16),inset 0 2px 0 rgba(255,255,255,.45),0 4px 0 #23801f,0 8px 16px rgba(20,90,20,.28);text-shadow:0 2px 0 rgba(20,90,20,.45)}
+.btn.primary:active{box-shadow:inset 0 3px 6px rgba(0,60,0,.3),0 1px 0 #1f7a1d,0 2px 5px rgba(20,90,20,.2)}
+.btn.pink{box-shadow:inset 0 -4px 0 rgba(120,0,50,.16),inset 0 2px 0 rgba(255,255,255,.45),0 4px 0 #b83a69,0 8px 16px rgba(150,30,80,.25);text-shadow:0 2px 0 rgba(150,30,80,.4)}
+.btn.pink:active{box-shadow:inset 0 3px 6px rgba(120,0,50,.3),0 1px 0 #b83a69}
+.btn:focus-visible,.tab:focus-visible,.x:focus-visible,#btn-a:focus-visible,#btn-menu:focus-visible{outline:3px solid #fff;outline-offset:2px;
+  box-shadow:0 0 0 6px rgba(80,160,255,.7)}
+@media (hover:hover){.btn:hover{filter:brightness(1.04)}.btn:active{filter:brightness(.97)}}
+.x{box-shadow:inset 0 -3px 0 rgba(0,0,0,.12),0 2px 0 rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent}
+.tab{box-shadow:inset 0 -3px 0 rgba(190,140,50,.12),0 2px 0 rgba(120,80,20,.12);-webkit-tap-highlight-color:transparent}
+.tab.on{box-shadow:inset 0 -3px 0 rgba(0,0,0,.14),inset 0 2px 0 rgba(255,255,255,.4),0 3px 0 var(--tab3,#237a21)}
+
+/* the menu buttons each get a round badge with a picture, so a child who
+   cannot read the words yet can still find the one she wants */
+#btn-char,#btn-howto,#btn-settings,#btn-guest,#menu-favours,#menu-book,#menu-char,#menu-help,#menu-settings{
+  position:relative;padding-left:56px;padding-right:20px;text-align:left;--bc1:#ffc070;--bc2:#f07c16}
+#btn-char::before,#btn-howto::before,#btn-settings::before,#btn-guest::before,#menu-favours::before,#menu-book::before,
+#menu-char::before,#menu-help::before,#menu-settings::before{content:"";position:absolute;left:8px;top:50%;width:36px;height:36px;
+  margin-top:-19px;border-radius:50%;background:linear-gradient(var(--bc1),var(--bc2));
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.16),inset 0 2px 0 rgba(255,255,255,.55),0 2px 0 rgba(255,255,255,.9)}
+#btn-char::after,#btn-howto::after,#btn-settings::after,#btn-guest::after,#menu-favours::after,#menu-book::after,
+#menu-char::after,#menu-help::after,#menu-settings::after{content:"";position:absolute;left:16px;top:50%;width:20px;height:20px;
+  margin-top:-11px;background:#fff;-webkit-mask:var(--ico) center/contain no-repeat;mask:var(--ico) center/contain no-repeat}
+#btn-char,#menu-char{--ico:var(--i-person);--bc1:#ffa6c6;--bc2:#e65089}
+#btn-howto,#menu-help{--ico:var(--i-question);--bc1:#8fdcff;--bc2:#2b97d8}
+#btn-settings,#menu-settings{--ico:var(--i-sliders);--bc1:#ffd86e;--bc2:#e59a12}
+#btn-guest{--ico:var(--i-friends);--bc1:#c3a8ff;--bc2:#8062ea}
+#menu-favours{--ico:var(--i-heart);--bc1:#ffc070;--bc2:#f07c16}
+#menu-book{--ico:var(--i-book);--bc1:#8fe57f;--bc2:#34a02f}
+#btn-play{padding-left:14px}
+
+/* the big round button: a picture of what it will do above the word, a
+   glassy rim, and a proper squash when it is pressed */
+#btn-a,#btn-fish,#btn-friend{-webkit-tap-highlight-color:transparent}
+#btn-a{box-shadow:inset 0 -9px 12px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.7),0 6px 0 var(--abs),0 12px 20px rgba(0,0,0,.3)}
+#btn-a.down{transform:translateY(5px) scale(.97);box-shadow:inset 0 4px 10px rgba(0,0,0,.2),0 1px 0 var(--abs),0 4px 10px rgba(0,0,0,.25)}
+#btn-a[data-verb]::before{content:"";display:block;width:26px;height:26px;margin:-2px auto 1px;background:var(--abt);opacity:.85;
+  -webkit-mask:var(--aico) center/contain no-repeat;mask:var(--aico) center/contain no-repeat}
+#btn-a[data-verb="none"]::before{display:none}
+#btn-a[data-verb="net"]{--aico:var(--i-net)}
+#btn-a[data-verb="pick"]{--aico:var(--i-flower)}
+#btn-a[data-verb="look"]{--aico:var(--i-eye)}
+#btn-a[data-verb="stars"]{--aico:var(--i-star)}
+#btn-a[data-verb="read"]{--aico:var(--i-book)}
+#btn-a[data-verb="sleep"]{--aico:var(--i-moon)}
+#btn-a[data-verb="home"]{--aico:var(--i-house)}
+#btn-a[data-verb="visit"]{--aico:var(--i-paw)}
+#btn-a[data-verb="tanks"]{--aico:var(--i-fish)}
+#btn-a[data-verb="boots"]{--aico:var(--i-boot)}
+#btn-a[data-verb="decorate"]{--aico:var(--i-brush)}
+#btn-a[data-verb="decorate"]{font-size:13px}
+#btn-fish{box-shadow:inset 0 -7px 10px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.7),0 5px 0 #1f7db3,0 10px 18px rgba(0,0,0,.3)}
+#btn-fish::before{content:"";display:block;width:22px;height:22px;margin:-2px auto 0;background:currentColor;opacity:.85;
+  -webkit-mask:var(--i-fish) center/contain no-repeat;mask:var(--i-fish) center/contain no-repeat}
+#btn-fish.down{transform:translateY(4px) scale(.97)}
+#btn-friend{box-shadow:inset 0 -7px 10px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.6),0 5px 0 #3d8a3d,0 10px 18px rgba(0,0,0,.3)}
+#btn-menu{box-shadow:inset 0 -4px 0 rgba(0,70,0,.18),inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 #237a21,0 6px 12px rgba(0,0,0,.22);-webkit-tap-highlight-color:transparent}
+/* Play catches the light now and then */
+#title-card #btn-play::before{content:"";position:absolute;inset:0;border-radius:21px;pointer-events:none;
+  background:linear-gradient(105deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 58%) no-repeat;
+  background-size:300% 100%;background-position:150% 0;animation:playshine 3.6s ease-in-out infinite}
+@keyframes playshine{0%,60%{background-position:150% 0}100%{background-position:-50% 0}}
+@media (prefers-reduced-motion:reduce){#title-card #btn-play::before{animation:none;display:none}}
+/* on the title screen the words stay in the middle, with the badge at the left */
+#title-btns #btn-char,#title-btns #btn-howto,#title-btns #btn-settings,#title-btns #btn-guest{padding-left:52px;padding-right:52px;text-align:center}
+
 </style>
 </head>
 <body>
@@ -849,7 +938,7 @@ ul.tips li{margin-bottom:3px}
     <div id="stick"><div id="knob"></div></div>
     <button id="btn-friend" class="hidden">FRIEND<small>say hello</small></button>
     <button id="btn-fish" class="hidden">FISH<small>cast</small></button>
-    <button id="btn-a">NET<small>tap</small></button>
+    <button id="btn-a" data-verb="net">NET<small>tap</small></button>
   </div>
 
   <!-- title -->
@@ -2857,9 +2946,18 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.23.0';
+  GG.VERSION = '1.24.0';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.0', title: 'Better buttons and livelier fish',
+      lines: [
+        'Every button has had a polish. The menu buttons each have a little picture now, so you can find the one you want at a glance.',
+        'The big round button shows a picture of what it will do: a net, a flower, an eye, a star, a book.',
+        'The fish in the water really swim now. Their bodies bend and their tails beat, their fins scull, and they leave a little wake behind them.',
+        'Different fish have different shapes. A pike is long, a sunfish is round, an eel wriggles like a ribbon, and crabs scuttle with their claws out. Can you guess what it is before you catch it?'
+      ]
+    },
     {
       v: '1.23.0', title: 'A polish, top to toe',
       lines: [
@@ -35019,39 +35117,151 @@ ul.tips li{margin-bottom:3px}
     },
 
     /* ---------- drawing ---------- */
+    /* v1.24: what a fish looks like from above. A family for each art
+       shape: how long, how deep, what kind of tail. Still a shadow - the
+       surprise of what it is stays for the catch - but a living one. */
+    _form: function (def) {
+      var sh = (def.art && def.art.shape) || 'torpedo';
+      if (def.isJunk || sh === 'boot' || sh === 'can' || sh === 'news') return { junk: true };
+      if (sh === 'seacrab' || sh === 'crayfish') return { crab: true, cray: sh === 'crayfish' };
+      if (sh === 'eel' || sh === 'lamprey') return { k: 1.5, deep: 0.13, tail: 'none', wave: 1.9, fins: 0 };
+      if (sh === 'pike' || sh === 'sturgeon') return { k: 1.38, deep: 0.17, tail: 'fork', wave: 1.1, fins: 0.8 };
+      if (sh === 'flatfish') return { k: 0.9, deep: 0.62, tail: 'fan', wave: 0.5, fins: 0, flat: true };
+      if (sh === 'sunfish' || sh === 'mola' || sh === 'goldfish' || sh === 'carp' || sh === 'tench') return { k: 0.84, deep: 0.58, tail: 'fan', wave: 0.7, fins: 1 };
+      if (sh === 'catfish' || sh === 'sculpin') return { k: 1.05, deep: 0.36, tail: 'fan', wave: 1, fins: 1.3, head: 1.25 };
+      return { k: 1.05, deep: 0.29, tail: 'fork', wave: 1, fins: 1 };
+    },
+
     drawShadows: function (c, cam, t) {
+      var N = 8, px = this._px || (this._px = new Float32Array(N + 1)), py = this._py || (this._py = new Float32Array(N + 1)),
+        pw = this._pw || (this._pw = new Float32Array(N + 1));
       for (var i = 0; i < this.swimmers.length; i++) {
         var s = this.swimmers[i];
         var sx = s.x - cam.x, sy = s.y - cam.y;
-        if (sx < -80 || sy < -80 || sx > GG.view.w + 80 || sy > GG.view.h + 80) continue;
-        var len = 8 + s.def.shadow * 5.2;
-        var wob = Math.sin(s.t * 4) * 0.12;
+        if (sx < -90 || sy < -90 || sx > GG.view.w + 90 || sy > GG.view.h + 90) continue;
+        var F = s._form || (s._form = this._form(s.def));
+        var len = (8 + s.def.shadow * 5.2) * (F.k || 1);
         /* the C-start: for two frames the whole fish is bent into a C */
         var cst = s.spook > 0 ? GG.clamp(s.spook / 0.16, 0, 1) : 0;
+        var fade = Math.min(1, (s.age || 0) / 1.2);        /* swims up out of the deep */
+        var hurry = GG.clamp((s.sp || 20) / 30, 0.6, 2.2) * (s.flee > 0 ? 1.6 : 1);
         c.save();
         c.translate(sx, sy);
-        c.rotate(s.ang + wob);
-        c.globalAlpha = Math.min(1, (s.age || 0) / 1.2);   /* swims up out of the deep */
-        c.fillStyle = 'rgba(12,44,62,0.36)';
-        c.beginPath();
-        c.ellipse(0, 0, len, len * (0.36 + cst * 0.16), cst * 0.5, 0, Math.PI * 2);
+        c.rotate(s.ang);
+        if (F.junk) {
+          c.globalAlpha = fade;
+          c.fillStyle = 'rgba(12,44,62,0.34)';
+          c.beginPath(); c.ellipse(0, 0, len, len * 0.42, 0.2, 0, Math.PI * 2); c.fill();
+          c.restore();
+          continue;
+        }
+        if (F.crab) {
+          /* a round body, eight legs that scuttle, two claws out in front */
+          c.globalAlpha = fade;
+          var r0 = len * 0.42;
+          c.strokeStyle = 'rgba(12,44,62,0.42)'; c.lineWidth = Math.max(1.2, r0 * 0.16); c.lineCap = 'round';
+          for (var lg = 0; lg < 4; lg++) {
+            var la = 0.5 + lg * 0.42, kick = Math.sin(s.t * 9 + lg * 1.6) * 0.18;
+            for (var sd = -1; sd <= 1; sd += 2) {
+              c.beginPath();
+              c.moveTo(Math.cos(la) * r0 * 0.7 * -1 + r0 * 0.3, sd * r0 * 0.7);
+              c.lineTo(-Math.cos(la + kick) * r0 * 1.5 + r0 * 0.5, sd * (r0 * 1.55 + Math.sin(la) * r0 * 0.2));
+              c.stroke();
+            }
+          }
+          c.fillStyle = 'rgba(12,44,62,0.46)';
+          c.beginPath(); c.ellipse(0, 0, r0 * (F.cray ? 1.5 : 1.05), r0 * (F.cray ? 0.62 : 0.86), 0, 0, Math.PI * 2); c.fill();
+          for (var cl = -1; cl <= 1; cl += 2) {
+            var open = 0.25 + 0.2 * Math.sin(s.t * 2.2 + cl);
+            c.save(); c.translate(r0 * (F.cray ? 1.5 : 0.95), cl * r0 * 0.75); c.rotate(cl * (0.5 - open));
+            c.beginPath(); c.ellipse(r0 * 0.4, 0, r0 * 0.5, r0 * 0.26, 0, 0, Math.PI * 2); c.fill();
+            c.restore();
+          }
+          if (F.cray) { c.beginPath(); c.moveTo(-r0 * 1.4, 0); c.lineTo(-r0 * 2.2, -r0 * 0.6); c.lineTo(-r0 * 2.2, r0 * 0.6); c.closePath(); c.fill(); }
+          c.restore();
+          continue;
+        }
+        /* the spine: nose at +len, tail at -len, a wave running down it that
+           grows towards the tail and quickens when the fish hurries */
+        var k, u;
+        for (k = 0; k <= N; k++) {
+          u = k / N;
+          var amp = len * 0.2 * F.wave * Math.pow(u, 1.5) * Math.min(1.5, 0.55 + hurry * 0.4);
+          px[k] = len * (1 - 2 * u);
+          py[k] = Math.sin(s.t * (4.4 + hurry * 2.4) - u * 3.4 * F.wave) * amp + cst * len * 0.7 * u * u;
+          /* how wide the body is here: a round head, fullest a third of
+             the way back, tapering to the wrist of the tail */
+          var prof = u < 0.3 ? Math.sqrt(u / 0.3) * (F.head || 1) : 1 - Math.pow((u - 0.3) / 0.7, F.flat ? 2.6 : 1.5) * (F.tail === 'none' ? 0.72 : 0.84);
+          pw[k] = Math.max(0.12, Math.min(1.15, prof)) * len * F.deep * (1 + cst * 0.3);
+        }
+        function outline(ox, oy) {
+          c.beginPath();
+          c.moveTo(px[0] + ox + pw[0] * 0.6, py[0] + oy);
+          for (k = 0; k <= N; k++) c.lineTo(px[k] + ox, py[k] + oy - pw[k]);
+          /* the tail */
+          var tx = px[N] + ox, ty = py[N] + oy, slope = (py[N] - py[N - 1]) / (px[N] - px[N - 1] || -1);
+          var ta = Math.atan(slope), tl = len * (F.tail === 'fan' ? 0.42 : 0.55), tw = len * (F.tail === 'fan' ? 0.34 : 0.42) * (F.deep > 0.4 ? 1.15 : 1);
+          if (F.tail !== 'none') {
+            var cs = Math.cos(ta), sn = Math.sin(ta);
+            var ax = tx - cs * tl + sn * tw, ay = ty - sn * tl - cs * tw, bx = tx - cs * tl - sn * tw, by = ty - sn * tl + cs * tw;
+            c.lineTo(ax, ay);
+            if (F.tail === 'fork') c.lineTo(tx - cs * tl * 0.45, ty - sn * tl * 0.45);
+            else c.quadraticCurveTo(tx - cs * tl * 1.25, ty - sn * tl * 1.25, bx, by);
+            c.lineTo(bx, by);
+          } else c.lineTo(tx - len * 0.12, ty);
+          for (k = N; k >= 0; k--) c.lineTo(px[k] + ox, py[k] + oy + pw[k]);
+          c.closePath();
+        }
+        /* its shadow on the bed, a little way off: that is what makes the
+           fish look as if it is hanging in the water */
+        c.globalAlpha = fade * 0.5;
+        c.fillStyle = 'rgba(8,30,44,0.2)';
+        outline(Math.cos(-s.ang + 1.1) * 4, Math.sin(-s.ang + 1.1) * 4 + 0);
         c.fill();
-        c.save();
-        c.translate(-len * 0.9, 0);
-        c.rotate(cst * 1.05);                      /* the tail whipped over */
+        /* the paired fins, sculling */
+        c.globalAlpha = fade;
+        if (F.fins) {
+          var fl = len * 0.34 * F.fins, flap = 0.75 + Math.sin(s.t * 5.5) * 0.25, fk = Math.round(N * 0.3);
+          c.fillStyle = 'rgba(12,44,62,0.26)';
+          for (var side = -1; side <= 1; side += 2) {
+            c.beginPath();
+            c.moveTo(px[fk] + len * 0.1, py[fk] + side * pw[fk] * 0.8);
+            c.lineTo(px[fk] - fl * 0.9, py[fk] + side * (pw[fk] + fl * flap));
+            c.lineTo(px[fk] - fl * 0.5, py[fk] + side * pw[fk] * 0.8);
+            c.closePath(); c.fill();
+          }
+        }
+        /* the fish itself: deep water colour, with a breath of its own
+           colour in it - enough to wonder, not enough to know */
+        outline(0, 0);
+        c.fillStyle = 'rgba(12,44,62,0.44)';
+        c.fill();
+        var tint = s.def.art && s.def.art.back;
+        if (tint) { c.globalAlpha = fade * 0.16; c.fillStyle = tint; c.fill(); c.globalAlpha = fade; }
+        /* light along its back */
+        c.strokeStyle = 'rgba(255,255,255,0.13)'; c.lineWidth = Math.max(1, len * F.deep * 0.3); c.lineCap = 'round';
         c.beginPath();
-        c.moveTo(0, 0);
-        c.lineTo(-len * 0.6, -len * 0.3);
-        c.lineTo(-len * 0.6, len * 0.3);
-        c.closePath(); c.fill();
-        c.restore();
-        c.restore();
-        // a faint wake
-        c.strokeStyle = 'rgba(255,255,255,0.16)'; c.lineWidth = 1.4;
-        c.beginPath();
-        c.arc(sx - Math.cos(s.ang) * len, sy - Math.sin(s.ang) * len, len * 0.8,
-          s.ang - 0.9, s.ang + 0.9);
+        c.moveTo(px[1], py[1]);
+        for (k = 2; k <= N - 2; k++) c.lineTo(px[k], py[k]);
         c.stroke();
+        c.restore();
+        /* a V of wake behind a fish that is moving, and now and then a
+           ring where it comes up to the top */
+        var wk = GG.clamp((hurry - 0.7) * 0.22, 0.05, 0.3) * fade;
+        c.strokeStyle = 'rgba(255,255,255,' + wk.toFixed(3) + ')'; c.lineWidth = 1.3; c.lineCap = 'round';
+        var bx0 = sx + Math.cos(s.ang) * len * 0.7, by0 = sy + Math.sin(s.ang) * len * 0.7;
+        for (var w = -1; w <= 1; w += 2) {
+          c.beginPath(); c.moveTo(bx0, by0);
+          c.lineTo(bx0 - Math.cos(s.ang + w * 0.42) * len * 1.5, by0 - Math.sin(s.ang + w * 0.42) * len * 1.5);
+          c.stroke();
+        }
+        var beat = Math.floor(s.t / 2.6);
+        if (beat !== s._beat) {
+          s._beat = beat;
+          if (((beat * 7919 + i * 104729) % 10) < 3 && this.ripples.length < 24 && fade >= 1) {
+            this.ripples.push({ x: s.x + Math.cos(s.ang) * len * 0.8, y: s.y + Math.sin(s.ang) * len * 0.8, r: 1, grow: 16, life: 0.9, max: 0.9 });
+          }
+        }
       }
     },
 
@@ -44360,6 +44570,10 @@ ul.tips li{margin-bottom:3px}
     if (_label === main + '|' + sub) return;
     _label = main + '|' + sub;
     $('btn-a').innerHTML = main + '<small>' + sub + '</small>';
+    /* v1.24: which picture goes on the button (see the css) */
+    var verb = String(main).toLowerCase();
+    if (verb === 'go in' || verb === 'go out' || verb === 'go home') verb = 'home';
+    $('btn-a').setAttribute('data-verb', /^(net|pick|look|stars|read|sleep|home|visit|tanks|boots|decorate)$/.test(verb) ? verb : 'none');
   }
 
   /* ---------- rain ---------- */
