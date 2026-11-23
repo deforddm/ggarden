@@ -812,3 +812,92 @@ ul.tips li{margin-bottom:3px}
 #rank-line{font-size:14px;font-weight:700;line-height:1.4;color:var(--ink2);margin:6px 4px}
 #rank-reward{font-family:var(--display);font-weight:600;font-size:17px;color:#b07a00;margin:4px 0 10px}
 #rank-ok{width:100%}
+
+/* ---------- v1.24: a second look at every button ---------- */
+:root{
+  --i-person:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%228%22 r=%224.2%22/%3E%3Cpath d=%22M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8z%22/%3E%3C/svg%3E");
+  --i-question:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8.6 9.2a3.4 3.4 0 1 1 5.6 2.6c-1.2 1-2 1.6-2 3.2%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222.8%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2212.2%22 cy=%2219%22 r=%221.8%22/%3E%3C/svg%3E");
+  --i-sliders:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z%22/%3E%3Ccircle cx=%2215%22 cy=%227%22 r=%223%22/%3E%3Ccircle cx=%228%22 cy=%2212%22 r=%223%22/%3E%3Ccircle cx=%2216%22 cy=%2217%22 r=%223%22/%3E%3C/svg%3E");
+  --i-friends:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%228%22 cy=%228.5%22 r=%223.4%22/%3E%3Ccircle cx=%2216.5%22 cy=%229.5%22 r=%222.8%22/%3E%3Cpath d=%22M1.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5zM16 20c0-1.8-.6-3.5-1.6-4.8 3.6-2 8.1.4 8.1 4.8z%22/%3E%3C/svg%3E");
+  --i-heart:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 21C12 21 3.5 15.5 3.5 9.7 3.5 5.5 9.3 4 12 7.5 14.7 4 20.5 5.5 20.5 9.7 20.5 15.5 12 21 12 21z%22/%3E%3C/svg%3E");
+  --i-book:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 5h6.5c1.4 0 2.5 1.1 2.5 2.5V20c0-1.1-1.1-2-2.5-2H3zM21 5h-6.5C13.1 5 12 6.1 12 7.5V20c0-1.1 1.1-2 2.5-2H21z%22/%3E%3C/svg%3E");
+  --i-net:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%229.5%22 cy=%229%22 r=%225.6%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222.4%22/%3E%3Cpath d=%22M13.3 14.4l1.7-1.7 6.8 6.8-1.7 1.7z%22/%3E%3Cpath d=%22M6 7.5h7M6 10.5h7M8 5v8M11 5v8%22 stroke=%22black%22 stroke-width=%221%22 opacity=%22.55%22/%3E%3C/svg%3E");
+  --i-flower:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%226%22 r=%223.4%22/%3E%3Ccircle cx=%226.2%22 cy=%2210.2%22 r=%223.4%22/%3E%3Ccircle cx=%2217.8%22 cy=%2210.2%22 r=%223.4%22/%3E%3Ccircle cx=%228.4%22 cy=%2217%22 r=%223.4%22/%3E%3Ccircle cx=%2215.6%22 cy=%2217%22 r=%223.4%22/%3E%3C/svg%3E");
+  --i-eye:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222.2%22/%3E%3C/svg%3E");
+  --i-star:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8z%22/%3E%3C/svg%3E");
+  --i-house:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M12 2.5l10 9h-3V21h-5v-6h-4v6H5v-9.5H2z%22/%3E%3C/svg%3E");
+  --i-moon:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M20.5 14.5A9 9 0 0 1 9.5 3.5a9 9 0 1 0 11 11z%22/%3E%3C/svg%3E");
+  --i-fish:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M1.5 12c3-5.2 8.5-6.3 12.5-4.2 2 1 3.5 2.5 4.5 4.2-1 1.7-2.5 3.2-4.5 4.2-4 2.1-9.5 1-12.5-4.2z%22/%3E%3Cpath d=%22M17 12l5.5-4.5v9z%22/%3E%3C/svg%3E");
+  --i-paw:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cellipse cx=%2212%22 cy=%2215.5%22 rx=%225%22 ry=%224.2%22/%3E%3Ccircle cx=%225.5%22 cy=%2210.5%22 r=%222.3%22/%3E%3Ccircle cx=%229.5%22 cy=%226%22 r=%222.4%22/%3E%3Ccircle cx=%2214.5%22 cy=%226%22 r=%222.4%22/%3E%3Ccircle cx=%2218.5%22 cy=%2210.5%22 r=%222.3%22/%3E%3C/svg%3E");
+  --i-boot:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8 2h6v10l6 3.5V20H6v-6l2-2z%22/%3E%3Cpath d=%22M5 20.5h16V22H5z%22/%3E%3C/svg%3E");
+  --i-brush:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M14 3l7 7-8 4-3-3z%22/%3E%3Cpath d=%22M9.5 12l3 3-4 5.5c-2 .5-4.5 0-5.5-.5 2-1 2.5-3 3-5z%22/%3E%3C/svg%3E");
+}
+/* every .btn: a soft lip along the bottom edge, crisper lettering, a clear
+   pressed state and a ring when it has the keyboard */
+.btn{box-shadow:inset 0 -4px 0 rgba(190,140,50,.13),inset 0 2px 0 rgba(255,255,255,.9),0 4px 0 #e3c48c,0 7px 14px rgba(120,80,20,.18);
+  text-shadow:0 1px 0 rgba(255,255,255,.8);-webkit-tap-highlight-color:transparent}
+.btn:active{box-shadow:inset 0 2px 5px rgba(120,80,20,.18),0 1px 0 #e3c48c,0 2px 5px rgba(120,80,20,.14)}
+.btn.primary{box-shadow:inset 0 -4px 0 rgba(0,70,0,.16),inset 0 2px 0 rgba(255,255,255,.45),0 4px 0 #23801f,0 8px 16px rgba(20,90,20,.28);text-shadow:0 2px 0 rgba(20,90,20,.45)}
+.btn.primary:active{box-shadow:inset 0 3px 6px rgba(0,60,0,.3),0 1px 0 #1f7a1d,0 2px 5px rgba(20,90,20,.2)}
+.btn.pink{box-shadow:inset 0 -4px 0 rgba(120,0,50,.16),inset 0 2px 0 rgba(255,255,255,.45),0 4px 0 #b83a69,0 8px 16px rgba(150,30,80,.25);text-shadow:0 2px 0 rgba(150,30,80,.4)}
+.btn.pink:active{box-shadow:inset 0 3px 6px rgba(120,0,50,.3),0 1px 0 #b83a69}
+.btn:focus-visible,.tab:focus-visible,.x:focus-visible,#btn-a:focus-visible,#btn-menu:focus-visible{outline:3px solid #fff;outline-offset:2px;
+  box-shadow:0 0 0 6px rgba(80,160,255,.7)}
+@media (hover:hover){.btn:hover{filter:brightness(1.04)}.btn:active{filter:brightness(.97)}}
+.x{box-shadow:inset 0 -3px 0 rgba(0,0,0,.12),0 2px 0 rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent}
+.tab{box-shadow:inset 0 -3px 0 rgba(190,140,50,.12),0 2px 0 rgba(120,80,20,.12);-webkit-tap-highlight-color:transparent}
+.tab.on{box-shadow:inset 0 -3px 0 rgba(0,0,0,.14),inset 0 2px 0 rgba(255,255,255,.4),0 3px 0 var(--tab3,#237a21)}
+
+/* the menu buttons each get a round badge with a picture, so a child who
+   cannot read the words yet can still find the one she wants */
+#btn-char,#btn-howto,#btn-settings,#btn-guest,#menu-favours,#menu-book,#menu-char,#menu-help,#menu-settings{
+  position:relative;padding-left:56px;padding-right:20px;text-align:left;--bc1:#ffc070;--bc2:#f07c16}
+#btn-char::before,#btn-howto::before,#btn-settings::before,#btn-guest::before,#menu-favours::before,#menu-book::before,
+#menu-char::before,#menu-help::before,#menu-settings::before{content:"";position:absolute;left:8px;top:50%;width:36px;height:36px;
+  margin-top:-19px;border-radius:50%;background:linear-gradient(var(--bc1),var(--bc2));
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.16),inset 0 2px 0 rgba(255,255,255,.55),0 2px 0 rgba(255,255,255,.9)}
+#btn-char::after,#btn-howto::after,#btn-settings::after,#btn-guest::after,#menu-favours::after,#menu-book::after,
+#menu-char::after,#menu-help::after,#menu-settings::after{content:"";position:absolute;left:16px;top:50%;width:20px;height:20px;
+  margin-top:-11px;background:#fff;-webkit-mask:var(--ico) center/contain no-repeat;mask:var(--ico) center/contain no-repeat}
+#btn-char,#menu-char{--ico:var(--i-person);--bc1:#ffa6c6;--bc2:#e65089}
+#btn-howto,#menu-help{--ico:var(--i-question);--bc1:#8fdcff;--bc2:#2b97d8}
+#btn-settings,#menu-settings{--ico:var(--i-sliders);--bc1:#ffd86e;--bc2:#e59a12}
+#btn-guest{--ico:var(--i-friends);--bc1:#c3a8ff;--bc2:#8062ea}
+#menu-favours{--ico:var(--i-heart);--bc1:#ffc070;--bc2:#f07c16}
+#menu-book{--ico:var(--i-book);--bc1:#8fe57f;--bc2:#34a02f}
+#btn-play{padding-left:14px}
+
+/* the big round button: a picture of what it will do above the word, a
+   glassy rim, and a proper squash when it is pressed */
+#btn-a,#btn-fish,#btn-friend{-webkit-tap-highlight-color:transparent}
+#btn-a{box-shadow:inset 0 -9px 12px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.7),0 6px 0 var(--abs),0 12px 20px rgba(0,0,0,.3)}
+#btn-a.down{transform:translateY(5px) scale(.97);box-shadow:inset 0 4px 10px rgba(0,0,0,.2),0 1px 0 var(--abs),0 4px 10px rgba(0,0,0,.25)}
+#btn-a[data-verb]::before{content:"";display:block;width:26px;height:26px;margin:-2px auto 1px;background:var(--abt);opacity:.85;
+  -webkit-mask:var(--aico) center/contain no-repeat;mask:var(--aico) center/contain no-repeat}
+#btn-a[data-verb="none"]::before{display:none}
+#btn-a[data-verb="net"]{--aico:var(--i-net)}
+#btn-a[data-verb="pick"]{--aico:var(--i-flower)}
+#btn-a[data-verb="look"]{--aico:var(--i-eye)}
+#btn-a[data-verb="stars"]{--aico:var(--i-star)}
+#btn-a[data-verb="read"]{--aico:var(--i-book)}
+#btn-a[data-verb="sleep"]{--aico:var(--i-moon)}
+#btn-a[data-verb="home"]{--aico:var(--i-house)}
+#btn-a[data-verb="visit"]{--aico:var(--i-paw)}
+#btn-a[data-verb="tanks"]{--aico:var(--i-fish)}
+#btn-a[data-verb="boots"]{--aico:var(--i-boot)}
+#btn-a[data-verb="decorate"]{--aico:var(--i-brush)}
+#btn-a[data-verb="decorate"]{font-size:13px}
+#btn-fish{box-shadow:inset 0 -7px 10px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.7),0 5px 0 #1f7db3,0 10px 18px rgba(0,0,0,.3)}
+#btn-fish::before{content:"";display:block;width:22px;height:22px;margin:-2px auto 0;background:currentColor;opacity:.85;
+  -webkit-mask:var(--i-fish) center/contain no-repeat;mask:var(--i-fish) center/contain no-repeat}
+#btn-fish.down{transform:translateY(4px) scale(.97)}
+#btn-friend{box-shadow:inset 0 -7px 10px rgba(0,0,0,.10),inset 0 3px 0 rgba(255,255,255,.6),0 5px 0 #3d8a3d,0 10px 18px rgba(0,0,0,.3)}
+#btn-menu{box-shadow:inset 0 -4px 0 rgba(0,70,0,.18),inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 #237a21,0 6px 12px rgba(0,0,0,.22);-webkit-tap-highlight-color:transparent}
+/* Play catches the light now and then */
+#title-card #btn-play::before{content:"";position:absolute;inset:0;border-radius:21px;pointer-events:none;
+  background:linear-gradient(105deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 58%) no-repeat;
+  background-size:300% 100%;background-position:150% 0;animation:playshine 3.6s ease-in-out infinite}
+@keyframes playshine{0%,60%{background-position:150% 0}100%{background-position:-50% 0}}
+@media (prefers-reduced-motion:reduce){#title-card #btn-play::before{animation:none;display:none}}
+/* on the title screen the words stay in the middle, with the badge at the left */
+#title-btns #btn-char,#title-btns #btn-howto,#title-btns #btn-settings,#title-btns #btn-guest{padding-left:52px;padding-right:52px;text-align:center}
