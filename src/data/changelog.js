@@ -6,9 +6,16 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.24.0';
+  GG.VERSION = '1.24.1';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.1', title: 'No more clicks',
+      lines: [
+        'The little clicks and ticks in the sound are gone. Footsteps, the net, the music and the wind and water all start and stop smoothly now.',
+        'Walking on stone is a soft scuff instead of a sharp tick, and loud moments no longer crackle.'
+      ]
+    },
     {
       v: '1.24.0', title: 'Better buttons and livelier fish',
       lines: [
