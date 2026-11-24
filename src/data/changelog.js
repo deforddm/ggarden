@@ -6,9 +6,16 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.24.1';
+  GG.VERSION = '1.24.2';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.2', title: 'Tidier buttons',
+      lines: [
+        'The round buttons no longer have a slice of colour poking out underneath them.',
+        'At Dog\u2019s Paradise the THROW button shows a ball now, not a fish.'
+      ]
+    },
     {
       v: '1.24.1', title: 'No more clicks',
       lines: [
