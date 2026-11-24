@@ -1,5 +1,5 @@
 /* Guin's Garden service worker - lets the game work with no internet. */
-const CACHE = 'guins-garden-v1.24.4';
+const CACHE = 'guins-garden-v1.24.5';
 const ASSETS = [
   /* v1.20: every script the page loads, so the whole game works offline
      from the first visit (the list had not been updated since v1.1) */
