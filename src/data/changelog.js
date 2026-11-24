@@ -6,9 +6,15 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.24.4';
+  GG.VERSION = '1.24.5';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.5', title: 'Smoother everywhere',
+      lines: [
+        'The same fix that smoothed the Bamboo Grove now covers the rest of the map. The orchard, the glade, the Cherry Grove and the hillside bushes were the next slowest places, and they should run smoothly too.'
+      ]
+    },
     {
       v: '1.24.4', title: 'More eye colours',
       lines: [
