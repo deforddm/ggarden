@@ -1241,6 +1241,7 @@
     [[-0.3, -0.35], [0.3, -0.1], [-0.25, 0.35], [0.25, 0.6]].forEach(function (p) { ell(c, p[0] * s, p[1] * s, s * 0.08 + 0.2, s * 0.08 + 0.2); });
   };
 
+  var CROPS = {}, cropPx = 0;   // v1.24.5: ripe crops, painted once
   var FruitArt = GG.FruitArt = {
     shapes: F,
 
@@ -1259,6 +1260,39 @@
        `n` is how many, `r` is the plant's radius, `ripe` 0..1 fades it in. */
     onPlant: function (c, def, cx, cy, r, n, seed, t, ripe) {
       if (ripe <= 0) return;
+      /* v1.24.5: a ripe crop is always the same six fruits in the same
+         places, and an orchard row puts thirty of them on screen - so a
+         ripe crop is painted once and stamped. A crop that is still
+         growing back (fading in) is painted the old way. */
+      if (ripe >= 1 && !GG.noSprites && c.getTransform && def && def.id) {
+        var m = c.getTransform();
+        if (!m.b && !m.c && m.a === m.d && m.a > 0.3 && m.a < 5) {
+          var sc = m.a, rb = Math.max(6, Math.round(r / 4) * 4), look = Math.floor((((seed || 0) % 1) + 1) % 1 * 3);
+          var key = def.id + '|' + n + '|' + rb + '|' + look + '|' + sc.toFixed(3), sp = CROPS[key];
+          if (!sp && cropPx > 2.5e6) {
+            /* full: start again. Only the crops near her get repainted. */
+            for (var ck in CROPS) { CROPS[ck].cv.width = CROPS[ck].cv.height = 1; delete CROPS[ck]; }
+            cropPx = 0;
+          }
+          if (!sp) {
+            var hw = rb * 1.0, up = rb * 0.5, down = rb * 0.95;
+            var cv = document.createElement('canvas');
+            cv.width = Math.ceil(hw * 2 * sc); cv.height = Math.ceil((up + down) * sc);
+            var g = cv.getContext('2d');
+            g.scale(sc, sc);
+            var keep = GG.noSprites; GG.noSprites = true;
+            try { FruitArt.onPlant(g, def, hw, up, rb, n, (look + 0.5) / 3, 0, 1); } finally { GG.noSprites = keep; }
+            sp = CROPS[key] = { cv: cv, hw: hw, up: up, w: hw * 2, h: up + down };
+            cropPx += cv.width * cv.height;
+          }
+          if (sp) {
+            var k = r / rb;
+            var dx = (Math.round(m.e + (cx - sp.hw * k) * sc) - m.e) / sc, dy = (Math.round(m.f + (cy - sp.up * k) * sc) - m.f) / sc;
+            c.drawImage(sp.cv, dx, dy, sp.w * k, sp.h * k);
+            return;
+          }
+        }
+      }
       var rnd = GG.mulberry32(Math.floor((seed || 0.5) * 9973) + 7);
       c.save();
       c.globalAlpha = Math.min(1, ripe);
@@ -1271,6 +1305,8 @@
       }
       c.restore();
     },
+
+    _crops: function () { return { n: Object.keys(CROPS).length, pixels: cropPx }; },
 
     /* the tiny versions for the world, one per shape: FruitArt.blobs */
     blobs: B,

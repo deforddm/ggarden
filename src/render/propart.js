@@ -3766,12 +3766,34 @@
        sway : (t, seed, r) -> [sideways px at the top, top height in px,
               sideways px for the whole thing]
      ===================================================================== */
-  var SPRITE_LOOKS = 4, SPRITE_MAX = 60, SPRITE_BANDS = 8;
-  function stamped(name, box, sway) {
-    var paint = P[name], store = {}, count = 0;
+  var SPRITE_MAX = 140, SPRITE_BANDS = 4, STAMP_PX = 0, STAMP_PX_MAX = 9e6;   // ~36 MB of pictures at the very most
+  var STAMPED = [], STORES = [], stampTick = 0;
+  /* Over the limit: forget the pictures that have gone longest unused -
+     the ones from the far side of the map - so wherever she is standing
+     always has its pictures. */
+  function stampEvict() {
+    var all = [], i, k;
+    for (i = 0; i < STORES.length; i++) for (k in STORES[i].store) all.push([STORES[i], k, STORES[i].store[k].used]);
+    all.sort(function (a, b) { return a[2] - b[2]; });
+    for (i = 0; i < all.length && STAMP_PX > STAMP_PX_MAX * 0.7; i++) {
+      if (all[i][2] >= stampTick - 2) break;   // in use right now
+      var st = all[i][0], sp = st.store[all[i][1]];
+      for (k = 0; k < sp.length; k++) { STAMP_PX -= sp[k].cv.width * sp[k].cv.height; sp[k].cv.width = sp[k].cv.height = 1; }
+      delete st.store[all[i][1]]; st.count--;
+    }
+  }
+  GG.stampFrame = function () { stampTick++; };
+  /* box: null = let it measure itself (a roomy scratch picture, trimmed) */
+  function stamped(name, box, sway, looks, keyOf) {
+    var paint = P[name], self = { store: {}, count: 0 }, store = self.store, SPRITE_LOOKS = looks || 4;
     if (!paint) return;
+    STORES.push(self);
+    box = box || [3, 4.6, 1.4];
+    STAMPED.push(name);
     function build(rb, look, sc, col, p) {
-      var hw = box[0] * rb, up = box[1] * rb, down = box[2] * rb;
+      /* the foot sits on a whole pixel row of the picture, so every strip
+         lands on whole rows of the screen */
+      var hw = Math.ceil(box[0] * rb * sc) / sc, up = Math.ceil(box[1] * rb * sc) / sc, down = box[2] * rb;
       var W = Math.ceil(hw * 2 * sc), H = Math.ceil((up + down) * sc);
       var cv = document.createElement('canvas');
       cv.width = W; cv.height = H;
@@ -3785,7 +3807,8 @@
          back on whole pixel rows, so the joins cannot show. */
       var bands = [], d;
       try { d = g.getImageData(0, 0, W, H).data; } catch (e) { d = null; }
-      var bh = Math.ceil(H / SPRITE_BANDS);
+      /* a small picture is one piece; only a tall one is worth cutting up */
+      var bh = Math.ceil(H / Math.max(1, Math.min(SPRITE_BANDS, Math.round(H / 150))));
       for (var b0 = 0; b0 < H; b0 += bh) {
         var b1 = Math.min(H, b0 + bh), x0 = W, x1 = -1, y0 = b1, y1 = -1, xx, yy;
         if (d) {
@@ -3800,6 +3823,7 @@
         bc.width = x1 - x0 + 1; bc.height = y1 - y0 + 1;
         bc.getContext('2d').drawImage(cv, x0, y0, bc.width, bc.height, 0, 0, bc.width, bc.height);
         bands.push({ cv: bc, x: x0 / sc - hw, y: y0 / sc - up, w: bc.width / sc, h: bc.height / sc });
+        STAMP_PX += bc.width * bc.height;
       }
       cv.width = cv.height = 1;
       return bands;
@@ -3811,12 +3835,17 @@
       var sc = m.a;
       var rb = Math.max(6, Math.round(r / 3) * 3);
       var look = Math.floor((((seed || 0) % 1) + 1) % 1 * SPRITE_LOOKS);
-      var key = rb + '|' + look + '|' + sc.toFixed(3), sp = store[key];
+      var extra = '';
+      if (keyOf) { extra = keyOf(p, col); if (extra == null) return paint(c, x, y, r, t, seed, col, p); }
+      var key = rb + '|' + look + '|' + sc.toFixed(3) + '|' + extra, sp = store[key];
       if (!sp) {
-        if (count >= SPRITE_MAX || !(sc > 0.3 && sc < 5)) return paint(c, x, y, r, t, seed, col, p);
+        if (!(sc > 0.3 && sc < 5)) return paint(c, x, y, r, t, seed, col, p);
+        if (STAMP_PX > STAMP_PX_MAX || self.count >= SPRITE_MAX) stampEvict();
+        if (STAMP_PX > STAMP_PX_MAX || self.count >= SPRITE_MAX) return paint(c, x, y, r, t, seed, col, p);
         sp = store[key] = build(rb, look, sc, col, p);
-        count++;
+        self.count++;
       }
+      sp.used = stampTick;
       var sw = sway ? sway(t, seed, r) : null;
       var ys = (Math.round(m.f + y * sc) - m.f) / sc;   // foot on a whole pixel row
       c.save();
@@ -3826,7 +3855,7 @@
       c.restore();
     };
     P[name]._paint = paint;
-    P[name]._sprites = function () { return count; };
+    P[name]._sprites = function () { return self.count; };
     P[name]._pixels = function () { var n = 0; for (var k in store) store[k].forEach(function (b) { n += b.cv.width * b.cv.height; }); return n; };
   }
   stamped('bamboo', [1.7, 3.5, 0.5], function (t, seed, r) { return [Math.sin(t * 0.85 + seed * 6) * r * 0.06, r * 3.1, 0]; });
@@ -3834,6 +3863,29 @@
   stamped('duckweed', [1.2, 0.7, 0.7], function (t, seed, r) { return [0, 1, Math.sin(t * 0.35 + seed * 5) * r * 0.05]; });
   stamped('bulrush', [1.4, 2.3, 0.3], function (t, seed, r) { return [Math.sin(t * 1.0 + seed * 7) * 1.5, r * 2, 0]; });
   stamped('cattail', [1.6, 2.1, 0.3], function (t, seed, r) { return [Math.sin(t * 1.1 + seed * 8) * 1.9, r * 1.7, 0]; });
+
+  /* v1.24.5: the same again for every other busy plant and stone that
+     does not change - found by counting the shapes each one asks for and
+     how many crowd onto one screen. Things that hold fruit or flowers to
+     pick are left alone: they change. The swaying ones lean from the foot
+     by the same amount, at the same speed, as they used to bend. */
+  function leans(speed, phase, px, tall) {
+    return function (t, seed, r) { return [Math.sin(t * speed + seed * phase) * px, r * tall, 0]; };
+  }
+  stamped('swordFern', null, leans(1.0, 7, 1.1, 1.0), 6);
+  stamped('bunchgrass', null, leans(1.7, 13, 2.0, 1.15), 6);
+  stamped('bracken', null, leans(1.1, 9, 0.9, 0.9), 6);
+  stamped('heather', null, leans(1.5, 11, 0.9, 0.7), 6);
+  stamped('sagebrush', null, leans(0.9, 7, 1.3, 1.0), 6);
+  stamped('cottonGrass', null, leans(1.8, 12, 1.9, 1.2), 6);
+  stamped('oakGall', null, leans(1.2, 9, 1.2, 1.0), 6);
+  stamped('rabbitbrush', null, null, 6);
+  ['reindeerLichen', 'woodSorrel', 'mossHummock', 'talus', 'acorns', 'mossCampion', 'scabRubble', 'dryas',
+    'soilCrust', 'arcticWillow', 'pricklyPear', 'pebbles', 'nurseLog', 'oakSnag'].forEach(function (k) { stamped(k, null, null, 6); });
+  stamped('petalDrift', null, null, 4);
+  /* a cherry tree is two trees: in bloom, and not */
+  stamped('cherryTree', null, leans(0.7, 6, 1.6, 2.2), 2, function (p, col) { return (p && p.bloom != null) ? (p.bloom ? 'b' : 'g') : (col === false || col === 'fruit') ? 'g' : 'b'; });
+  GG.stampedProps = function () { return { names: STAMPED.slice(), pixels: STAMP_PX }; };
 
   GG.Props = P;
 })(window.GG = window.GG || {});
