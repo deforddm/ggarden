@@ -28,6 +28,12 @@ const { chromium, devices } = require('playwright');
     async function ops(x, y, off) { GG.noSprites = off; GG.Player.reset(x, y); await new Promise(res => setTimeout(res, 500)); await frames(3); n = 0; await frames(20); GG.noSprites = false; return Math.round(n / 20); }
     out.bambooOld = await ops(4600, 1800, true); out.bambooNew = await ops(4600, 1800, false);
     out.marshOld = await ops(3800, 3800, true); out.marshNew = await ops(3800, 3800, false);
+    /* v1.24.5: and the busiest spot of every other biome */
+    const cells = {}, W = GG.World; W.props.forEach(q => { const bm = W.biomeAt(q.x, q.y); const k = bm + '|' + Math.floor(q.x / 400) + '|' + Math.floor(q.y / 400); cells[k] = (cells[k] || 0) + 1; });
+    const best = {}; for (const k in cells) { const [bm, cx, cy] = k.split('|'); if (!best[bm] || cells[k] > best[bm].n) best[bm] = { n: cells[k], x: cx * 400 + 200, y: cy * 400 + 200 }; }
+    out.biomes = {}; for (const bm in best) out.biomes[bm] = await ops(best[bm].x, best[bm].y, false);
+    out.orchardOld = await ops(best.orchard.x, best.orchard.y, true);
+    out.stampPx = GG.stampedProps().pixels; out.stampNames = GG.stampedProps().names.length; out.crops = GG.FruitArt._crops();
     ['fill', 'stroke', 'fillRect', 'drawImage'].forEach(k => { proto[k] = keep[k]; });
     out.sprites = {}; out.mb = 0;
     names.forEach(k => { out.sprites[k] = GG.Props[k]._sprites(); out.mb += GG.Props[k]._pixels() * 4 / 1e6; });
@@ -48,8 +54,15 @@ const { chromium, devices } = require('playwright');
   check('so does the Cattail Marsh, or near it', r.marshNew < r.marshOld * 0.6, r);
   const off = Object.keys(r.diff).filter(k => r.diff[k] > 6);
   check('a stamp looks like the painting it replaced', off.length === 0, r.diff);
-  check('the pictures take under 30 MB between them', r.mb < 30, r.mb);
+  check('the first five take under 30 MB between them', r.mb < 30, r.mb);
   check('a turned canvas is painted the old way', r.rotatedBuilt === 0, r.rotatedBuilt);
+  const busy = Object.keys(r.biomes).filter(k => r.biomes[k] > 1900);
+  check('no biome asks for more than 1,900 shapes a frame at its busiest', busy.length === 0, busy.map(k => k + ' ' + r.biomes[k]));
+  check('the orchard asks for under two thirds of what it did', r.biomes.orchard < r.orchardOld * 0.67, [r.biomes.orchard, r.orchardOld]);
+  check('after touring the whole map the pictures are still within their limit', r.stampPx <= 9.5e6 && r.crops.pixels <= 2.8e6, [r.stampPx, r.crops]);
+  check('a ripe crop is stamped, and thirty plants share a few pictures', r.crops.n > 0 && r.crops.n < 80, r.crops);
+  check('the What\u2019s new list has the 1.24.5 entry', await p.evaluate(() => GG.CHANGELOG.some(c => c.v === '1.24.5')));
+  console.log('busiest: ' + Object.keys(r.biomes).sort((a, c) => r.biomes[c] - r.biomes[a]).slice(0, 5).map(k => k + ' ' + r.biomes[k]).join(', ') + '; orchard was ' + r.orchardOld);
   check('the What’s new list has the 1.24.3 entry', await p.evaluate(() => GG.CHANGELOG.some(c => c.v === '1.24.3')));
   console.log('shapes per frame: grove ' + r.bambooOld + ' -> ' + r.bambooNew + ', marsh ' + r.marshOld + ' -> ' + r.marshNew + ', memory ' + r.mb.toFixed(1) + ' MB');
   results.forEach(x => console.log(x));
