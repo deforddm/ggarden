@@ -77,6 +77,15 @@
       var mood = MOODS[this.mood] || MOODS.day;
       var spb = 60 / mood.bpm;          // one beat
       var stepLen = spb / 2;            // eighth notes
+      /* v1.25: if the phone was busy, or the tab was away, the clock has run
+         on past the next note. Playing the missed notes late puts them all
+         on top of each other with their fade-ins already over - a burst of
+         clicks. Skip them and carry on from just ahead of now. */
+      if (this._next < a.currentTime + 0.04) {
+        var missed = Math.ceil((a.currentTime + 0.06 - this._next) / stepLen);
+        this._next += missed * stepLen;
+        this._step += missed;
+      }
       while (this._next < a.currentTime + 1.1) {
         this._voice(mood, this._next, this._step);
         this._next += stepLen;
@@ -143,9 +152,15 @@
       var o = a.createOscillator(), g = a.createGain();
       o.type = type;
       o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(gain, t + (attack || 0.01));
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      /* low notes need a slower start, or the first cycle is a thump; and
+         every note is taken right down to nothing before it stops */
+      var att = Math.max(attack || 0.01, freq < 200 ? 0.03 : 0.012);
+      if (dur < att + 0.04) dur = att + 0.04;
+      g.gain.value = 0;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + att);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * 0.01), t + dur - 0.015);
+      g.gain.linearRampToValueAtTime(0, t + dur);
       o.connect(g); g.connect(this._out);
       o.start(t); o.stop(t + dur + 0.05);
     }

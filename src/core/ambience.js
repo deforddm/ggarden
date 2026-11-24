@@ -93,7 +93,9 @@
   /* little shaped tones */
   function blip(freq, dur, type, gain, slide, delay, wobble) {
     var a = GG.Audio.ctx(); if (!a || gain <= 0.0005) return;
-    var t = a.currentTime + (delay || 0);
+    /* v1.25: a moment ahead, never "now" - see WHY THE SOUNDS CLICKED in audio.js */
+    var t = a.currentTime + 0.03 + (delay || 0);
+    if (dur < 0.05) dur = 0.05;
     var o = a.createOscillator(), g = a.createGain();
     o.type = type || 'sine';
     o.frequency.setValueAtTime(freq, t);
@@ -103,9 +105,12 @@
       lfo.frequency.value = wobble; d.gain.value = freq * 0.05;
       lfo.connect(d); d.connect(o.frequency); lfo.start(t); lfo.stop(t + dur + 0.05);
     }
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), t + dur * 0.18);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    var att = Math.min(0.03, Math.max(0.008, dur * 0.18));
+    g.gain.value = 0;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(Math.max(0.0002, gain), t + att);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * 0.01), t + dur - 0.012);
+    g.gain.linearRampToValueAtTime(0, t + dur);
     o.connect(g); g.connect(GG.Audio.bus('ambience'));
     o.start(t); o.stop(t + dur + 0.05);
   }

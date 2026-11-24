@@ -13,27 +13,48 @@
     return (v == null ? (which === 'music' ? 0.5 : 0.7) : v);
   }
 
+  /* Everything between a sound and the speaker, built on whichever
+     context is given - the real one, or (for the tests) an offline one
+     that renders to a buffer so the result can be measured. */
+  var LIM_TRIM = 0.634;   // measured: this limiter lifts quiet sound by 1.577
+  function wire(c) {
+    master = c.createGain(); master.gain.value = 1;
+    /* v1.25: a gentle limiter last of all. A catch jingle on top of the
+       music and the surf could add up past full scale, and a clipped peak
+       is heard as a crackle. */
+    try {
+      var lim = c.createDynamicsCompressor();
+      lim.threshold.value = -9; lim.knee.value = 10; lim.ratio.value = 8; lim.attack.value = 0.004; lim.release.value = 0.18;
+      var trim = c.createGain(); trim.gain.value = LIM_TRIM;   // a compressor adds make-up gain of its own; take it back off
+      master.connect(lim); lim.connect(trim); trim.connect(c.destination);
+    } catch (e) { master.connect(c.destination); }
+    busSfx = c.createGain(); busSfx.connect(master);
+    busMusic = c.createGain(); busMusic.connect(master);
+    busAmb = c.createGain(); busAmb.connect(master);
+    /* set straight to their levels: easing up from full volume at the very
+       start made the first second too loud */
+    busSfx.gain.value = vol('sfx'); busMusic.gain.value = vol('music') * 0.8; busAmb.gain.value = vol('ambience') * 0.75;
+    /* v1.23: a little room. The music, and only a breath of the effects,
+       also go through one soft echo, so the notes ring on instead of
+       stopping dead. Its own gains only - nothing here is a volume control.
+       (v1.25: the effects' share cut from 0.4 to 0.12 - a footstep that
+       echoes is a tick that repeats.) */
+    try {
+      var echoIn = c.createGain(), dl = c.createDelay(1), fb = c.createGain(), lp = c.createBiquadFilter(), wet = c.createGain(), sfxSend = c.createGain();
+      dl.delayTime.value = 0.27; fb.gain.value = 0.3; lp.type = 'lowpass'; lp.frequency.value = 2300; wet.gain.value = 0.26; sfxSend.gain.value = 0.12;
+      busMusic.connect(echoIn); busSfx.connect(sfxSend); sfxSend.connect(echoIn);
+      echoIn.connect(dl); dl.connect(lp); lp.connect(wet); wet.connect(master); lp.connect(fb); fb.connect(dl);
+    } catch (e) {}
+  }
+
   function ac() {
     if (!ctx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       ctx = new AC();
-      master = ctx.createGain(); master.gain.value = 1; master.connect(ctx.destination);
-      busSfx = ctx.createGain(); busSfx.connect(master);
-      busMusic = ctx.createGain(); busMusic.connect(master);
-      busAmb = ctx.createGain(); busAmb.connect(master);
-      /* v1.23: a little room. The music, and a touch of the effects, also
-         go through one soft echo, so the notes ring on instead of stopping
-         dead. Its own gains only - nothing here is a volume control. */
-      try {
-        var echoIn = ctx.createGain(), dl = ctx.createDelay(1), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain(), sfxSend = ctx.createGain();
-        dl.delayTime.value = 0.27; fb.gain.value = 0.3; lp.type = 'lowpass'; lp.frequency.value = 2300; wet.gain.value = 0.26; sfxSend.gain.value = 0.4;
-        busMusic.connect(echoIn); busSfx.connect(sfxSend); sfxSend.connect(echoIn);
-        echoIn.connect(dl); dl.connect(lp); lp.connect(wet); wet.connect(master); lp.connect(fb); fb.connect(dl);
-      } catch (e) {}
-      GG.Audio.applyVolumes();
+      wire(ctx);
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended' && ctx.resume && !ctx.startRendering) ctx.resume();   // not an offline one
     return ctx;
   }
 
@@ -41,14 +62,24 @@
   var noiseBuf = null;
   function noiseBuffer(a) {
     if (!noiseBuf) {
-      var n = a.sampleRate * 3;
-      noiseBuf = a.createBuffer(1, n, a.sampleRate);
-      var d = noiseBuf.getChannelData(0);
-      var last = 0;
-      for (var i = 0; i < n; i++) {
+      /* v1.25: the strip is played round and round by every ambience bed,
+         and its last sample used to have nothing to do with its first - a
+         small step in the sound once every three seconds, heard as a soft
+         tick under the wind and the water. Now the tail is cross-faded into
+         the head, so the join cannot be found. */
+      var n = a.sampleRate * 3, fade = Math.floor(a.sampleRate * 0.3), raw = new Float32Array(n + fade);
+      var last = 0, i;
+      for (i = 0; i < n + fade; i++) {
         var white = Math.random() * 2 - 1;
         last = (last + 0.02 * white) / 1.02;   // brown-ish, easier on the ears
-        d[i] = last * 3.2;
+        raw[i] = last * 3.2;
+      }
+      noiseBuf = a.createBuffer(1, n, a.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      for (i = 0; i < n; i++) d[i] = raw[i];
+      for (i = 0; i < fade; i++) {
+        var k = i / fade, up = Math.sin(k * Math.PI / 2), down = Math.cos(k * Math.PI / 2);
+        d[i] = raw[i] * up + raw[n + i] * down;   // what came after the end, fading out under the start
       }
     }
     return noiseBuf;
@@ -56,6 +87,21 @@
 
   GG.Audio = {
     ctx: function () { return ctx; },
+    /* For the tests: play whatever fn plays into an offline context and
+       hand back the rendered samples, so clicks can be measured instead of
+       listened for. The real context and buses are put back afterwards. */
+    _lead: function () { return LEAD; },
+    _render: function (fn, seconds, rate) {
+      var OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OC) return Promise.resolve(null);
+      var keep = [ctx, master, busSfx, busMusic, busAmb, noiseBuf];
+      var off = new OC(1, Math.ceil((seconds || 1) * (rate || 44100)), rate || 44100);
+      ctx = off; noiseBuf = null; wire(off);
+      try { fn(off); } finally {
+        ctx = keep[0]; master = keep[1]; busSfx = keep[2]; busMusic = keep[3]; busAmb = keep[4]; noiseBuf = keep[5];
+      }
+      return off.startRendering().then(function (buf) { return buf.getChannelData(0); });
+    },
     ready: function () { return !!ctx; },
     bus: function (which) {
       ac();
@@ -76,32 +122,51 @@
     }
   };
 
+  /* v1.25: WHY THE SOUNDS CLICKED.
+     Every one-shot used to be scheduled at exactly "now" with a 12 ms
+     fade-in. By the time the audio thread picks it up, "now" is already in
+     the past - on a phone by more than those 12 ms - so the fade-in was
+     skipped and the note began at full volume: a click on the front of
+     every sound. The noise bursts (footsteps, the net, splashes) had no
+     fade-in at all. Now everything is scheduled a moment ahead (LEAD), fades
+     in on a straight line, and is brought all the way down to nothing
+     before it stops. */
+  var LEAD = 0.03;
   function tone(freq, dur, type, vol, slideTo, delay, wobble) {
     var a = ac(); if (!a) return;
-    var t0 = a.currentTime + (delay || 0);
+    var t0 = a.currentTime + LEAD + (delay || 0);
+    var peak = vol == null ? 0.12 : vol;
+    var att = Math.min(0.02, Math.max(freq < 260 ? 0.012 : 0.006, dur * 0.2));
+    if (dur < att + 0.03) dur = att + 0.03;
     var o = a.createOscillator(), g = a.createGain();
     o.type = type || 'sine';
     o.frequency.setValueAtTime(freq, t0);
     if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol == null ? 0.12 : vol, t0 + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    g.gain.value = 0;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(peak, t0 + att);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak * 0.01), t0 + dur - 0.012);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
     if (wobble) {
       var lfo = a.createOscillator(), dep = a.createGain();
       lfo.frequency.value = wobble; dep.gain.value = freq * 0.06;
       lfo.connect(dep); dep.connect(o.frequency);
-      lfo.start(t0); lfo.stop(t0 + dur + 0.02);
+      lfo.start(t0); lfo.stop(t0 + dur + 0.03);
     }
     o.connect(g); g.connect(busSfx);
-    o.start(t0); o.stop(t0 + dur + 0.02);
+    o.start(t0); o.stop(t0 + dur + 0.03);
   }
-
   function noise(dur, vol, freq, delay) {
     var a = ac(); if (!a) return;
-    var n = Math.floor(a.sampleRate * dur);
+    if (dur < 0.03) dur = 0.03;
+    var n = Math.floor(a.sampleRate * dur), up = Math.max(8, Math.floor(a.sampleRate * Math.min(0.006, dur * 0.2)));
     var buf = a.createBuffer(1, n, a.sampleRate);
     var d = buf.getChannelData(0);
-    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    for (var i = 0; i < n; i++) {
+      /* in over a few milliseconds, then away to exactly nothing */
+      var env = (i < up ? 0.5 - 0.5 * Math.cos(Math.PI * i / up) : 1) * Math.pow(1 - i / n, 1.4);
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
     var s = a.createBufferSource(); s.buffer = buf;
     var f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq || 1400;
     /* A plain gain, with nothing else connected to it - an AudioParam adds up
@@ -109,7 +174,7 @@
        modulator on the end of it. */
     var g = a.createGain(); g.gain.value = vol == null ? 0.12 : vol;
     s.connect(f); f.connect(g); g.connect(busSfx);
-    s.start(a.currentTime + (delay || 0));
+    s.start(a.currentTime + LEAD + (delay || 0));
   }
 
   GG.Sfx = {
@@ -120,7 +185,7 @@
     step: function (surface) {
       var f = (this._foot = !this._foot) ? 1 : 0.86, j = 0.92 + Math.random() * 0.16;
       if (surface === 'wood') { tone(150 * f * j, 0.07, 'triangle', 0.06, 96); noise(0.03, 0.012, 1000); }
-      else if (surface === 'stone') { noise(0.035, 0.032, 2300 * f * j); tone(480 * f, 0.03, 'sine', 0.012); }
+      else if (surface === 'stone') { noise(0.05, 0.026, 1500 * f * j); noise(0.03, 0.008, 3000, 0.012); }   // a scuff, not a tick
       else if (surface === 'sand') { noise(0.1, 0.022, 1500 * f * j); }
       else if (surface === 'snow') { noise(0.11, 0.034, 380 * f * j); noise(0.05, 0.012, 2600, 0.03); }
       else if (surface === 'water') { noise(0.15, 0.036, 820 * f * j); tone(360 * f, 0.1, 'sine', 0.03, 640); }
