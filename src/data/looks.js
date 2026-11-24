@@ -61,12 +61,21 @@
       { id: 'purple', name: 'Purple', base: '#a57af0' }
     ],
 
+    /* v1.24.4: twelve now, and every one a colour real eyes come in -
+       no pink, no purple. Ids that were here before keep their id, so a
+       saved character keeps her eyes. */
     EYES: [
       { id: 'dark', name: 'Dark brown', base: '#3b2418' },     // Guin
       { id: 'brown', name: 'Brown', base: '#7a4a24' },
+      { id: 'lightbrown', name: 'Light brown', base: '#a06a3a' },
+      { id: 'amber', name: 'Amber', base: '#c98a2e' },
       { id: 'hazel', name: 'Hazel', base: '#8b7a33' },
+      { id: 'olive', name: 'Olive green', base: '#6f8440' },
       { id: 'green', name: 'Green', base: '#3f9a52' },
+      { id: 'bluegreen', name: 'Blue-green', base: '#3a9a96' },
+      { id: 'lightblue', name: 'Light blue', base: '#7ab8e6' },
       { id: 'blue', name: 'Blue', base: '#3f86d8' },
+      { id: 'deepblue', name: 'Dark blue', base: '#2f5a9c' },
       { id: 'grey', name: 'Grey', base: '#6f8394' }
     ],
 

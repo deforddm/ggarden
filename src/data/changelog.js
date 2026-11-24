@@ -6,9 +6,21 @@
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.24.2';
+  GG.VERSION = '1.24.4';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.4', title: 'More eye colours',
+      lines: [
+        'Twelve eye colours to choose from now, all of them colours real eyes come in: light brown, amber, olive green, blue-green, light blue and dark blue are new. Change yours from My character in the menu.'
+      ]
+    },
+    {
+      v: '1.24.3', title: 'A smoother grove and marsh',
+      lines: [
+        'The Bamboo Grove and the Cattail Marsh were slow and jerky. They should run smoothly now.'
+      ]
+    },
     {
       v: '1.24.2', title: 'Tidier buttons',
       lines: [
