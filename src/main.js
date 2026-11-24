@@ -99,6 +99,7 @@
     else if (st === 'wait') { main = 'WAIT'; sub = 'for the !'; }
     else if (st === 'cast' || st === 'reel') { main = '\u2026'; sub = ''; }
     btn.classList.toggle('ready', ready);
+    btn.setAttribute('data-icon', main === 'THROW' ? 'ball' : 'fish');   // v1.24.2: a ball for the ball, not a fish
     var key = main + '|' + sub;
     if (key !== _fishLabel) {
       _fishLabel = key;
