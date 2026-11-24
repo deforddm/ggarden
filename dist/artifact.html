@@ -904,6 +904,20 @@ ul.tips li{margin-bottom:3px}
 /* on the title screen the words stay in the middle, with the badge at the left */
 #title-btns #btn-char,#title-btns #btn-howto,#title-btns #btn-settings,#title-btns #btn-guest{padding-left:52px;padding-right:52px;text-align:center}
 
+/* v1.24.2: the round buttons had a hard dark "lip" under the white ring - a
+   crescent of colour poking out below it, which read as a smudge rather than
+   as depth. The lip is gone: the white ring is the edge now, the depth is
+   shading inside the button and one soft shadow on the grass. */
+:root{--i-ball:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg fill=%22none%22 stroke=%22black%22 stroke-width=%222.3%22 stroke-linecap=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229.2%22/%3E%3Cpath d=%22M5.4 5.6c3.3 3.5 3.3 9.3 0 12.8%22/%3E%3Cpath d=%22M18.6 5.6c-3.3 3.5-3.3 9.3 0 12.8%22/%3E%3C/g%3E%3C/svg%3E")}
+#btn-fish[data-icon="ball"]::before{-webkit-mask-image:var(--i-ball);mask-image:var(--i-ball)}
+#btn-a{box-shadow:inset 0 -10px 14px rgba(0,0,0,.13),0 7px 16px rgba(0,0,0,.32)}
+#btn-a.down{transform:translateY(3px) scale(.96);box-shadow:inset 0 5px 12px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.28)}
+#btn-fish,#btn-fish.ready,#btn-friend,#btn-friend.waiting{box-shadow:inset 0 -8px 11px rgba(0,0,0,.13),0 6px 14px rgba(0,0,0,.32)}
+#btn-fish.down,#btn-fish.ready.down,#btn-friend.down,#btn-friend.waiting.down{transform:translateY(3px) scale(.96);box-shadow:inset 0 4px 10px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.28)}
+#btn-friend.quiet{box-shadow:inset 0 -5px 8px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.22)}
+#btn-menu{box-shadow:inset 0 -5px 8px rgba(0,70,0,.2),0 4px 10px rgba(0,0,0,.26)}
+#btn-menu:active{transform:translateY(2px);box-shadow:inset 0 3px 8px rgba(0,70,0,.3),0 1px 4px rgba(0,0,0,.26)}
+
 </style>
 <div id="app">
   <canvas id="game"></canvas>
@@ -3016,9 +3030,16 @@ ul.tips li{margin-bottom:3px}
 (function (GG) {
   'use strict';
 
-  GG.VERSION = '1.24.1';
+  GG.VERSION = '1.24.2';
 
   GG.CHANGELOG = [
+    {
+      v: '1.24.2', title: 'Tidier buttons',
+      lines: [
+        'The round buttons no longer have a slice of colour poking out underneath them.',
+        'At Dog\u2019s Paradise the THROW button shows a ball now, not a fish.'
+      ]
+    },
     {
       v: '1.24.1', title: 'No more clicks',
       lines: [
@@ -44606,6 +44627,7 @@ ul.tips li{margin-bottom:3px}
     else if (st === 'wait') { main = 'WAIT'; sub = 'for the !'; }
     else if (st === 'cast' || st === 'reel') { main = '\u2026'; sub = ''; }
     btn.classList.toggle('ready', ready);
+    btn.setAttribute('data-icon', main === 'THROW' ? 'ball' : 'fish');   // v1.24.2: a ball for the ball, not a fish
     var key = main + '|' + sub;
     if (key !== _fishLabel) {
       _fishLabel = key;
