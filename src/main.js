@@ -397,6 +397,7 @@
 
   function drawWorld(t) {
     var W = GG.World, P = GG.Player;
+    if (GG.stampFrame) GG.stampFrame();   // v1.24.5: one tick per frame, so unused pictures can be told from used
     W.drawGround(ctx, cam, GG.view.w, GG.view.h);
     canvas._vw = GG.view.w;
     W.drawWater(ctx, cam, t, GG.view.w, GG.view.h);
