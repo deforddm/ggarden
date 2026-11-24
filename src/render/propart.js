@@ -3753,5 +3753,87 @@
     });
   };
 
+  /* =====================================================================
+     v1.24.3: PAINT ONCE, STAMP MANY.
+     A bamboo clump is about 160 separate shapes and a duckweed raft is 50,
+     and the grove and the marsh put dozens of them on screen at once - so
+     those two places asked the phone for thousands of little shapes every
+     frame and the game crawled there. Now each of these plants is painted
+     once into a small picture of its own (a few sizes, six different
+     looks) and after that it is one stamp. The sway is still there: the
+     stamp is leaned from its foot, which is what a stem does anyway.
+       box  : how far the picture reaches, in r - [half-width, up, down]
+       sway : (t, seed, r) -> [sideways px at the top, top height in px,
+              sideways px for the whole thing]
+     ===================================================================== */
+  var SPRITE_LOOKS = 4, SPRITE_MAX = 60, SPRITE_BANDS = 8;
+  function stamped(name, box, sway) {
+    var paint = P[name], store = {}, count = 0;
+    if (!paint) return;
+    function build(rb, look, sc, col, p) {
+      var hw = box[0] * rb, up = box[1] * rb, down = box[2] * rb;
+      var W = Math.ceil(hw * 2 * sc), H = Math.ceil((up + down) * sc);
+      var cv = document.createElement('canvas');
+      cv.width = W; cv.height = H;
+      var g = cv.getContext('2d', { willReadFrequently: true });
+      g.scale(sc, sc);
+      paint(g, hw, up, rb, 0, (look + 0.5) / SPRITE_LOOKS, col, p);
+      /* Most of that picture is empty air - a bamboo is a thin stalk under
+         a wide head. Cut it into a few strips and keep only the part of
+         each strip with paint on it: far fewer empty pixels to push about,
+         and far less memory. The strips are whole pixel rows and are put
+         back on whole pixel rows, so the joins cannot show. */
+      var bands = [], d;
+      try { d = g.getImageData(0, 0, W, H).data; } catch (e) { d = null; }
+      var bh = Math.ceil(H / SPRITE_BANDS);
+      for (var b0 = 0; b0 < H; b0 += bh) {
+        var b1 = Math.min(H, b0 + bh), x0 = W, x1 = -1, y0 = b1, y1 = -1, xx, yy;
+        if (d) {
+          for (yy = b0; yy < b1; yy++) {
+            var row = yy * W * 4 + 3, hit = false;
+            for (xx = 0; xx < W; xx++) if (d[row + xx * 4] > 6) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; hit = true; }
+            if (hit) { if (yy < y0) y0 = yy; y1 = yy; }
+          }
+        } else { x0 = 0; x1 = W - 1; y0 = b0; y1 = b1 - 1; }
+        if (x1 < 0) continue;
+        var bc = document.createElement('canvas');
+        bc.width = x1 - x0 + 1; bc.height = y1 - y0 + 1;
+        bc.getContext('2d').drawImage(cv, x0, y0, bc.width, bc.height, 0, 0, bc.width, bc.height);
+        bands.push({ cv: bc, x: x0 / sc - hw, y: y0 / sc - up, w: bc.width / sc, h: bc.height / sc });
+      }
+      cv.width = cv.height = 1;
+      return bands;
+    }
+    P[name] = function (c, x, y, r, t, seed, col, p) {
+      if (GG.noSprites || !c.getTransform) return paint(c, x, y, r, t, seed, col, p);
+      var m = c.getTransform();
+      if (m.b || m.c || m.a !== m.d) return paint(c, x, y, r, t, seed, col, p);   // only for a plain, upright canvas
+      var sc = m.a;
+      var rb = Math.max(6, Math.round(r / 3) * 3);
+      var look = Math.floor((((seed || 0) % 1) + 1) % 1 * SPRITE_LOOKS);
+      var key = rb + '|' + look + '|' + sc.toFixed(3), sp = store[key];
+      if (!sp) {
+        if (count >= SPRITE_MAX || !(sc > 0.3 && sc < 5)) return paint(c, x, y, r, t, seed, col, p);
+        sp = store[key] = build(rb, look, sc, col, p);
+        count++;
+      }
+      var sw = sway ? sway(t, seed, r) : null;
+      var ys = (Math.round(m.f + y * sc) - m.f) / sc;   // foot on a whole pixel row
+      c.save();
+      c.translate(x + (sw ? sw[2] : 0), ys);
+      if (sw && sw[0]) c.transform(1, 0, -sw[0] / sw[1], 1, 0, 0);
+      for (var i = 0; i < sp.length; i++) c.drawImage(sp[i].cv, sp[i].x, sp[i].y, sp[i].w, sp[i].h);
+      c.restore();
+    };
+    P[name]._paint = paint;
+    P[name]._sprites = function () { return count; };
+    P[name]._pixels = function () { var n = 0; for (var k in store) store[k].forEach(function (b) { n += b.cv.width * b.cv.height; }); return n; };
+  }
+  stamped('bamboo', [1.7, 3.5, 0.5], function (t, seed, r) { return [Math.sin(t * 0.85 + seed * 6) * r * 0.06, r * 3.1, 0]; });
+  stamped('bambooShoot', [0.9, 1.45, 0.45], null);
+  stamped('duckweed', [1.2, 0.7, 0.7], function (t, seed, r) { return [0, 1, Math.sin(t * 0.35 + seed * 5) * r * 0.05]; });
+  stamped('bulrush', [1.4, 2.3, 0.3], function (t, seed, r) { return [Math.sin(t * 1.0 + seed * 7) * 1.5, r * 2, 0]; });
+  stamped('cattail', [1.6, 2.1, 0.3], function (t, seed, r) { return [Math.sin(t * 1.1 + seed * 8) * 1.9, r * 1.7, 0]; });
+
   GG.Props = P;
 })(window.GG = window.GG || {});
